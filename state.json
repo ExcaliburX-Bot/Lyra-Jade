@@ -13,5 +13,120 @@
     "lastOk": "2026-11-20T06:58:08.720Z",
     "lastNew": "2026-11-20T06:58:08.720Z",
     "lastDropped": 0
+  },
+  "openai-news": {
+    "etag": null,
+    "lastModified": null,
+    "lastOk": "2026-11-20T07:04:20.911Z",
+    "lastNew": "2026-11-20T07:04:20.911Z"
+  },
+  "deepmind-blog": {
+    "etag": "\"MLPORQ\"",
+    "lastModified": null,
+    "lastOk": "2026-11-20T07:04:20.911Z",
+    "lastNew": "2026-11-20T07:04:20.911Z"
+  },
+  "google-innovation-ai": {
+    "etag": null,
+    "lastModified": null,
+    "lastOk": "2026-11-20T07:04:20.911Z",
+    "lastNew": "2026-11-20T07:04:20.911Z"
+  },
+  "nvidia-blog": {
+    "etag": "\"42563e7705b2b6c8d8a0699f79dc1d25-gzip\"",
+    "lastModified": "Fri, 20 Nov 2026 01:13:34 GMT",
+    "lastOk": "2026-11-20T07:04:20.911Z",
+    "lastNew": "2026-11-20T07:04:20.911Z"
+  },
+  "mistral-news": {
+    "etag": "W/\"188b9a6783e5f60e527b88fdc61b7089-ssl\"",
+    "lastModified": null,
+    "lastOk": "2026-11-20T07:04:20.911Z"
+  },
+  "hf-blog": {
+    "etag": "W/\"41ef8-La4G9k3xjjza6gqSf13PgRxlvAs\"",
+    "lastModified": null,
+    "lastOk": "2026-11-20T07:04:20.911Z",
+    "lastNew": "2026-11-20T07:04:20.911Z"
+  },
+  "anthropic-news": {
+    "etag": null,
+    "lastModified": null,
+    "lastOk": "2026-11-20T07:04:20.911Z",
+    "seen": [
+      "https://anthropic.com/news/public-benefit-fund",
+      "https://anthropic.com/news/s1-sec",
+      "https://anthropic.com/news/anthropic-prices-initial-public-offering",
+      "https://anthropic.com/news/roadshow-launch",
+      "https://anthropic.com/news/ai-for-science-expands-foundations-research-institutions",
+      "https://anthropic.com/news/expanding-partnership-gsa",
+      "https://anthropic.com/news/donating-agent-skills-to-the-agentic-ai-foundation",
+      "https://anthropic.com/news/open-call-guest-investigators-life-sciences",
+      "https://anthropic.com/news/christopher-stubbs-joins-long-term-benefit-trust",
+      "https://anthropic.com/news/an-update-on-independent-evaluators",
+      "https://anthropic.com/news/2026-us-midterms",
+      "https://anthropic.com/news/singapore-office-opening",
+      "https://anthropic.com/news/distillation-defenses",
+      "https://anthropic.com/news/anthropic-cyber-mission",
+      "https://anthropic.com/news/2026-usage-policy-update",
+      "https://anthropic.com/news/genesis-mission-commitment",
+      "https://anthropic.com/news/cyber-verification-program",
+      "https://anthropic.com/news/claude-frontier-academy",
+      "https://anthropic.com/news/barclays-scales-claude"
+    ]
+  },
+  "microsoft-ai-news": {
+    "etag": null,
+    "lastModified": null,
+    "lastOk": "2026-11-20T07:04:20.911Z",
+    "lastNew": "2026-11-20T07:04:20.911Z",
+    "seen": [
+      "https://microsoft.ai/news/microsoft-ignite-2026",
+      "https://microsoft.ai/news/introducing-mai-code-2-and-mai-code-2-flash",
+      "https://microsoft.ai/news/introducing-mai-cyber-2-flash",
+      "https://microsoft.ai/news/introducing-mai-image-2-7",
+      "https://microsoft.ai/news/introducing-mai-licensed-weights",
+      "https://microsoft.ai/news/introducing-mai-realtime-1",
+      "https://microsoft.ai/news/microsoft-ignite-2026-mai-keynote"
+    ]
+  },
+  "meta-research": {
+    "etag": null,
+    "lastModified": null,
+    "lastOk": "2026-11-20T07:04:20.911Z",
+    "lastNew": "2026-11-20T07:04:20.911Z",
+    "seen": [
+      "https://research.meta.ai/blog/muse-ember",
+      "https://research.meta.ai/blog/specialized-models-for-muse-and-metaai",
+      "https://research.meta.ai/blog/introducing-muse-spark-msl",
+      "https://research.meta.ai/blog/introducing-next-generation-unified-media-generation-model"
+    ]
+  },
+  "kimi-blog": {
+    "etag": null,
+    "lastModified": null,
+    "lastOk": "2026-11-20T07:04:20.911Z",
+    "seen": [
+      "https://kimi.ai/blog/kimi-k3-1-pro",
+      "https://kimi.ai/blog/kimi-k3",
+      "https://kimi.ai/blog/kimi-k2-6",
+      "https://kimi.ai/blog/agent-swarm",
+      "https://kimi.ai/blog/kimi-k2-5",
+      "https://kimi.ai/blog/kimi-vendor-verifier",
+      "https://kimi.ai/blog/kimi-k2-thinking",
+      "https://kimi.ai/blog/kimi-k2"
+    ]
+  },
+  "hn-ai": {
+    "etag": null,
+    "lastModified": "Thu, 19 Nov 2026 16:54:25 GMT",
+    "lastOk": "2026-11-20T07:04:20.911Z",
+    "lastNew": "2026-11-20T07:04:20.911Z"
+  },
+  "latent-space-podcast": {
+    "etag": "W/\"40620681cb7e4610e8c77403df92faa1\"",
+    "lastModified": "Fri, 20 Nov 2026 07:00:11 GMT",
+    "lastOk": "2026-11-20T07:04:20.911Z",
+    "lastNew": "2026-11-20T07:04:20.911Z"
   }
 }
