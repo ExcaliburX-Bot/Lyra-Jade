@@ -43,5 +43,9 @@ node -e '
   gh label create "$LABEL" --force >/dev/null 2>&1 || true
   gh pr create --base "$BASE" --head "$BR" --title "稿件：$TITLE" --body-file /tmp/pr-body.md --label "$LABEL" \
     || gh pr create --base "$BASE" --head "$BR" --title "稿件：$TITLE" --body-file /tmp/pr-body.md
+  # 点名请人审核：GitHub 一定会发邮件和手机推送。默认是仓库主人，可用变量 WG_REVIEWER 改成别人（逗号分隔）
+  REVIEWER="${WG_REVIEWER:-${GITHUB_REPOSITORY_OWNER:-}}"
+  [ -n "$REVIEWER" ] && { gh pr edit "$BR" --add-reviewer "$REVIEWER" >/dev/null 2>&1 \
+    || echo "::warning::没能请 $REVIEWER 审核（不影响稿子）"; }
   git switch "$BASE"
 done

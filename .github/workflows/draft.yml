@@ -56,4 +56,5 @@ jobs:
         env:
           # 用 GITHUB_TOKEN 开的 PR 不会触发「校验」工作流；配了 WG_BOT_TOKEN（机器人账号的令牌）就会
           GH_TOKEN: ${{ secrets.WG_BOT_TOKEN || secrets.GITHUB_TOKEN }}
+          WG_REVIEWER: ${{ vars.WG_REVIEWER }}   # 新稿子点名请谁审核，默认仓库主人
         run: bash scripts/open-prs.sh

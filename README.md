@@ -48,6 +48,7 @@ npm run dev         # 构建并在 http://localhost:4321 预览
    | --- | --- | --- |
    | `WG_SITE_URL` | 无，必填 | 网站地址，如 `https://<用户名>.github.io/<仓库名>` |
    | `WG_DRAFT_TOP` | `1` | 每次定时写稿写几篇；每天 4 次，默认即每天最多 4 篇 |
+   | `WG_REVIEWER` | 仓库主人 | 新稿子自动请谁审核（GitHub 会发邮件和手机推送），多人用逗号分隔 |
    | `WG_PROVIDER` | `xai` | 写稿用哪家：`xai`（Grok）、`deepseek` 或 `anthropic`（Claude）；手动运行「写稿」时也可以临时选 |
    | `WG_MODEL` | `grok-4.7` / `deepseek-v4-pro` / `claude-sonnet-5-5` | 写稿模型；DeepSeek 更便宜的是 `deepseek-flash` |
    | `WG_X_MODEL` | `grok-4.7` | X 监测用的模型 |
