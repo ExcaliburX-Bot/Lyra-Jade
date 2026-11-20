@@ -16,16 +16,24 @@ export const XAI_REASONING = process.env.WG_REASONING || "medium";
 const TOOL = { name: "submit_article", description: "提交写好的解读文章（结构化）" };
 
 /* ---------- 解析：单独导出，方便测试 ---------- */
+/* 有的模型会把文章多包一层，比如 {"article": {...}}，或把 JSON 当字符串传：统一拆出来 */
+export function unwrapArticle(a, depth = 0) {
+  if (typeof a === "string") { try { a = JSON.parse(a); } catch { return a; } }
+  if (!a || typeof a !== "object" || depth > 2) return a;
+  if (Array.isArray(a.sections) || a.title) return a;
+  const inner = Object.values(a).find(v => (v && typeof v === "object" && (Array.isArray(v.sections) || v.title)) || typeof v === "string");
+  return inner ? unwrapArticle(inner, depth + 1) : a;
+}
 export function parseAnthropic(json) {
   const call = (json.content || []).find(c => c.type === "tool_use" && c.name === TOOL.name);
   if (!call) throw new Error("模型没有按要求返回文章");
-  return call.input;
+  return unwrapArticle(call.input);
 }
 
 export function parseXaiFunctionCall(json) {
   const call = (json.output || []).find(o => o.type === "function_call" && o.name === TOOL.name);
   if (!call) throw new Error("模型没有按要求返回文章");
-  try { return typeof call.arguments === "string" ? JSON.parse(call.arguments) : call.arguments; }
+  try { return unwrapArticle(typeof call.arguments === "string" ? JSON.parse(call.arguments) : call.arguments); }
   catch { throw new Error("模型返回的文章不是合法 JSON"); }
 }
 
@@ -226,13 +234,13 @@ export function parseDeepseekArticle({ content, calls, finish }) {
   const call = calls.find(c => c.name === TOOL.name);
   const tryParse = t => { try { return JSON.parse(t); } catch { return null; } };
   if (call) {
-    const a = tryParse(call.arguments);
+    const a = unwrapArticle(tryParse(call.arguments));
     if (!a) throw new Error("DeepSeek 返回的文章参数不是合法 JSON");
     return a;
   }
   /* 没调用函数、直接在正文里给了 JSON：取 ```json 代码块或第一个完整对象 */
   const block = content.match(/```(?:json)?\s*([\s\S]*?)```/);
-  const a = tryParse(block ? block[1] : content.slice(content.indexOf("{"), content.lastIndexOf("}") + 1));
+  const a = unwrapArticle(tryParse(block ? block[1] : content.slice(content.indexOf("{"), content.lastIndexOf("}") + 1)));
   if (a && a.sections && a.title) return a;
   throw new Error("DeepSeek 没有按要求提交文章");
 }

@@ -316,3 +316,15 @@ test("DeepSeek 写稿：开思考时 tool_choice 用 auto；流式分片拼回�
   assert.throws(() => parseDeepseekArticle({ content: "我写不了", calls: [], finish: "stop" }), /没有按要求提交/);
   assert.throws(() => parseChatStream(chunk({ error: { message: "Insufficient Balance" } })), /Insufficient Balance/);
 });
+
+test("模型把文章多包一层（如 {article: {...}}）时自动拆开", async () => {
+  const { unwrapArticle, parseDeepseekArticle, parseXaiFunctionCall } = await import("../scripts/lib/llm.mjs");
+  const article = readJson("llm-article.json");
+  assert.deepEqual(unwrapArticle({ article }), article);
+  assert.deepEqual(unwrapArticle({ submit_article: { article } }), article);
+  assert.deepEqual(unwrapArticle(JSON.stringify(article)), article);
+  assert.deepEqual(unwrapArticle({ article: JSON.stringify(article) }), article);
+  assert.deepEqual(unwrapArticle(article), article);
+  assert.deepEqual(parseDeepseekArticle({ content: "", calls: [{ name: "submit_article", arguments: JSON.stringify({ article }) }], finish: "tool_calls" }), article);
+  assert.deepEqual(parseXaiFunctionCall({ output: [{ type: "function_call", name: "submit_article", arguments: JSON.stringify({ article }) }] }), article);
+});
