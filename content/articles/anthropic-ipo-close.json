@@ -1,0 +1,352 @@
+{
+  "slug": "anthropic-ipo-close",
+  "category": "biz",
+  "date": "2026-11-20",
+  "publisher": "Anthropic",
+  "title": "Anthropic 完成 IPO：每股 83 美元，IPO 加私募合计募资约 1,195 亿美元",
+  "summary": "Anthropic 的上市交易正式完成：A 类股已在纳斯达克以 ANT 代码交易。这则公告一次性说清发行价、股份数和募资金额，还披露 AMD、NVIDIA 等芯片与云巨头参与了同步私募。对普通 Claude 用户来说，这是资本层面的消息，不改变产品和使用。",
+  "ai_summary": "Anthropic 在 11 月 20 日宣布完成 IPO 和同步私募。A 类普通股共 11.27 亿股，每股 83 美元：公司自己卖约 11.03 亿股、拿到约 916 亿美元毛收入，老股东卖约 2,364.9 万股、钱不归公司。A 类股已于 11 月 19 日在纳斯达克以 ANT 代码交易。同步私募把约 3.13 亿股 N 类股卖给 AMD、Broadcom、Google、Micron、Microsoft、NVIDIA、TSMC，合计约 260 亿美元。IPO 加私募毛收入共约 1,195 亿美元，均未扣承销费。这主要影响资本层面；公告未披露上市市值、资金用途或产品计划，Claude 用户日常使用不受影响。",
+  "brief": [
+    "A 类股发行价每股 83.00 美元，共 11.27 亿股，其中公司卖出约 11.03 亿股。",
+    "承销商全额行使额外认购选择权，多买 1.47 亿股。",
+    "同步私募卖出约 3.13 亿股 N 类股，合计约 260 亿美元。",
+    "IPO 与私募合计毛收入约 1,195 亿美元，未扣承销费等费用。"
+  ],
+  "readMinutes": 6,
+  "sections": [
+    {
+      "h": "这是什么：Anthropic 完成上市交割",
+      "blocks": [
+        {
+          "p": "Anthropic 是聊天助手 Claude 背后的公司。11 月 20 日，它宣布首次公开募股（IPO，也就是公司股票第一次在公开市场发售）和一笔同步私募已经完成交割。A 类普通股从 11 月 19 日起在 Nasdaq Global Select Market（纳斯达克全球精选市场）交易，代码是 ANT。"
+        },
+        {
+          "p": "这则公告是交易「完成」通知，核心内容是发行了多少股、每股多少钱、谁买了、公司拿到多少，不涉及产品、模型或订阅价格变化。作为规模参考：站内相关文章显示，Anthropic 上市前的 Series H 轮融资 650 亿美元，投后估值 9,650 亿美元——注意这是上市前一轮的估值，不是本次 IPO 的市值。"
+        }
+      ]
+    },
+    {
+      "h": "IPO 卖了多少股，公司拿到多少钱？",
+      "blocks": [
+        {
+          "p": "这次 IPO 共发行 11.27 亿股 A 类普通股，每股发行价 83.00 美元。其中公司自己卖出 1,103,351,354 股（约 11.03 亿股），老股东卖出 23,648,646 股（约 2,364.9 万股）。"
+        },
+        {
+          "p": "承销商还全额行使了「超额配售选择权」，也就是绿鞋机制——发行时预留的额外认购额度。它以原发行价多买 1.47 亿股，额度被用满通常说明发行需求较足。"
+        },
+        {
+          "p": "按毛口径（未扣承销折扣、佣金和其他费用）算，这次 IPO 毛收入约 935 亿美元，其中约 916 亿美元归公司；老股东卖出的那部分，钱不归公司。"
+        }
+      ]
+    },
+    {
+      "h": "同步私募：科技巨头 260 亿美元买入 N 类股",
+      "blocks": [
+        {
+          "p": "除了公开市场，Anthropic 还同步完成一笔私募：向 AMD、Broadcom、Google、Micron、Microsoft、NVIDIA、TSMC 卖出 313,253,007 股 N 类普通股，价格同样是每股 83.00 美元，合计约 260 亿美元。"
+        },
+        {
+          "p": "买家集中在芯片、云计算和代工环节。公告只说这批 N 类股没有按《1933 年证券法》（Securities Act of 1933）注册、属于私募，没有说明 N 类股与 A 类股在投票权、转换、分红上的差别。"
+        },
+        {
+          "p": "把 IPO（含老股东卖出）和私募加在一起，毛收入合计约 1,195 亿美元，同样未扣承销费等费用。"
+        }
+      ]
+    },
+    {
+      "h": "关键数字一图看懂",
+      "blocks": [
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "上市与私募的四个关键数字",
+            "subtitle": "单位：美元、股；金额均为未扣费用的毛收入",
+            "note": "数据来自 Anthropic 2026 年 11 月 20 日公告；N 类股为同步私募。",
+            "items": [
+              {
+                "value": "83.00",
+                "unit": "美元/股",
+                "label": "发行价",
+                "note": "A 类与 N 类同价"
+              },
+              {
+                "value": "11.27",
+                "unit": "亿股",
+                "label": "A 类股发行总数",
+                "note": "含承销商全额行使的额外认购"
+              },
+              {
+                "value": "3.13",
+                "unit": "亿股",
+                "label": "N 类股（私募）",
+                "note": "卖给 AMD、NVIDIA 等科技公司"
+              },
+              {
+                "value": "1195",
+                "unit": "亿美元",
+                "label": "IPO + 私募合计",
+                "note": "未扣承销费等费用"
+              }
+            ]
+          }
+        },
+        {
+          "fig": {
+            "type": "bars",
+            "title": "钱怎么分：IPO 毛收入、公司到手、私募",
+            "subtitle": "单位：亿美元；均为毛收入，未扣费用",
+            "legend": [
+              {
+                "tone": "main",
+                "label": "IPO 毛收入"
+              },
+              {
+                "tone": "good",
+                "label": "公司拿到"
+              },
+              {
+                "tone": "cloud",
+                "label": "同步私募"
+              }
+            ],
+            "groups": [
+              {
+                "label": "募资金额",
+                "items": [
+                  {
+                    "label": "IPO 毛收入",
+                    "sub": "11.27 亿股 A 类，含老股东卖出",
+                    "value": 935,
+                    "tone": "main"
+                  },
+                  {
+                    "label": "公司拿到",
+                    "sub": "公司自己卖出的约 11.03 亿股",
+                    "value": 916,
+                    "tone": "good"
+                  },
+                  {
+                    "label": "同步私募",
+                    "sub": "约 3.13 亿股 N 类",
+                    "value": 260,
+                    "tone": "cloud"
+                  }
+                ]
+              }
+            ],
+            "note": "「公司拿到」是 IPO 毛收入的一部分，不与 935 相加；原文写 IPO 毛收入约 93.5 billion，其中约 91.6 billion 归公司。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "时间线：注册生效、开市、完成交割",
+      "blocks": [
+        {
+          "fig": {
+            "type": "timeline",
+            "title": "三天完成：注册生效、开市、宣布交割",
+            "subtitle": "美国时间；原文只给日期，未写具体时点",
+            "axis": {
+              "from": "2026-11-18",
+              "to": "2026-11-21",
+              "ticks": [
+                "2026-11-18",
+                "2026-11-19",
+                "2026-11-20"
+              ],
+              "unit": "day"
+            },
+            "lanes": [
+              {
+                "label": "上市进程",
+                "sub": "Anthropic",
+                "tone": "main",
+                "segments": [
+                  {
+                    "from": "2026-11-18",
+                    "to": "2026-11-19",
+                    "n": 1,
+                    "label": "注册声明生效"
+                  },
+                  {
+                    "from": "2026-11-19",
+                    "to": "2026-11-20",
+                    "n": 1,
+                    "label": "A 类股开市，代码 ANT"
+                  },
+                  {
+                    "from": "2026-11-20",
+                    "to": "2026-11-21",
+                    "n": 1,
+                    "label": "宣布完成交割"
+                  }
+                ]
+              }
+            ],
+            "note": "日期来自公告：SEC 注册声明 11 月 18 日生效；11 月 19 日在纳斯达克开市；11 月 20 日宣布完成。"
+          }
+        },
+        {
+          "p": "按公告，SEC 在 11 月 18 日宣布注册声明生效；11 月 19 日 A 类股开市；11 月 20 日宣布完成交割。主承销商是 Goldman Sachs 和 Morgan Stanley，另有 J.P. Morgan、Citigroup、Barclays、Wells Fargo Securities 等多家银行担任承销商。"
+        }
+      ]
+    },
+    {
+      "h": "官方还没说的",
+      "blocks": [
+        {
+          "list": [
+            "上市后的总市值：公告没有给总股本和市值，也没给 IPO 对应的估值。",
+            "扣费后的净募资额：只披露毛收入，没给扣掉承销折扣、佣金后的净额。",
+            "N 类股与 A 类股的权利差别：投票权、是否可转换、分红等都没写。",
+            "资金具体用途：没有说明这约 1,195 亿美元毛收入怎么花。",
+            "老股东身份与套现金额：只写了「certain selling stockholders」。",
+            "对 Claude 产品、定价、算力的影响：公告没有提。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "适合谁",
+      "blocks": [
+        {
+          "p": "价值：这则公告把 Anthropic 这次上市和私募的规模说清楚了，适合想核实发行价、股份数、参与方等硬事实的读者；对关注 AI 行业资本动向的人，也提供了一个规模参照。"
+        },
+        {
+          "p": "代价：它只是一则交易完成通知，没有产品、技术或业务进展，所有金额都是未扣费用的毛收入。"
+        },
+        {
+          "p": "如果你在关注 ANT 股票，重点应该看招股书和后续财报，而不是只看这则公告；如果你是 Claude 用户，这不会改变你的使用体验，不需要做任何事；如果你只是想记住一个规模概念：每股 83.00 美元，IPO 加私募合计毛收入约 1,195 亿美元。"
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Anthropic announces closing of initial public offering, including full exercise of underwriters' option to purchase additional shares, and closing of concurrent private placement",
+      "publisher": "Anthropic",
+      "date": "2026-11-20",
+      "url": "https://www.anthropic.com/news/ipo-close"
+    },
+    "more": [],
+    "note": "本文所有数字均来自 Anthropic 官方公告；三张图按公告数字绘制，非示意估算。Series H 融资与投后估值数字来自同一页面「Related articles」的标题，属于上市前语境，不是本次 IPO 的市值。"
+  },
+  "claims": [
+    {
+      "text": "公告于 2026 年 11 月 20 日发布（原文写 Today）。",
+      "value": "2026-11-20",
+      "source_url": "https://www.anthropic.com/news/ipo-close",
+      "as_written": "11 月 20 日"
+    },
+    {
+      "text": "IPO 共发行 1,127,000,000 股 A 类普通股，即 11.27 亿股。",
+      "value": "1,127,000,000",
+      "source_url": "https://www.anthropic.com/news/ipo-close",
+      "as_written": "11.27 亿股",
+      "quote": "an aggregate of 1,127,000,000 shares of its Class A common stock"
+    },
+    {
+      "text": "发行价为每股 83.00 美元。",
+      "value": "$83.00",
+      "source_url": "https://www.anthropic.com/news/ipo-close",
+      "as_written": "83.00 美元",
+      "quote": "at a public offering price of $83.00 per share"
+    },
+    {
+      "text": "承销商全额行使额外认购选择权，多买 147,000,000 股，即 1.47 亿股。",
+      "value": "147,000,000",
+      "source_url": "https://www.anthropic.com/news/ipo-close",
+      "as_written": "1.47 亿股",
+      "quote": "an additional 147,000,000 shares of Class A common stock"
+    },
+    {
+      "text": "公司自己卖出 1,103,351,354 股，约 11.03 亿股。",
+      "value": "1,103,351,354",
+      "source_url": "https://www.anthropic.com/news/ipo-close",
+      "as_written": "约 11.03 亿股",
+      "quote": "The offering consisted of 1,103,351,354 shares sold by Anthropic"
+    },
+    {
+      "text": "老股东卖出 23,648,646 股，约 2,364.9 万股。",
+      "value": "23,648,646",
+      "source_url": "https://www.anthropic.com/news/ipo-close",
+      "as_written": "约 2,364.9 万股",
+      "quote": "23,648,646 shares sold by certain selling stockholders"
+    },
+    {
+      "text": "IPO 毛收入约 93.5 亿美元，未扣承销折扣、佣金和其他费用。",
+      "value": "$93.5 billion",
+      "source_url": "https://www.anthropic.com/news/ipo-close",
+      "as_written": "约 935 亿美元",
+      "quote": "were approximately $93.5 billion"
+    },
+    {
+      "text": "其中约 91.6 亿美元归 Anthropic。",
+      "value": "$91.6 billion",
+      "source_url": "https://www.anthropic.com/news/ipo-close",
+      "as_written": "约 916 亿美元",
+      "quote": "of which approximately $91.6 billion was received by Anthropic"
+    },
+    {
+      "text": "A 类普通股于 2026 年 11 月 19 日在纳斯达克开始交易，代码 ANT。",
+      "value": "November 19, 2026",
+      "source_url": "https://www.anthropic.com/news/ipo-close",
+      "as_written": "11 月 19 日",
+      "quote": "began trading on the Nasdaq Global Select Market on November 19, 2026"
+    },
+    {
+      "text": "私募卖出 313,253,007 股 N 类普通股，约 3.13 亿股。",
+      "value": "313,253,007",
+      "source_url": "https://www.anthropic.com/news/ipo-close",
+      "as_written": "约 3.13 亿股",
+      "quote": "an aggregate of 313,253,007 shares of Class N common stock"
+    },
+    {
+      "text": "私募合计购买价约 26.0 亿美元。",
+      "value": "$26.0 billion",
+      "source_url": "https://www.anthropic.com/news/ipo-close",
+      "as_written": "约 260 亿美元",
+      "quote": "for an aggregate purchase price of approximately $26.0 billion"
+    },
+    {
+      "text": "IPO 与私募合计毛收入约 119.5 亿美元，未扣承销折扣、佣金和其他费用。",
+      "value": "$119.5 billion",
+      "source_url": "https://www.anthropic.com/news/ipo-close",
+      "as_written": "约 1,195 亿美元",
+      "quote": "were approximately $119.5 billion"
+    },
+    {
+      "text": "注册声明于 2026 年 11 月 18 日由美国证监会宣布生效。",
+      "value": "November 18, 2026",
+      "source_url": "https://www.anthropic.com/news/ipo-close",
+      "as_written": "11 月 18 日",
+      "quote": "was declared effective by the Securities and Exchange Commission on November 18, 2026"
+    },
+    {
+      "text": "站内相关文章显示，Anthropic 在 Series H 轮融资 65 亿美元。",
+      "value": "$65B",
+      "source_url": "https://www.anthropic.com/news/ipo-close",
+      "as_written": "650 亿美元",
+      "quote": "Anthropic raises $65B in Series H funding at $965B post-money valuation"
+    },
+    {
+      "text": "该 Series H 轮投后估值为 965 亿美元。",
+      "value": "$965B",
+      "source_url": "https://www.anthropic.com/news/ipo-close",
+      "as_written": "9,650 亿美元",
+      "quote": "Anthropic raises $65B in Series H funding at $965B post-money valuation"
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "origin": "auto",
+    "candidate": "e7354365db",
+    "tier": "official",
+    "via": null,
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "generated_at": "2026-11-20T20:26:42.624Z"
+  }
+}
