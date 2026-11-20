@@ -1,27 +1,47 @@
 [
   {
-    "id": "8df210d9ed",
-    "title": "GPT-Live-1.1 is now available in the API, with standby and more natural accents",
-    "url": "https://x.com/OpenAIDevs/status/2123506733524136446",
-    "publisher": "@OpenAIDevs",
+    "id": "6a368ee477",
+    "title": "Pika 发布了一个全新的 AI视频工具Enact：能模仿片场当导演现场实时导戏 视频一边播一边改，能拖人摆位、还能给 AI 演员说戏",
+    "url": "https://pika.art/blog/pika-enact",
+    "publisher": "pika.art",
     "tier": "official",
-    "published": "2026-11-19T20:00:32.000Z",
+    "published": "2026-11-20T00:00:00.000Z",
     "score": 5.9,
-    "category_hint": "product",
-    "text": "GPT-Live-1.1 is now available in the API.\n\nIt speaks with more natural and consistent accents across languages, supports lower idle costs with a new standby option, and completes tasks even more reliably.",
-    "via": "https://x.com/OpenAIDevs/status/2123506733524136446",
+    "category_hint": null,
+    "via": "https://xiaohu.ai/article/pika-enact/",
+    "discovered_by": "xiaohu",
     "related": []
   },
   {
-    "id": "b898a1b212",
-    "title": "Introducing Gemini 4 Neon",
-    "url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
-    "publisher": "Google DeepMind",
+    "id": "a03947fc9e",
+    "title": "Ideogram 发布了 Ideogram 4.6 模型：原生 4K 出图 宣称为迄今最精确的改图模型",
+    "url": "https://ideogram.ai/models/4.6",
+    "publisher": "ideogram.ai",
     "tier": "official",
-    "published": "2026-11-18T21:35:43.000Z",
-    "score": 5.5,
-    "category_hint": "product",
+    "published": "2026-11-20T00:00:00.000Z",
+    "score": 5.9,
+    "category_hint": null,
+    "via": "https://xiaohu.ai/article/ideogram-4-6/",
+    "discovered_by": "xiaohu",
     "related": []
+  },
+  {
+    "id": "549a77347d",
+    "title": "Introducing GPT-6.2 Astra and Sol",
+    "url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+    "publisher": "OpenAI",
+    "tier": "official",
+    "published": "2026-11-17T17:45:00.000Z",
+    "score": 5.9,
+    "category_hint": "product",
+    "related": [
+      {
+        "title": "OpenAI 发布 GPT-6.2 Astra 和 Sol：Astra 专业和科研测试创新高，每道题成本不到上一代三分之一",
+        "url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+        "publisher": "OpenAI",
+        "tier": "official"
+      }
+    ]
   },
   {
     "id": "50e3ea47cb",
@@ -46,41 +66,6 @@
     "related": []
   },
   {
-    "id": "549a77347d",
-    "title": "Introducing GPT-6.2 Astra and Sol",
-    "url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
-    "publisher": "OpenAI",
-    "tier": "official",
-    "published": "2026-11-17T17:45:00.000Z",
-    "score": 5.5,
-    "category_hint": "product",
-    "related": []
-  },
-  {
-    "id": "c6c361c53b",
-    "title": "Introducing ChatGPT for Sales",
-    "url": "https://openai.com/index/introducing-chatgpt-for-sales",
-    "publisher": "OpenAI",
-    "tier": "official",
-    "published": "2026-11-17T08:00:00.000Z",
-    "score": 5.5,
-    "category_hint": "product",
-    "related": []
-  },
-  {
-    "id": "1a2dbe3832",
-    "title": "OpenAI built Performance Factory to coordinate agents investigating ChatGPT regressions",
-    "url": "https://x.com/OpenAIDevs/status/2123471880292299171",
-    "publisher": "@OpenAIDevs",
-    "tier": "official",
-    "published": "2026-11-19T17:42:03.000Z",
-    "score": 5.4,
-    "category_hint": "product",
-    "text": "Codex already helps us build ChatGPT faster. Now it’s helping us keep ChatGPT fast.\n\nWe built the Performance Factory to coordinate agents that investigate regressions, propose fixes for engineers to review, and check if those fixes work in production.",
-    "via": "https://x.com/OpenAIDevs/status/2123471880292299171",
-    "related": []
-  },
-  {
     "id": "a3b508c32e",
     "title": "Microsoft launched Canvas, a new workspace powered by MAI Image 2.7 Flash",
     "url": "https://labs.microsoft.ai/?model=canvas",
@@ -94,40 +79,88 @@
     "related": []
   },
   {
-    "id": "35c35401b0",
-    "title": "Perplexity Computer Brain now auto-creates self-improving agent skills",
-    "url": "https://x.com/perplexity_ai/status/2123449395882701224",
-    "publisher": "@perplexity_ai",
+    "id": "1c3eaf246b",
+    "title": "NVIDIA RTX Spark Compact Desktops Out Now",
+    "url": "https://blogs.nvidia.com/blog/rtx-spark-desktop-local-ai-available-now/",
+    "publisher": "NVIDIA",
     "tier": "official",
-    "published": "2026-11-19T16:12:42.000Z",
-    "score": 5.4,
-    "category_hint": "product",
-    "text": "Computer's personalized self-improvement agent, Brain, now automatically creates self-improving agent skills for you.\n\nBrain learns how you work from past sessions and memory, then writes and updates personalized skills for future tasks.",
-    "via": "https://x.com/perplexity_ai/status/2123449395882701224",
-    "related": []
+    "published": "2026-11-18T14:00:31.000Z",
+    "score": 5.3,
+    "category_hint": null,
+    "related": [
+      {
+        "title": "英伟达 RTX Spark 小主机开卖：最高 128GB 统一内存，本地能跑 1200 亿参数大模型",
+        "url": "https://blogs.nvidia.com/blog/rtx-spark-desktop-local-ai-available-now/",
+        "publisher": "NVIDIA",
+        "tier": "official"
+      }
+    ]
   },
   {
-    "id": "6687f7be62",
-    "title": "How OpenAI’s Performance Factory keeps ChatGPT fast",
-    "url": "https://openai.com/index/how-openai-performance-factory-keeps-chatgpt-fast",
-    "publisher": "OpenAI",
+    "id": "d3bf659ccf",
+    "title": "MAI Image 2.7: Frontier quality at a fraction of the cost",
+    "url": "https://microsoft.ai/news/introducing-mai-image-2-7/",
+    "publisher": "Microsoft AI",
     "tier": "official",
-    "published": "2026-11-19T08:00:00.000Z",
-    "score": 5.2,
-    "category_hint": "product",
-    "related": []
+    "published": "2026-11-17T12:00:00.000Z",
+    "score": 5.3,
+    "category_hint": null,
+    "related": [
+      {
+        "title": "微软发布 MAI Image 2.7 和 Canvas：改图榜第一，价格约为 GPT Image 2.6 的五分之一",
+        "url": "https://microsoft.ai/news/introducing-mai-image-2-7/",
+        "publisher": "Microsoft AI",
+        "tier": "official"
+      }
+    ]
   },
   {
-    "id": "f7ba30b47f",
-    "title": "Responses API now ties GPT-6.2 reasoning items to earlier conversation history",
-    "url": "https://x.com/OpenAIDevs/status/2123566018866151579",
-    "publisher": "@OpenAIDevs",
+    "id": "5dbbce4400",
+    "title": "Seven new world-class models at scalable price-performance",
+    "url": "https://microsoft.ai/news/microsoft-ignite-2026/",
+    "publisher": "Microsoft AI",
     "tier": "official",
-    "published": "2026-11-19T23:56:07.000Z",
+    "published": "2026-11-17T12:00:00.000Z",
+    "score": 5.3,
+    "category_hint": null,
+    "related": [
+      {
+        "title": "微软发布七款 MAI 模型：编程拿到 Opus 5.5 的 96% 成绩，按促销价成本只要 5%",
+        "url": "https://microsoft.ai/news/microsoft-ignite-2026/",
+        "publisher": "Microsoft AI",
+        "tier": "official"
+      }
+    ]
+  },
+  {
+    "id": "e793852d37",
+    "title": "MAI Realtime 1: Leading voice AI at $0.01 per audio minute",
+    "url": "https://microsoft.ai/news/introducing-mai-realtime-1/",
+    "publisher": "Microsoft AI",
+    "tier": "official",
+    "published": "2026-11-17T12:00:00.000Z",
+    "score": 5.3,
+    "category_hint": null,
+    "related": [
+      {
+        "title": "微软发布 MAI Realtime 1 语音模型：每分钟 0.01 美元起，口头推理准确率 98.9%",
+        "url": "https://microsoft.ai/news/introducing-mai-realtime-1/",
+        "publisher": "Microsoft AI",
+        "tier": "official"
+      }
+    ]
+  },
+  {
+    "id": "5aa3a24a55",
+    "title": "Skill lemo-animi：一句话让 Codex 做出带配乐和拟音的定格短片",
+    "url": "https://x.com/lemomo_ai/status/2123038832815907084",
+    "publisher": "@lemomo_ai",
+    "tier": "official",
+    "published": "2026-11-20T00:00:00.000Z",
     "score": 5.1,
-    "category_hint": "product",
-    "text": "Agents using GPT-6.2 in the Responses API can build on earlier reasoning to deliver better results with fewer tokens and more cache hits.\n\nStarting with our newest frontier models, each reasoning item is now tied to the conversation history before it, so editing earlier messages causes the API to drop reasoning that follows the change.",
-    "via": "https://x.com/OpenAIDevs/status/2123566018866151579",
+    "category_hint": null,
+    "via": "https://xiaohu.ai/article/lemo-animi-stop-motion/",
+    "discovered_by": "xiaohu",
     "related": []
   },
   {
@@ -141,19 +174,6 @@
     "category_hint": "product",
     "text": "What slows reinforcement learning post-training?\n\nSee how NVIDIA Dynamo helps reduce repeated compute, weight-update overhead, and worker disruption and how @MicrosoftAI uses it for rollout inference.\n\nRead the technical blog ➡️ https://developer.nvidia.com/blog/reducing-rollout-bottlenecks-in-reinforcement-learning-with-nvidia-dynamo/?ncid=so-face-545758",
     "via": "https://x.com/NVIDIAAI/status/2123530225741078969",
-    "related": []
-  },
-  {
-    "id": "b611f3882f",
-    "title": "Gemini app for Mac now has computer use to hand off tasks across apps and the web",
-    "url": "https://x.com/GeminiApp/status/2123513203745538423",
-    "publisher": "@GeminiApp",
-    "tier": "official",
-    "published": "2026-11-19T20:26:15.000Z",
-    "score": 5.1,
-    "category_hint": "product",
-    "text": "With computer use in the Gemini app for Mac, you can now hand off tasks across your folders, apps, and the web, while your screen and cursor stay yours.\n\nWatch Gemini click, scroll, and type in a live background window, turning a quick sketch into a rigged 3D model in Blender.",
-    "via": "https://x.com/GeminiApp/status/2123513203745538423",
     "related": []
   },
   {
@@ -179,16 +199,14 @@
     "related": []
   },
   {
-    "id": "d7f870efb8",
-    "title": "Muse Chrome extension is now available, with a sidebar for easier browser use.",
-    "url": "https://x.com/alexandr_wang/status/2123591819300934128",
-    "publisher": "@alexandr_wang",
+    "id": "c6c361c53b",
+    "title": "Introducing ChatGPT for Sales",
+    "url": "https://openai.com/index/introducing-chatgpt-for-sales",
+    "publisher": "OpenAI",
     "tier": "official",
-    "published": "2026-11-20T01:38:38.000Z",
+    "published": "2026-11-17T08:00:00.000Z",
     "score": 5,
     "category_hint": "product",
-    "text": "🚨 BELATED MUSE FEATURE ALERT 🚨 \n\nmuse chrome extension, available now!\n\n200,000 of you are already feeling the magic, but muse chrome extension lets you use muse directly from a chrome sidebar, and easier browser use!\n\nget from the chrome web store!",
-    "via": "https://x.com/alexandr_wang/status/2123591819300934128",
     "related": []
   },
   {
@@ -302,25 +320,79 @@
     "related": []
   },
   {
-    "id": "5dbbce4400",
-    "title": "Seven new world-class models at scalable price-performance",
-    "url": "https://microsoft.ai/news/microsoft-ignite-2026/",
-    "publisher": "Microsoft AI",
+    "id": "fca930afdd",
+    "title": "Inworld 开源两款语音模型：降噪时留下笑声和呼吸，能智能判断你「说完了」笔记本就能跑",
+    "url": "https://inworld.ai/blog/introducing-voice-isolator",
+    "publisher": "inworld.ai",
     "tier": "official",
-    "published": "2026-11-17T12:00:00.000Z",
+    "published": "2026-11-19T00:00:00.000Z",
     "score": 4.9,
     "category_hint": null,
+    "via": "https://xiaohu.ai/article/inworld-voice-isolator-sava/",
+    "discovered_by": "xiaohu",
     "related": []
   },
   {
-    "id": "1a7867b3a7",
-    "title": "NVIDIA and Microsoft Expand Accelerated Computing From Azure to Windows PCs",
-    "url": "https://blogs.nvidia.com/blog/microsoft-ignite-accelerated-computing-azure-windows-pcs/",
-    "publisher": "NVIDIA",
+    "id": "b2c084a412",
+    "title": "Google 发布 Gemini 4 Neon 模型：由旗舰 Carbon 蒸馏而来 编程 Agent 榜第一 智能指数 61 分排总榜第 3",
+    "url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+    "publisher": "Google",
     "tier": "official",
-    "published": "2026-11-19T20:00:15.000Z",
-    "score": 4.8,
+    "published": "2026-11-19T00:00:00.000Z",
+    "score": 4.9,
     "category_hint": null,
+    "via": "https://xiaohu.ai/article/gemini-4-neon/",
+    "discovered_by": "xiaohu",
+    "related": []
+  },
+  {
+    "id": "a0ad6f8b6a",
+    "title": "Google AI Studio 推出全栈安卓开发：一句话做出带云数据库、Google 登录和 Gemini 的 App，直接装进自己手机",
+    "url": "https://developers.googleblog.com/build-full-stack-android-apps-with-gemini-in-google-ai-studio/",
+    "publisher": "developers.googleblog.com",
+    "tier": "official",
+    "published": "2026-11-18T00:00:00.000Z",
+    "score": 4.9,
+    "category_hint": null,
+    "via": "https://xiaohu.ai/article/gemini-android-ai-studio/",
+    "discovered_by": "xiaohu",
+    "related": []
+  },
+  {
+    "id": "b8930a9a56",
+    "title": "PostHog 分享决策模型的四种用法：拦在大模型前面、给模型派活、给搜索重排、替规则挑图表",
+    "url": "https://newsletter.posthog.com/p/decision-models",
+    "publisher": "newsletter.posthog.com",
+    "tier": "official",
+    "published": "2026-11-18T00:00:00.000Z",
+    "score": 4.9,
+    "category_hint": null,
+    "via": "https://xiaohu.ai/article/posthog-decision-models/",
+    "discovered_by": "xiaohu",
+    "related": []
+  },
+  {
+    "id": "93085d2b25",
+    "title": "Anthropic 推出 Claude Code 实验功能 Code Mode：写一段代码串起多次工具调用，能并行跑命令、只读需要的结果",
+    "url": "https://code.claude.com/docs/en/code-mode",
+    "publisher": "code.claude.com",
+    "tier": "official",
+    "published": "2026-11-18T00:00:00.000Z",
+    "score": 4.9,
+    "category_hint": null,
+    "via": "https://xiaohu.ai/article/claude-code-mode/",
+    "discovered_by": "xiaohu",
+    "related": []
+  },
+  {
+    "id": "6687f7be62",
+    "title": "How OpenAI’s Performance Factory keeps ChatGPT fast",
+    "url": "https://openai.com/index/how-openai-performance-factory-keeps-chatgpt-fast",
+    "publisher": "OpenAI",
+    "tier": "official",
+    "published": "2026-11-19T08:00:00.000Z",
+    "score": 4.7,
+    "category_hint": "product",
     "related": []
   },
   {
@@ -420,43 +492,6 @@
     "published": "2026-11-18T06:00:00.000Z",
     "score": 4.7,
     "category_hint": "product",
-    "related": []
-  },
-  {
-    "id": "6cab9c8cd3",
-    "title": "Le Groupe Figaro and OpenAI partner to bring Le Figaro journalism to ChatGPT",
-    "url": "https://openai.com/index/le-groupe-figaro-and-openai-announce-partnership",
-    "publisher": "OpenAI",
-    "tier": "official",
-    "published": "2026-11-18T00:00:00.000Z",
-    "score": 4.7,
-    "category_hint": "product",
-    "related": []
-  },
-  {
-    "id": "c651420aeb",
-    "title": "Inworld optimized Gemma 4 26B serving, with faster TTFT and lower input pricing",
-    "url": "https://x.com/inworld/status/2123482738921447875",
-    "publisher": "@inworld",
-    "tier": "official",
-    "published": "2026-11-19T18:25:12.000Z",
-    "score": 4.6,
-    "category_hint": "product",
-    "text": "We’ve optimized Gemma 4 26B on Inworld to help consumer apps respond faster at lower cost.\n\n- 𝗨𝗽 𝘁𝗼 𝟴.𝟲× 𝗳𝗮𝘀𝘁𝗲𝗿 𝘁𝗶𝗺𝗲 𝘁𝗼 𝗳𝗶𝗿𝘀𝘁 𝘁𝗼𝗸𝗲𝗻: 0.23s at p95 versus 1.97s for the median of 15 providers serving the same model on OpenRouter (Nov. 16).\n- 𝗡𝗲𝗮𝗿𝗹𝘆 𝟰𝟬% 𝗹𝗼𝘄𝗲𝗿 𝗶𝗻𝗽𝘂𝘁 𝗽𝗿𝗶𝗰𝗶𝗻𝗴: Compared with the median provider serving the same model, with additional savings on cached context.\n\nPricing per 1M tokens: $0.07 input · $0.34 output · $0.035 cached input.\n\nTry Gemma 4 26B and explore Inworld Inference at",
-    "via": "https://x.com/inworld/status/2123482738921447875",
-    "related": []
-  },
-  {
-    "id": "488961fb7f",
-    "title": "Kling 4.0 now supports native 4K and 10-bit HDR output.",
-    "url": "https://kling.ai/",
-    "publisher": "@Kling_ai",
-    "tier": "official",
-    "published": "2026-11-19T15:00:05.000Z",
-    "score": 4.6,
-    "category_hint": "product",
-    "text": "Kling 4.0 now supports native 4K resolution and 10-bit HDR output in both 4K and 1080p, bringing greater detail and richer colors to every frame. #Kling4 #KlingAI\n\nExperience the upgrade: https://kling.ai",
-    "via": "https://x.com/Kling_ai/status/2123431119903461709",
     "related": []
   }
 ]
