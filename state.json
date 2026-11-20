@@ -17,25 +17,25 @@
   "openai-news": {
     "etag": null,
     "lastModified": null,
-    "lastOk": "2026-11-20T08:13:12.628Z",
-    "lastNew": "2026-11-20T07:04:20.911Z"
+    "lastOk": "2026-11-20T19:11:53.348Z",
+    "lastNew": "2026-11-20T19:11:53.348Z"
   },
   "deepmind-blog": {
-    "etag": "\"zhpYXw\"",
+    "etag": "\"0X6PlA\"",
     "lastModified": null,
-    "lastOk": "2026-11-20T08:13:12.628Z",
+    "lastOk": "2026-11-20T19:11:53.348Z",
     "lastNew": "2026-11-20T07:04:20.911Z"
   },
   "google-innovation-ai": {
     "etag": null,
     "lastModified": null,
-    "lastOk": "2026-11-20T08:13:12.628Z",
-    "lastNew": "2026-11-20T07:04:20.911Z"
+    "lastOk": "2026-11-20T19:11:53.348Z",
+    "lastNew": "2026-11-20T19:11:53.348Z"
   },
   "nvidia-blog": {
-    "etag": "\"42563e7705b2b6c8d8a0699f79dc1d25-gzip\"",
-    "lastModified": "Fri, 20 Nov 2026 01:13:34 GMT",
-    "lastOk": "2026-11-20T07:04:20.911Z",
+    "etag": "\"63f240007bee3b92578813b9a8fe9056-gzip\"",
+    "lastModified": "Fri, 20 Nov 2026 17:23:42 GMT",
+    "lastOk": "2026-11-20T19:11:53.348Z",
     "lastNew": "2026-11-20T07:04:20.911Z"
   },
   "mistral-news": {
@@ -44,15 +44,15 @@
     "lastOk": "2026-11-20T07:04:20.911Z"
   },
   "hf-blog": {
-    "etag": "W/\"41ef8-La4G9k3xjjza6gqSf13PgRxlvAs\"",
+    "etag": "W/\"42058-cgRcqM+SgPYSJwKvHRRmkrwdB8E\"",
     "lastModified": null,
-    "lastOk": "2026-11-20T08:13:12.628Z",
-    "lastNew": "2026-11-20T07:04:20.911Z"
+    "lastOk": "2026-11-20T19:11:53.348Z",
+    "lastNew": "2026-11-20T19:11:53.348Z"
   },
   "anthropic-news": {
     "etag": null,
     "lastModified": null,
-    "lastOk": "2026-11-20T08:13:12.628Z",
+    "lastOk": "2026-11-20T19:11:53.348Z",
     "seen": [
       "https://anthropic.com/news/public-benefit-fund",
       "https://anthropic.com/news/s1-sec",
@@ -72,13 +72,15 @@
       "https://anthropic.com/news/genesis-mission-commitment",
       "https://anthropic.com/news/cyber-verification-program",
       "https://anthropic.com/news/claude-frontier-academy",
-      "https://anthropic.com/news/barclays-scales-claude"
-    ]
+      "https://anthropic.com/news/barclays-scales-claude",
+      "https://anthropic.com/news/ipo-close"
+    ],
+    "lastNew": "2026-11-20T19:11:53.348Z"
   },
   "microsoft-ai-news": {
     "etag": null,
     "lastModified": null,
-    "lastOk": "2026-11-20T08:13:12.628Z",
+    "lastOk": "2026-11-20T19:11:53.348Z",
     "lastNew": "2026-11-20T07:04:20.911Z",
     "seen": [
       "https://microsoft.ai/news/microsoft-ignite-2026",
@@ -93,7 +95,7 @@
   "meta-research": {
     "etag": null,
     "lastModified": null,
-    "lastOk": "2026-11-20T08:13:12.628Z",
+    "lastOk": "2026-11-20T19:11:53.348Z",
     "lastNew": "2026-11-20T07:04:20.911Z",
     "seen": [
       "https://research.meta.ai/blog/muse-ember",
@@ -105,7 +107,7 @@
   "kimi-blog": {
     "etag": null,
     "lastModified": null,
-    "lastOk": "2026-11-20T08:13:12.628Z",
+    "lastOk": "2026-11-20T19:11:53.348Z",
     "seen": [
       "https://kimi.ai/blog/kimi-k3-1-pro",
       "https://kimi.ai/blog/kimi-k3",
@@ -121,18 +123,19 @@
     "etag": null,
     "lastModified": "Thu, 19 Nov 2026 18:47:16 GMT",
     "lastOk": "2026-11-20T08:13:12.628Z",
-    "lastNew": "2026-11-20T08:13:12.628Z"
+    "lastNew": "2026-11-20T08:13:12.628Z",
+    "lastError": "2026-11-20T19:11:53.348Z HTTP 502"
   },
   "latent-space-podcast": {
-    "etag": "W/\"40620681cb7e4610e8c77403df92faa1\"",
-    "lastModified": "Fri, 20 Nov 2026 07:00:11 GMT",
-    "lastOk": "2026-11-20T07:04:20.911Z",
-    "lastNew": "2026-11-20T07:04:20.911Z"
+    "etag": "W/\"91ad23012b5724322ce9d965cb9045fb\"",
+    "lastModified": "Fri, 20 Nov 2026 19:00:12 GMT",
+    "lastOk": "2026-11-20T19:11:53.348Z",
+    "lastNew": "2026-11-20T19:11:53.348Z"
   },
   "xiaohu": {
-    "etag": "W/\"70caf4e50a4e031554fdd6a2b5ac7705\"",
+    "etag": "W/\"74067ff1d102c72784d23e1cbba36744\"",
     "lastModified": null,
-    "lastOk": "2026-11-20T08:13:12.628Z",
-    "lastNew": "2026-11-20T08:13:12.628Z"
+    "lastOk": "2026-11-20T19:11:53.348Z",
+    "lastNew": "2026-11-20T19:11:53.348Z"
   }
 }

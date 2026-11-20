@@ -1,28 +1,13 @@
 [
   {
-    "id": "6a368ee477",
-    "title": "Pika 发布了一个全新的 AI视频工具Enact：能模仿片场当导演现场实时导戏 视频一边播一边改，能拖人摆位、还能给 AI 演员说戏",
-    "url": "https://pika.art/blog/pika-enact",
-    "publisher": "pika.art",
+    "id": "e7354365db",
+    "title": "Anthropic announces closing of initial public offering, including full exercise of underwriters’ option to purchase additional shares, and closing of concurrent",
+    "url": "https://www.anthropic.com/news/ipo-close",
+    "publisher": "Anthropic",
     "tier": "official",
-    "published": "2026-11-20T00:00:00.000Z",
-    "score": 5.9,
+    "published": "2026-11-20T19:11:53.348Z",
+    "score": 6.5,
     "category_hint": null,
-    "via": "https://xiaohu.ai/article/pika-enact/",
-    "discovered_by": "xiaohu",
-    "related": []
-  },
-  {
-    "id": "a03947fc9e",
-    "title": "Ideogram 发布了 Ideogram 4.6 模型：原生 4K 出图 宣称为迄今最精确的改图模型",
-    "url": "https://ideogram.ai/models/4.6",
-    "publisher": "ideogram.ai",
-    "tier": "official",
-    "published": "2026-11-20T00:00:00.000Z",
-    "score": 5.9,
-    "category_hint": null,
-    "via": "https://xiaohu.ai/article/ideogram-4-6/",
-    "discovered_by": "xiaohu",
     "related": []
   },
   {
@@ -66,16 +51,29 @@
     "related": []
   },
   {
-    "id": "a3b508c32e",
-    "title": "Microsoft launched Canvas, a new workspace powered by MAI Image 2.7 Flash",
-    "url": "https://labs.microsoft.ai/?model=canvas",
-    "publisher": "@MicrosoftAI",
+    "id": "6a368ee477",
+    "title": "Pika 发布了一个全新的 AI视频工具Enact：能模仿片场当导演现场实时导戏 视频一边播一边改，能拖人摆位、还能给 AI 演员说戏",
+    "url": "https://pika.art/blog/pika-enact",
+    "publisher": "pika.art",
     "tier": "official",
-    "published": "2026-11-19T17:04:38.000Z",
+    "published": "2026-11-20T00:00:00.000Z",
     "score": 5.4,
-    "category_hint": "product",
-    "text": "Meet Canvas, our new interactive workspace powered by MAI Image 2.7 Flash.\n\nTurn sketches into polished diagrams, make precise image edits and refine your creations without starting over.\n\nSee it in action and try it yourself: https://labs.microsoft.ai/?model=canvas",
-    "via": "https://x.com/MicrosoftAI/status/2123462465740533910",
+    "category_hint": null,
+    "via": "https://xiaohu.ai/article/pika-enact/",
+    "discovered_by": "xiaohu",
+    "related": []
+  },
+  {
+    "id": "a03947fc9e",
+    "title": "Ideogram 发布了 Ideogram 4.6 模型：原生 4K 出图 宣称为迄今最精确的改图模型",
+    "url": "https://ideogram.ai/models/4.6",
+    "publisher": "ideogram.ai",
+    "tier": "official",
+    "published": "2026-11-20T00:00:00.000Z",
+    "score": 5.4,
+    "category_hint": null,
+    "via": "https://xiaohu.ai/article/ideogram-4-6/",
+    "discovered_by": "xiaohu",
     "related": []
   },
   {
@@ -151,51 +149,27 @@
     ]
   },
   {
-    "id": "5aa3a24a55",
-    "title": "Skill lemo-animi：一句话让 Codex 做出带配乐和拟音的定格短片",
-    "url": "https://x.com/lemomo_ai/status/2123038832815907084",
-    "publisher": "@lemomo_ai",
+    "id": "f4784c3040",
+    "title": "Can AI help scientists identify promising drug candidates?",
+    "url": "https://openai.com/index/introducing-medchembench",
+    "publisher": "OpenAI",
     "tier": "official",
     "published": "2026-11-20T00:00:00.000Z",
-    "score": 5.1,
-    "category_hint": null,
-    "via": "https://xiaohu.ai/article/lemo-animi-stop-motion/",
-    "discovered_by": "xiaohu",
-    "related": []
-  },
-  {
-    "id": "cc6a3893c5",
-    "title": "NVIDIA published a technical blog on cutting RL rollout bottlenecks with Dynamo",
-    "url": "https://developer.nvidia.com/blog/reducing-rollout-bottlenecks-in-reinforcement-learning-with-nvidia-dynamo/?ncid=so-face-545758",
-    "publisher": "@NVIDIAAI",
-    "tier": "official",
-    "published": "2026-11-19T21:33:53.000Z",
-    "score": 5.1,
+    "score": 5.2,
     "category_hint": "product",
-    "text": "What slows reinforcement learning post-training?\n\nSee how NVIDIA Dynamo helps reduce repeated compute, weight-update overhead, and worker disruption and how @MicrosoftAI uses it for rollout inference.\n\nRead the technical blog ➡️ https://developer.nvidia.com/blog/reducing-rollout-bottlenecks-in-reinforcement-learning-with-nvidia-dynamo/?ncid=so-face-545758",
-    "via": "https://x.com/NVIDIAAI/status/2123530225741078969",
     "related": []
   },
   {
-    "id": "1112027d59",
-    "title": "Into the Omniverse: How Developers Turn Ideas Into Simulations With Frontier AI Agents",
-    "url": "https://blogs.nvidia.com/blog/developers-simulation-frontier-ai-agents/",
-    "publisher": "NVIDIA",
+    "id": "bbe099f294",
+    "title": "Anthropic 数学家称和 Claude 证明了黎曼猜想：1700 万行 Lean 证明已公开，尚无外部核对",
+    "url": "https://alpo.ge/remark.pdf",
+    "publisher": "alpo.ge",
     "tier": "official",
-    "published": "2026-11-19T17:00:35.000Z",
+    "published": "2026-11-21T00:00:00.000Z",
     "score": 5.1,
     "category_hint": null,
-    "related": []
-  },
-  {
-    "id": "b4c1c8bf45",
-    "title": "We’re partnering with Blue Origin on our first heavy-lift Project Suncatcher launch.",
-    "url": "https://blog.google/innovation-and-ai/models-and-research/google-research/blue-origin-project-suncatcher-partnership/",
-    "publisher": "Google",
-    "tier": "official",
-    "published": "2026-11-19T13:00:00.000Z",
-    "score": 5.1,
-    "category_hint": null,
+    "via": "https://xiaohu.ai/article/riemann-hypothesis-proof-claim/",
+    "discovered_by": "xiaohu",
     "related": []
   },
   {
@@ -320,6 +294,19 @@
     "related": []
   },
   {
+    "id": "a3b508c32e",
+    "title": "Microsoft launched Canvas, a new workspace powered by MAI Image 2.7 Flash",
+    "url": "https://labs.microsoft.ai/?model=canvas",
+    "publisher": "@MicrosoftAI",
+    "tier": "official",
+    "published": "2026-11-19T17:04:38.000Z",
+    "score": 4.9,
+    "category_hint": "product",
+    "text": "Meet Canvas, our new interactive workspace powered by MAI Image 2.7 Flash.\n\nTurn sketches into polished diagrams, make precise image edits and refine your creations without starting over.\n\nSee it in action and try it yourself: https://labs.microsoft.ai/?model=canvas",
+    "via": "https://x.com/MicrosoftAI/status/2123462465740533910",
+    "related": []
+  },
+  {
     "id": "fca930afdd",
     "title": "Inworld 开源两款语音模型：降噪时留下笑声和呼吸，能智能判断你「说完了」笔记本就能跑",
     "url": "https://inworld.ai/blog/introducing-voice-isolator",
@@ -382,6 +369,17 @@
     "category_hint": null,
     "via": "https://xiaohu.ai/article/claude-code-mode/",
     "discovered_by": "xiaohu",
+    "related": []
+  },
+  {
+    "id": "1a3d12e007",
+    "title": "How Watch Duty is using Gemini to get wildfire alerts out faster",
+    "url": "https://blog.google/company-news/outreach-and-initiatives/google-org/watch-duty-gemini-tool/",
+    "publisher": "Google",
+    "tier": "official",
+    "published": "2026-11-20T17:00:00.000Z",
+    "score": 4.8,
+    "category_hint": null,
     "related": []
   },
   {
