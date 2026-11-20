@@ -258,3 +258,18 @@ test("小互选中的 X 帖子：当一手来源、不打折、发布方显示�
   assert.ok(fromXiaohu.score > fromX.score, "选题入口选中的不打折");
   assert.equal(fromXiaohu.discovered_by, "xiaohu");
 });
+
+test("AI 总结：100–300 字必填，渲染在文章最前面", async () => {
+  const { validateArticle } = await import("../scripts/lib/validate.mjs");
+  const { renderArticleBody } = await import("../site/assets/components.js");
+  const a = readJson("llm-article.json");
+  const errs = x => validateArticle({ ...a, date: "2026-11-18", sources: { main: { url: "u" } }, ...x }).errors.join("；");
+  assert.doesNotMatch(errs({}), /AI 总结/);
+  assert.match(errs({ ai_summary: "太短了" }), /AI 总结（ai_summary）要 100–300 字，现在 3 字/);
+  assert.match(errs({ ai_summary: "长".repeat(301) }), /现在 301 字/);
+  assert.match(errs({ ai_summary: undefined }), /现在 0 字/);
+  const html = renderArticleBody({ ...a, verified: false });
+  assert.ok(html.indexOf('class="aisum"') < html.indexOf('class="lede"'), "AI 总结在导语之前");
+  assert.match(html, /待人工核对/);
+  assert.match(renderArticleBody({ ...a, verified: true }), /已人工核对/);
+});

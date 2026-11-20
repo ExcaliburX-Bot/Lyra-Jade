@@ -16,6 +16,8 @@ export function validateArticle(a, { sourceTexts = {} } = {}) {
   need(CATEGORIES.includes(a.category), `category 必须是 ${CATEGORIES.join(" / ")} 之一`);
   need(a.title && a.title.length <= 60, "标题必填，且不超过 60 字");
   need(a.summary && a.summary.length <= 160, "导语必填，且不超过 160 字");
+  const aiLen = [...String(a.ai_summary || "").replace(/\s/g, "")].length;
+  need(aiLen >= 100 && aiLen <= 300, `AI 总结（ai_summary）要 100–300 字，现在 ${aiLen} 字`);
   need(Array.isArray(a.brief) && a.brief.length >= 2 && a.brief.length <= 4, "一分钟速览要 2–4 条");
   need(Array.isArray(a.sections) && a.sections.length >= 3, "至少 3 个小节");
   need(a.sources?.main?.url, "来源块必须有主材料链接");
@@ -51,7 +53,7 @@ export function validateArticle(a, { sourceTexts = {} } = {}) {
 
   /* 正文里出现、却不在事实清单里的数字 */
   const claimed = new Set((a.claims || []).flatMap(c => [c.value, c.as_written].filter(Boolean).map(normNum)));
-  const bodyText = (a.sections || []).flatMap(s => s.blocks.map(b => b.p || (b.list || []).join(" "))).join(" ");
+  const bodyText = [a.ai_summary, a.summary, ...(a.brief || []), ...(a.sections || []).flatMap(s => s.blocks.map(b => b.p || (b.list || []).join(" ")))].filter(Boolean).join(" ");
   const nums = [...new Set((bodyText.match(/\d[\d,.]*\s?(%|GB|TB|美元|亿|万|倍|核|fps|W)/g) || []).map(normNum))];
   const orphan = nums.filter(n => ![...claimed].some(c => c.includes(n) || n.includes(c)));
   if (orphan.length) warnings.push(`正文里这些数字没有列进事实清单：${orphan.slice(0, 12).join("、")}`);

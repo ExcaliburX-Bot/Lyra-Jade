@@ -1,37 +1,127 @@
 {
   "type": "object",
-  "required": ["slug", "category", "title", "summary", "brief", "sections", "sources", "claims"],
+  "required": [
+    "slug",
+    "category",
+    "title",
+    "summary",
+    "ai_summary",
+    "brief",
+    "sections",
+    "sources",
+    "claims"
+  ],
   "properties": {
-    "slug": { "type": "string", "description": "英文小写加连字符，如 rtx-spark-compact-desktops" },
-    "date": { "type": "string", "description": "原文发布日期 YYYY-MM-DD" },
-    "category": { "type": "string", "enum": ["product", "research", "deep", "biz", "howto", "visual", "insight", "other"] },
-    "publisher": { "type": "string", "description": "原文发布方，如 NVIDIA" },
-    "title": { "type": "string", "description": "不超过 60 字：主体 + 发生了什么：一两个硬数字或用户收益" },
-    "summary": { "type": "string", "description": "导语，一两句，不超过 160 字，从用户场景切入" },
-    "brief": { "type": "array", "items": { "type": "string" }, "minItems": 2, "maxItems": 4, "description": "一分钟速览" },
-    "readMinutes": { "type": "integer" },
-    "sections": {
-      "type": "array", "minItems": 3,
+    "slug": {
+      "type": "string",
+      "description": "英文小写加连字符，如 rtx-spark-compact-desktops"
+    },
+    "date": {
+      "type": "string",
+      "description": "原文发布日期 YYYY-MM-DD"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "product",
+        "research",
+        "deep",
+        "biz",
+        "howto",
+        "visual",
+        "insight",
+        "other"
+      ]
+    },
+    "publisher": {
+      "type": "string",
+      "description": "原文发布方，如 NVIDIA"
+    },
+    "title": {
+      "type": "string",
+      "description": "不超过 60 字：主体 + 发生了什么：一两个硬数字或用户收益"
+    },
+    "summary": {
+      "type": "string",
+      "description": "导语，一两句，不超过 160 字，从用户场景切入"
+    },
+    "ai_summary": {
+      "type": "string",
+      "description": "开头的 AI 总结：100–300 字的一段话。完整回答发生了什么、最关键的 2–3 个数字或变化、对谁有用、最大的限制；不看正文也能知道要点。不要和 summary 用同样的句子"
+    },
+    "brief": {
+      "type": "array",
       "items": {
-        "type": "object", "required": ["h", "blocks"],
+        "type": "string"
+      },
+      "minItems": 2,
+      "maxItems": 4,
+      "description": "一分钟速览"
+    },
+    "readMinutes": {
+      "type": "integer"
+    },
+    "sections": {
+      "type": "array",
+      "minItems": 3,
+      "items": {
+        "type": "object",
+        "required": [
+          "h",
+          "blocks"
+        ],
         "properties": {
-          "h": { "type": "string", "description": "小节标题：问题句或「主题：一句话结论」" },
+          "h": {
+            "type": "string",
+            "description": "小节标题：问题句或「主题：一句话结论」"
+          },
           "blocks": {
             "type": "array",
             "items": {
               "type": "object",
               "description": "三选一：{p: 段落} / {list: [条目]} / {fig: 图的数据}",
               "properties": {
-                "p": { "type": "string" },
-                "list": { "type": "array", "items": { "type": "string" } },
+                "p": {
+                  "type": "string"
+                },
+                "list": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
                 "fig": {
                   "type": "object",
-                  "required": ["type", "title"],
+                  "required": [
+                    "type",
+                    "title"
+                  ],
                   "properties": {
-                    "type": { "type": "string", "enum": ["kpi", "timeline", "capacity", "route", "steps", "pipeline", "beforeafter", "bars"] },
-                    "title": { "type": "string", "description": "观点式标题" },
-                    "subtitle": { "type": "string", "description": "写明「示意图」「示意估算」或单位" },
-                    "note": { "type": "string", "description": "怎么读这张图，或数据出处" }
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "kpi",
+                        "timeline",
+                        "capacity",
+                        "route",
+                        "steps",
+                        "pipeline",
+                        "beforeafter",
+                        "bars"
+                      ]
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "观点式标题"
+                    },
+                    "subtitle": {
+                      "type": "string",
+                      "description": "写明「示意图」「示意估算」或单位"
+                    },
+                    "note": {
+                      "type": "string",
+                      "description": "怎么读这张图，或数据出处"
+                    }
                   },
                   "additionalProperties": true
                 }
@@ -44,22 +134,74 @@
     "sources": {
       "type": "object",
       "properties": {
-        "main": { "type": "object", "properties": { "title": { "type": "string" }, "publisher": { "type": "string" }, "date": { "type": "string" }, "url": { "type": "string" } } },
-        "more": { "type": "array", "items": { "type": "object", "properties": { "label": { "type": "string" }, "url": { "type": "string" } } } },
-        "note": { "type": "string", "description": "本站说明：图是否示意、二手数字来自哪里" }
+        "main": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "publisher": {
+              "type": "string"
+            },
+            "date": {
+              "type": "string"
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        },
+        "more": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string"
+              },
+              "url": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "note": {
+          "type": "string",
+          "description": "本站说明：图是否示意、二手数字来自哪里"
+        }
       }
     },
     "claims": {
       "type": "array",
       "description": "事实清单：正文和图里出现的每个数字一条",
       "items": {
-        "type": "object", "required": ["text", "value", "source_url"],
+        "type": "object",
+        "required": [
+          "text",
+          "value",
+          "source_url"
+        ],
         "properties": {
-          "text": { "type": "string", "description": "这条事实的中文表述" },
-          "value": { "type": "string", "description": "原文里出现的写法，如 6,144 或 128GB 或 30%" },
-          "source_url": { "type": "string", "description": "必须是提供给你的 <source> 之一" },
-          "as_written": { "type": "string", "description": "这个数字在你的中文正文里的写法，如 340 亿、4,699 美元" },
-          "quote": { "type": "string", "description": "原文里包含这个数字的原句（原样复制，不超过 25 个词）" }
+          "text": {
+            "type": "string",
+            "description": "这条事实的中文表述"
+          },
+          "value": {
+            "type": "string",
+            "description": "原文里出现的写法，如 6,144 或 128GB 或 30%"
+          },
+          "source_url": {
+            "type": "string",
+            "description": "必须是提供给你的 <source> 之一"
+          },
+          "as_written": {
+            "type": "string",
+            "description": "这个数字在你的中文正文里的写法，如 340 亿、4,699 美元"
+          },
+          "quote": {
+            "type": "string",
+            "description": "原文里包含这个数字的原句（原样复制，不超过 25 个词）"
+          }
         }
       }
     }

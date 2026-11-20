@@ -266,6 +266,12 @@ body.reading .listing{display:none}
 
 /* ============ 解读正文（富文本文章） ============ */
 .reader{max-width:800px}
+.aisum{position:relative;border:1px solid var(--line-2);border-radius:14px;padding:16px 20px 18px;margin:0 0 26px;background:linear-gradient(135deg,var(--rose-soft),transparent 60%),var(--raise)}
+.aisum-h{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--rose);letter-spacing:.02em}
+.aisum-ic{display:grid;place-items:center;width:20px;height:20px;border-radius:6px;background:var(--rose);color:var(--on-fill);font-size:11px}
+.aisum-h em{margin-left:auto;font-style:normal;font-weight:400;font-size:12px;color:var(--ink-3)}
+.aisum p{margin:10px 0 0;font-size:15.5px;line-height:1.9;color:var(--ink)}
+@media (max-width:640px){.aisum-h em{display:none}}
 .brief{border:1px solid var(--line-2);border-left:3px solid var(--rose);border-radius:12px;padding:14px 18px;background:var(--raise);margin:0 0 20px}
 .brief strong{font-size:13px;color:var(--rose)}
 .brief ul{margin:8px 0 0;padding-left:18px}

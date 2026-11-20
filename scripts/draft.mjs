@@ -63,7 +63,8 @@ async function main() {
   const drafted = readJson(dataFile("drafted.json"), []);
   /* 机器人或编辑标记「不写」的候选（data/skip.json）也跳过；--id 指定时不受影响 */
   const skipped = new Set(readJson(dataFile("skip.json"), []).map(s => s.id));
-  let list = readJson(dataFile("candidates.json"), []).filter(c => !drafted.includes(c.id) && (only || !skipped.has(c.id)));
+  /* --id 指定时，已写过、已跳过的也照写（用来按新规则重写）；定时写稿只写没写过的 */
+  let list = readJson(dataFile("candidates.json"), []).filter(c => only || (!drafted.includes(c.id) && !skipped.has(c.id)));
   /* 不先截断：材料太短被跳过时，继续往下找，直到写够 top 篇 */
   list = only ? list.filter(c => c.id === only) : list.filter(c => c.score >= minScore);
   if (!list.length) { console.log("没有需要写的候选"); return; }
@@ -132,7 +133,7 @@ async function main() {
       writeJson(file, a);
       fs.mkdirSync(dataFile("reports"), { recursive: true });
       fs.writeFileSync(dataFile(`reports/${a.slug}.md`), reportMarkdown(a, r));
-      drafted.push(c.id);
+      if (!drafted.includes(c.id)) drafted.push(c.id);
       made.push({ slug: a.slug, title: a.title, file: path.relative(ROOT, file), errors: r.errors.length, warnings: r.warnings.length });
       console.log(`  已写入 ${path.relative(ROOT, file)}：${r.errors.length} 个必须修改，${r.warnings.length} 个待确认`);
     } catch (e) {

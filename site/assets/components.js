@@ -75,7 +75,8 @@ function block(b) {
 /* 文章正文：速览、小节目录、各小节（文字 + 图）、来源块 */
 export function renderArticleBody(a) {
   const s = a.sources || {};
-  return `<p class="lede">${esc(a.summary)}</p>
+  return `${a.ai_summary ? `<section class="aisum" aria-label="AI 总结"><div class="aisum-h"><span class="aisum-ic">✦</span>AI 总结<em>${a.verified ? "由 AI 根据原文生成，已人工核对" : "由 AI 根据原文生成，待人工核对"}</em></div><p>${esc(a.ai_summary)}</p></section>` : ""}
+    <p class="lede">${esc(a.summary)}</p>
     <div class="brief"><strong>一分钟速览</strong><ul>${(a.brief || []).map(b => `<li>${esc(b)}</li>`).join("")}</ul></div>
     <div class="rtoc">${a.sections.map((x, i) => `<button data-goto="sec${i}">${num(i)} ${esc(x.h)}</button>`).join("")}</div>
     ${a.sections.map((x, i) => `<h2 class="sec" id="sec${i}"><span>${num(i)}</span>${esc(x.h)}</h2>${x.blocks.map(block).join("")}`).join("")}
