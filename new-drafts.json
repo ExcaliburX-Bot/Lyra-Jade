@@ -1,9 +1,8 @@
 [
   {
-    "slug": "gemini-4-neon",
-    "title": "Gemini 4 Neon 上线：100 万 token 窗口，输入 3 美元",
-    "file": "content/articles/gemini-4-neon.json",
-    "errors": 0,
-    "warnings": 0
+    "slug": "introducing-gemini-4-neon-b898",
+    "file": "content/articles/introducing-gemini-4-neon-b898.json",
+    "errors": 7,
+    "warnings": 1
   }
 ]
