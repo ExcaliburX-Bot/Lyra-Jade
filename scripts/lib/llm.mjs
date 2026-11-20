@@ -9,6 +9,8 @@ export const PROVIDER = (process.env.WG_PROVIDER || "xai").toLowerCase();
 const DEFAULTS = { anthropic: "claude-sonnet-5-5", xai: "grok-4.7" };
 export const DEFAULT_MODEL = process.env.WG_MODEL || DEFAULTS[PROVIDER] || DEFAULTS.xai;
 export const XAI_SEARCH_MODEL = process.env.WG_X_MODEL || "grok-4.7";
+/* grok-4.7 默认 high 且无法关闭推理；写稿用 medium，够用且快得多。可用 WG_REASONING 改：low / medium / high / xhigh */
+export const XAI_REASONING = process.env.WG_REASONING || "medium";
 
 const TOOL = { name: "submit_article", description: "提交写好的解读文章（结构化）" };
 
@@ -54,8 +56,34 @@ export function xaiWriteRequest({ system, user, schema }) {
     input: [{ role: "system", content: system }, { role: "user", content: user }],
     tools: [{ type: "function", name: TOOL.name, description: TOOL.description, parameters: schema }],
     tool_choice: "required",
-    parallel_tool_calls: false
+    parallel_tool_calls: false,
+    reasoning: { effort: XAI_REASONING },
+    stream: true
   };
+}
+
+/* 解析 Responses 接口的流式返回（SSE）。优先用 response.completed 里的完整结果；
+   没有的话，用逐个完成的输出项拼起来 */
+export function parseResponsesStream(raw) {
+  let completed = null, failed = null;
+  const items = [];
+  for (const block of raw.split(/\r?\n\r?\n/)) {
+    const data = block.split(/\r?\n/).filter(l => l.startsWith("data:")).map(l => l.slice(5).trimStart()).join("\n");
+    if (!data || data === "[DONE]") continue;
+    let ev; try { ev = JSON.parse(data); } catch { continue; }
+    if (ev.type === "response.completed" && ev.response) completed = ev.response;
+    else if (ev.type === "response.output_item.done" && ev.item) items.push(ev.item);
+    else if (ev.type === "response.failed" || ev.type === "error") failed = ev.response?.error?.message || ev.error?.message || ev.message || JSON.stringify(ev).slice(0, 300);
+  }
+  if (completed && (completed.output || []).length) return completed;
+  if (items.length) return { output: items };
+  throw new Error(failed ? `xAI 返回错误：${failed}` : "xAI 流式返回里没有找到结果");
+}
+
+async function postStream(url, headers, body, label, timeoutMs) {
+  const res = await fetch(url, { method: "POST", headers: { "content-type": "application/json", accept: "text/event-stream", ...headers }, body: JSON.stringify(body), signal: AbortSignal.timeout(timeoutMs) });
+  if (!res.ok) throw new Error(`${label} 返回 ${res.status}：${(await res.text()).slice(0, 400)}`);
+  return parseResponsesStream(await res.text());
 }
 
 async function post(url, headers, body, label) {
@@ -74,7 +102,9 @@ export async function writeArticle({ system, user, schema, mock = false }) {
   if (mock) return JSON.parse(fs.readFileSync(path.join(FIXTURES, "llm-article.json"), "utf8"));
 
   if (PROVIDER === "xai") {
-    const json = await post("https://api.x.ai/v1/responses", { authorization: `Bearer ${needKey("XAI_API_KEY")}` }, xaiWriteRequest({ system, user, schema }), "xAI 接口");
+    const started = Date.now();
+    const json = await postStream("https://api.x.ai/v1/responses", { authorization: `Bearer ${needKey("XAI_API_KEY")}` }, xaiWriteRequest({ system, user, schema }), "xAI 接口", 25 * 60_000);
+    console.log(`  Grok 用时 ${Math.round((Date.now() - started) / 1000)} 秒（推理强度 ${XAI_REASONING}）`);
     return parseXaiFunctionCall(json);
   }
 

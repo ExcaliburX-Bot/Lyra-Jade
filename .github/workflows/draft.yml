@@ -20,7 +20,7 @@ concurrency:
 jobs:
   draft:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
         with:
@@ -37,6 +37,7 @@ jobs:
         env:
           WG_PROVIDER: ${{ vars.WG_PROVIDER }}          # xai（默认，Grok）或 anthropic（Claude）
           WG_MODEL: ${{ vars.WG_MODEL }}
+          WG_REASONING: ${{ vars.WG_REASONING }}        # Grok 推理强度，默认 medium
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
         run: |

@@ -50,6 +50,7 @@ npm run dev         # 构建并在 http://localhost:4321 预览
    | `WG_PROVIDER` | `xai` | 写稿用哪家：`xai`（Grok）或 `anthropic`（Claude） |
    | `WG_MODEL` | `grok-4.7` / `claude-sonnet-5-5` | 写稿模型 |
    | `WG_X_MODEL` | `grok-4.7` | X 监测用的模型 |
+   | `WG_REASONING` | `medium` | Grok 写稿的推理强度：`low` / `medium` / `high` / `xhigh`，越高越慢越贵 |
    | `WG_AUTOMERGE` | 关 | 设为 `on` 进入阶段 B 自动合并 |
    | `WG_AUTOMERGE_CATEGORIES` | `product` | 允许自动合并的栏目，逗号分隔 |
 6. **开启 Pages**：Settings → Pages → Source 选 *GitHub Actions*。

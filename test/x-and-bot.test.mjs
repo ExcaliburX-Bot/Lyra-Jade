@@ -6,7 +6,7 @@ import os from "node:os";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { parseAnthropic, parseXaiFunctionCall, xaiTextAndCitations, xaiWriteRequest } from "../scripts/lib/llm.mjs";
+import { parseAnthropic, parseXaiFunctionCall, xaiTextAndCitations, xaiWriteRequest, parseResponsesStream } from "../scripts/lib/llm.mjs";
 import { postsToItems, extractJson } from "../scripts/x-watch.mjs";
 import { cluster } from "../scripts/lib/score.mjs";
 import { checkInboxItem } from "../scripts/lib/inbox.mjs";
@@ -24,6 +24,16 @@ test("写稿模型：Claude 和 Grok 的返回都能解析成同一篇文章", (
   assert.equal(req.tool_choice, "required", "xAI 不接受指定函数名的 tool_choice 对象（实测 422）");
   assert.equal(req.tools.length, 1);
   assert.equal(req.tools[0].name, "submit_article");
+  assert.equal(req.stream, true, "长文要流式接收，否则 5 分钟收不到响应头会被断开");
+  assert.equal(req.reasoning.effort, "medium");
+  /* 流式返回：有 response.completed 时用它；没有时用逐项完成的输出拼 */
+  const fc = readJson("xai/function-call.json").output[0];
+  const sse = evs => evs.map(e => `event: ${e.type}\ndata: ${JSON.stringify(e)}\n\n`).join("");
+  const s1 = sse([{ type: "response.created" }, { type: "response.output_item.done", item: fc }, { type: "response.completed", response: { output: [fc] } }]);
+  assert.deepEqual(parseXaiFunctionCall(parseResponsesStream(s1)), article);
+  const s2 = sse([{ type: "response.output_item.added", item: { type: "reasoning" } }, { type: "response.output_item.done", item: fc }]);
+  assert.deepEqual(parseXaiFunctionCall(parseResponsesStream(s2)), article);
+  assert.throws(() => parseResponsesStream(sse([{ type: "response.failed", response: { error: { message: "rate limited" } } }])), /rate limited/);
 });
 
 test("X 搜索：只收引用过的帖子、只收本组账号", async () => {
