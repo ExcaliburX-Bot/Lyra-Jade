@@ -1,0 +1,24 @@
+# 上线时手动运行一次：建 data 分支和流水线、机器人要用的标签。重复运行没有副作用。
+name: 初始化
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+  issues: write
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash scripts/ci/ensure-data-branch.sh
+      - name: 建标签
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh label create "需修改"          --color D93F0B --description "自动校验有必须修改的问题" --force
+          gh label create "待审核"          --color FBCA04 --description "自动写的稿子，等待审核" --force
+          gh label create "bot-reviewed"    --color 0E8A16 --description "机器人初审通过" --force
+          gh label create "bot-needs-human" --color B60205 --description "机器人初审发现需要人决定的问题" --force
+          gh label create "周报"            --color 1D76DB --description "机器人每周报告" --force
+          gh label create "需要人决定"      --color 5319E7 --description "机器人停下来等人" --force
+          gh label create "勘误"            --color C5DEF5 --description "已发布文章的错误" --force

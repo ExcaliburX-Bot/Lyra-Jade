@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+<channel><title>Example Labs Blog</title><link>https://example.com/</link><description>Test feed</description>
+<item><title><![CDATA[Introducing Orbit-7: a 34B open model for coding agents]]></title>
+<link>https://example.com/blog/orbit-7?utm_source=rss&amp;utm_medium=feed</link>
+<pubDate>Wed, 18 Nov 2026 16:00:00 GMT</pubDate>
+<description><![CDATA[<p>Orbit-7 is our new <b>open-weight</b> model built for coding agents &amp; tool use.</p>]]></description></item>
+<item><title>Example Labs is hiring research engineers</title><link>https://example.com/blog/hiring</link><pubDate>Tue, 17 Nov 2026 10:00:00 GMT</pubDate><description>Join us.</description></item>
+<item><title>Customer story: how Acme uses Example Labs</title><link>https://example.com/blog/acme</link><pubDate>Mon, 16 Nov 2026 10:00:00 GMT</pubDate><description>Case study.</description></item>
+</channel></rss>

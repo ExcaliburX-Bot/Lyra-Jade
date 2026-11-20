@@ -1,0 +1,4 @@
+[
+  { "id": "x-labs-test", "name": "X：样例厂商（测试）", "mode": "announce", "tier": "official", "weight": 1, "category": "product", "enabled": true, "handles": ["examplelabs", "otherlab"] },
+  { "id": "x-kol-test", "name": "X：样例 KOL（测试）", "mode": "discover", "tier": "discovery", "enabled": false, "handles": ["somekol"] }
+]

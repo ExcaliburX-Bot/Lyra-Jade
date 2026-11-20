@@ -1,0 +1,7 @@
+[
+  { "id": "example-official", "name": "Example Labs 博客（测试）", "publisher": "Example Labs", "type": "rss", "url": "https://example.com/feed.xml", "tier": "official", "weight": 1.2, "category": "product" },
+  { "id": "example-atom", "name": "Example Research（测试，Atom）", "publisher": "Example Research", "type": "atom", "url": "https://example.org/atom.xml", "tier": "primary", "weight": 0.8 },
+  { "id": "example-media", "name": "Example Tech News（测试）", "publisher": "Example Tech News", "type": "rss", "url": "https://news.example.net/rss", "tier": "media", "weight": 1.0 },
+  { "id": "example-page", "name": "Example Newsroom（测试，无 RSS）", "publisher": "Example Newsroom", "type": "page", "url": "https://example.com/news", "pattern": "^/news/[a-z0-9-]+$", "tier": "official", "weight": 1.0 },
+  { "id": "example-missing", "name": "没有样例的源（测试）", "type": "rss", "url": "https://example.com/missing.xml", "tier": "official" }
+]

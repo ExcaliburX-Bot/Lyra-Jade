@@ -1,0 +1,18 @@
+{
+  "name": "weiguang",
+  "private": true,
+  "type": "module",
+  "description": "微光 WeiGuang.AI：AI 资讯解读站。抓取 → 候选 → AI 写稿 → 校验 → 人工审核 → 静态发布",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "fetch": "node scripts/fetch.mjs",
+    "x-watch": "node scripts/x-watch.mjs",
+    "bot": "node scripts/bot.mjs",
+    "draft": "node scripts/draft.mjs --top 1",
+    "validate": "node scripts/validate.mjs",
+    "build": "node scripts/build.mjs",
+    "dev": "node scripts/build.mjs && node scripts/serve.mjs",
+    "test": "node --test test/*.test.mjs",
+    "demo": "node scripts/demo.mjs"
+  }
+}

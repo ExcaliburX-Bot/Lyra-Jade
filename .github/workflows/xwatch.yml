@@ -1,0 +1,40 @@
+# X 监测：用 Grok API 的 X 搜索看厂商账号最近的帖子，结果放进收件箱，下一次「抓取」并入候选。
+# 在每次「写稿」前约 30 分钟跑；没设置 XAI_API_KEY 时自动跳过。
+# 费用：xAI 按抓取的帖子数计费（见 data 分支的 usage.json），嫌贵就减少组或次数。
+name: X 监测
+on:
+  schedule:
+    - cron: "47 23,3,7,11 * * *"     # UTC；写稿在 0:17 / 4:17 / 8:17 / 12:17
+  workflow_dispatch:
+    inputs:
+      group:
+        description: 只跑某一组（可选，见 sources/x-accounts.json）
+        default: ""
+permissions:
+  contents: write
+concurrency:
+  group: data-writer
+  cancel-in-progress: false
+jobs:
+  xwatch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: bash scripts/ci/ensure-data-branch.sh
+      - uses: actions/checkout@v4
+        with:
+          ref: data
+          path: data
+      - name: X 监测
+        env:
+          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+          WG_X_MODEL: ${{ vars.WG_X_MODEL }}
+        run: |
+          if [ -n "${{ inputs.group }}" ]; then node scripts/x-watch.mjs --group "${{ inputs.group }}"
+          else node scripts/x-watch.mjs; fi
+      - run: |
+          bash scripts/ci/commit-data.sh "data: X 监测 $(date -u +%Y-%m-%dT%H:%MZ)"

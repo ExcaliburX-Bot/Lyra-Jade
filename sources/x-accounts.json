@@ -1,0 +1,62 @@
+[
+  {
+    "id": "x-labs-global",
+    "name": "X：海外厂商官方号",
+    "mode": "announce",
+    "tier": "official",
+    "weight": 1,
+    "category": "product",
+    "enabled": true,
+    "handles": ["OpenAI", "OpenAIDevs", "AnthropicAI", "claudeai", "GoogleDeepMind", "GoogleAI", "GeminiApp", "googleaidevs", "AIatMeta", "MicrosoftAI", "nvidia", "NVIDIAAI", "xai", "MistralAI", "huggingface", "perplexity_ai", "cursor_ai", "inworld"],
+    "unverified": ["OpenAIDevs", "claudeai", "GoogleDeepMind", "GeminiApp", "googleaidevs", "AIatMeta", "nvidia", "NVIDIAAI", "xai", "MistralAI", "huggingface", "perplexity_ai", "cursor_ai"],
+    "note": "来自数据源总表；unverified 里的账号总表标为「待核实」，一周内没有任何结果的请人工确认"
+  },
+  {
+    "id": "x-labs-cn",
+    "name": "X：中国厂商官方号",
+    "mode": "announce",
+    "tier": "official",
+    "weight": 1,
+    "category": "product",
+    "enabled": true,
+    "handles": ["deepseek_ai", "Alibaba_Qwen", "Kimi_Moonshot", "Zai_org", "MiniMax__AI", "Hailuo_AI", "Kling_ai", "Skywork_AI"],
+    "unverified": [],
+    "note": "Qwen、MiniMax 官网列表靠 JS 渲染抓不到，这一组是它们的主要入口"
+  },
+  {
+    "id": "x-leaders",
+    "name": "X：厂商负责人",
+    "mode": "announce",
+    "tier": "official",
+    "weight": 0.7,
+    "category": "product",
+    "enabled": true,
+    "handles": ["sama", "gdb", "DarioAmodei", "mikeyk", "bcherny", "demishassabis", "JeffDean", "OfficialLoganK", "mustafasuleyman", "satyanadella", "elonmusk", "alexandr_wang", "AravSrinivas"],
+    "unverified": [],
+    "note": "个人账号闲聊多，权重降到 0.7；只收「宣布了具体新东西」的帖子"
+  },
+  {
+    "id": "x-kol-en",
+    "name": "X：英文研究者与 KOL",
+    "mode": "discover",
+    "tier": "discovery",
+    "weight": 1,
+    "category": null,
+    "enabled": false,
+    "handles": ["karpathy", "tszzl", "_akhaliq", "swyx", "altryne", "scaling01", "emollick", "simonw", "natolambert", "jackclarkSF", "rasbt", "DrJimFan", "AndrewYNg", "ylecun", "arena"],
+    "unverified": ["emollick", "simonw", "natolambert", "jackclarkSF", "rasbt"],
+    "note": "发现线索用，只收附了一手链接的帖子。先关着：等官方组跑一周、看过 data/usage.json 的用量再开"
+  },
+  {
+    "id": "x-kol-cn",
+    "name": "X：中文 KOL",
+    "mode": "discover",
+    "tier": "discovery",
+    "weight": 1,
+    "category": null,
+    "enabled": false,
+    "handles": ["dotey", "oran_ge", "op7418", "xiaohu", "vista8", "grapeot", "lxfater", "yetone", "ruanyf", "Cydiar404"],
+    "unverified": [],
+    "note": "同上，先关着"
+  }
+]

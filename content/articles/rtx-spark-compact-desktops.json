@@ -1,0 +1,556 @@
+{
+  "slug": "rtx-spark-compact-desktops",
+  "status": "published",
+  "date": "2026-11-18",
+  "category": "product",
+  "publisher": "NVIDIA",
+  "title": "RTX Spark 小主机开卖：128GB 统一内存，让 Agent 在本地 24 小时干活",
+  "summary": "NVIDIA 和华硕、戴尔、微星推出的 RTX Spark 小型台式机开始发售。它的定位不是一台更快的工作站，而是一台一直开着、让 Agent 在本地干活的电脑。",
+  "brief": [
+    "华硕、戴尔、微星的 RTX Spark 小主机已经可以买到，宏碁、技嘉、惠普和微软 Surface 随后跟进。",
+    "最高 128GB 统一内存：按低精度算，1200 亿参数的模型能整个放进本机。",
+    "Hermes Agent 新增 Switchyard：日常任务交给本地模型，复杂推理才调用云端。"
+  ],
+  "readMinutes": 9,
+  "verified": true,
+  "sections": [
+    {
+      "h": "这是一台什么机器",
+      "blocks": [
+        {
+          "p": "RTX Spark 是 NVIDIA 的 Windows 电脑平台：自家的 Grace CPU（Arm 架构）和 Blackwell GPU 做在同一颗芯片上，CPU 和 GPU 共用一池内存。这颗芯片先用在了笔记本上，这次装进了小型台式机。"
+        },
+        {
+          "p": "首批在售的是华硕、戴尔、微星三家；宏碁、技嘉、惠普的机型和微软 Surface RTX Spark Dev Box 随后推出。"
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "RTX Spark 小主机的五个关键数字",
+            "subtitle": "厂商标称规格",
+            "items": [
+              {
+                "value": "20",
+                "unit": "核",
+                "label": "Grace CPU",
+                "note": "Arm 架构"
+              },
+              {
+                "value": "6,144",
+                "unit": "个",
+                "label": "CUDA 核心",
+                "note": "Blackwell GPU"
+              },
+              {
+                "value": "128",
+                "unit": "GB",
+                "label": "统一内存",
+                "note": "最高配置，CPU 与 GPU 共用"
+              },
+              {
+                "value": "1",
+                "unit": "PFLOPS",
+                "label": "AI 算力",
+                "note": "峰值；官方没写是哪种精度"
+              },
+              {
+                "value": "10",
+                "unit": "Gb/s",
+                "label": "以太网",
+                "note": "搬模型和素材更快"
+              }
+            ],
+            "note": "数据来自 NVIDIA 官方博客。"
+          }
+        },
+        {
+          "p": "NVIDIA 给出的用途有三个：在本地跑 1200 亿参数的大模型、实时渲染 90GB 以上的 3D 场景、实时剪辑 4:2:2 视频。"
+        }
+      ]
+    },
+    {
+      "h": "为什么需要一台常开的电脑",
+      "blocks": [
+        {
+          "p": "Agent 和定时任务的特点是：人不在，活照样能做。批量出图、跑测试、整理文件，都可以在你离开电脑之后继续。笔记本要合盖、要带走，不适合承担这种「后台」工作；桌上一台一直通电的小主机正好补上。"
+        },
+        {
+          "fig": {
+            "type": "timeline",
+            "title": "你离开电脑的时间，正好留给小主机干活",
+            "subtitle": "示意图：任务安排是举例",
+            "axis": {
+              "from": 0,
+              "to": 24,
+              "ticks": [
+                0,
+                6,
+                12,
+                18,
+                24
+              ],
+              "unit": "点"
+            },
+            "lanes": [
+              {
+                "label": "你",
+                "sub": "坐在电脑前的时间",
+                "tone": "laptop",
+                "segments": [
+                  {
+                    "from": 9,
+                    "to": 12
+                  },
+                  {
+                    "from": 15,
+                    "to": 18
+                  }
+                ]
+              },
+              {
+                "label": "RTX Spark 小主机",
+                "sub": "一直开着",
+                "tone": "local",
+                "segments": [
+                  {
+                    "from": 0,
+                    "to": 5,
+                    "n": 1,
+                    "label": "微调一个小模型"
+                  },
+                  {
+                    "from": 6,
+                    "to": 7,
+                    "n": 2,
+                    "label": "整理前一天的会议录音"
+                  },
+                  {
+                    "from": 12,
+                    "to": 15,
+                    "n": 3,
+                    "label": "你开会时，批量生成商品图"
+                  },
+                  {
+                    "from": 18,
+                    "to": 24,
+                    "n": 4,
+                    "label": "下班后，Agent 跑完测试并写报告"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "p": "放在本地还有两个直接好处：用本地模型处理的文件不离开这台电脑；这部分任务也不按云端 API 的 token 计费。"
+        }
+      ]
+    },
+    {
+      "h": "128GB 能装下多大的模型",
+      "blocks": [
+        {
+          "p": "普通台式机里，内存和显卡显存是分开的两块，模型要放进显存才跑得快。RTX Spark 的 CPU 和 GPU 共用一池内存，最大 128GB，模型可以整个放进去。"
+        },
+        {
+          "p": "估算方法很简单：模型占用 ≈ 参数个数 × 每个参数的字节数。FP16 每个参数 2 字节，FP8 是 1 字节，FP4 是半个字节。1200 亿参数分别约为 240GB、120GB、60GB。"
+        },
+        {
+          "fig": {
+            "type": "capacity",
+            "title": "1200 亿参数，只有低精度装得进来",
+            "subtitle": "示意估算：只算模型权重",
+            "unit": "GB",
+            "max": 260,
+            "thresholds": [
+              {
+                "value": 64,
+                "label": "64GB 版"
+              },
+              {
+                "value": 128,
+                "label": "128GB 版"
+              }
+            ],
+            "items": [
+              {
+                "label": "FP16",
+                "sub": "每参数 2 字节 · 两档都装不下",
+                "value": 240,
+                "tone": "bad"
+              },
+              {
+                "label": "FP8",
+                "sub": "每参数 1 字节 · 128GB 刚好塞满",
+                "value": 120,
+                "tone": "warn"
+              },
+              {
+                "label": "FP4",
+                "sub": "每参数半字节 · 128GB 还有余量",
+                "value": 60,
+                "tone": "good"
+              }
+            ],
+            "note": "横轴是内存，虚线是两档机型的上限。上下文缓存、系统和软件还要另外占内存。"
+          }
+        },
+        {
+          "p": "所以「本地跑 1200 亿参数」的前提是 FP4 这类低精度。装得下也不等于跑得快：生成速度主要看内存带宽，微星在官网标的是 273GB/s。"
+        }
+      ]
+    },
+    {
+      "h": "日常留本地，难题交云端",
+      "blocks": [
+        {
+          "p": "开发方面，RTX Spark 支持 CUDA，可以用 Hermes Agent 或 NVIDIA 的 NemoClaw 蓝图搭建 Agent，用 Unsloth 微调模型。"
+        },
+        {
+          "p": "这次 Hermes Agent 新加了 NVIDIA Switchyard：每个任务进来，自动判断交给本地模型还是云端模型。日常任务在本机跑，需要高级推理的才调用云端，云端费用只花在难题上。"
+        },
+        {
+          "fig": {
+            "type": "route",
+            "title": "Switchyard 按难度分配任务",
+            "subtitle": "示意图：任务是举例",
+            "root": {
+              "label": "Agent 收到的任务",
+              "sub": "由 Switchyard 自动分配"
+            },
+            "branches": [
+              {
+                "tone": "local",
+                "label": "本地模型",
+                "items": [
+                  "给一批产品图写说明",
+                  "把会议录音整理成纪要",
+                  "在本地文档里查资料"
+                ],
+                "note": "日常任务：文件不出本机，不按 token 计费"
+              },
+              {
+                "tone": "cloud",
+                "label": "云端模型",
+                "items": [
+                  "把一个模糊需求拆成开发计划"
+                ],
+                "note": "高级推理：能力更强，按用量计费"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "创作：一句话把草图变成视频",
+      "blocks": [
+        {
+          "p": "NVIDIA 演示了一个「创作 Agent」：Hermes Agent 把 Photoshop 和 ComfyUI（一个用节点搭建出图、出视频流程的开源工具）连在一起，用大白话下指令。"
+        },
+        {
+          "fig": {
+            "type": "steps",
+            "title": "从一张草图到可以调色的视频",
+            "subtitle": "示意图：根据 NVIDIA 的演示流程整理",
+            "steps": [
+              {
+                "name": "画草图",
+                "tool": "Photoshop",
+                "desc": "先定下构图。"
+              },
+              {
+                "name": "下指令",
+                "tool": "Hermes Agent",
+                "desc": "用一句话描述想要的画面和动作。"
+              },
+              {
+                "name": "出图、出动画",
+                "tool": "ComfyUI",
+                "desc": "草图变成渲染图，再抠出主体、设定运动，生成视频。"
+              },
+              {
+                "name": "补帧到 60 fps",
+                "tool": "RTX Video Frame Generation",
+                "desc": "在原有帧之间插入新帧，动作更流畅。"
+              },
+              {
+                "name": "转成 HDR",
+                "tool": "RTX Video HDR",
+                "desc": "拉开亮部和暗部，方便后期调色。"
+              }
+            ],
+            "note": "后三步在同一个 ComfyUI 流程里完成，全部在本机运行。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "Adobe 软件改成原生 Arm 版",
+      "blocks": [
+        {
+          "p": "RTX Spark 的 CPU 是 Arm 架构，而多数 Windows 软件是为 x86 写的，没有原生版本就要经过一层模拟，速度会打折。这次 Adobe 推出了多款原生 Windows on Arm 版本，并接入 RTX 加速。"
+        },
+        {
+          "fig": {
+            "type": "pipeline",
+            "title": "原生版少了一层翻译，所以更快",
+            "subtitle": "示意图",
+            "rows": [
+              {
+                "label": "模拟运行",
+                "note": "多一层翻译",
+                "nodes": [
+                  {
+                    "label": "x86 版软件"
+                  },
+                  {
+                    "label": "翻译层",
+                    "hi": true
+                  },
+                  {
+                    "label": "Arm CPU"
+                  }
+                ]
+              },
+              {
+                "label": "原生运行",
+                "note": "直接执行",
+                "nodes": [
+                  {
+                    "label": "Arm 原生版软件"
+                  },
+                  {
+                    "label": "Arm CPU"
+                  }
+                ]
+              }
+            ],
+            "compare": {
+              "label": "Illustrator 性能（模拟版记作 100）",
+              "max": 140,
+              "items": [
+                {
+                  "label": "模拟版",
+                  "value": 100,
+                  "display": "100",
+                  "tone": "ref"
+                },
+                {
+                  "label": "原生 Arm 版",
+                  "value": 130,
+                  "display": "最高 130",
+                  "tone": "main"
+                }
+              ]
+            },
+            "note": "「最高快 30%」是 NVIDIA 博客公布的数字，实际提升随任务不同。"
+          }
+        },
+        {
+          "list": [
+            "Premiere：增强语音、对象蒙版、场景剪辑检测、自动重构图由 TensorRT-RTX 加速；新支持 Canon RAW、RED RAW、ARRI RAW、ProRes RAW 等格式；日常 H.264 交付快 50% 以上。",
+            "Photoshop：移除工具由 TensorRT-RTX 加速，Camera Raw 原生运行。",
+            "Substance 3D Painter 12.2：原生 Arm 版公测。",
+            "Illustrator、InDesign：推出原生 Arm 版，Illustrator 比模拟版最多快 30%。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Blender 5.3：预览不用再等噪点",
+      "blocks": [
+        {
+          "p": "Blender 的 Cycles 渲染器靠光线追踪计算画面：视口预览一开始满是噪点，要多次采样才变干净，一转视角又得重来。Blender 5.3 把 DLSS 4.5 光线重建接进了 Cycles 视口，用 AI 直接补出接近成品的画面。"
+        },
+        {
+          "fig": {
+            "type": "beforeafter",
+            "title": "同一个场景，两种预览方式",
+            "subtitle": "示意图：噪点由程序模拟",
+            "left": {
+              "label": "普通预览"
+            },
+            "right": {
+              "label": "DLSS 光线重建",
+              "note": "一开始就接近成品"
+            }
+          }
+        },
+        {
+          "p": "使用条件：Blender 5.3，加上最新的 Game Ready 或 Studio 驱动。"
+        }
+      ]
+    },
+    {
+      "h": "多少钱",
+      "blocks": [
+        {
+          "p": "目前能查到标价的只有微星。据 TweakTown 引用的微星美国官网，EdgeMesa N AI+ 分两档：64GB 内存 + 1TB 硬盘 4,699 美元，128GB 内存 + 4TB 存储 7,999 美元。内存焊在主板上，以后不能加。"
+        },
+        {
+          "p": "对照 NVIDIA 自家同代芯片的 Linux 小主机 DGX Spark：128GB 版今年 2 月从 3,999 美元涨到 4,699 美元，10 月又涨到 6,950 美元，同时推出 4,999 美元的 64GB 版。"
+        },
+        {
+          "fig": {
+            "type": "bars",
+            "title": "64GB 档更便宜，128GB 档反而更贵",
+            "subtitle": "美元，美国售价",
+            "legend": [
+              {
+                "tone": "main",
+                "label": "RTX Spark（Windows）"
+              },
+              {
+                "tone": "ref",
+                "label": "DGX Spark（Linux）"
+              }
+            ],
+            "groups": [
+              {
+                "label": "64GB 内存",
+                "items": [
+                  {
+                    "label": "微星 EdgeMesa N AI+",
+                    "sub": "64GB · 1TB",
+                    "value": 4699,
+                    "tone": "main"
+                  },
+                  {
+                    "label": "DGX Spark",
+                    "sub": "64GB",
+                    "value": 4999,
+                    "tone": "ref"
+                  }
+                ]
+              },
+              {
+                "label": "128GB 内存",
+                "items": [
+                  {
+                    "label": "DGX Spark",
+                    "sub": "128GB · 两次涨价后",
+                    "value": 6950,
+                    "tone": "ref"
+                  },
+                  {
+                    "label": "微星 EdgeMesa N AI+",
+                    "sub": "128GB · 4TB",
+                    "value": 7999,
+                    "tone": "main"
+                  }
+                ]
+              },
+              {
+                "label": "其他",
+                "items": [
+                  {
+                    "label": "华硕 ProArt GR1X",
+                    "sub": "已开卖",
+                    "status": "未公布价格"
+                  },
+                  {
+                    "label": "Surface RTX Spark Dev Box",
+                    "sub": "随后推出",
+                    "status": "未查到价格"
+                  }
+                ]
+              }
+            ],
+            "note": "微星 64GB 版比 64GB DGX Spark 便宜 300 美元；128GB 版贵 1,049 美元。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "适合谁",
+      "blocks": [
+        {
+          "p": "这台机器的价值在于：一台 Windows 电脑里同时有能装下大模型的 128GB 统一内存，和 Adobe、Blender、CUDA 这一套常用工具，Agent 可以常驻运行，本地与云端自动分工。"
+        },
+        {
+          "p": "代价同样明显：128GB 版接近 8,000 美元，内存不能升级，1 petaflop 是峰值而不是日常速度。"
+        },
+        {
+          "list": [
+            "主要做零散问答：用云端服务更省事。",
+            "有大量不想外传的文件，或有能在夜里自动跑的批量任务：值得考虑。",
+            "每月云端 token 账单已经不低：可以先算算本地分流能省多少。"
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "NVIDIA RTX Spark Compact Desktops Out Now",
+      "publisher": "NVIDIA",
+      "date": "2026-11-18",
+      "url": "https://blogs.nvidia.com/blog/rtx-spark-desktop-local-ai-available-now/"
+    },
+    "more": [
+      {
+        "label": "TweakTown：微星 RTX Spark 小主机定价",
+        "url": "https://www.tweaktown.com/news/114696/msis-rtx-spark-mini-pc-costs-dollars7999-with-128gb-of-memory-dollars4699-with-64gb/index.html"
+      }
+    ],
+    "note": "本文图表均为本站根据公开信息绘制的示意图。微星价格来自其美国官网（经 TweakTown 报道）；DGX Spark 价格变化来自 TweakTown 引用 The Register 的报道。"
+  },
+  "claims": [
+    {
+      "text": "CPU 为 20 核 Grace",
+      "value": "20-core",
+      "source_url": "https://blogs.nvidia.com/blog/rtx-spark-desktop-local-ai-available-now/"
+    },
+    {
+      "text": "GPU 有 6,144 个 CUDA 核心",
+      "value": "6,144",
+      "source_url": "https://blogs.nvidia.com/blog/rtx-spark-desktop-local-ai-available-now/"
+    },
+    {
+      "text": "最高 128GB 统一内存",
+      "value": "128GB",
+      "source_url": "https://blogs.nvidia.com/blog/rtx-spark-desktop-local-ai-available-now/"
+    },
+    {
+      "text": "Illustrator 原生版最高快 30%",
+      "value": "30%",
+      "source_url": "https://blogs.nvidia.com/blog/rtx-spark-desktop-local-ai-available-now/"
+    },
+    {
+      "text": "Premiere 日常 H.264 交付快 50% 以上",
+      "value": "50%",
+      "source_url": "https://blogs.nvidia.com/blog/rtx-spark-desktop-local-ai-available-now/"
+    },
+    {
+      "text": "微星 64GB 版 4,699 美元",
+      "value": "4,699",
+      "source_url": "https://www.tweaktown.com/news/114696/msis-rtx-spark-mini-pc-costs-dollars7999-with-128gb-of-memory-dollars4699-with-64gb/index.html"
+    },
+    {
+      "text": "微星 128GB 版 7,999 美元",
+      "value": "7,999",
+      "source_url": "https://www.tweaktown.com/news/114696/msis-rtx-spark-mini-pc-costs-dollars7999-with-128gb-of-memory-dollars4699-with-64gb/index.html"
+    },
+    {
+      "text": "内存带宽 273GB/s",
+      "value": "273GB/s",
+      "source_url": "https://www.tweaktown.com/news/114696/msis-rtx-spark-mini-pc-costs-dollars7999-with-128gb-of-memory-dollars4699-with-64gb/index.html"
+    },
+    {
+      "text": "DGX Spark 128GB 版 6,950 美元",
+      "value": "6,950",
+      "source_url": "https://www.tweaktown.com/news/114696/msis-rtx-spark-mini-pc-costs-dollars7999-with-128gb-of-memory-dollars4699-with-64gb/index.html"
+    },
+    {
+      "text": "DGX Spark 64GB 版 4,999 美元",
+      "value": "4,999",
+      "source_url": "https://www.tweaktown.com/news/114696/msis-rtx-spark-mini-pc-costs-dollars7999-with-128gb-of-memory-dollars4699-with-64gb/index.html"
+    }
+  ],
+  "pipeline": {
+    "origin": "manual-demo",
+    "generated_at": "2026-11-18",
+    "reviewed_by": "editor"
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "id": "resp_test",
+  "model": "grok-4.7",
+  "output": [
+    {
+      "type": "custom_tool_call",
+      "name": "x_keyword_search"
+    },
+    {
+      "type": "message",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "下面是结果：\n```json\n{\n \"posts\": [\n  {\n   \"handle\": \"examplelabs\",\n   \"post_url\": \"https://x.com/examplelabs/status/1990000000000000001\",\n   \"posted_at\": \"2026-11-18T16:05:00Z\",\n   \"title\": \"Orbit-7 is here: a 34B open model for coding agents\",\n   \"text\": \"Orbit-7 is here: a 34B open-weight model for coding agents. 256K context, Apache 2.0. Blog: https://t.co/abc\",\n   \"link\": \"https://example.com/blog/orbit-7?utm_source=x\"\n  },\n  {\n   \"handle\": \"otherlab\",\n   \"post_url\": \"https://x.com/otherlab/status/1990000000000000002\",\n   \"posted_at\": \"2026-11-18T19:00:00Z\",\n   \"title\": \"Otherlab releases Nimbus-2 speech model with open weights\",\n   \"text\": \"Today we're releasing Nimbus-2, our speech model: 300ms latency, 40 languages, open weights under MIT.\",\n   \"link\": \"\"\n  },\n  {\n   \"handle\": \"examplelabs\",\n   \"post_url\": \"https://x.com/examplelabs/status/1990000000000000999\",\n   \"posted_at\": \"2026-11-18T20:00:00Z\",\n   \"title\": \"Orbit-8 preview\",\n   \"text\": \"Orbit-8 preview\",\n   \"link\": \"\"\n  },\n  {\n   \"handle\": \"randomuser\",\n   \"post_url\": \"https://x.com/randomuser/status/1990000000000000003\",\n   \"posted_at\": \"2026-11-18T20:30:00Z\",\n   \"title\": \"Huge news from Example Labs\",\n   \"text\": \"Huge news!\",\n   \"link\": \"https://example.com/blog/orbit-7\"\n  }\n ]\n}\n```\n[[1]](https://x.com/examplelabs/status/1990000000000000001)[[2]](https://x.com/i/status/1990000000000000002)[[3]](https://x.com/randomuser/status/1990000000000000003)",
+          "annotations": [
+            {
+              "type": "url_citation",
+              "url": "https://x.com/examplelabs/status/1990000000000000001",
+              "start_index": 0,
+              "end_index": 1,
+              "title": "1"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://x.com/i/status/1990000000000000002",
+              "start_index": 0,
+              "end_index": 1,
+              "title": "2"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://x.com/randomuser/status/1990000000000000003",
+              "start_index": 0,
+              "end_index": 1,
+              "title": "3"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 1200,
+    "output_tokens": 400,
+    "server_side_tool_usage_details": {
+      "x_search_calls": 2,
+      "x_posts_fetched": 37,
+      "x_users_fetched": 0
+    }
+  }
+}

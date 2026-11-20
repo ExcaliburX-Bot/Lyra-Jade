@@ -1,0 +1,18 @@
+[
+  { "id": "openai-news", "name": "OpenAI 新闻", "publisher": "OpenAI", "type": "rss", "url": "https://openai.com/news/rss.xml", "tier": "official", "weight": 1.2, "category": "product" },
+  { "id": "deepmind-blog", "name": "Google DeepMind 博客", "publisher": "Google DeepMind", "type": "rss", "url": "https://deepmind.google/blog/rss.xml", "tier": "official", "weight": 1.2, "category": "product" },
+  { "id": "google-innovation-ai", "name": "Google · Innovation & AI", "publisher": "Google", "type": "rss", "url": "https://blog.google/innovation-and-ai/rss/", "tier": "official", "weight": 0.9 },
+  { "id": "nvidia-blog", "name": "NVIDIA 博客", "publisher": "NVIDIA", "type": "rss", "url": "https://blogs.nvidia.com/feed/", "tier": "official", "weight": 0.9 },
+  { "id": "mistral-news", "name": "Mistral 新闻", "publisher": "Mistral", "type": "rss", "url": "https://mistral.ai/news/rss", "tier": "official", "weight": 1.0, "category": "product" },
+  { "id": "hf-blog", "name": "Hugging Face 博客", "publisher": "Hugging Face", "type": "rss", "url": "https://huggingface.co/blog/feed.xml", "tier": "primary", "weight": 0.8 },
+  { "id": "anthropic-news", "name": "Anthropic 新闻", "publisher": "Anthropic", "type": "page", "url": "https://www.anthropic.com/news", "pattern": "^/news/[a-z0-9-]+$", "tier": "official", "weight": 1.2, "note": "没有 RSS，抓列表页链接" },
+  { "id": "microsoft-ai-news", "name": "Microsoft AI 新闻", "publisher": "Microsoft AI", "type": "page", "url": "https://microsoft.ai/news/", "pattern": "^/news/[a-z0-9-]+/?$", "tier": "official", "weight": 1.0, "note": "没有 RSS，抓列表页链接" },
+  { "id": "meta-research", "name": "Meta AI Research", "publisher": "Meta", "type": "page", "url": "https://research.meta.ai/blog/", "pattern": "^/blog/[a-z0-9-]+/?$", "tier": "official", "weight": 1.0, "note": "没有 RSS，抓列表页链接" },
+  { "id": "xai-news", "name": "xAI 新闻", "publisher": "xAI", "type": "page", "url": "https://x.ai/news", "pattern": "^/news/[a-z0-9-]+/?$", "tier": "official", "weight": 1.0, "note": "没有 RSS，抓列表页链接" },
+  { "id": "kimi-blog", "name": "Kimi 博客", "publisher": "Moonshot AI", "type": "page", "url": "https://www.kimi.ai/blog/", "pattern": "^/blog/[^/]+/?$", "tier": "official", "weight": 1.0, "note": "链接规则待首次运行后确认" },
+  { "id": "hn-ai", "name": "Hacker News · AI 高分", "publisher": "Hacker News", "type": "rss", "url": "https://hnrss.org/newest?q=AI&points=100", "tier": "discovery", "weight": 1.0 },
+  { "id": "latent-space-podcast", "name": "Latent Space 播客", "publisher": "Latent Space", "type": "rss", "url": "https://podcast.latent.space/feed.xml", "tier": "discovery", "weight": 0.8, "category": "insight" },
+  { "id": "arxiv-cs-cl", "name": "arXiv cs.CL", "publisher": "arXiv", "type": "rss", "url": "https://rss.arxiv.org/rss/cs.CL", "tier": "primary", "weight": 0.4, "limit": 60, "category": "research", "enabled": false, "note": "量太大，先关闭；接入 HF Daily Papers 做热度筛选后再开" },
+  { "id": "qwen-blog", "name": "Qwen 博客", "publisher": "Qwen", "type": "page", "url": "https://qwen.ai/blog", "pattern": "^/blog", "tier": "official", "weight": 1.1, "enabled": false, "note": "页面靠 JS 渲染，需要无头浏览器，第二阶段再开" },
+  { "id": "minimax-news", "name": "MiniMax 新闻", "publisher": "MiniMax", "type": "page", "url": "https://www.minimax.io/news", "pattern": "^/news/", "tier": "official", "weight": 1.0, "enabled": false, "note": "页面靠 JS 渲染，需要无头浏览器，第二阶段再开" }
+]

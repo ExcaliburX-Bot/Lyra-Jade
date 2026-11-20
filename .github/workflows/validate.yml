@@ -1,0 +1,27 @@
+# 每个 PR：跑测试、校验文章（数字回查 data 分支里的原文存档）、试构建。
+# 这个工作流不读任何密钥，令牌只读，所以运行 PR 里的代码是安全的。
+name: 校验
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/checkout@v4
+        continue-on-error: true       # 还没有 data 分支时，事实回查降级为「请人工确认」
+        with:
+          ref: data
+          path: data
+      - run: node --test test/*.test.mjs
+        env:
+          WG_DATA: ${{ runner.temp }}/test-data   # 测试不碰 data 分支的检出
+      - run: node scripts/validate.mjs
+      - run: node scripts/build.mjs

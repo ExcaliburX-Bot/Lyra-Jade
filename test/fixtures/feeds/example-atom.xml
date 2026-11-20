@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Example Research</title>
+<entry><title type="html">A smaller reasoning model that beats its teacher on math</title>
+<link rel="alternate" type="text/html" href="https://example.org/papers/small-reasoner"/>
+<link rel="related" href="https://example.org/pdf/small-reasoner.pdf"/>
+<published>2026-11-17T09:00:00Z</published><updated>2026-11-17T12:00:00Z</updated>
+<summary>We distill a 3B model that scores higher than its 70B teacher on a math benchmark.</summary></entry>
+</feed>

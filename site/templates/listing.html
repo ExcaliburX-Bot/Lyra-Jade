@@ -1,0 +1,30 @@
+  <!-- ============ 列表页 ============ -->
+  <div class="listing">
+    <section class="wrap hero">
+      <div>
+        <div class="eyebrow" data-t="eyebrow"></div>
+        <h1><span data-t="h1a"></span><em data-t="h1b"></em></h1>
+        <p id="heroStats"></p>
+      </div>
+      <label class="hero-search"><svg class="i"><use href="#i-search"/></svg><input id="q" type="search" autocomplete="off"></label>
+    </section>
+
+    <div class="filters">
+      <div class="wrap">
+        <div class="chips" id="chips" role="group" aria-label="按栏目筛选"></div>
+        <div class="seg" role="group" aria-label="排列方式">
+          <button data-view="time" aria-pressed="true" data-t="byTime"></button>
+          <button data-view="lane" aria-pressed="false" data-t="byLane"></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="wrap">
+      <div id="featBox"></div>
+      <div id="feed"></div>
+      <details class="archive" id="archive">
+        <summary><svg class="i"><use href="#i-chev-r"/></svg><span id="archTitle"></span></summary>
+        <div id="archBody"></div>
+      </details>
+    </div>
+  </div>

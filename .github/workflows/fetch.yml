@@ -1,0 +1,31 @@
+# 每 30 分钟抓一次所有 RSS / 列表页，并入收件箱（X 监测和 Grok Bot 放进来的素材），更新候选清单。
+# 不调用模型，不花钱。数据提交到 data 分支，主分支不动。
+name: 抓取
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: data-writer        # 和「X 监测」「写稿」共用，避免同时往 data 分支提交
+  cancel-in-progress: false
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: bash scripts/ci/ensure-data-branch.sh
+      - uses: actions/checkout@v4
+        with:
+          ref: data
+          path: data
+      - run: node scripts/fetch.mjs
+      - run: |
+          bash scripts/ci/commit-data.sh "data: 抓取 $(date -u +%Y-%m-%dT%H:%MZ)"
+      - name: 候选清单
+        run: cat data/candidates.md >> "$GITHUB_STEP_SUMMARY"

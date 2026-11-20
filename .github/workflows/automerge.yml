@@ -1,0 +1,36 @@
+# 阶段 B：Grok Bot 初审通过并打上 bot-reviewed 标签的稿子，符合条件就自动合并。
+# 默认关闭：仓库变量 WG_AUTOMERGE 设为 on 才生效（见开发指南第 8 节的放权条件）。
+# 安全：用 pull_request_target，跑的是主分支的代码；PR 里的文章只当数据读，不执行 PR 的任何代码。
+name: 自动合并（阶段 B）
+on:
+  pull_request_target:
+    types: [labeled]
+permissions:
+  contents: read
+  pull-requests: read
+jobs:
+  automerge:
+    if: github.event.label.name == 'bot-reviewed' && vars.WG_AUTOMERGE == 'on'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4          # 主分支，不是 PR 分支
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/checkout@v4
+        continue-on-error: true
+        with:
+          ref: data
+          path: data
+      - id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          WG_AUTOMERGE_CATEGORIES: ${{ vars.WG_AUTOMERGE_CATEGORIES }}
+          WG_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: node scripts/ci/automerge-check.mjs ${{ github.event.pull_request.number }}
+      - if: steps.check.outputs.eligible == 'true'
+        env:
+          # 你本人的令牌（你是管理员，可以按规则绕过「需要代码负责人批准」）；机器人读不到它
+          GH_TOKEN: ${{ secrets.WG_MERGE_TOKEN }}
+        run: gh pr merge ${{ github.event.pull_request.number }} --squash --delete-branch --repo ${{ github.repository }}
