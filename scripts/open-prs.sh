@@ -20,6 +20,7 @@ node -e '
   const a = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
   for (const d of a) console.log([d.slug, d.file, d.errors, d.warnings, d.title].join("\t"));
 ' "$LIST" | while IFS=$'\t' read -r SLUG FILE ERRORS WARNINGS TITLE; do
+  if [ ! -f "$FILE" ]; then echo "::warning::新稿列表里有 $FILE，但文件不存在，跳过"; continue; fi
   BR="draft/$SLUG"
   # 重写同一篇（比如按新规则重写）时，旧分支还在：换一个带时间的新分支，旧 PR 由人关闭
   if git ls-remote --exit-code --heads origin "$BR" >/dev/null 2>&1; then

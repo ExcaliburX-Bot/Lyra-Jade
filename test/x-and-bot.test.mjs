@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { parseAnthropic, parseXaiFunctionCall, xaiTextAndCitations, xaiWriteRequest, parseResponsesStream, xPostDate, xPostRequest, xPost } from "../scripts/lib/llm.mjs";
 import { postsToItems, extractJson } from "../scripts/x-watch.mjs";
@@ -272,4 +272,23 @@ test("AI 总结：100–300 字必填，渲染在文章最前面", async () => {
   assert.ok(html.indexOf('class="aisum"') < html.indexOf('class="lede"'), "AI 总结在导语之前");
   assert.match(html, /待人工核对/);
   assert.match(renderArticleBody({ ...a, verified: true }), /已人工核对/);
+});
+
+test("重写已写过的候选：从素材库找回；没写成时不留上次的新稿记录", () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "wg-redo-"));
+  const env = { ...process.env, WG_DATA: path.join(tmp, "data"), WG_CONTENT: path.join(tmp, "content"), WG_SOURCES: path.join(FX, "sources.test.json"), WG_X_ACCOUNTS: path.join(FX, "x-accounts.test.json") };
+  const run = (...a) => execFileSync(process.execPath, a, { cwd: ROOT, env, encoding: "utf8" });
+  run("scripts/fetch.mjs", "--fixtures");
+  const top = JSON.parse(fs.readFileSync(path.join(tmp, "data/candidates.json"), "utf8"))[0];
+  run("scripts/draft.mjs", "--id", top.id, "--mock");
+  run("scripts/fetch.mjs", "--fixtures");   /* 写过的候选会从清单里去掉 */
+  assert.ok(!JSON.parse(fs.readFileSync(path.join(tmp, "data/candidates.json"), "utf8")).some(c => c.id === top.id));
+  assert.match(run("scripts/draft.mjs", "--id", top.id, "--mock"), /从素材库找回/);
+  assert.equal(fs.readdirSync(path.join(tmp, "content")).length, 2, "重写出第二版，不覆盖第一版");
+  /* 没写成（ID 不存在）：新稿列表要清空，且工作流变红 */
+  const bad = spawnSync(process.execPath, ["scripts/draft.mjs", "--id", "nonexistent", "--mock"], { cwd: ROOT, env, encoding: "utf8" });
+  assert.equal(bad.status, 1);
+  assert.match(bad.stdout, /找不到候选 nonexistent/);
+  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(tmp, "data/new-drafts.json"), "utf8")), []);
+  fs.rmSync(tmp, { recursive: true, force: true });
 });

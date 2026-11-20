@@ -10,6 +10,7 @@ import { readJson, writeJson, dataFile } from "./lib/store.mjs";
 import { htmlToText, sha } from "./lib/text.mjs";
 import { writeArticle, xPost, DEFAULT_MODEL, PROVIDER } from "./lib/llm.mjs";
 import { validateArticle, reportMarkdown } from "./lib/validate.mjs";
+import { toCandidates } from "./lib/score.mjs";
 
 const args = process.argv.slice(2);
 const arg = (k, d) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : d; };
@@ -63,11 +64,22 @@ async function main() {
   const drafted = readJson(dataFile("drafted.json"), []);
   /* 机器人或编辑标记「不写」的候选（data/skip.json）也跳过；--id 指定时不受影响 */
   const skipped = new Set(readJson(dataFile("skip.json"), []).map(s => s.id));
+  /* 先清空上一次的新稿列表：这次一篇没写成时，「开 PR」不能拿上次的记录去开 */
+  writeJson(dataFile("new-drafts.json"), []);
   /* --id 指定时，已写过、已跳过的也照写（用来按新规则重写）；定时写稿只写没写过的 */
   let list = readJson(dataFile("candidates.json"), []).filter(c => only || (!drafted.includes(c.id) && !skipped.has(c.id)));
+  /* 候选清单不含已写过的；重写时从素材库重新算一遍，把它找回来 */
+  if (only && !list.some(c => c.id === only)) {
+    const all = toCandidates(Object.values(readJson(dataFile("items.json"), {})));
+    const found = all.find(c => c.id === only);
+    if (found) { console.log(`候选 ${only} 已写过或不在当前清单，从素材库找回：${found.title}`); list = [found]; }
+  }
   /* 不先截断：材料太短被跳过时，继续往下找，直到写够 top 篇 */
   list = only ? list.filter(c => c.id === only) : list.filter(c => c.score >= minScore);
-  if (!list.length) { console.log("没有需要写的候选"); return; }
+  if (!list.length) {
+    if (only) { console.log(`::error::找不到候选 ${only}：可能已经超过 14 天被清出素材库，或 ID 写错了（见 data 分支的 candidates.md）`); process.exitCode = 1; return; }
+    console.log("没有需要写的候选"); return;
+  }
   if (!mock) {
     const need = PROVIDER === "xai" ? "XAI_API_KEY" : "ANTHROPIC_API_KEY";
     if (!process.env[need]) {
