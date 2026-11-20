@@ -1,0 +1,869 @@
+{
+  "slug": "gemini-4-neon",
+  "date": "2026-11-18",
+  "category": "product",
+  "publisher": "Google DeepMind",
+  "title": "Gemini 4 Neon 上线：100 万 token 窗口，输入 3 美元",
+  "summary": "如果你正让 AI 读完合同、表格和代码仓库，再自己把交付物交出来，Gemini 4 Neon 就是 Google 放在「周期最长的难项目」和「日常快执行」之间的那一档。它面向会反复出现、又不能做得太浅的工作。",
+  "ai_summary": "2026 年 11 月 18 日，Google DeepMind 发布 Gemini 4 Neon，给软件工程、知识工作和科研里要从头做完的复杂任务用，并向付费 API、企业版和 Google AI Pro / Ultra 订阅用户推送。输入每百万 token 3 美元，缓存输入 0.15 美元（官方称 95% 折扣），输出 15 美元，上下文 100 万 token。xhigh 档智能指数 61、总排第 3，编程代理指数 58.6、总排第 1。默认 high 档单任务成本比 Carbon 低 32%，但分数绑着思考档和测试环境。网络安全版走 Fairwind，普通账号不同步开放。",
+  "brief": [
+    "Carbon 接最长最难的项目，Hydrogen 接日常快执行，Neon 站在「又深、又要经常用」的中间。",
+    "Vals Index 以 70.9% 排第 2；法律检索和税务代理只公布了第 1，没有分数。",
+    "SWE-sweep 在 mini-SWE 上是 12.8%，换到 Antigravity 后是 39.0%，差在执行环境。",
+    "Gray Swan 上 0.0% 的攻击成功率，前提是最高思考档加上实时防护，而且只覆盖这一基准。"
+  ],
+  "readMinutes": 11,
+  "sections": [
+    {
+      "h": "这是什么：一个把长活做完的 Gemini 4 型号",
+      "blocks": [
+        {
+          "p": "2026 年 11 月 18 日，Google DeepMind 发布 Gemini 4 Neon。官方的定位很具体：在复杂的软件工程、知识工作和科研流程里，提供前沿水平的智力，并且把任务从头做到尾，同时保持速度。"
+        },
+        {
+          "p": "执笔人是 Koray Kavukcuoglu，Google DeepMind 高级副总裁，也是 Google 的首席 AI 架构师。你后面看到的名次、价格和安全比例，都出自这篇发布文转述的榜单或内部测试，不是本站复测。"
+        },
+        {
+          "p": "它在家族里的位置，比单个分数更影响你怎么选。Carbon 负责最难、周期最长的项目；Hydrogen 负责日常的快速执行。Neon 夹在中间，面向又复杂、又会反复出现的工作。"
+        },
+        {
+          "p": "发布文说，从当天起开始推送。开发者走 Gemini API 的付费档，入口包括 Google AI Studio 和 Android Studio。企业可以在 Gemini for business 里通过 API 或模型下拉菜单使用，也可以用 Google Antigravity。付费的 Google AI Pro、Ultra 订阅用户可以在 Antigravity 里用；在 Gemini 应用里，Google AI Pro 或 Ultra 订阅用户可以从模型菜单选择 Neon。Pro 与 Ultra 订阅用户也可以在 AI Studio 里试。面向网络安全的版本不在这张名单上。"
+        }
+      ]
+    },
+    {
+      "h": "三个型号怎么分：难、频、快不是一回事",
+      "blocks": [
+        {
+          "p": "选错型号，通常不是「智力不够」，而是用更重的模型做碎活，或用快模型扛长推理。发布文把分工说得很直白。"
+        },
+        {
+          "p": "Carbon 接你最难的、拖得很长的项目。Hydrogen 接每天都要跑的快速执行。Neon 要的是深度和效率的平衡：复杂、出现频率又高的流程，用它比总叫最大的模型更划算，也比日常快模型更适合做多步判断。"
+        },
+        {
+          "p": "在 Antigravity 里，Neon 还可以当编排者。编排者的意思是：它自己做判断，再指挥多个 Hydrogen 子代理并行干活。子代理就是被派去执行子任务的模型实例。它可以单独跑，也可以站在这个调度位置上。对读者的含义是：Neon 不一定亲自做完每一个子步骤，但要对拆分、并行和最终质量负责。"
+        },
+        {
+          "p": "长任务上，官方还描述了几种使用习惯：少做重复的文件读取，边做边同步进度，长会话里可靠地压缩上下文。这些没有配「少读了百分之几」这类数字，只能当成产品行为，不能当成已测量的节省。"
+        }
+      ]
+    },
+    {
+      "h": "价格和窗口：输入不贵，输出和缓存要分开算",
+      "blocks": [
+        {
+          "p": "查得到的标价分成输入、缓存输入和输出。输入每百万 token 3 美元。已经缓存的输入每百万 token 0.15 美元，官方称这是 95% 折扣。输出每百万 token 15 美元。上下文窗口是 100 万 token。"
+        },
+        {
+          "p": "token 可以理解成计费和记忆的最小片段，中文里往往几个字就算若干 token。上下文窗口就是一次能放进模型的材料总量。企业材料常常散在表格、PDF、图表、音频和视频里。Neon 的设计是把这些放进同一个 100 万 token 窗口，再整理成结构化交付物，而不是你事先手工摘成几段摘要。"
+        },
+        {
+          "p": "怎么读这张价目表：同一份长合同反复问答时，命中缓存的那部分输入才按 0.15 美元计，没进缓存的输入仍按 3 美元。如果你要它写出长报告、长代码或大段修改，输出 15 美元会比输入更扎眼。官方没有给出一次典型任务的总账单，只有 token 单价，以及后面要说的「单任务成本」相对降幅。"
+        },
+        {
+          "p": "还有一个读数限制：100 万 token 写的是上下文窗口，原文没有另列输出长度上限。这篇也没写 Carbon、Hydrogen 的单价。所以现在能直接比的，是 Neon 自己的输入、缓存和输出价，不是它和家族里另两个型号的 token 单价差。"
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "单价拆开看：缓存输入和输出不是一个价",
+            "subtitle": "单位：美元/百万 token；上下文为 token 数",
+            "note": "价格与窗口来自 Google DeepMind 2026-11-18 发布文。95% 折扣只针对命中缓存的输入。",
+            "items": [
+              {
+                "value": "3",
+                "unit": "美元",
+                "label": "每百万输入 token",
+                "note": "未命中缓存时"
+              },
+              {
+                "value": "0.15",
+                "unit": "美元",
+                "label": "每百万缓存输入",
+                "note": "官方称 95% 折扣"
+              },
+              {
+                "value": "15",
+                "unit": "美元",
+                "label": "每百万输出 token",
+                "note": "长生成时占比会上升"
+              },
+              {
+                "value": "100 万",
+                "unit": "token",
+                "label": "上下文窗口",
+                "note": "未另列输出上限"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "思考档：61 分不是默认档的分数",
+      "blocks": [
+        {
+          "p": "Neon 有四档思考强度。思考档就是让模型在开口前多推演几步：更难的档通常更稳，也更费 token。官方说这四档是稳步拉开的，方便团队按工作负载拧「智力」和「花费」。四档的名字没有列全，正文只明确了默认的 high，以及更深的 xhigh。"
+        },
+        {
+          "p": "对外引用最多的智能分数，挂在 xhigh 上。Artificial Analysis 智能指数得 61，总排第 3，排在更大、更慢的模型后面，但领先于同级可比模型。第 3 不是「默认就有的水平」。你如果在产品里留在默认 high，不能直接把 61 分算到自己头上。"
+        },
+        {
+          "p": "high 档的卖点是单任务成本。在第三方基准上，默认 high 把一份被官方称为高的智能指数分数，和「比 Carbon 低 32% 的单任务成本」放在一起。这个 high 档分数本身没写出来。同一档位上，它处在 Vals 指数和 Agent Arena 的帕累托前沿。帕累托前沿的大白话是：没有另一个点同时更强又更便宜，把它完全压住。相对顶尖的前沿竞品，单任务成本大约低 50% 到 80%。「大约」是原文用词，竞品没有在这句话里点名。"
+        },
+        {
+          "p": "xhigh 留给最难的工程、分析和科研多步推理。智能分在这里最高，也就是上面的 61 分。即便开到这一档，单任务成本仍比竞品各自的最高设置低 36% 以上。比较对象换了：32% 是对自家 Carbon，且在 high；36% 以上是对竞品的最高档，且在 xhigh。两句不能合成「全面便宜三成」。"
+        }
+      ]
+    },
+    {
+      "h": "知识工作和科研：名次多，领先幅度不一定写了",
+      "blocks": [
+        {
+          "p": "如果你的工作是把散装材料收成一份能交出去的东西，这部分比编程榜更相关。独立评估把 Neon 放在前列模型里。Vals Index 上它以 70.9% 排第 2，并落在帕累托前沿。第 2 的含义要连着成本看：它不是这项的最高分，但官方认为在「分数和单任务成本」的组合上没有被支配。"
+        },
+        {
+          "p": "法律检索基准和税务代理基准，官方都称第 1。分数没写，所以你知道方向，不知道领先是一个点还是十个点。Surge AI 上，金融、会计、表格建模和复杂约束遵循的大多数基准也称第 1，同样没有逐项分数。复杂约束遵循，就是指令里有很多不能互相打架的条件，它还能按条件做完。"
+        },
+        {
+          "p": "和「能不能读懂业务图」直接相关的是 Chartography，73.5%，测的是密集的专业图表。原文没有给对照模型的分数。Agents' Last Exam v1.1 得 75.8%，官方的说法是与领先模型相当，不是第 1。Zapier 的 AutomationBench 得 56.3%，总排第 1。56.3% 这个绝对值不高，更合理的读法是：在这个自动化代理榜上它目前最高，而不是「一半以上的业务流程已经可以放手」。评分细则，发布文没有展开。"
+        },
+        {
+          "p": "长周期经营是另一类证据。Andon Labs 的 Vending-Bench 2 是一个长时间模拟经营的测试，Neon 以 16,843 美元的成绩排第 1。这 16,843 美元是模拟得分，不是模型售价，也不是你跑一次要付的钱。它想说明的是：任务拉长以后，模型还能把一家模拟生意做下去，而不只是答对一道题。"
+        },
+        {
+          "p": "Agent Arena 新指数上，它以 1,336 分全球第 2，覆盖 4,200 多场真实世界的代理会话。代理，就是能自己分步调用工具、把任务做完的用法，不只是一问一答。1,336 的满分原文没写，所以这个数字适合看名次，不适合自己换成百分比。同一套指数里，可引导性单独排第 2。可引导性指做到一半你改要求，它能干净地跟上，而不是咬着旧指令不放。"
+        },
+        {
+          "p": "编造是另一件事。编造，就是把没查到的事实或没做过的步骤写成已经完成。官方说，在内部 Antigravity 测试里，编造率是迄今最低，但没有给出百分比。"
+        },
+        {
+          "p": "科研和数学推理上，官方标了三项同类最佳：Terminal-Bench Science 70.5%，RiemannBench 84.0%，HLE-Diamond 71.3%。覆盖的方向是定量分析、数学和技术研究问题。三项都叫「同类最佳」，不代表它们彼此可比——70.5% 和 84.0% 来自不同试卷。题目数量、是否允许使用工具、思考档是不是 xhigh，这三项在发布文里都没有逐条写明。"
+        },
+        {
+          "fig": {
+            "type": "bars",
+            "title": "知识工作和科研：名次好看，试卷并不能横比",
+            "subtitle": "单位：各榜公布的百分制得分。不是同一张试卷，柱高不能互相当成差距",
+            "note": "数据出自发布文转述，非本站复测。AutomationBench 虽总排第 1，绝对值是 56.3%。科研三项被官方称为同类最佳。",
+            "legend": [
+              {
+                "tone": "main",
+                "label": "Gemini 4 Neon"
+              }
+            ],
+            "groups": [
+              {
+                "label": "知识工作与代理",
+                "items": [
+                  {
+                    "label": "Agents' Last Exam v1.1",
+                    "sub": "与领先模型相当",
+                    "value": 75.8,
+                    "tone": "main"
+                  },
+                  {
+                    "label": "Chartography",
+                    "sub": "读密集专业图表",
+                    "value": 73.5,
+                    "tone": "main"
+                  },
+                  {
+                    "label": "Vals Index",
+                    "sub": "第 2，帕累托前沿",
+                    "value": 70.9,
+                    "tone": "main"
+                  },
+                  {
+                    "label": "AutomationBench",
+                    "sub": "总第 1",
+                    "value": 56.3,
+                    "tone": "main"
+                  }
+                ]
+              },
+              {
+                "label": "科研与数学",
+                "items": [
+                  {
+                    "label": "RiemannBench",
+                    "sub": "官方称同类最佳",
+                    "value": 84,
+                    "tone": "main"
+                  },
+                  {
+                    "label": "HLE-Diamond",
+                    "sub": "官方称同类最佳",
+                    "value": 71.3,
+                    "tone": "main"
+                  },
+                  {
+                    "label": "Terminal-Bench Science",
+                    "sub": "官方称同类最佳",
+                    "value": 70.5,
+                    "tone": "main"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "写代码：先看指数，再看是不是同一套执行环境",
+      "blocks": [
+        {
+          "p": "编程是这篇发布文着墨最多的用途之一。官方说它为长时间、工具很多的代理流程而做：可以自己跑完整段任务，也可以在 Antigravity 里当编排者，调度并行的 Hydrogen 子代理。对开发者，重要的不是「它会写代码」，而是它能不能在多文件、多工具的会话里把修改做完。"
+        },
+        {
+          "p": "Artificial Analysis 的编程代理指数上，它以 58.6 总排第 1。这个 58.6 和智能指数的 61 不是同一张榜，不能相加，也不能看成「编程占了智能的百分之几」。Terminal-Bench 4.1 的分数是 65.2%。FrontierCode 2.0 是 46.2%，而且括号里写明是默认 high 档。46.2% 低于 65.2%，只说明两张试卷难度和计分不同，不说明模型在第二张榜上退步。"
+        },
+        {
+          "p": "生产代码方面，官方强调跨仓库的多文件调试和重构，改动是有针对性的局部修改，而不是整文件重写。没有给出平均改动行数，也没有给出一次任务要跑多久。"
+        },
+        {
+          "p": "SWE-sweep 最能说明「环境」有多重要。在 mini-SWE 这套执行环境上，它已经领先，分数是 12.8%。换到 Google Antigravity 之后，升到 39.0%，官方称为当前最高，并说这显示的是 Antigravity 这套执行环境解锁了什么。从 12.8% 到 39.0%，官方用了「三倍多」来形容。执行环境（harness）就是套在模型外面的工具和流程：能不能改文件、能不能派子代理、失败了怎么重试。你如果只把 Neon 接进一个很瘦的 API 调用，不应默认拿到 39.0%。"
+        },
+        {
+          "fig": {
+            "type": "pipeline",
+            "title": "SWE-sweep：换到 Antigravity 后到了三倍多",
+            "subtitle": "单位：百分比。两条都是发布文给出的 Neon 得分，不是示意估算",
+            "note": "mini-SWE 为 12.8%，Antigravity 为 39.0%。官方称后者是当前最高，并说这是执行环境带来的。不要把 39.0% 当成裸 API 的默认成绩。",
+            "rows": [
+              {
+                "label": "模型",
+                "note": "两条都是 Neon，没有换模型",
+                "nodes": [
+                  {
+                    "label": "Gemini 4 Neon",
+                    "hi": true
+                  }
+                ]
+              },
+              {
+                "label": "mini-SWE",
+                "note": "官方称这一环境里已经领先",
+                "nodes": [
+                  {
+                    "label": "12.8%",
+                    "hi": false
+                  }
+                ]
+              },
+              {
+                "label": "Antigravity",
+                "note": "官方称当前最高",
+                "nodes": [
+                  {
+                    "label": "39.0%",
+                    "hi": true
+                  }
+                ]
+              }
+            ],
+            "compare": {
+              "label": "SWE-sweep 得分",
+              "max": 100,
+              "items": [
+                {
+                  "label": "mini-SWE",
+                  "value": 12.8,
+                  "display": "12.8%",
+                  "tone": "ref"
+                },
+                {
+                  "label": "Antigravity",
+                  "value": 39,
+                  "display": "39.0%",
+                  "tone": "main"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "p": "发布文还附了几段 Antigravity 演示，用来展示「从零做完」，不是独立评测。一段是在真实的勃朗峰和霞慕尼高程上，从零写一个第一人称 WebGL2 滑雪模拟：10,200 行自定义着色器、120 Hz 的滑雪物理，没有预制素材。另一段是把一张图变成 100,000 个单元格的 Google 表格，不靠嵌入图片，也不靠 Apps Script，而是用超过 500,000 条实时公式做边缘检测、三维深度和重新打光。这些是厂商演示，本站没有复现，也不能当成榜单分数。"
+        }
+      ]
+    },
+    {
+      "h": "安全与网络防御：普通账号和 Fairwind 不是同一扇门",
+      "blocks": [
+        {
+          "p": "Neon 沿用 Gemini 4 的安全栈。对严重误用和提示注入，防护保持在 Carbon 同一级，同时把模型对齐和代理行为再往前推。因为一个更快、更便宜的模型也带上了前沿能力，官方给它配了针对网络误用和生物安全误用的实时防护，强度对标 Carbon，但正经任务被拒的比例更低。"
+        },
+        {
+          "p": "误拒的例子写得很具体：Terminal-Bench 4.0 上只拒绝 1.98% 的任务，Terminal-Bench Science 上的拒绝率是 0%。后一个 0% 的意思是这套科学终端任务没有被挡下，不是「任何请求都会答应」。"
+        },
+        {
+          "p": "对齐方面，内部编码使用时，思路链和动作的错位监控告警率，低于 Carbon 已经很低的基线。同一套监控也部署在对外入口，用来保护 Neon。训练目标是：多步任务做完，但不抄近路、不编造结果、不越过用户划定的范围。"
+        },
+        {
+          "p": "几个内部比例要连着测试名读。Terminal-Bench 4.0 上的作弊率是 0.0%，与 Carbon 相同。在他们的编码作弊评估里，抄近路的任务占 2.45%，是 Gemini 4 系列里最低的。代理安全套件上的错位动作率是 0.09%。代理诚实评估的通过率是 99.2%。这些都是 Google 内部测试的自报数字。"
+        },
+        {
+          "p": "还有一组相对降幅。在代理行为评估里，相对 Carbon，少做（该完成的步骤没做完）降低 43% 到 56%，越界降低 15% 到 35%，不同用力档都有。这是降幅，不是绝对发生率。Carbon 原来少做、越界的底数没公布，所以不能把「降低 43%」读成「现在只剩 43%」。"
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "内部安全自报：作弊率低，降幅不是绝对发生率",
+            "subtitle": "单位：百分比。均为 Google 内部测试，不是第三方榜",
+            "note": "0.0% 作弊率对应 Terminal-Bench 4.0，与 Carbon 相同。43% 到 56% 是相对 Carbon 的少做降幅，不是剩余比例，因此没画进这四格。",
+            "items": [
+              {
+                "value": "0.0%",
+                "unit": "作弊率",
+                "label": "Terminal-Bench 4.0",
+                "note": "与 Carbon 相同"
+              },
+              {
+                "value": "2.45%",
+                "unit": "抄近路占比",
+                "label": "编码作弊评估",
+                "note": "Gemini 4 系列最低"
+              },
+              {
+                "value": "0.09%",
+                "unit": "错位动作",
+                "label": "代理安全套件",
+                "note": "内部自报"
+              },
+              {
+                "value": "99.2%",
+                "unit": "通过率",
+                "label": "代理诚实评估",
+                "note": "内部自报"
+              }
+            ]
+          }
+        },
+        {
+          "p": "间接提示注入测的是另一件事：恶意指令藏在模型要读的网页、邮件、文档或代码里，试图把它带偏。Gray Swan 的 IPI 基准上，官方说 Neon 比同级其他模型更抗得住。在最高思考档、并且打开实时防护时，这一基准里的攻击全部被挡住，攻击成功率 0.0%。原文还说，这个 0.0% 此前只有其他 Gemini 模型达到过。三个限制要一起记：最高思考档、实时防护开着、只统计这个基准。"
+        },
+        {
+          "p": "网络防御被单独写成产品能力，对象是防御方。下面只复述发布文里的比例和开放范围，不涉及如何测试或利用。AutoBaxBench 上，简单、中等、困难全部比 Carbon 写出更安全的代码，困难档 76%，官方称为当前最高。WebExploitBench v1.2 上 51.26%，也称为当前最高，成本是竞品大模型的一半。找漏洞的 SEC-bench Pro 是 90.5%，每个挑战的成本大约一半。验证漏洞是否真能被利用的 ExploitGym 上，官方称达到前沿水平，token 用量是 Carbon 的一半，用途是帮防御方排修复优先级。修补方面，Collinear 的 CWE-bench v2 达到 70.7%，比 Carbon 提升 3.4%。Carbon 在这项的原分没有写出，因此 3.4% 是官方给出的提升幅度，不是我们减出来的。"
+        },
+        {
+          "fig": {
+            "type": "bars",
+            "title": "防御向榜单：找漏洞 90.5%，主动发现 51.26%",
+            "subtitle": "单位：百分比。成本「大约一半」没有画进柱子",
+            "note": "来自发布文，非本站复测。76% 是 AutoBaxBench 困难档；51.26% 是 WebExploitBench v1.2；90.5% 是 SEC-bench Pro；70.7% 是 CWE-bench v2。",
+            "legend": [
+              {
+                "tone": "main",
+                "label": "Gemini 4 Neon"
+              }
+            ],
+            "groups": [
+              {
+                "label": "发布文给出的防御向得分",
+                "items": [
+                  {
+                    "label": "SEC-bench Pro",
+                    "sub": "找漏洞，称当前最高",
+                    "value": 90.5,
+                    "tone": "main"
+                  },
+                  {
+                    "label": "AutoBaxBench 困难档",
+                    "sub": "写更安全的代码",
+                    "value": 76,
+                    "tone": "main"
+                  },
+                  {
+                    "label": "CWE-bench v2",
+                    "sub": "修补，比 Carbon 高 3.4%",
+                    "value": 70.7,
+                    "tone": "main"
+                  },
+                  {
+                    "label": "WebExploitBench v1.2",
+                    "sub": "成本约为竞品大模型一半",
+                    "value": 51.26,
+                    "tone": "main"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "p": "Gemini 4 Neon for cyber 会在接下来几天，作为 Fairwind 计划的一部分，向受信任的防御方开放。想申请，要联系自己的 Cloud 客户团队。普通 API 密钥、Gemini 应用里的 Neon，不要默认等于这块防御能力。发布文没有给出确切开通日。"
+        }
+      ]
+    },
+    {
+      "h": "官方还没说的",
+      "blocks": [
+        {
+          "list": [
+            "四档思考强度里，除了默认 high 和更深的 xhigh，另外两档的名字、分数和 token 消耗没有列出。",
+            "Google AI Pro、Ultra 的订阅费，应用内使用是否另收 token 费，以及 Carbon、Hydrogen 的 token 单价，这篇都没有。",
+            "响应速度、输出长度上限、免费档能否使用、各地区是否同时开放，以及文档和 token 的换算，都没有写。",
+            "法律检索、税务代理，以及 Surge AI 上多数「第 1」，都没有公布具体分数，也没有点名被比下去的模型。",
+            "「编造率迄今最低」没有百分比；1,336 分的满分、50% 到 80% 成本差对应的竞品名单，也都没有。",
+            "模型卡被点到，但这篇没有摘出卡片里的额外表格；Fairwind 只说接下来几天，没有确切开通日期。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "适合谁：高频的复杂活，而不是所有活",
+      "blocks": [
+        {
+          "p": "Neon 的价值是：复杂任务不必每次都呼叫最大的 Carbon，日常快模型又往往不够深的那一段，它想用更低的单任务成本补上。100 万 token 的窗口、按缓存打折的输入价，对反复阅读同一批长材料的人更有感。输出 15 美元每百万 token，则提醒你：让它大段生成，账单结构会变。"
+        },
+        {
+          "p": "代价也很具体。很多亮眼名次绑在 xhigh、Antigravity 或内部测试上，默认 high、瘦 API 不一定复现。法律和税务的「第 1」没有分数。网络安全能力不对普通账号开放。发布文也没有给出和某一家竞品的逐项对照表。"
+        },
+        {
+          "p": "如果你经常改仓库、做跨文件重构，或者要一个能跑很久的编程代理：可以先在默认 high 上看 Terminal-Bench 和你自己的仓库，不要只背 39.0%。那个分数是 Antigravity 环境里的 SWE-sweep。"
+        },
+        {
+          "p": "如果你的活是读表格、PDF、图表，再交出报告，或做法律、税务方向的初稿：Vals 的 70.9% 和第 2 名，以及法律、税务两项第 1，是更相关的信号。分数缺失的地方，用你自己的文档做一次小样，比继续追榜有用。"
+        },
+        {
+          "p": "如果你的项目极长、错一次代价很高：发布文仍把这类活留给 Carbon。Neon 是平衡档，不是「最难项目」的指定型号。"
+        },
+        {
+          "p": "如果你只是日常写改、要快：对口的是 Hydrogen，不是 Neon。在 Gemini 应用里，官方把一些费时的杂事算到 Neon 头上，比如拆账单找出水电费为什么突然升高，或交叉核对多张收据以便谈退款。那仍然要求 Google AI Pro 或 Ultra。应用里它还被描述为写作更清楚、读上传文件更准，并能从 Gmail 和 Docs 拉相关细节。"
+        },
+        {
+          "p": "如果你是企业防御方，关心的是写更安全的代码、确认漏洞是否可利用、再打补丁：看 Fairwind，而不是默认公开 API 里已经有一个叫 cyber 的开关。申请入口是 Cloud 客户团队。"
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Introducing Gemini 4 Neon",
+      "publisher": "Google DeepMind",
+      "date": "2026-11-18",
+      "url": "https://deepmind.google/blog/introducing-gemini-4-neon/"
+    },
+    "note": "跑分、价格和安全比例均来自 Google DeepMind 2026-11-18 的发布文，不是本站复测。柱状图把不同榜的百分制得分放在一起，只为查阅，不表示可以横比。滑雪模拟和表格演示是厂商展示。原文没有点名的竞品，图里也不补。"
+  },
+  "claims": [
+    {
+      "text": "发布日期为 2026 年 11 月 18 日",
+      "value": "Nov 18, 2026",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "2026 年 11 月 18 日",
+      "quote": "Nov 18, 2026"
+    },
+    {
+      "text": "输入价格为每百万 token 3 美元",
+      "value": "$3",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "3 美元",
+      "quote": "The model is priced at $3 per million input tokens"
+    },
+    {
+      "text": "缓存输入价格为每百万 token 0.15 美元",
+      "value": "$0.15",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "0.15 美元",
+      "quote": "($0.15 per million cached input tokens, a 95% discount)"
+    },
+    {
+      "text": "缓存输入被称为 95% 折扣",
+      "value": "95%",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "95%",
+      "quote": "($0.15 per million cached input tokens, a 95% discount)"
+    },
+    {
+      "text": "输出价格为每百万 token 15 美元",
+      "value": "$15",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "15 美元",
+      "quote": "and $15 per million output tokens"
+    },
+    {
+      "text": "上下文窗口为 100 万 token",
+      "value": "1 million",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "100 万",
+      "quote": "with a 1 million-token context window"
+    },
+    {
+      "text": "xhigh 档 Artificial Analysis 智能指数为 61",
+      "value": "61",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "61",
+      "quote": "with a score of 61 on the Artificial Analysis Intelligence Index at its xhigh thinking level"
+    },
+    {
+      "text": "智能指数总排第 3",
+      "value": "#3",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "第 3",
+      "quote": "Neon ranks ahead of comparable models and #3 overall with a score of 61"
+    },
+    {
+      "text": "编程代理指数为 58.6",
+      "value": "58.6",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "58.6",
+      "quote": "ranking #1 overall on the Artificial Analysis Coding Agent Index (58.6)"
+    },
+    {
+      "text": "编程代理指数总排第 1",
+      "value": "#1",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "第 1",
+      "quote": "ranking #1 overall on the Artificial Analysis Coding Agent Index (58.6)"
+    },
+    {
+      "text": "默认 high 档单任务成本比 Carbon 低 32%",
+      "value": "32%",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "32%",
+      "quote": "with a 32% lower cost per task than Carbon"
+    },
+    {
+      "text": "Vals Index 得分 70.9%",
+      "value": "70.9%",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "70.9%",
+      "quote": "it ranks #2 (70.9%)"
+    },
+    {
+      "text": "Vals Index 排第 2",
+      "value": "#2",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "第 2",
+      "quote": "it ranks #2 (70.9%)"
+    },
+    {
+      "text": "法律检索基准排第 1",
+      "value": "#1",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "第 1",
+      "quote": "reaches #1 on both the Legal Research Bench and Tax Agent Bench"
+    },
+    {
+      "text": "税务代理基准排第 1",
+      "value": "#1",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "第 1",
+      "quote": "reaches #1 on both the Legal Research Bench and Tax Agent Bench"
+    },
+    {
+      "text": "SWE-sweep 在 mini-SWE 上为 12.8%",
+      "value": "12.8%",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "12.8%",
+      "quote": "leads on the mini-SWE harness (12.8%) and more than triples to a state-of-the-art 39.0% in Google Antigravity"
+    },
+    {
+      "text": "SWE-sweep 在 Antigravity 上为 39.0%",
+      "value": "39.0%",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "39.0%",
+      "quote": "leads on the mini-SWE harness (12.8%) and more than triples to a state-of-the-art 39.0% in Google Antigravity"
+    },
+    {
+      "text": "Gray Swan 基准上攻击成功率为 0.0%",
+      "value": "0.0%",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "0.0%",
+      "quote": "with real-time safeguards at its highest thinking level, Neon resisted every attack within this Gray Swan benchmark, matching the 0.0% attack success rate"
+    },
+    {
+      "text": "可引导性在 Agent Arena Index 排第 2",
+      "value": "#2",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "第 2",
+      "quote": "Neon ranks #2 on steerability (adapting cleanly to mid-task user corrections) on the new Agent Arena Index"
+    },
+    {
+      "text": "Neon 有四档思考强度",
+      "value": "four",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "四",
+      "quote": "Neon’s four levels scale steadily"
+    },
+    {
+      "text": "high 档相对顶尖前沿竞品单任务成本大约低 50% 到 80%",
+      "value": "50% to 80%",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "50% 到 80%",
+      "quote": "with roughly 50% to 80% lower cost per task than top competing frontier models"
+    },
+    {
+      "text": "xhigh 档单任务成本比竞品最高设置低 36% 以上",
+      "value": "36%+",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "36% 以上",
+      "quote": "while still costing 36%+ less per task than competing models at their highest setting"
+    },
+    {
+      "text": "Surge AI 上多数基准排第 1",
+      "value": "#1",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "第 1",
+      "quote": "ranking #1 on most benchmarks across finance, accounting, spreadsheet modeling, and complex constraint following"
+    },
+    {
+      "text": "Chartography 得分 73.5%",
+      "value": "73.5%",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "73.5%",
+      "quote": "It also scores 73.5% on Chartography for reading dense professional charts"
+    },
+    {
+      "text": "Agents' Last Exam v1.1 得分 75.8%",
+      "value": "75.8%",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "75.8%",
+      "quote": "performs on par with leading models on Agents' Last Exam v1.1 (75.8%)"
+    },
+    {
+      "text": "AutomationBench 得分 56.3% 并总排第 1",
+      "value": "56.3%",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "56.3%",
+      "quote": "It achieves #1 overall on both Zapier’s AutomationBench (56.3%) and Andon Labs' Vending-Bench 2 ($16,843)"
+    },
+    {
+      "text": "AutomationBench 总排第 1",
+      "value": "#1",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "第 1",
+      "quote": "It achieves #1 overall on both Zapier’s AutomationBench (56.3%) and Andon Labs' Vending-Bench 2 ($16,843)"
+    },
+    {
+      "text": "Vending-Bench 2 成绩为 16,843 美元并排第 1",
+      "value": "$16,843",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "16,843 美元",
+      "quote": "It achieves #1 overall on both Zapier’s AutomationBench (56.3%) and Andon Labs' Vending-Bench 2 ($16,843)"
+    },
+    {
+      "text": "Vending-Bench 2 排第 1",
+      "value": "#1",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "第 1",
+      "quote": "It achieves #1 overall on both Zapier’s AutomationBench (56.3%) and Andon Labs' Vending-Bench 2 ($16,843)"
+    },
+    {
+      "text": "Agent Arena 新指数得分 1,336",
+      "value": "1336",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "1,336",
+      "quote": "a score of 1336 on Arena's new Agent Arena Index across 4,200+ real-world agent sessions"
+    },
+    {
+      "text": "Agent Arena 新指数全球第 2",
+      "value": "#2",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "第 2",
+      "quote": "it debuts #2 globally with a score of 1336 on Arena's new Agent Arena Index"
+    },
+    {
+      "text": "Agent Arena 覆盖 4,200 多场真实代理会话",
+      "value": "4,200+",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "4,200 多",
+      "quote": "a score of 1336 on Arena's new Agent Arena Index across 4,200+ real-world agent sessions"
+    },
+    {
+      "text": "Terminal-Bench Science 得分 70.5%",
+      "value": "70.5%",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "70.5%",
+      "quote": "best in class on Terminal-Bench Science (70.5%), RiemannBench (84.0%), and HLE-Diamond (71.3%)"
+    },
+    {
+      "text": "RiemannBench 得分 84.0%",
+      "value": "84.0%",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "84.0%",
+      "quote": "best in class on Terminal-Bench Science (70.5%), RiemannBench (84.0%), and HLE-Diamond (71.3%)"
+    },
+    {
+      "text": "HLE-Diamond 得分 71.3%",
+      "value": "71.3%",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "71.3%",
+      "quote": "best in class on Terminal-Bench Science (70.5%), RiemannBench (84.0%), and HLE-Diamond (71.3%)"
+    },
+    {
+      "text": "Terminal-Bench 4.1 得分 65.2%",
+      "value": "65.2%",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "65.2%",
+      "quote": "with a score of 65.2% on Terminal-Bench 4.1"
+    },
+    {
+      "text": "FrontierCode 2.0 在默认 high 档得分 46.2%",
+      "value": "46.2%",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "46.2%",
+      "quote": "46.2% (at its default high setting) on FrontierCode 2.0"
+    },
+    {
+      "text": "从 mini-SWE 到 Antigravity，官方称为三倍多",
+      "value": "more than triples",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "三倍多",
+      "quote": "leads on the mini-SWE harness (12.8%) and more than triples to a state-of-the-art 39.0% in Google Antigravity"
+    },
+    {
+      "text": "滑雪模拟演示含 10,200 行自定义着色器",
+      "value": "10,200",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "10,200",
+      "quote": "combining 10,200 lines of custom shaders, 120 Hz ski physics across six alpine lines"
+    },
+    {
+      "text": "滑雪物理为 120 Hz",
+      "value": "120",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "120 Hz",
+      "quote": "combining 10,200 lines of custom shaders, 120 Hz ski physics across six alpine lines"
+    },
+    {
+      "text": "表格演示为 100,000 个单元格",
+      "value": "100,000",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "100,000",
+      "quote": "turned a single image into a 100,000-cell Google Sheet"
+    },
+    {
+      "text": "表格演示使用超过 500,000 条实时公式",
+      "value": "500,000",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "500,000",
+      "quote": "using over 500,000 live spreadsheet formulas"
+    },
+    {
+      "text": "Terminal-Bench 4.0 上只拒绝 1.98% 的任务",
+      "value": "1.98%",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "1.98%",
+      "quote": "refusing for instance just 1.98% of tasks on Terminal-Bench 4.0 and 0% on Terminal-Bench-Science"
+    },
+    {
+      "text": "Terminal-Bench Science 上拒绝率为 0%",
+      "value": "0%",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "0%",
+      "quote": "refusing for instance just 1.98% of tasks on Terminal-Bench 4.0 and 0% on Terminal-Bench-Science"
+    },
+    {
+      "text": "Terminal-Bench 4.0 上作弊率为 0.0%，与 Carbon 相同",
+      "value": "0.0%",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "0.0%",
+      "quote": "It matched Carbon with 0.0% cheating on Terminal-Bench 4.0"
+    },
+    {
+      "text": "编码作弊评估里抄近路占 2.45%",
+      "value": "2.45%",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "2.45%",
+      "quote": "took shortcuts on just 2.45% of tasks on our coding cheating evaluation"
+    },
+    {
+      "text": "代理安全套件上错位动作率为 0.09%",
+      "value": "0.09%",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "0.09%",
+      "quote": "It also achieved a 0.09% misaligned action rate on our agentic safety suite"
+    },
+    {
+      "text": "代理诚实评估通过率为 99.2%",
+      "value": "99.2%",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "99.2%",
+      "quote": "a 99.2% pass rate on our agent honesty evaluation"
+    },
+    {
+      "text": "相对 Carbon，少做降低 43% 到 56%",
+      "value": "43%–56%",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "43% 到 56%",
+      "quote": "further reducing under-service by 43%–56% and overreach by 15%–35% across different effort levels"
+    },
+    {
+      "text": "相对 Carbon，越界降低 15% 到 35%",
+      "value": "15%–35%",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "15% 到 35%",
+      "quote": "further reducing under-service by 43%–56% and overreach by 15%–35% across different effort levels"
+    },
+    {
+      "text": "AutoBaxBench 困难档为 76%",
+      "value": "76%",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "76%",
+      "quote": "achieving state-of-the-art on the hard tier (76%)"
+    },
+    {
+      "text": "WebExploitBench v1.2 得分 51.26%",
+      "value": "51.26%",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "51.26%",
+      "quote": "Neon is state-of-the-art (51.26%) at half the cost of competing large models"
+    },
+    {
+      "text": "WebExploitBench 上成本为竞品大模型的一半",
+      "value": "half",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "一半",
+      "quote": "Neon is state-of-the-art (51.26%) at half the cost of competing large models"
+    },
+    {
+      "text": "SEC-bench Pro 得分 90.5%",
+      "value": "90.5%",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "90.5%",
+      "quote": "state-of-the-art performance on SEC-bench Pro (90.5%), while costing roughly half as much per challenge"
+    },
+    {
+      "text": "SEC-bench Pro 每个挑战的成本大约一半",
+      "value": "roughly half",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "大约一半",
+      "quote": "state-of-the-art performance on SEC-bench Pro (90.5%), while costing roughly half as much per challenge"
+    },
+    {
+      "text": "ExploitGym 上 token 用量是 Carbon 的一半",
+      "value": "half",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "一半",
+      "quote": "it achieves frontier-level performance using half the tokens of Carbon"
+    },
+    {
+      "text": "CWE-bench v2 得分 70.7%",
+      "value": "70.7%",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "70.7%",
+      "quote": "Neon reaches 70.7% on Collinear’s CWE-bench v2 , driving a 3.4% uplift over Carbon"
+    },
+    {
+      "text": "CWE-bench v2 比 Carbon 提升 3.4%",
+      "value": "3.4%",
+      "source_url": "https://deepmind.google/blog/introducing-gemini-4-neon/",
+      "as_written": "3.4%",
+      "quote": "Neon reaches 70.7% on Collinear’s CWE-bench v2 , driving a 3.4% uplift over Carbon"
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "origin": "auto",
+    "candidate": "b898a1b212",
+    "tier": "official",
+    "via": null,
+    "provider": "xai",
+    "model": "grok-4.7",
+    "generated_at": "2026-11-20T09:42:17.893Z"
+  }
+}
