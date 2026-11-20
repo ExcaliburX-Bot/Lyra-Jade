@@ -4,7 +4,8 @@ import { FIGURE_SPEC } from "../../site/assets/components.js";
 import { normNum } from "./text.mjs";
 
 const CATEGORIES = ["product", "research", "deep", "biz", "howto", "visual", "insight", "other"];
-const HYPE = ["革命性", "炸裂", "颠覆", "史诗级", "遥遥领先", "王炸", "吊打", "震撼发布", "杀疯了", "天花板"];
+const HYPE = ["革命性", "炸裂", "颠覆", "史诗级", "遥遥领先", "王炸", "吊打", "震撼发布", "杀疯了", "天花板", "很炫", "碾压", "封神", "秒杀"];
+const TITLE_RANK = /第一|最强|最好|最佳|榜首|冠军|SOTA|No\.?\s?1|#1/i;
 const SCHEMATIC = ["timeline", "route", "steps", "pipeline", "beforeafter"];
 
 export function validateArticle(a, { sourceTexts = {} } = {}) {
@@ -15,6 +16,7 @@ export function validateArticle(a, { sourceTexts = {} } = {}) {
   need(/^\d{4}-\d{2}-\d{2}$/.test(a.date || ""), "date 格式应为 YYYY-MM-DD");
   need(CATEGORIES.includes(a.category), `category 必须是 ${CATEGORIES.join(" / ")} 之一`);
   need(a.title && a.title.length <= 60, "标题必填，且不超过 60 字");
+  if (a.title && TITLE_RANK.test(a.title)) warnings.push(`标题里有排名或最高级说法「${a.title.match(TITLE_RANK)[0]}」：排名写进正文并注明出处，标题写发生了什么`);
   need(a.summary && a.summary.length <= 160, "导语必填，且不超过 160 字");
   const aiLen = [...String(a.ai_summary || "").replace(/\s/g, "")].length;
   need(aiLen >= 100 && aiLen <= 300, `AI 总结（ai_summary）要 100–300 字，现在 ${aiLen} 字`);

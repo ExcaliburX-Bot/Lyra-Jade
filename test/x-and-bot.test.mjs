@@ -328,3 +328,13 @@ test("模型把文章多包一层（如 {article: {...}}）时自动拆开", asy
   assert.deepEqual(parseDeepseekArticle({ content: "", calls: [{ name: "submit_article", arguments: JSON.stringify({ article }) }], finish: "tool_calls" }), article);
   assert.deepEqual(parseXaiFunctionCall({ output: [{ type: "function_call", name: "submit_article", arguments: JSON.stringify({ article }) }] }), article);
 });
+
+test("措辞规则：标题里的排名词和新增的夸张词会被提醒", async () => {
+  const { validateArticle } = await import("../scripts/lib/validate.mjs");
+  const a = { ...readJson("llm-article.json"), date: "2026-11-18", sources: { main: { url: "u" } } };
+  const warn = x => validateArticle({ ...a, ...x }).warnings.join("；");
+  assert.match(warn({ title: "Google 发布 Gemini 4 Neon：编码代理榜第一" }), /标题里有排名或最高级说法「第一」/);
+  assert.match(warn({ title: "某模型拿到 SOTA" }), /「SOTA」/);
+  assert.doesNotMatch(warn({}), /标题里有排名/);
+  assert.match(warn({ summary: "这些 demo 很炫" }), /夸张用词「很炫」/);
+});
