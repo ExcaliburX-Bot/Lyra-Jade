@@ -1,0 +1,4 @@
+[
+  { "id": "example-official", "name": "Example Labs 博客（测试）", "publisher": "Example Labs", "type": "rss", "url": "https://example.com/blog/rss.xml", "tier": "official", "weight": 1 },
+  { "id": "example-discovery", "name": "样例解读站（测试，选题入口）", "publisher": "样例解读站", "type": "rss", "url": "https://disc.example/rss.xml", "tier": "discovery", "weight": 1, "resolveOriginal": true }
+]

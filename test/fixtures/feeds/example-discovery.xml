@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"><channel><title>样例解读站</title>
+<item><title>Example Labs 开源 Orbit-7：340 亿参数，单卡就能跑的编程模型</title><link>https://disc.example/article/orbit-7-explained/</link><pubDate>Wed, 18 Nov 2026 20:00:00 -0000</pubDate><description>这是对方写的简介，不应该被保留。</description></item>
+<item><title>某硬件新品价格曝光</title><link>https://disc.example/article/media-only/</link><pubDate>Wed, 18 Nov 2026 19:00:00 -0000</pubDate><description>只有媒体报道。</description></item>
+<item><title>某公司新功能上线</title><link>https://disc.example/article/no-label/</link><pubDate>Wed, 18 Nov 2026 18:00:00 -0000</pubDate><description>没有标注主材料。</description></item>
+</channel></rss>

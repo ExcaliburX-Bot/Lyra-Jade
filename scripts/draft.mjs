@@ -25,7 +25,7 @@ async function sourceText(url, postText = null) {
   const file = dataFile(`sources/${sha(url)}.txt`);
   if (fs.existsSync(file)) return fs.readFileSync(file, "utf8");
   if (isXPost(url)) {
-    if (!postText) throw new Error("X 帖子没有原文，无法回溯");
+    if (!postText) throw Object.assign(new Error("主材料是 X 帖子，但没有它的原文（X 监测没抓到这条）"), { blocked: true });
     fs.mkdirSync(path.dirname(file), { recursive: true });
     fs.writeFileSync(file, `URL: ${url}\nFETCHED: ${new Date().toISOString()}\nNOTE: X 帖子原文，由 X 监测（Grok X 搜索）返回\n\n${postText}`);
     return postText;
@@ -77,6 +77,15 @@ async function main() {
   for (const c of list) {
     if (!only && made.length + failed >= top) break;
     console.log(`\n▶ ${c.title}（${c.score} 分）`);
+    /* 主材料必须是一手来源。发现渠道（小互、KOL、媒体）只提供线索，没找到原文就不写 */
+    if (!["official", "primary"].includes(c.tier)) {
+      const msg = `主材料不是一手来源（${c.tier}：${c.url}），不写`;
+      if (only) { console.log(`  ✗ ${msg}`); failed++; continue; }
+      console.log(`  · 跳过：${msg}`);
+      skipList.push({ id: c.id, reason: msg, title: c.title, at: new Date().toISOString() });
+      thin++;
+      continue;
+    }
     try {
       /* 主材料必须是一手来源；相关报道里的官方 / 原始材料也一起给模型 */
       const texts = { [c.url]: await sourceText(c.url, c.text) };
@@ -93,7 +102,8 @@ async function main() {
       }
       const user = [
         `今天日期：${new Date().toISOString().slice(0, 10)}`,
-        `选题：${c.title}`,
+        /* 由发现渠道找到的选题，不把对方的标题交给模型，标题按原文自拟 */
+        c.discovered_by ? "选题：见主材料（标题请根据主材料自拟，不要参考任何二手标题）" : `选题：${c.title}`,
         `主材料：${c.url}（${c.publisher}，${c.published}）`,
         c.category_hint ? `栏目建议：${c.category_hint}` : "",
         ...Object.entries(texts).map(([u, t]) => `\n<source url="${u}">\n${t}\n</source>`)

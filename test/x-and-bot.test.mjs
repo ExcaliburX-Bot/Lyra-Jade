@@ -206,3 +206,30 @@ test("只有短推文的候选：打折排后；定时写稿跳过它并记进�
   assert.deepEqual(JSON.parse(fs.readFileSync(path.join(tmp, "data/drafted.json"), "utf8")), [keep.id], "跳过后接着写下一个");
   fs.rmSync(tmp, { recursive: true, force: true });
 });
+
+test("选题入口（发现渠道）：只取「查看主材料」链接回到原文，不用对方文字；找不到一手原文的不写", async () => {
+  const { extractOriginal, tierOfUrl } = await import("../scripts/lib/original.mjs");
+  const page = fs.readFileSync(path.join(FX, "pages/discovery/orbit-7-explained.html"), "utf8");
+  assert.deepEqual(extractOriginal(page, "https://disc.example/article/orbit-7-explained/"), { url: "https://example.com/blog/orbit-7?utm_source=disc", tier: "official" });
+  assert.equal(extractOriginal(fs.readFileSync(path.join(FX, "pages/discovery/no-label.html"), "utf8"), "https://disc.example/article/no-label/"), null, "没有标注主材料就不猜");
+  assert.equal(tierOfUrl("https://arxiv.org/abs/2611.00001"), "primary");
+  assert.equal(tierOfUrl("https://www.tomshardware.com/x"), "media");
+
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "wg-disc-"));
+  const env = { ...process.env, WG_DATA: path.join(tmp, "data"), WG_CONTENT: path.join(tmp, "content"), WG_SOURCES: path.join(FX, "sources.discovery.test.json"), WG_X_ACCOUNTS: path.join(FX, "x-accounts.test.json") };
+  const run = (...a) => execFileSync(process.execPath, a, { cwd: ROOT, env, encoding: "utf8" });
+  assert.match(run("scripts/fetch.mjs", "--fixtures"), /打开 3 篇找原文，找到 1 个一手链接/);
+  const items = Object.values(JSON.parse(fs.readFileSync(path.join(tmp, "data/items.json"), "utf8")));
+  assert.ok(items.filter(i => i.source === "example-discovery").every(i => i.summary === ""), "对方的简介不保留");
+  const cands = JSON.parse(fs.readFileSync(path.join(tmp, "data/candidates.json"), "utf8"));
+  const orbit = cands.find(c => /Orbit-7/.test(c.title));
+  assert.equal(orbit.url, "https://example.com/blog/orbit-7?utm_source=rss&utm_medium=feed", "和官方博客合成同一事件，主材料仍是官方博客");
+  assert.ok(orbit.related.some(r => r.publisher === "example.com"));
+  const mediaOnly = cands.find(c => c.url.includes("media-only"));
+  assert.equal(mediaOnly.tier, "discovery");
+  const out = run("scripts/draft.mjs", "--top", "5", "--mock", "--min-score", "0");
+  assert.match(out, /主材料不是一手来源（discovery/);
+  const skips = JSON.parse(fs.readFileSync(path.join(tmp, "data/skip.json"), "utf8"));
+  assert.ok(skips.some(s => s.id === mediaOnly.id));
+  fs.rmSync(tmp, { recursive: true, force: true });
+});

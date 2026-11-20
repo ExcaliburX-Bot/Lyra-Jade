@@ -10,6 +10,7 @@ import { parseFeed, parseLinks } from "./lib/feed.mjs";
 import { normalizeUrl, sha } from "./lib/text.mjs";
 import { toCandidates } from "./lib/score.mjs";
 import { ingestInbox } from "./lib/inbox.mjs";
+import { extractOriginal, publisherOf } from "./lib/original.mjs";
 
 const args = process.argv.slice(2);
 const useFixtures = args.includes("--fixtures");
@@ -31,6 +32,18 @@ async function load(src, state) {
   return { body: await res.text(), etag: res.headers.get("etag"), lastModified: res.headers.get("last-modified") };
 }
 
+/* 发现渠道的文章页：只为找「主材料」链接而打开，每次最多 RESOLVE_MAX 篇，间隔 1 秒 */
+const RESOLVE_MAX = 20;
+async function loadArticlePage(url) {
+  if (useFixtures) {
+    const f = path.join(FIXTURES, "pages", "discovery", `${new URL(url).pathname.split("/").filter(Boolean).pop()}.html`);
+    return fs.existsSync(f) ? fs.readFileSync(f, "utf8") : null;
+  }
+  await new Promise(r => setTimeout(r, 1000));
+  const res = await fetch(url, { headers: { "user-agent": UA }, signal: AbortSignal.timeout(20_000) });
+  return res.ok ? res.text() : null;
+}
+
 async function main() {
   const sources = readJson(SOURCES, []).filter(s => s.enabled !== false);
   const items = readJson(dataFile("items.json"), {});
@@ -46,7 +59,7 @@ async function main() {
       const parsed = src.type === "page" ? parseLinks(r.body, { baseUrl: src.url, pattern: src.pattern, exclude: src.exclude }) : parseFeed(r.body);
       /* 列表页第一次抓：页面上原有的、看不出日期的文章都是旧的，只登记不进候选 */
       const firstPageRun = src.type === "page" && !state[src.id]?.lastOk && !useFixtures;
-      let fresh = 0, baseline = 0;
+      let fresh = 0, baseline = 0, resolved = 0, found = 0;
       /* 列表页按「见过的链接」去重：没有日期的文章过了 14 天被清出素材库后，不会因为还挂在页面上又被当成新的 */
       const seenKeys = new Set(state[src.id]?.seen || []);
       const tooOld = useFixtures ? 0 : Date.now() - KEEP_DAYS * 864e5;
@@ -57,12 +70,24 @@ async function main() {
         if (items[id] || seenKeys.has(key)) { seenKeys.add(key); continue; }
         seenKeys.add(key);
         if (firstPageRun && !p.published) { baseline++; continue; }
-        items[id] = { id, key, ...p, source: src.id, publisher: src.publisher || src.name, tier: src.tier, weight: src.weight ?? 1, category_hint: src.category || null, fetched_at: now };
+        let item = { id, key, ...p, source: src.id, publisher: src.publisher || src.name, tier: src.tier, weight: src.weight ?? 1, category_hint: src.category || null, fetched_at: now };
+        /* 发现渠道：打开文章页找「主材料」链接，线索改指向原文；对方的标题只用来列清单，简介不保留 */
+        if (src.resolveOriginal && resolved < RESOLVE_MAX) {
+          resolved++;
+          let orig = null;
+          try { const html = await loadArticlePage(p.url); orig = html && extractOriginal(html, p.url); } catch { orig = null; }
+          item.summary = "";
+          if (orig && orig.tier !== "media") {
+            item = { ...item, url: orig.url, key: normalizeUrl(orig.url), via: p.url, discovered_by: src.id, tier: orig.tier, publisher: publisherOf(orig.url) };
+            found++;
+          }
+        }
+        items[id] = item;
         fresh++;
       }
       state[src.id] = { ...state[src.id], etag: r.etag || null, lastModified: r.lastModified || null, lastOk: now, ...(fresh ? { lastNew: now } : {}),
         ...(src.type === "page" ? { seen: [...seenKeys].slice(-500) } : {}) };
-      log.push(`✓ ${src.name}：解析 ${parsed.length} 条，新增 ${fresh} 条${baseline ? `，${baseline} 条是首次抓取时页面上已有、看不出日期的旧文章，只登记不进候选` : ""}`);
+      log.push(`✓ ${src.name}：解析 ${parsed.length} 条，新增 ${fresh} 条${baseline ? `，${baseline} 条是首次抓取时页面上已有、看不出日期的旧文章，只登记不进候选` : ""}${resolved ? `；打开 ${resolved} 篇找原文，找到 ${found} 个一手链接` : ""}`);
     } catch (e) {
       state[src.id] = { ...state[src.id], lastError: `${now} ${e.message}` };
       log.push(`✗ ${src.name}：${e.message}`);

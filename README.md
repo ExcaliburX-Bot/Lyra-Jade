@@ -24,7 +24,7 @@ AI 资讯解读站：自动从一手来源抓取 → 合并打分 → AI 写稿�
 
 ```bash
 npm run demo        # 用样例订阅和模拟模型把整条流水线跑一遍
-npm test            # 17 个测试：解析、合并、打分、X 监测、收件箱、校验、自动合并规则、端到端
+npm test            # 18 个测试：解析、合并、打分、X 监测、收件箱、校验、自动合并规则、端到端
 npm run dev         # 构建并在 http://localhost:4321 预览
 ```
 
@@ -63,6 +63,7 @@ npm run dev         # 构建并在 http://localhost:4321 预览
 - **不想写某一篇**：`node scripts/bot.mjs skip <ID> --reason "…"`，再 `bash scripts/ci/commit-data.sh "跳过"`。
 - **审核一篇稿子**：打开 PR，先看描述里的「必须修改」，再看机器人的初审评论。核对完确认 `"verified": true`，合并即发布；不要的稿子直接关闭。
 - **加 / 修数据源**：编辑 `sources/sources.json`（RSS 写 `rss`；没有 RSS 的写 `page` 加 `pattern`）。先用 `node scripts/bot.mjs source-test --url … --type page --pattern …` 试抓。
+- **选题入口（小互）**：`sources.json` 里的 `xiaohu` 源只当线索：每篇只打开一次文章页取「查看主材料」链接，回到一手原文写；不用对方的标题、简介和正文。找不到一手原文的直接跳过，不改写对方的稿子。同样的方式可以接别的解读站：加 `"resolveOriginal": true`。
 - **X 监测名单**：`sources/x-accounts.json`，每组最多 20 个账号；KOL 两组默认关着。X 搜索按抓取的帖子数收费，用量记在 `data` 分支的 `usage.json`。
 - **换写稿模型**：默认 Grok；把变量 `WG_PROVIDER` 设为 `anthropic` 并加 `ANTHROPIC_API_KEY` 即改用 Claude。
 - **调写作规则**：`prompts/writer.md`。**改页面样式**：`site/assets/site.css`，图形组件在 `site/assets/components.js`。

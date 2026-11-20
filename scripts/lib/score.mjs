@@ -56,6 +56,7 @@ export function toCandidates(items, now = Date.now()) {
       category_hint: main.category_hint || null,
       ...(main.text ? { text: main.text } : {}),
       ...(main.via ? { via: main.via } : {}),
+      ...(main.discovered_by ? { discovered_by: main.discovered_by } : {}),
       related: ev.items.filter(x => x !== main).map(x => ({ title: x.title, url: x.url, publisher: x.publisher, tier: x.tier, ...(x.text ? { text: x.text } : {}) }))
     };
   }).sort((a, b) => b.score - a.score);

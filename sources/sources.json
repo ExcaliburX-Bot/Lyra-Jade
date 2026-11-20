@@ -168,5 +168,17 @@
     "weight": 1.0,
     "enabled": false,
     "note": "页面靠 JS 渲染，需要无头浏览器，第二阶段再开"
+  },
+  {
+    "id": "xiaohu",
+    "name": "小互 xiaohu.ai（选题入口）",
+    "publisher": "小互",
+    "type": "rss",
+    "url": "https://xiaohu.ai/rss.xml",
+    "tier": "discovery",
+    "weight": 1,
+    "limit": 20,
+    "resolveOriginal": true,
+    "note": "只当选题线索：打开文章页取「查看主材料」链接，回到一手原文写；不使用小互的标题、简介和正文。robots.txt 允许抓 /article/（2026-11-20 核对）"
   }
 ]
