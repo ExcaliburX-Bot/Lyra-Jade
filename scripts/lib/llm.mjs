@@ -19,10 +19,15 @@ const TOOL = { name: "submit_article", description: "提交写好的解读文章
 /* 有的模型会把文章多包一层，比如 {"article": {...}}，或把 JSON 当字符串传：统一拆出来 */
 export function unwrapArticle(a, depth = 0) {
   if (typeof a === "string") { try { a = JSON.parse(a); } catch { return a; } }
-  if (!a || typeof a !== "object" || depth > 2) return a;
-  if (Array.isArray(a.sections) || a.title) return a;
-  const inner = Object.values(a).find(v => (v && typeof v === "object" && (Array.isArray(v.sections) || v.title)) || typeof v === "string");
-  return inner ? unwrapArticle(inner, depth + 1) : a;
+  if (!a || typeof a !== "object" || Array.isArray(a)) return a;
+  const isArticle = x => x && typeof x === "object" && (Array.isArray(x.sections) || typeof x.title === "string");
+  if (isArticle(a) || depth >= 3) return a;
+  for (const v of Object.values(a)) {
+    if (!v || (typeof v !== "object" && typeof v !== "string")) continue;
+    const u = unwrapArticle(v, depth + 1);
+    if (isArticle(u)) return u;
+  }
+  return a;
 }
 export function parseAnthropic(json) {
   const call = (json.content || []).find(c => c.type === "tool_use" && c.name === TOOL.name);
