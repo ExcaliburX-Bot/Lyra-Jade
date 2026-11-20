@@ -369,3 +369,13 @@ test("自动修正：图里写成文字的数值转数字；「500,000+」能对
   assert.equal(made.errors, 1, "只剩样例里故意放的 120ms");
   fs.rmSync(tmp, { recursive: true, force: true });
 });
+
+test("引文比对：弯引号、破折号写法不同不算改写", async () => {
+  const { validateArticle } = await import("../scripts/lib/validate.mjs");
+  const base = { ...readJson("llm-article.json"), date: "2026-11-18", sources: { main: { url: "u" } } };
+  const src = "Neon achieves #1 overall on both Zapier\u2019s AutomationBench (56.3%) \u2014 a long\u2011horizon test.";
+  const claims = [{ text: "x", value: "56.3%", source_url: "s", quote: "achieves #1 overall on both Zapier's AutomationBench (56.3%) - a long-horizon test" }];
+  assert.doesNotMatch(validateArticle({ ...base, claims }, { sourceTexts: { s: src } }).warnings.join(""), /引文和原文对不上/);
+  const reworded = [{ ...claims[0], quote: "ranks first on Zapier's AutomationBench" }];
+  assert.match(validateArticle({ ...base, claims: reworded }, { sourceTexts: { s: src } }).warnings.join(""), /引文和原文对不上/);
+});

@@ -55,4 +55,9 @@ export function gramSimilarity(A, B) {
 }
 
 /* 数字规范化：去掉千位逗号和空格，便于在原文里查找 */
-export const normNum = s => String(s).replace(/(\d),(?=\d{3}\b)/g, "$1").replace(/\s+/g, "").toLowerCase();
+/* 比对用的规范化：去千位逗号和空白、统一大小写；弯引号、长短破折号、全角符号统一成普通写法
+   （原文常用 Zapier’s，模型引用时常写成 Zapier's，这不算改写） */
+export const normNum = s => String(s)
+  .replace(/[\u2018\u2019\u201A\u201B\u2032\u02BC]/g, "'").replace(/[\u201C\u201D\u201E\u2033]/g, '"')
+  .replace(/[\u2010-\u2015\u2212]/g, "-").replace(/\u2026/g, "...")
+  .replace(/(\d),(?=\d{3}\b)/g, "$1").replace(/[\s\u00A0\u3000]+/g, "").toLowerCase();
