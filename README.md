@@ -65,7 +65,7 @@ npm run dev         # 构建并在 http://localhost:4321 预览
 - **审核一篇稿子**：打开 PR，先看描述里的「必须修改」，再看机器人的初审评论。核对完确认 `"verified": true`，合并即发布；不要的稿子直接关闭。
 - **加 / 修数据源**：编辑 `sources/sources.json`（RSS 写 `rss`；没有 RSS 的写 `page` 加 `pattern`）。先用 `node scripts/bot.mjs source-test --url … --type page --pattern …` 试抓。
 - **选题入口（小互）**：`sources.json` 里的 `xiaohu` 源只当线索：每篇只打开一次文章页取「查看主材料」链接，回到一手原文写；不用对方的标题、简介和正文。找不到一手原文的直接跳过，不改写对方的稿子。同样的方式可以接别的解读站：加 `"resolveOriginal": true`。
-- **X 监测名单**：`sources/x-accounts.json`，每组最多 20 个账号；KOL 两组默认关着。X 搜索按抓取的帖子数收费，用量记在 `data` 分支的 `usage.json`。
+- **X 监测名单**：`sources/x-accounts.json`，每组最多 20 个账号；KOL 两组默认关着。X 搜索按抓取的帖子数收费，用量记在 `data` 分支的 `usage.json`；目前每天只跑 2 次（北京时间 7:47、17:47），选题主要靠免费的小互入口。
 - **换写稿模型**：默认 Grok。改用 DeepSeek：加 `DEEPSEEK_API_KEY`，把变量 `WG_PROVIDER` 设为 `deepseek`；想先试一篇，手动运行「写稿」时在 provider 里选 deepseek 即可。定时写稿已避开 DeepSeek 的工作日高峰（UTC 01–04、06–10 点），按半价计费。
 - **导出单页**：`npm run build && node scripts/export.mjs <slug> 文件名.html`，把一篇文章导出成一个独立的 HTML 文件（样式、脚本、动态图都内嵌），双击就能打开，适合发给别人看。
 - **调写作规则**：`prompts/writer.md`。**改页面样式**：`site/assets/site.css`，图形组件在 `site/assets/components.js`。
