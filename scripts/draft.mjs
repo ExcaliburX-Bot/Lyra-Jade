@@ -58,6 +58,14 @@ async function main() {
   let list = readJson(dataFile("candidates.json"), []).filter(c => !drafted.includes(c.id) && (only || !skipped.has(c.id)));
   list = only ? list.filter(c => c.id === only) : list.filter(c => c.score >= minScore).slice(0, top);
   if (!list.length) { console.log("没有需要写的候选"); return; }
+  if (!mock) {
+    const need = PROVIDER === "xai" ? "XAI_API_KEY" : "ANTHROPIC_API_KEY";
+    if (!process.env[need]) {
+      console.log(`::error::没有设置 ${need}（写稿模型是 ${PROVIDER}）。在仓库 Settings → Secrets and variables → Actions → Secrets 里添加。`);
+      process.exit(1);
+    }
+  }
+  let failed = 0;
 
   const made = [];
   for (const c of list) {
@@ -97,11 +105,15 @@ async function main() {
       made.push({ slug: a.slug, title: a.title, file: path.relative(ROOT, file), errors: r.errors.length, warnings: r.warnings.length });
       console.log(`  已写入 ${path.relative(ROOT, file)}：${r.errors.length} 个必须修改，${r.warnings.length} 个待确认`);
     } catch (e) {
+      failed++;
       console.log(`  ✗ 失败：${e.message}`);
+      if (process.env.GITHUB_ACTIONS) console.log(`::warning::写稿失败（${c.title.slice(0, 60)}）：${e.message.slice(0, 300)}`);
     }
   }
   writeJson(dataFile("drafted.json"), drafted);
   writeJson(dataFile("new-drafts.json"), made);
+  /* 一篇都没写成就让工作流变红，免得「绿了但什么都没发生」 */
+  if (failed && !made.length) { console.log(`::error::${failed} 篇全部写稿失败，见上面的日志`); process.exitCode = 1; }
 }
 
 main().catch(e => { console.error(e); process.exit(1); });

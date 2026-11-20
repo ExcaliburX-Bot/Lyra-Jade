@@ -148,3 +148,26 @@ test("机器人标记不写的候选，定时写稿会跳过", () => {
   assert.match(run("scripts/bot.mjs", "weekly"), /测试：已有同类稿/);
   fs.rmSync(tmp, { recursive: true, force: true });
 });
+
+test("列表页：标题取 h 标签、日期从链接文字或其后取出、导航词跳过", async () => {
+  const { parseLinks, extractDate } = await import("../scripts/lib/feed.mjs");
+  assert.equal(extractDate("Featured October 12, 2026 Muse Wonder").iso, "2026-10-12T12:00:00.000Z");
+  assert.equal(extractDate("发布于 2026年11月9日").iso, "2026-11-09T12:00:00.000Z");
+  assert.equal(extractDate("Nov 9, 2026").iso, "2026-11-09T12:00:00.000Z");
+  assert.equal(extractDate("9 Sept 2026").iso, "2026-09-09T12:00:00.000Z");
+  assert.equal(extractDate("version 2026.13.40"), null);
+  const html = `
+    <nav><a href="/news/product">Product</a><a href="/news/policy">Policy</a></nav>
+    <a href="/blog/muse-wonder"><span>Featured</span> <span>October 12, 2026</span> <h3>Muse Wonder: A Frontier Model</h3><p>Muse Wonder is Meta's frontier AI model that keeps track of what matters.</p></a>
+    <a href="/blog/muse-ember">Introducing Our Smallest Model: Muse Ember November 9, 2026</a>
+    <a href="/news/public-benefit-fund"><h4>Investing in the public benefit</h4> We're committing a portion of shares.</a><time>Nov 10, 2026</time>
+    <a href="/news/no-date-post">A post whose date is nowhere</a>`;
+  const out = parseLinks(html, { baseUrl: "https://ex.com/", pattern: "^/(blog|news)/[a-z0-9-]+$", exclude: "^/news/(product)$" });
+  assert.deepEqual(out.map(o => [o.title, o.published?.slice(0, 10) || null]), [
+    ["Muse Wonder: A Frontier Model", "2026-10-12"],
+    ["Introducing Our Smallest Model: Muse Ember", "2026-11-09"],
+    ["Investing in the public benefit", "2026-11-10"],
+    ["A post whose date is nowhere", null]
+  ]);
+  assert.match(out[0].summary, /keeps track/);
+});

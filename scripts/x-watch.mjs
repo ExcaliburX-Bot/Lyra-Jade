@@ -85,7 +85,13 @@ export async function postsToItems(group, answer, citations, now = new Date()) {
 async function main() {
   const groups = readJson(X_ACCOUNTS, []).filter(g => (only ? g.id === only : g.enabled !== false));
   if (!groups.length) { console.log("没有要监测的组"); return; }
-  if (!mock && !process.env.XAI_API_KEY) { console.log("没有设置 XAI_API_KEY，跳过 X 监测"); return; }
+  if (!mock && !process.env.XAI_API_KEY) {
+    /* 手动运行时报错（让人看见）；定时运行时只提醒 */
+    const manual = process.env.GITHUB_EVENT_NAME === "workflow_dispatch";
+    console.log(`::${manual ? "error" : "warning"}::没有设置 XAI_API_KEY，X 监测跳过。在仓库 Settings → Secrets and variables → Actions → Secrets 里添加。`);
+    if (manual) process.exitCode = 1;
+    return;
+  }
 
   const state = readJson(dataFile("state.json"), {});
   const usage = readJson(dataFile("usage.json"), {});
@@ -121,6 +127,8 @@ async function main() {
   }
   writeJson(dataFile("state.json"), state);
   writeJson(dataFile("usage.json"), usage);
+  const failedGroups = groups.filter(g => state[`x:${g.id}`]?.lastError?.startsWith(nowIso)).length;
+  if (failedGroups && failedGroups === groups.length) { console.log(`::error::所有 ${failedGroups} 组 X 监测都失败了，见上面的日志`); process.exitCode = 1; }
   console.log(`\n模型 ${mock ? "mock" : XAI_SEARCH_MODEL}；今日 X 搜索累计抓取帖子 ${usage[day(now)]?.x_posts_fetched ?? 0} 条（按 xAI 价目约每千条 5 美元）`);
 }
 

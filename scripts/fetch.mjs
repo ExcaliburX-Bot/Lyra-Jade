@@ -43,17 +43,26 @@ async function main() {
       const r = await load(src, state);
       if (r.skipped) { log.push(`· ${src.name}：没有样例，跳过`); continue; }
       if (r.notModified) { log.push(`· ${src.name}：没有更新`); continue; }
-      const parsed = src.type === "page" ? parseLinks(r.body, { baseUrl: src.url, pattern: src.pattern }) : parseFeed(r.body);
-      let fresh = 0;
+      const parsed = src.type === "page" ? parseLinks(r.body, { baseUrl: src.url, pattern: src.pattern, exclude: src.exclude }) : parseFeed(r.body);
+      /* 列表页第一次抓：页面上原有的、看不出日期的文章都是旧的，只登记不进候选 */
+      const firstPageRun = src.type === "page" && !state[src.id]?.lastOk && !useFixtures;
+      let fresh = 0, baseline = 0;
+      /* 列表页按「见过的链接」去重：没有日期的文章过了 14 天被清出素材库后，不会因为还挂在页面上又被当成新的 */
+      const seenKeys = new Set(state[src.id]?.seen || []);
+      const tooOld = useFixtures ? 0 : Date.now() - KEEP_DAYS * 864e5;
       for (const p of parsed.slice(0, src.limit || 30)) {
         if (src.include && !new RegExp(src.include, "i").test(p.title + " " + p.summary)) continue;
+        if (p.published && Date.parse(p.published) < tooOld) continue;   /* 超过 14 天的旧文章不进素材库 */
         const key = normalizeUrl(p.url), id = sha(key);
-        if (items[id]) continue;
+        if (items[id] || seenKeys.has(key)) { seenKeys.add(key); continue; }
+        seenKeys.add(key);
+        if (firstPageRun && !p.published) { baseline++; continue; }
         items[id] = { id, key, ...p, source: src.id, publisher: src.publisher || src.name, tier: src.tier, weight: src.weight ?? 1, category_hint: src.category || null, fetched_at: now };
         fresh++;
       }
-      state[src.id] = { ...state[src.id], etag: r.etag || null, lastModified: r.lastModified || null, lastOk: now, ...(fresh ? { lastNew: now } : {}) };
-      log.push(`✓ ${src.name}：解析 ${parsed.length} 条，新增 ${fresh} 条`);
+      state[src.id] = { ...state[src.id], etag: r.etag || null, lastModified: r.lastModified || null, lastOk: now, ...(fresh ? { lastNew: now } : {}),
+        ...(src.type === "page" ? { seen: [...seenKeys].slice(-500) } : {}) };
+      log.push(`✓ ${src.name}：解析 ${parsed.length} 条，新增 ${fresh} 条${baseline ? `，${baseline} 条是首次抓取时页面上已有、看不出日期的旧文章，只登记不进候选` : ""}`);
     } catch (e) {
       state[src.id] = { ...state[src.id], lastError: `${now} ${e.message}` };
       log.push(`✗ ${src.name}：${e.message}`);
