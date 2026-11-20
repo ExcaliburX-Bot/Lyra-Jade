@@ -185,3 +185,24 @@ test("列表页：标题取 h 标签、日期从链接文字或其后取出、�
   ]);
   assert.match(out[0].summary, /keeps track/);
 });
+
+test("只有短推文的候选：打折排后；定时写稿跳过它并记进不写清单，接着写下一个", () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "wg-thin-"));
+  const env = { ...process.env, WG_DATA: path.join(tmp, "data"), WG_CONTENT: path.join(tmp, "content"), WG_SOURCES: path.join(FX, "sources.test.json"), WG_X_ACCOUNTS: path.join(FX, "x-accounts.test.json") };
+  const run = (...a) => execFileSync(process.execPath, a, { cwd: ROOT, env, encoding: "utf8" });
+  run("scripts/x-watch.mjs", "--mock");
+  run("scripts/fetch.mjs", "--fixtures");
+  const cands = JSON.parse(fs.readFileSync(path.join(tmp, "data/candidates.json"), "utf8"));
+  const nimbus = cands.find(c => c.url.includes("x.com/otherlab"));
+  assert.ok(cands.findIndex(c => c === nimbus) > 0 && nimbus.score < cands[0].score);
+  /* 除了 Nimbus 和一篇普通候选，其他都标记不写，让 Nimbus 排第一 */
+  const keep = cands.find(c => c !== nimbus && !c.url.includes("x.com"));
+  for (const c of cands) if (c !== nimbus && c !== keep) run("scripts/bot.mjs", "skip", c.id, "--reason", "测试");
+  if (nimbus.score < keep.score) fs.writeFileSync(path.join(tmp, "data/candidates.json"), JSON.stringify([nimbus, keep]));
+  const out = run("scripts/draft.mjs", "--top", "1", "--mock", "--min-score", "0");
+  assert.match(out, /材料只有 \d+ 字/);
+  const skips = JSON.parse(fs.readFileSync(path.join(tmp, "data/skip.json"), "utf8"));
+  assert.ok(skips.some(s => s.id === nimbus.id && /材料太短/.test(s.reason)));
+  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(tmp, "data/drafted.json"), "utf8")), [keep.id], "跳过后接着写下一个");
+  fs.rmSync(tmp, { recursive: true, force: true });
+});

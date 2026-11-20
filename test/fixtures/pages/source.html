@@ -5,5 +5,10 @@
 <p>Orbit-7 supports a context window of 256,000 tokens and scores 71.2% on SWE-bench Verified.</p>
 <p>At 4-bit precision, Orbit-7 runs on a single 48GB GPU. The full-precision (FP16) weights need about 68GB.</p>
 <p>Through our API, Orbit-7 is priced at $0.40 per million input tokens and $1.60 per million output tokens.</p>
-<p>Weights are available today under the Apache 2.0 license.</p></article>
+<p>Weights are available today under the Apache 2.0 license.</p>
+<h2>Why we built it</h2>
+<p>Coding agents spend most of their time reading code, calling tools and checking their own work. We trained Orbit-7 to stay on task across long sessions, to call tools with well-formed arguments, and to stop and ask when a request is ambiguous instead of guessing.</p>
+<p>Teams told us they want a model they can run on their own hardware, inspect, and fine-tune for their codebase. An open-weight release lets them do that without sending source code to a third party.</p>
+<h2>Limitations</h2>
+<p>Orbit-7 is tuned for code. It is not a general chat assistant, and it has not been evaluated for medical, legal or financial advice. Like other models it can produce code that looks right but fails at runtime, so we recommend running tests on every change it proposes.</p></article>
 <footer>© Example Labs</footer></body></html>

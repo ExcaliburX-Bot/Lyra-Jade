@@ -56,7 +56,8 @@ async function main() {
   /* 机器人或编辑标记「不写」的候选（data/skip.json）也跳过；--id 指定时不受影响 */
   const skipped = new Set(readJson(dataFile("skip.json"), []).map(s => s.id));
   let list = readJson(dataFile("candidates.json"), []).filter(c => !drafted.includes(c.id) && (only || !skipped.has(c.id)));
-  list = only ? list.filter(c => c.id === only) : list.filter(c => c.score >= minScore).slice(0, top);
+  /* 不先截断：材料太短被跳过时，继续往下找，直到写够 top 篇 */
+  list = only ? list.filter(c => c.id === only) : list.filter(c => c.score >= minScore);
   if (!list.length) { console.log("没有需要写的候选"); return; }
   if (!mock) {
     const need = PROVIDER === "xai" ? "XAI_API_KEY" : "ANTHROPIC_API_KEY";
@@ -68,13 +69,25 @@ async function main() {
   let failed = 0;
 
   const made = [];
+  const MIN_CHARS = Number(process.env.WG_MIN_SOURCE_CHARS || 800);
+  const skipList = readJson(dataFile("skip.json"), []);
+  let thin = 0;
   for (const c of list) {
+    if (!only && made.length + failed >= top) break;
     console.log(`\n▶ ${c.title}（${c.score} 分）`);
     try {
       /* 主材料必须是一手来源；相关报道里的官方 / 原始材料也一起给模型 */
       const texts = { [c.url]: await sourceText(c.url, c.text) };
       for (const r of c.related.filter(r => ["official", "primary"].includes(r.tier)).slice(0, 2)) {
         try { texts[r.url] = await sourceText(r.url, r.text); } catch (e) { console.log(`  相关材料跳过：${e.message}`); }
+      }
+      /* 材料太短（例如只有一条两句话的推文）写不出解读：定时写稿时跳过，记进不写清单；手动指定 --id 时照写 */
+      const chars = Object.values(texts).reduce((n, t) => n + t.length, 0);
+      if (!only && chars < MIN_CHARS) {
+        thin++;
+        console.log(`  · 跳过：材料只有 ${chars} 字，少于 ${MIN_CHARS} 字，写不出解读。已记进 skip.json；确实要写就用 --id 指定`);
+        skipList.push({ id: c.id, reason: `材料太短（${chars} 字），自动跳过`, title: c.title, at: new Date().toISOString() });
+        continue;
       }
       const user = [
         `今天日期：${new Date().toISOString().slice(0, 10)}`,
@@ -112,6 +125,7 @@ async function main() {
   }
   writeJson(dataFile("drafted.json"), drafted);
   writeJson(dataFile("new-drafts.json"), made);
+  if (thin) writeJson(dataFile("skip.json"), skipList.slice(-500));
   /* 一篇都没写成就让工作流变红，免得「绿了但什么都没发生」 */
   if (failed && !made.length) { console.log(`::error::${failed} 篇全部写稿失败，见上面的日志`); process.exitCode = 1; }
 }
