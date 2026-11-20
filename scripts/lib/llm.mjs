@@ -46,6 +46,18 @@ export function xaiTextAndCitations(json) {
 }
 
 /* ---------- 请求 ---------- */
+/* xAI 写稿请求。只给一个函数，用 tool_choice: "required" 强制调用它
+   （xAI 的 Responses 接口不接受 {type:"function", function:{name}} 这种写法，2026-11-20 实测返回 422） */
+export function xaiWriteRequest({ system, user, schema }) {
+  return {
+    model: DEFAULT_MODEL,
+    input: [{ role: "system", content: system }, { role: "user", content: user }],
+    tools: [{ type: "function", name: TOOL.name, description: TOOL.description, parameters: schema }],
+    tool_choice: "required",
+    parallel_tool_calls: false
+  };
+}
+
 async function post(url, headers, body, label) {
   const res = await fetch(url, { method: "POST", headers: { "content-type": "application/json", ...headers }, body: JSON.stringify(body), signal: AbortSignal.timeout(300_000) });
   if (!res.ok) throw new Error(`${label} 返回 ${res.status}：${(await res.text()).slice(0, 400)}`);
@@ -62,13 +74,7 @@ export async function writeArticle({ system, user, schema, mock = false }) {
   if (mock) return JSON.parse(fs.readFileSync(path.join(FIXTURES, "llm-article.json"), "utf8"));
 
   if (PROVIDER === "xai") {
-    const json = await post("https://api.x.ai/v1/responses", { authorization: `Bearer ${needKey("XAI_API_KEY")}` }, {
-      model: DEFAULT_MODEL,
-      input: [{ role: "system", content: system }, { role: "user", content: user }],
-      tools: [{ type: "function", name: TOOL.name, description: TOOL.description, parameters: schema }],
-      tool_choice: { type: "function", function: { name: TOOL.name } },
-      parallel_tool_calls: false
-    }, "xAI 接口");
+    const json = await post("https://api.x.ai/v1/responses", { authorization: `Bearer ${needKey("XAI_API_KEY")}` }, xaiWriteRequest({ system, user, schema }), "xAI 接口");
     return parseXaiFunctionCall(json);
   }
 

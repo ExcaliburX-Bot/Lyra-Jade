@@ -6,7 +6,7 @@ import os from "node:os";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { parseAnthropic, parseXaiFunctionCall, xaiTextAndCitations } from "../scripts/lib/llm.mjs";
+import { parseAnthropic, parseXaiFunctionCall, xaiTextAndCitations, xaiWriteRequest } from "../scripts/lib/llm.mjs";
 import { postsToItems, extractJson } from "../scripts/x-watch.mjs";
 import { cluster } from "../scripts/lib/score.mjs";
 import { checkInboxItem } from "../scripts/lib/inbox.mjs";
@@ -20,6 +20,10 @@ test("写稿模型：Claude 和 Grok 的返回都能解析成同一篇文章", (
   assert.deepEqual(parseXaiFunctionCall(readJson("xai/function-call.json")), article);
   assert.deepEqual(parseAnthropic({ content: [{ type: "text", text: "好" }, { type: "tool_use", name: "submit_article", input: article }] }), article);
   assert.throws(() => parseXaiFunctionCall({ output: [{ type: "message" }] }), /没有按要求返回/);
+  const req = xaiWriteRequest({ system: "s", user: "u", schema: { type: "object" } });
+  assert.equal(req.tool_choice, "required", "xAI 不接受指定函数名的 tool_choice 对象（实测 422）");
+  assert.equal(req.tools.length, 1);
+  assert.equal(req.tools[0].name, "submit_article");
 });
 
 test("X 搜索：只收引用过的帖子、只收本组账号", async () => {
