@@ -14,7 +14,7 @@ import { ingestInbox } from "./lib/inbox.mjs";
 const args = process.argv.slice(2);
 const useFixtures = args.includes("--fixtures");
 const KEEP_DAYS = 14;
-const UA = "WeiGuangBot/0.1 (+https://example.com/bot; content curation)";
+const UA = "LyraJadeBot/0.1 (+https://github.com/ExcaliburX-Bot/Lyra-Jade; content curation)";
 
 async function load(src, state) {
   if (useFixtures) {

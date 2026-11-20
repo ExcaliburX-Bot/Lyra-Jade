@@ -1,7 +1,7 @@
 /* =========================================================
    1. 站点配置 —— 换品牌只改这里
    ========================================================= */
-const SITE = { brand: "WeiGuang.AI", today: "2026-11-18", pageSize: 30 };
+const SITE = { brand: "玲珑玉 Lyra-Jade", today: "2026-11-18", pageSize: 30 };
 
 /* =========================================================
    2. 多语言文案
@@ -181,7 +181,7 @@ function renderStatic(){
   if(LIST)$("#heroStats").innerHTML=t("stats",{a:ARTICLES.length-hands,b:hands});
   // 侧栏
   $("#sideNav").innerHTML=NAV.map(n=>n.g?`<div class="side-group">${t(n.g)}</div>`:
-    `<a href="#" class="${n.on?"on":""}" ${n.on?"data-home":"data-todo"}>${n.ava?`<span class="ava">光</span>`:icon(n.i)}<span>${t(n.t)}</span>${n.tag?`<em class="${n.tc}">${t(n.tag)}</em>`:""}</a>`).join("")+
+    `<a href="#" class="${n.on?"on":""}" ${n.on?"data-home":"data-todo"}>${n.ava?`<span class="ava">玉</span>`:icon(n.i)}<span>${t(n.t)}</span>${n.tag?`<em class="${n.tc}">${t(n.tag)}</em>`:""}</a>`).join("")+
     `<div class="sub-card"><strong>${t("subTitle")}</strong><p>${t("subText")}</p><button class="btn btn-light btn-block" data-subscribe>${t("subBtn")}</button></div>`;
   // 页脚
   const li=arr=>arr.map(k=>`<li><a href="#" ${k==="navJiedu"?"data-home":"data-todo"}>${t(k)}</a></li>`).join("");

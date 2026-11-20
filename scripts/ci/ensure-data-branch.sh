@@ -3,8 +3,8 @@
 set -euo pipefail
 BR="${WG_DATA_BRANCH:-data}"
 if git ls-remote --exit-code --heads origin "$BR" >/dev/null 2>&1; then exit 0; fi
-git config user.name  >/dev/null || git config user.name  "weiguang-bot"
-git config user.email >/dev/null || git config user.email "weiguang-bot@users.noreply.github.com"
+git config user.name  >/dev/null || git config user.name  "lyra-jade-bot"
+git config user.email >/dev/null || git config user.email "lyra-jade-bot@users.noreply.github.com"
 tree=$(git hash-object -w -t tree /dev/null)
 commit=$(git commit-tree "$tree" -m "init: 机器数据分支（素材库、候选、原文存档、审核报告）")
 git push origin "$commit:refs/heads/$BR"

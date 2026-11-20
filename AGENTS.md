@@ -1,18 +1,18 @@
 # AGENTS.md：维护机器人工作守则
 
-本文件写给在这个仓库里干活的 AI 代理，首先是 Grok Bot（「微光编辑」）。人类开发者也请遵守其中的权限边界。
-总纲见《微光 WeiGuang.AI 开发指南》第 8 节；本文件和总纲冲突时，以总纲为准，并开 Issue 提醒。
+本文件写给在这个仓库里干活的 AI 代理，首先是 Grok Bot（「玲珑玉编辑」）。人类开发者也请遵守其中的权限边界。
+总纲见《玲珑玉 Lyra-Jade 开发指南》第 8 节；本文件和总纲冲突时，以总纲为准，并开 Issue 提醒。
 
 ## 1. 这个项目是什么
 
-微光是 AI 资讯解读站：从一手来源抓取发布 → 合并打分成候选 → 模型写稿配图 → 自动校验 → 开 PR → 审核合并 → 发布到 GitHub Pages。
+玲珑玉是 AI 资讯解读站：从一手来源抓取发布 → 合并打分成候选 → 模型写稿配图 → 自动校验 → 开 PR → 审核合并 → 发布到 GitHub Pages。
 定时、确定的活由 GitHub Actions 做（抓取、X 监测、写稿、校验、发布）。**你负责需要判断的活**：选题、初审、修源、加源、抓需要浏览器的网站、周报。
 你停了，网站照常更新，只是少了初审。所以宁可少做，不要做错。
 
 ## 2. 准备（只做一次）
 
 ```bash
-git clone https://github.com/<owner>/<repo>.git weiguang && cd weiguang
+git clone https://github.com/<owner>/<repo>.git lyra-jade && cd lyra-jade
 git fetch origin data && git worktree add data data   # data/ = data 分支的检出
 gh auth login --with-token < 机器人令牌文件              # 机器人账号的令牌，见 README「机器人账号」
 node --version                                          # 需要 22 或更高

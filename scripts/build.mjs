@@ -8,7 +8,7 @@ import { readJson } from "./lib/store.mjs";
 import { sha } from "./lib/text.mjs";
 import { renderArticleBody, esc } from "../site/assets/components.js";
 
-const SITE_NAME = "WeiGuang.AI";
+const SITE_NAME = "玲珑玉 Lyra-Jade";
 const SITE_URL = (process.env.WG_SITE_URL || "https://example.com").replace(/\/$/, "");
 const CAT_NAME = { product: "产品发布", research: "研究解读", deep: "深度", biz: "商业动态", howto: "AI 实操", visual: "商业视觉实战", insight: "洞察", other: "其他" };
 

@@ -8,8 +8,8 @@ LIST=data/new-drafts.json
 COUNT=$(node -e 'console.log(JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")).length)' "$LIST")
 [ "$COUNT" -gt 0 ] || { echo "没有新稿"; exit 0; }
 
-git config user.name  "weiguang-bot"
-git config user.email "weiguang-bot@users.noreply.github.com"
+git config user.name  "lyra-jade-bot"
+git config user.email "lyra-jade-bot@users.noreply.github.com"
 BASE=$(git rev-parse --abbrev-ref HEAD)
 
 # 1) 已写过的候选、原文存档、审核报告提交到 data 分支（这些是数据，不进主分支）

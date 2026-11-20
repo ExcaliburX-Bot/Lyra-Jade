@@ -57,7 +57,7 @@ function status() {
   const h = health();
   const bad = h.filter(r => !["正常", "停用"].includes(r.status));
   const inbox = fs.existsSync(INBOX()) ? fs.readdirSync(INBOX()).filter(f => f.endsWith(".json")).length : 0;
-  console.log(`# 微光状态（${new Date().toISOString().slice(0, 16).replace("T", " ")} UTC）\n`);
+  console.log(`# 玲珑玉状态（${new Date().toISOString().slice(0, 16).replace("T", " ")} UTC）\n`);
   console.log(`## 待写候选（前 ${open.length} 个，没写过的）\n`);
   console.log(open.length ? table(["ID", "分数", "层级", "标题", "发布方", "相关"], open.map(c => [c.id, c.score, c.tier, `[${c.title.slice(0, 70)}](${c.url})`, c.publisher, c.related.length])) : "没有。");
   console.log(`\n## 需要处理的源（${bad.length} 个）\n`);
@@ -84,7 +84,7 @@ async function sourceTest() {
     if (!src) { console.error(`sources.json 里没有 ${arg("--id")}`); process.exit(1); }
   } else src = { url: arg("--url"), type: arg("--type", "rss"), pattern: arg("--pattern") };
   if (!/^https?:\/\//.test(src.url || "")) { console.error("要给 --url 或 --id"); process.exit(1); }
-  const res = await fetch(src.url, { headers: { "user-agent": "WeiGuangBot/0.1 (source check)" }, signal: AbortSignal.timeout(20_000) });
+  const res = await fetch(src.url, { headers: { "user-agent": "LyraJadeBot/0.1 (source check)" }, signal: AbortSignal.timeout(20_000) });
   console.log(`HTTP ${res.status} ${res.headers.get("content-type") || ""}`);
   if (!res.ok) process.exit(1);
   const body = await res.text();
@@ -102,7 +102,7 @@ function weekly() {
   const bad = h.filter(r => !["正常", "停用"].includes(r.status));
   const byCat = {};
   for (const a of pub) byCat[a.category] = (byCat[a.category] || 0) + 1;
-  console.log(`# 微光周报：${since} 至 ${new Date(now).toISOString().slice(0, 10)}\n`);
+  console.log(`# 玲珑玉周报：${since} 至 ${new Date(now).toISOString().slice(0, 10)}\n`);
   console.log(`## 发布\n\n共 ${pub.length} 篇，其中已核对 ${pub.filter(a => a.verified).length} 篇。按栏目：${Object.entries(byCat).map(([k, v]) => `${k} ${v}`).join("、") || "无"}。\n`);
   if (pub.length) console.log(table(["日期", "标题", "主材料层级", "写稿模型"], pub.map(a => [a.date, a.title, a.pipeline?.tier || "—", a.pipeline?.model || "—"])) + "\n");
   const skips = readJson(dataFile("skip.json"), []).filter(x => Date.parse(x.at) > now - days * DAY);

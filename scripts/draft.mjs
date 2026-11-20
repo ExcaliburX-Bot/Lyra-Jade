@@ -33,7 +33,7 @@ async function sourceText(url, postText = null) {
   let html;
   if (mock) html = fs.readFileSync(path.join(FIXTURES, "pages/source.html"), "utf8");
   else {
-    const res = await fetch(url, { headers: { "user-agent": "WeiGuangBot/0.1" }, signal: AbortSignal.timeout(30_000) });
+    const res = await fetch(url, { headers: { "user-agent": "LyraJadeBot/0.1" }, signal: AbortSignal.timeout(30_000) });
     if (!res.ok) throw new Error(`主材料打不开：HTTP ${res.status}`);
     html = await res.text();
   }

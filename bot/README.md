@@ -1,6 +1,6 @@
 # 给 Grok Bot 的配置
 
-在 Grok Bot 里建一个 Bot，名字「微光编辑」，角色说明直接用仓库根目录的 `AGENTS.md`。
+在 Grok Bot 里建一个 Bot，名字「玲珑玉编辑」，角色说明直接用仓库根目录的 `AGENTS.md`。
 然后把下面 4 个技能各存成一个 Skill，并按表格建 Routine（定时任务）：
 
 | 技能文件 | Routine 时间（北京时间） | 需要批准的动作 |

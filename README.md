@@ -1,4 +1,4 @@
-# 微光 WeiGuang.AI
+# 玲珑玉 Lyra-Jade
 
 AI 资讯解读站：自动从一手来源抓取 → 合并打分 → AI 写稿并配动态解读图 → 自动校验 → 审核 → 发布成静态网站。
 日常维护可以交给 Grok Bot（见「机器人账号与仓库保护」和 `AGENTS.md`）。
@@ -42,7 +42,7 @@ npm run dev         # 构建并在 http://localhost:4321 预览
    | `ANTHROPIC_API_KEY` | 改用 Claude 写稿时 | 写稿 |
    | `WG_BOT_TOKEN` | 建议 | 机器人账号的令牌；用它开的 PR 会自动触发校验 |
    | `WG_MERGE_TOKEN` | 阶段 B 才要 | 你本人的令牌，用于自动合并 |
-5. **变量**（同一页的 Variables）：
+5. **变量**（同一页的 Variables；`WG_` 是项目早期代号的缩写，变量名保持不变）：
    | 名字 | 默认 | 作用 |
    | --- | --- | --- |
    | `WG_SITE_URL` | 无，必填 | 网站地址，如 `https://<用户名>.github.io/<仓库名>` |
@@ -70,7 +70,7 @@ npm run dev         # 构建并在 http://localhost:4321 预览
 
 目标：Grok Bot 能做日常维护，但无论如何改不了主分支、合并不了 PR、动不了工作流和密钥。
 
-1. **建一个机器人 GitHub 账号**（例如 `weiguang-bot`），在仓库 Settings → Collaborators 里邀请它。
+1. **建一个机器人 GitHub 账号**（例如 `lyra-jade-bot`），在仓库 Settings → Collaborators 里邀请它。
 2. 机器人账号创建一个 **classic 令牌，只勾 `repo`**，不要勾 `workflow`。不勾 `workflow`，它就改不了 `.github/workflows/`，也就没法写新工作流去读密钥。（细粒度令牌一般用不了别人名下的个人仓库，所以这里用 classic。）把令牌交给 Grok Bot，同时存成本仓库的密钥 `WG_BOT_TOKEN`。
 3. 把 `.github/CODEOWNERS.example` 改名为 `CODEOWNERS`，填上你的用户名。
 4. Settings → Rules → Rulesets → New branch ruleset，目标选默认分支（`main`）：

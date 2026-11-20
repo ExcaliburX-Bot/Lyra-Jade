@@ -1,8 +1,8 @@
 {
-  "name": "weiguang",
+  "name": "lyra-jade",
   "private": true,
   "type": "module",
-  "description": "微光 WeiGuang.AI：AI 资讯解读站。抓取 → 候选 → AI 写稿 → 校验 → 人工审核 → 静态发布",
+  "description": "玲珑玉 Lyra-Jade：AI 资讯解读站。抓取 → 候选 → AI 写稿 → 校验 → 人工审核 → 静态发布",
   "engines": { "node": ">=22" },
   "scripts": {
     "fetch": "node scripts/fetch.mjs",
