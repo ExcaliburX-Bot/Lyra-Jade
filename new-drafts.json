@@ -1,10 +1,10 @@
 [
   {
-    "slug": "gemini-4-neon-intro",
-    "title": "Gemini 4 Neon 发布：100 万 token 上下文，输入每百万 token 3 美元、输出 15 美元",
-    "file": "content/articles/gemini-4-neon-intro.json",
-    "errors": 0,
-    "warnings": 5,
+    "slug": "anthropic-ipo-close",
+    "title": "Anthropic 完成 IPO：每股 83 美元，IPO 加私募合计募资约 1,195 亿美元",
+    "file": "content/articles/anthropic-ipo-close.json",
+    "errors": 1,
+    "warnings": 2,
     "provider": "deepseek",
     "model": "deepseek-v4-pro"
   }
