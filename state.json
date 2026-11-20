@@ -1,0 +1,77 @@
+{
+  "openai-news": {
+    "etag": null,
+    "lastModified": null,
+    "lastOk": "2026-11-20T06:42:11.735Z",
+    "lastNew": "2026-11-20T06:42:11.735Z"
+  },
+  "deepmind-blog": {
+    "etag": "\"MLPORQ\"",
+    "lastModified": null,
+    "lastOk": "2026-11-20T06:42:11.735Z",
+    "lastNew": "2026-11-20T06:42:11.735Z"
+  },
+  "google-innovation-ai": {
+    "etag": null,
+    "lastModified": null,
+    "lastOk": "2026-11-20T06:42:11.735Z",
+    "lastNew": "2026-11-20T06:42:11.735Z"
+  },
+  "nvidia-blog": {
+    "etag": "\"42563e7705b2b6c8d8a0699f79dc1d25-gzip\"",
+    "lastModified": "Fri, 20 Nov 2026 01:13:34 GMT",
+    "lastOk": "2026-11-20T06:42:11.735Z",
+    "lastNew": "2026-11-20T06:42:11.735Z"
+  },
+  "mistral-news": {
+    "etag": "W/\"188b9a6783e5f60e527b88fdc61b7089-ssl\"",
+    "lastModified": null,
+    "lastOk": "2026-11-20T06:42:11.735Z",
+    "lastNew": "2026-11-20T06:42:11.735Z"
+  },
+  "hf-blog": {
+    "etag": "W/\"41ef8-La4G9k3xjjza6gqSf13PgRxlvAs\"",
+    "lastModified": null,
+    "lastOk": "2026-11-20T06:42:11.735Z",
+    "lastNew": "2026-11-20T06:42:11.735Z"
+  },
+  "anthropic-news": {
+    "etag": null,
+    "lastModified": null,
+    "lastOk": "2026-11-20T06:42:11.735Z",
+    "lastNew": "2026-11-20T06:42:11.735Z"
+  },
+  "microsoft-ai-news": {
+    "etag": null,
+    "lastModified": null,
+    "lastOk": "2026-11-20T06:42:11.735Z",
+    "lastNew": "2026-11-20T06:42:11.735Z"
+  },
+  "meta-research": {
+    "etag": null,
+    "lastModified": null,
+    "lastOk": "2026-11-20T06:42:11.735Z",
+    "lastNew": "2026-11-20T06:42:11.735Z"
+  },
+  "xai-news": {
+    "lastError": "2026-11-20T06:42:11.735Z HTTP 403"
+  },
+  "kimi-blog": {
+    "etag": null,
+    "lastModified": null,
+    "lastOk": "2026-11-20T06:42:11.735Z",
+    "lastNew": "2026-11-20T06:42:11.735Z"
+  },
+  "hn-ai": {
+    "etag": null,
+    "lastModified": "Thu, 19 Nov 2026 16:54:25 GMT",
+    "lastOk": "2026-11-20T06:42:11.735Z",
+    "lastNew": "2026-11-20T06:42:11.735Z"
+  },
+  "latent-space-podcast": {
+    "etag": "W/\"40620681cb7e4610e8c77403df92faa1\"",
+    "lastModified": "Fri, 20 Nov 2026 06:00:06 GMT",
+    "lastOk": "2026-11-20T06:42:11.735Z",
+    "lastNew": "2026-11-20T06:42:11.735Z"
+  }
+}
