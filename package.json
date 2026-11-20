@@ -11,6 +11,7 @@
     "draft": "node scripts/draft.mjs --top 1",
     "validate": "node scripts/validate.mjs",
     "build": "node scripts/build.mjs",
+    "export": "node scripts/export.mjs",
     "dev": "node scripts/build.mjs && node scripts/serve.mjs",
     "test": "node --test test/*.test.mjs",
     "demo": "node scripts/demo.mjs"
