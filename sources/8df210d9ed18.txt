@@ -1,0 +1,7 @@
+URL: https://x.com/OpenAIDevs/status/2123506733524136446
+FETCHED: 2026-11-20T07:32:30.267Z
+NOTE: X 帖子原文，由 X 监测（Grok X 搜索）返回
+
+GPT-Live-1.1 is now available in the API.
+
+It speaks with more natural and consistent accents across languages, supports lower idle costs with a new standby option, and completes tasks even more reliably.
