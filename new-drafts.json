@@ -1,9 +1,9 @@
 [
   {
-    "slug": "gpt-live-1-1-api-standby-accents",
-    "title": "GPT-Live-1.1 进 API：口音更自然，空闲可待机",
-    "file": "content/articles/gpt-live-1-1-api-standby-accents.json",
+    "slug": "gemini-4-neon",
+    "title": "Gemini 4 Neon 上线：100 万 token 窗口，输入 3 美元/百万",
+    "file": "content/articles/gemini-4-neon.json",
     "errors": 0,
-    "warnings": 1
+    "warnings": 0
   }
 ]
