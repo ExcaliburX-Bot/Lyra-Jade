@@ -5,6 +5,7 @@
    node scripts/bot.mjs source-test --url U [--type rss|page] [--pattern 正则]     试抓一个源，看能解析出什么
    node scripts/bot.mjs source-test --id <sources.json 里的 id>
    node scripts/bot.mjs skip <候选ID> --reason "为什么不写"   标记不写，定时写稿会跳过它
+   node scripts/bot.mjs source-add --url U --file 原文.txt   人工补原文：原站拒绝程序抓取时，由人从浏览器复制正文存档
    node scripts/bot.mjs weekly [--days 7]         周报（Markdown），可以直接贴进 GitHub Issue */
 import fs from "node:fs";
 import path from "node:path";
@@ -12,6 +13,7 @@ import { SOURCES, X_ACCOUNTS, CONTENT } from "./lib/paths.mjs";
 import { readJson, dataFile } from "./lib/store.mjs";
 import { parseFeed, parseLinks } from "./lib/feed.mjs";
 import { checkInboxItem, writeInbox, INBOX } from "./lib/inbox.mjs";
+import { sha } from "./lib/text.mjs";
 
 const [cmd, ...rest] = process.argv.slice(2);
 const arg = (k, d = null) => { const i = rest.indexOf(k); return i >= 0 ? rest[i + 1] : d; };
@@ -126,6 +128,17 @@ function skip() {
   console.log(`已标记不写：${id}。用 bash scripts/ci/commit-data.sh "bot: 跳过候选" 推送。`);
 }
 
-const commands = { status, skip, "inbox-add": inboxAdd, "source-test": sourceTest, weekly };
-if (!commands[cmd]) { console.log(fs.readFileSync(new URL(import.meta.url), "utf8").split("\n").slice(1, 8).join("\n")); process.exit(cmd ? 1 : 0); }
+function sourceAdd() {
+  const url = arg("--url"), file = arg("--file");
+  if (!/^https?:\/\//.test(url || "") || !file || !fs.existsSync(file)) { console.error("要给 --url（原文链接）和 --file（复制下来的正文文本文件）"); process.exit(1); }
+  const text = fs.readFileSync(file, "utf8").trim();
+  if (text.length < 200) { console.error(`正文只有 ${text.length} 字，看起来没复制完整`); process.exit(1); }
+  const out = dataFile(`sources/${sha(url)}.txt`);
+  fs.mkdirSync(path.dirname(out), { recursive: true });
+  fs.writeFileSync(out, `URL: ${url}\nFETCHED: ${new Date().toISOString()}\nNOTE: 原站拒绝程序抓取，正文由人工从浏览器复制\n\n${text}`);
+  console.log(`已存档 ${path.relative(process.cwd(), out)}（${text.length} 字）。推送 data 后，用「写稿」指定这个候选即可。`);
+}
+
+const commands = { status, skip, "source-add": sourceAdd, "inbox-add": inboxAdd, "source-test": sourceTest, weekly };
+if (!commands[cmd]) { console.log(fs.readFileSync(new URL(import.meta.url), "utf8").split("\n").slice(1, 9).join("\n")); process.exit(cmd ? 1 : 0); }
 await commands[cmd]();

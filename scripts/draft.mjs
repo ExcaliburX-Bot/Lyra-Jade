@@ -33,7 +33,9 @@ async function sourceText(url, postText = null) {
   let html;
   if (mock) html = fs.readFileSync(path.join(FIXTURES, "pages/source.html"), "utf8");
   else {
-    const res = await fetch(url, { headers: { "user-agent": "LyraJadeBot/0.1" }, signal: AbortSignal.timeout(30_000) });
+    const res = await fetch(url, { headers: { "user-agent": "LyraJadeBot/0.1 (+https://github.com/ExcaliburX-Bot/Lyra-Jade)" }, signal: AbortSignal.timeout(30_000) });
+    /* 原站拒绝程序访问：尊重它，不绕过。定时写稿时跳过；确实要写，请人工复制原文后用 bot.mjs source-add 存档 */
+    if ([401, 403, 451].includes(res.status)) throw Object.assign(new Error(`原站拒绝程序抓取（HTTP ${res.status}）`), { blocked: true });
     if (!res.ok) throw new Error(`主材料打不开：HTTP ${res.status}`);
     html = await res.text();
   }
@@ -118,6 +120,13 @@ async function main() {
       made.push({ slug: a.slug, title: a.title, file: path.relative(ROOT, file), errors: r.errors.length, warnings: r.warnings.length });
       console.log(`  已写入 ${path.relative(ROOT, file)}：${r.errors.length} 个必须修改，${r.warnings.length} 个待确认`);
     } catch (e) {
+      if (e.blocked && !only) {
+        thin++;
+        console.log(`  · 跳过：${e.message}。已记进 skip.json。确实要写：在浏览器里复制原文，运行 node scripts/bot.mjs source-add --url ${c.url} --file 原文.txt，再用 --id ${c.id} 写稿`);
+        skipList.push({ id: c.id, reason: `${e.message}，自动跳过`, title: c.title, at: new Date().toISOString() });
+        continue;
+      }
+      if (e.blocked) console.log(`  需要人工补原文：在浏览器里复制原文，运行 node scripts/bot.mjs source-add --url ${c.url} --file 原文.txt`);
       failed++;
       console.log(`  ✗ 失败：${e.message}`);
       if (process.env.GITHUB_ACTIONS) console.log(`::warning::写稿失败（${c.title.slice(0, 60)}）：${e.message.slice(0, 300)}`);
