@@ -33,6 +33,8 @@ export function extractOriginal(html, pageUrl) {
 /* 用原文链接的域名给发布方起个名字 */
 const NAMES = { "openai.com": "OpenAI", "anthropic.com": "Anthropic", "deepmind.google": "Google DeepMind", "blog.google": "Google", "ai.google.dev": "Google", "blogs.nvidia.com": "NVIDIA", "nvidia.com": "NVIDIA", "developer.nvidia.com": "NVIDIA", "mistral.ai": "Mistral AI", "x.ai": "xAI", "ai.meta.com": "Meta", "research.meta.ai": "Meta", "microsoft.ai": "Microsoft AI", "microsoft.com": "Microsoft", "huggingface.co": "Hugging Face", "github.com": "GitHub", "arxiv.org": "arXiv", "qwen.ai": "Qwen", "deepseek.com": "DeepSeek", "kimi.ai": "Moonshot AI", "minimax.io": "MiniMax", "z.ai": "Z.ai", "x.com": "X" };
 export function publisherOf(url) {
+  const xm = String(url).match(/^https?:\/\/(?:www\.)?(?:x|twitter)\.com\/([A-Za-z0-9_]+)\/status\//);
+  if (xm) return `@${xm[1]}`;
   let h; try { h = new URL(url).hostname.replace(/^www\./, ""); } catch { return "未知"; }
   return NAMES[h] || NAMES[h.split(".").slice(-2).join(".")] || h;
 }

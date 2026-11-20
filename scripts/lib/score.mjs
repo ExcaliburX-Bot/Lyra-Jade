@@ -51,8 +51,8 @@ export function toCandidates(items, now = Date.now()) {
       publisher: main.publisher,
       tier: main.tier,
       published: main.published || main.fetched_at,
-      /* 只有 X 帖子、没有任何直接抓到的一手页面：材料通常太薄，打 7.5 折 */
-      score: Math.round(scoreEvent(ev, now) * (/^https:\/\/(x|twitter)\.com\//.test(main.url) && ev.items.every(i => i.via) ? 0.75 : 1) * 10) / 10,
+      /* 只有 X 帖子、没有任何直接抓到的一手页面：材料通常太薄，打 7.5 折；选题入口（如小互）选中的帖子不打折，人家已经筛过 */
+      score: Math.round(scoreEvent(ev, now) * (/^https:\/\/(x|twitter)\.com\//.test(main.url) && ev.items.every(i => i.via) && !ev.items.some(i => i.discovered_by) ? 0.75 : 1) * 10) / 10,
       category_hint: main.category_hint || null,
       ...(main.text ? { text: main.text } : {}),
       ...(main.via ? { via: main.via } : {}),

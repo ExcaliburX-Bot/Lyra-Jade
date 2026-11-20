@@ -245,3 +245,16 @@ test("按链接读 X 帖子：用帖子 ID 推算日期，只认引用了这条�
   assert.match(await xPost("https://x.com/examplelabs/status/1990000000000000001", { mockFile: mock }), /Orbit-7/);
   await assert.rejects(xPost("https://x.com/examplelabs/status/1990000000000000999", { mockFile: mock }), /引用里没有这条帖子/);
 });
+
+test("小互选中的 X 帖子：当一手来源、不打折、发布方显示账号", async () => {
+  const { extractOriginal, publisherOf } = await import("../scripts/lib/original.mjs");
+  const { toCandidates } = await import("../scripts/lib/score.mjs");
+  const post = "https://x.com/OpenAIDevs/status/2123506733524136446";
+  assert.deepEqual(extractOriginal(`<a href="${post}">查看主材料</a>`, "https://xiaohu.ai/article/gpt-live-1-1-api/"), { url: post, tier: "official" });
+  assert.equal(publisherOf(post), "@OpenAIDevs");
+  const base = { key: post, url: post, title: "GPT-Live-1.1", published: "2026-11-19T20:00:00Z", tier: "official", weight: 1 };
+  const fromX = toCandidates([{ ...base, via: post, source: "x-labs-global", publisher: "@OpenAIDevs" }], Date.parse("2026-11-20T00:00:00Z"))[0];
+  const fromXiaohu = toCandidates([{ ...base, via: "https://xiaohu.ai/article/gpt-live-1-1-api/", discovered_by: "xiaohu", source: "xiaohu", publisher: "@OpenAIDevs" }], Date.parse("2026-11-20T00:00:00Z"))[0];
+  assert.ok(fromXiaohu.score > fromX.score, "选题入口选中的不打折");
+  assert.equal(fromXiaohu.discovered_by, "xiaohu");
+});
