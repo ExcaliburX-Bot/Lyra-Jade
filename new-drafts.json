@@ -1,8 +1,11 @@
 [
   {
-    "slug": "introducing-gemini-4-neon-b898",
-    "file": "content/articles/introducing-gemini-4-neon-b898.json",
-    "errors": 7,
-    "warnings": 1
+    "slug": "gemini-4-neon-introducing",
+    "title": "谷歌发布 Gemini 4 Neon：每百万输入 token 3 美元，主打快而省的复杂任务",
+    "file": "content/articles/gemini-4-neon-introducing.json",
+    "errors": 14,
+    "warnings": 1,
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro"
   }
 ]
