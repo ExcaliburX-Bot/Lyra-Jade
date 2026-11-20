@@ -8,7 +8,8 @@ import path from "node:path";
 import { CONTENT, PROMPTS, ROOT, FIXTURES } from "./lib/paths.mjs";
 import { readJson, writeJson, dataFile } from "./lib/store.mjs";
 import { htmlToText, sha } from "./lib/text.mjs";
-import { writeArticle, xPost, DEFAULT_MODEL, PROVIDER, KEY_OF } from "./lib/llm.mjs";
+import { writeArticle, xPost, shortenText, DEFAULT_MODEL, PROVIDER, KEY_OF } from "./lib/llm.mjs";
+import { normalizeArticle, trimBySentences } from "./lib/normalize.mjs";
 import { validateArticle, reportMarkdown } from "./lib/validate.mjs";
 import { toCandidates } from "./lib/score.mjs";
 
@@ -139,6 +140,18 @@ async function main() {
       a.sources ||= {};
       a.sources.main ||= { title: c.title, publisher: c.publisher, date: (c.published || "").slice(0, 10), url: c.url };
       a.pipeline = { origin: mock ? "mock" : "auto", candidate: c.id, tier: c.tier, via: c.via || null, provider: mock ? "mock" : PROVIDER, model: mock ? "mock" : DEFAULT_MODEL, generated_at: new Date().toISOString() };
+
+      /* 自动修正格式小问题：图里写成文字的数值转成数字 */
+      const fixes = normalizeArticle(a);
+      if (fixes.length) console.log(`  自动修正 ${fixes.length} 处格式：${fixes.slice(0, 3).join("；")}${fixes.length > 3 ? "……" : ""}`);
+      /* AI 总结超过 300 字：让模型精简一次；还不行就按句子截短 */
+      const aiLen = t => [...String(t || "").replace(/\s/g, "")].length;
+      if (aiLen(a.ai_summary) > 300) {
+        const before = aiLen(a.ai_summary);
+        try { const short = await shortenText({ text: a.ai_summary, max: 280, mock }); if (aiLen(short) >= 100 && aiLen(short) <= 300) a.ai_summary = short; } catch (e) { console.log(`  精简 AI 总结失败：${e.message}`); }
+        if (aiLen(a.ai_summary) > 300) a.ai_summary = trimBySentences(a.ai_summary, 300);
+        console.log(`  AI 总结 ${before} 字 → ${aiLen(a.ai_summary)} 字`);
+      }
 
       const r = validateArticle(a, { sourceTexts: texts });
       const file = path.join(CONTENT, `${a.slug}.json`);

@@ -2,6 +2,8 @@
    errors 必须清零才能合并；warnings 交给编辑判断 */
 import { FIGURE_SPEC } from "../../site/assets/components.js";
 import { normNum } from "./text.mjs";
+/* 「500,000+」「约 30%」这类：比对时去掉前后的修饰符 */
+const numCore = v => normNum(v).replace(/^(约|超过|逾|近|~|≈|>|＞|\+)+/, "").replace(/(\+|以上|左右|多)+$/, "");
 
 const CATEGORIES = ["product", "research", "deep", "biz", "howto", "visual", "insight", "other"];
 const HYPE = ["革命性", "炸裂", "颠覆", "史诗级", "遥遥领先", "王炸", "吊打", "震撼发布", "杀疯了", "天花板", "很炫", "碾压", "封神", "秒杀"];
@@ -49,12 +51,12 @@ export function validateArticle(a, { sourceTexts = {} } = {}) {
     const text = sourceTexts[c.source_url];
     if (!text) { warnings.push(`事实 #${i + 1}「${c.text}」的原文没有存档，无法自动回查，需人工核对`); return; }
     const hay = normNum(text);
-    if (!hay.includes(normNum(c.value))) errors.push(`事实 #${i + 1}「${c.text}」：数值 ${c.value} 在原文里找不到`);
+    if (!hay.includes(normNum(c.value)) && !hay.includes(numCore(c.value))) errors.push(`事实 #${i + 1}「${c.text}」：数值 ${c.value} 在原文里找不到`);
     if (c.quote && !hay.includes(normNum(c.quote))) warnings.push(`事实 #${i + 1} 的引文和原文对不上，可能是改写过`);
   });
 
   /* 正文里出现、却不在事实清单里的数字 */
-  const claimed = new Set((a.claims || []).flatMap(c => [c.value, c.as_written].filter(Boolean).map(normNum)));
+  const claimed = new Set((a.claims || []).flatMap(c => [c.value, c.as_written].filter(Boolean).flatMap(v => [normNum(v), numCore(v)])));
   const bodyText = [a.ai_summary, a.summary, ...(a.brief || []), ...(a.sections || []).flatMap(s => s.blocks.map(b => b.p || (b.list || []).join(" ")))].filter(Boolean).join(" ");
   const nums = [...new Set((bodyText.match(/\d[\d,.]*\s?(%|GB|TB|美元|亿|万|倍|核|fps|W)/g) || []).map(normNum))];
   const orphan = nums.filter(n => ![...claimed].some(c => c.includes(n) || n.includes(c)));

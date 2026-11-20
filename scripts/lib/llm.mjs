@@ -113,7 +113,7 @@ function needKey(name) {
 }
 
 export async function writeArticle({ system, user, schema, mock = false }) {
-  if (mock) return JSON.parse(fs.readFileSync(path.join(FIXTURES, "llm-article.json"), "utf8"));
+  if (mock) return JSON.parse(fs.readFileSync(process.env.WG_MOCK_ARTICLE || path.join(FIXTURES, "llm-article.json"), "utf8"));
 
   if (PROVIDER === "xai") {
     const started = Date.now();
@@ -248,4 +248,24 @@ export function parseDeepseekArticle({ content, calls, finish }) {
   const a = unwrapArticle(tryParse(block ? block[1] : content.slice(content.indexOf("{"), content.lastIndexOf("}") + 1)));
   if (a && a.sections && a.title) return a;
   throw new Error("DeepSeek 没有按要求提交文章");
+}
+
+/* ---------- AI 总结超长时，让写稿的同一家模型精简一次（只缩短，不改事实）---------- */
+export async function shortenText({ text, max = 280, mock = false }) {
+  const { trimBySentences } = await import("./normalize.mjs");
+  if (mock) return trimBySentences(text, max);
+  const system = `把用户给的这段中文摘要压缩到 ${max} 字以内（按字符数算，标点也算）。只删减和合并，不改任何数字、名称和事实，不加新内容。只输出压缩后的摘要本身。`;
+  if (PROVIDER === "deepseek") {
+    const json = await post("https://api.deepseek.com/chat/completions", { authorization: `Bearer ${needKey("DEEPSEEK_API_KEY")}` },
+      { model: DEFAULT_MODEL, messages: [{ role: "system", content: system }, { role: "user", content: text }], thinking: { type: "disabled" }, max_tokens: 1024, stream: false }, "DeepSeek 精简");
+    return (json.choices?.[0]?.message?.content || "").trim();
+  }
+  if (PROVIDER === "xai") {
+    const json = await post("https://api.x.ai/v1/responses", { authorization: `Bearer ${needKey("XAI_API_KEY")}` },
+      { model: DEFAULT_MODEL, input: [{ role: "system", content: system }, { role: "user", content: text }], reasoning: { effort: "low" } }, "xAI 精简");
+    return xaiTextAndCitations(json).text.trim();
+  }
+  const json = await post("https://api.anthropic.com/v1/messages", { "x-api-key": needKey("ANTHROPIC_API_KEY"), "anthropic-version": "2023-06-01" },
+    { model: DEFAULT_MODEL, max_tokens: 1024, system, messages: [{ role: "user", content: text }] }, "Anthropic 精简");
+  return (json.content || []).filter(c => c.type === "text").map(c => c.text).join("").trim();
 }

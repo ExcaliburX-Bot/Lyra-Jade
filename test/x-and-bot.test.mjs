@@ -338,3 +338,34 @@ test("措辞规则：标题里的排名词和新增的夸张词会被提醒", as
   assert.doesNotMatch(warn({}), /标题里有排名/);
   assert.match(warn({ summary: "这些 demo 很炫" }), /夸张用词「很炫」/);
 });
+
+test("自动修正：图里写成文字的数值转数字；「500,000+」能对上原文；AI 总结超长会被精简", async () => {
+  const { normalizeArticle, trimBySentences } = await import("../scripts/lib/normalize.mjs");
+  const { validateArticle } = await import("../scripts/lib/validate.mjs");
+  const a = { sections: [{ h: "x", blocks: [{ fig: { type: "bars", title: "t", groups: [{ label: "g", items: [{ label: "A", value: "70.9%" }, { label: "B", value: "约 1,336" }, { label: "C", value: "未公布" }] }] } }] }] };
+  assert.equal(normalizeArticle(a).length, 2);
+  assert.deepEqual(a.sections[0].blocks[0].fig.groups[0].items.map(i => i.value), [70.9, 1336, "未公布"]);
+  const base = { ...readJson("llm-article.json"), date: "2026-11-18", sources: { main: { url: "u" } } };
+  const src = "over 500,000 live spreadsheet formulas and about 30% faster";
+  const claims = [{ text: "公式数", value: "500,000+", source_url: "s" }, { text: "提速", value: "约 30%", source_url: "s" }];
+  assert.doesNotMatch(validateArticle({ ...base, claims }, { sourceTexts: { s: src } }).errors.join(""), /找不到/);
+  const long = "第一句说清发生了什么，这一句大约有三十个字左右的长度吧。".repeat(12) + "最后一句是限制。";
+  const t = trimBySentences(long, 300);
+  assert.ok([...t].length <= 300 && [...t].length >= 100);
+
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "wg-norm-"));
+  const art = readJson("llm-article.json"); art.ai_summary = long;
+  art.sections[1].blocks.push({ fig: { type: "bars", title: "跑分", subtitle: "单位：%", groups: [{ label: "g", items: [{ label: "SWE", value: "71.2%", tone: "main" }] }] } });
+  fs.writeFileSync(path.join(tmp, "mock.json"), JSON.stringify(art));
+  const env = { ...process.env, WG_DATA: path.join(tmp, "data"), WG_CONTENT: path.join(tmp, "content"), WG_SOURCES: path.join(FX, "sources.test.json"), WG_X_ACCOUNTS: path.join(FX, "x-accounts.test.json"), WG_MOCK_ARTICLE: path.join(tmp, "mock.json") };
+  const run = (...x) => execFileSync(process.execPath, x, { cwd: ROOT, env, encoding: "utf8" });
+  run("scripts/fetch.mjs", "--fixtures");
+  const out = run("scripts/draft.mjs", "--top", "1", "--mock", "--min-score", "0");
+  assert.match(out, /自动修正 1 处格式/);
+  assert.match(out, /AI 总结 \d+ 字 → \d+ 字/);
+  const made = JSON.parse(fs.readFileSync(path.join(tmp, "data/new-drafts.json"), "utf8"))[0];
+  const saved = JSON.parse(fs.readFileSync(path.join(tmp, "content", `${made.slug}.json`), "utf8"));
+  assert.ok([...saved.ai_summary.replace(/\s/g, "")].length <= 300);
+  assert.equal(made.errors, 1, "只剩样例里故意放的 120ms");
+  fs.rmSync(tmp, { recursive: true, force: true });
+});
