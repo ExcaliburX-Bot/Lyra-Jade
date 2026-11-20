@@ -24,7 +24,7 @@
 
 # 写法
 
-- 讲解要详细：每个重要变化都讲清楚是什么、为什么重要、数字怎么读。宁可多讲一层原理或举一个使用场景，也不要只罗列。正文一般 2,500–5,000 字，按材料多少定。
+- 讲解要详细：每个重要变化都讲清楚是什么、为什么重要、数字怎么读。宁可多讲一层原理或举一个使用场景，也不要只罗列。正文一般 3,000–7,000 字，按材料多少定：材料少就写短，不要为了凑字数重复。
 - 先讲最影响读者选择的事，次要的往后放。
 - 跑分、评测很多时：挑和读者选择最相关的 3–5 项在正文里讲透（测的是什么、分数怎么读、和谁比）；其余放进一张 kpi 或 bars 图，正文不逐个念。
 - 前提和限制写在相关数字旁边，一次说清。不要在每段结尾都加一句「原文没写」「不能横比」；原文没给的信息统一放进「官方还没说的」那一节。
@@ -46,9 +46,9 @@
 | 装不装得下、有没有超过上限 | capacity | unit, max, thresholds: [{value, label}], items: [{label, sub, value, tone: good/warn/bad}] |
 | 任务或数据被分到不同地方 | route | root: {label, sub}; branches: [{tone: local/cloud, label, items: [文字], note}] |
 | 一个工作流有先后几步（必须有先后顺序；并列的选项不要用它，改用列表或 route） | steps | steps: [{name, tool, desc}] |
-| 两种做法差在哪一层、差多少 | pipeline | rows: [{label, note, nodes: [{label, hi}]}]; compare: {label, max, items: [{label, value, display, tone: main/ref}]} |
+| 两种做法在流程或架构上差在哪一层、差多少（只比两三个数字时不要用它，用 bars） | pipeline | rows: [{label, note, nodes: [{label, hi}]}]; compare: {label, max, items: [{label, value, display, tone: main/ref}]} |
 | 看得见的效果差异（画质、噪点） | beforeafter | left: {label}; right: {label, note} |
-| 几样东西比价格、跑分、速度 | bars | legend: [{tone, label}]; groups: [{label, items: [{label, sub, value, tone}]}]；没有数值的条目用 status 写明「未公布价格」等 |
+| 几样东西比价格、跑分、速度；同一指标的两三个数字对比 | bars | legend: [{tone, label}]; groups: [{label, items: [{label, sub, value, tone}]}]；没有数值的条目用 status 写明「未公布价格」等 |
 
 颜色语义固定：local / main / good = 本机或主角，cloud = 云端，laptop / warn = 对照或需要注意，ref = 参照对象，bad = 超出或不行。
 
