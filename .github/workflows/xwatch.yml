@@ -4,7 +4,7 @@
 name: X 监测
 on:
   schedule:
-    - cron: "47 23,3,7,11 * * *"     # UTC；写稿在 0:17 / 4:17 / 8:17 / 12:17
+    - cron: "47 23,3,9,11 * * *"     # UTC；写稿在 0:17 / 4:17 / 10:17 / 12:17
   workflow_dispatch:
     inputs:
       group:

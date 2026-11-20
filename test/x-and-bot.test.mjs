@@ -292,3 +292,27 @@ test("重写已写过的候选：从素材库找回；没写成时不留上次�
   assert.deepEqual(JSON.parse(fs.readFileSync(path.join(tmp, "data/new-drafts.json"), "utf8")), []);
   fs.rmSync(tmp, { recursive: true, force: true });
 });
+
+test("DeepSeek 写稿：开思考时 tool_choice 用 auto；流式分片拼回文章；直接给 JSON 也接受；截断报错", async () => {
+  const { deepseekWriteRequest, parseChatStream, parseDeepseekArticle } = await import("../scripts/lib/llm.mjs");
+  const article = readJson("llm-article.json");
+  const req = deepseekWriteRequest({ system: "s", user: "u", schema: { type: "object" } });
+  assert.equal(req.tool_choice, "auto", "DeepSeek 思考模式下不支持强制调用函数（会 400）");
+  assert.equal(req.reasoning_effort, "high");
+  assert.equal(req.stream, true);
+  assert.match(req.messages[0].content, /必须调用 submit_article/);
+  const args = JSON.stringify(article), cut = [0, 40, 1000, args.length];
+  const chunk = o => `data: ${JSON.stringify(o)}\n\n`;
+  const sse = chunk({ choices: [{ delta: { reasoning_content: "先想想" } }] })
+    + cut.slice(0, -1).map((c, i) => chunk({ choices: [{ delta: { tool_calls: [{ index: 0, ...(i === 0 ? { id: "c1", type: "function", function: { name: "submit_article", arguments: args.slice(c, cut[i + 1]) } } : { function: { arguments: args.slice(c, cut[i + 1]) } }) }] } }] })).join("")
+    + chunk({ choices: [{ delta: {}, finish_reason: "tool_calls" }] }) + chunk({ choices: [], usage: { prompt_tokens: 100, completion_tokens: 200 } }) + "data: [DONE]\n\n";
+  const out = parseChatStream(sse);
+  assert.equal(out.usage.completion_tokens, 200);
+  assert.deepEqual(parseDeepseekArticle(out), article);
+  /* 没调用函数、直接在正文里给 JSON */
+  const viaText = parseChatStream(chunk({ choices: [{ delta: { content: "好的：\n```json\n" + args + "\n```" }, finish_reason: "stop" }] }));
+  assert.deepEqual(parseDeepseekArticle(viaText), article);
+  assert.throws(() => parseDeepseekArticle({ content: "", calls: [{ name: "submit_article", arguments: "{" }], finish: "length" }), /截断/);
+  assert.throws(() => parseDeepseekArticle({ content: "我写不了", calls: [], finish: "stop" }), /没有按要求提交/);
+  assert.throws(() => parseChatStream(chunk({ error: { message: "Insufficient Balance" } })), /Insufficient Balance/);
+});

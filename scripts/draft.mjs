@@ -8,7 +8,7 @@ import path from "node:path";
 import { CONTENT, PROMPTS, ROOT, FIXTURES } from "./lib/paths.mjs";
 import { readJson, writeJson, dataFile } from "./lib/store.mjs";
 import { htmlToText, sha } from "./lib/text.mjs";
-import { writeArticle, xPost, DEFAULT_MODEL, PROVIDER } from "./lib/llm.mjs";
+import { writeArticle, xPost, DEFAULT_MODEL, PROVIDER, KEY_OF } from "./lib/llm.mjs";
 import { validateArticle, reportMarkdown } from "./lib/validate.mjs";
 import { toCandidates } from "./lib/score.mjs";
 
@@ -81,7 +81,7 @@ async function main() {
     console.log("没有需要写的候选"); return;
   }
   if (!mock) {
-    const need = PROVIDER === "xai" ? "XAI_API_KEY" : "ANTHROPIC_API_KEY";
+    const need = KEY_OF[PROVIDER] || "XAI_API_KEY";
     if (!process.env[need]) {
       console.log(`::error::没有设置 ${need}（写稿模型是 ${PROVIDER}）。在仓库 Settings → Secrets and variables → Actions → Secrets 里添加。`);
       process.exit(1);

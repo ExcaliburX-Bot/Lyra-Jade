@@ -2,7 +2,7 @@
 name: 写稿
 on:
   schedule:
-    - cron: "17 0,4,8,12 * * *"     # UTC，即北京时间 8:17 / 12:17 / 16:17 / 20:17
+    - cron: "17 0,4,10,12 * * *"    # UTC，即北京时间 8:17 / 12:17 / 18:17 / 20:17；避开 DeepSeek 的工作日高峰（UTC 01–04、06–10 点）
   workflow_dispatch:
     inputs:
       top:
@@ -10,6 +10,11 @@ on:
         default: ""
       id:
         description: 指定候选 ID（可选，见 data 分支的 candidates.md）
+        default: ""
+      provider:
+        description: 这次用哪家写（不选就用变量 WG_PROVIDER，默认 xai）
+        type: choice
+        options: ["", "xai", "deepseek", "anthropic"]
         default: ""
 permissions:
   contents: write
@@ -35,11 +40,12 @@ jobs:
           path: data
       - name: 写稿
         env:
-          WG_PROVIDER: ${{ vars.WG_PROVIDER }}          # xai（默认，Grok）或 anthropic（Claude）
+          WG_PROVIDER: ${{ inputs.provider || vars.WG_PROVIDER }}   # xai（默认，Grok）、deepseek 或 anthropic（Claude）
           WG_MODEL: ${{ vars.WG_MODEL }}
           WG_REASONING: ${{ vars.WG_REASONING }}        # Grok 推理强度，默认 medium
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
         run: |
           if [ -n "${{ inputs.id }}" ]; then
             node scripts/draft.mjs --id "${{ inputs.id }}"

@@ -1,12 +1,13 @@
 /* 调用大模型：写稿用「强制工具调用」拿结构化 JSON；X 监测用 Grok 的 X 搜索
-   写稿模型由 WG_PROVIDER 决定：xai（默认，需要 XAI_API_KEY）或 anthropic（需要 ANTHROPIC_API_KEY）
+   写稿模型由 WG_PROVIDER 决定：xai（默认，需要 XAI_API_KEY）、deepseek（需要 DEEPSEEK_API_KEY）或 anthropic（需要 ANTHROPIC_API_KEY）
    WG_MODEL 可覆盖具体模型 */
 import fs from "node:fs";
 import path from "node:path";
 import { FIXTURES } from "./paths.mjs";
 
 export const PROVIDER = (process.env.WG_PROVIDER || "xai").toLowerCase();
-const DEFAULTS = { anthropic: "claude-sonnet-5-5", xai: "grok-4.7" };
+const DEFAULTS = { anthropic: "claude-sonnet-5-5", xai: "grok-4.7", deepseek: "deepseek-v4-pro" };
+export const KEY_OF = { xai: "XAI_API_KEY", deepseek: "DEEPSEEK_API_KEY", anthropic: "ANTHROPIC_API_KEY" };
 export const DEFAULT_MODEL = process.env.WG_MODEL || DEFAULTS[PROVIDER] || DEFAULTS.xai;
 export const XAI_SEARCH_MODEL = process.env.WG_X_MODEL || "grok-4.7";
 /* grok-4.7 默认 high 且无法关闭推理；写稿用 medium，够用且快得多。可用 WG_REASONING 改：low / medium / high / xhigh */
@@ -108,7 +109,17 @@ export async function writeArticle({ system, user, schema, mock = false }) {
     return parseXaiFunctionCall(json);
   }
 
-  if (PROVIDER !== "anthropic") throw new Error(`不认识的 WG_PROVIDER：${PROVIDER}（可选 anthropic、xai）`);
+  if (PROVIDER === "deepseek") {
+    const started = Date.now();
+    const body = deepseekWriteRequest({ system, user, schema });
+    const res = await fetch("https://api.deepseek.com/chat/completions", { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${needKey("DEEPSEEK_API_KEY")}` }, body: JSON.stringify(body), signal: AbortSignal.timeout(25 * 60_000) });
+    if (!res.ok) throw new Error(`DeepSeek 接口返回 ${res.status}：${(await res.text()).slice(0, 400)}`);
+    const out = parseChatStream(await res.text());
+    console.log(`  DeepSeek 用时 ${Math.round((Date.now() - started) / 1000)} 秒（${DEFAULT_MODEL}，思考 ${DEEPSEEK_REASONING}${out.usage ? `，输入 ${out.usage.prompt_tokens} / 输出 ${out.usage.completion_tokens} token` : ""}）`);
+    return parseDeepseekArticle(out);
+  }
+
+  if (PROVIDER !== "anthropic") throw new Error(`不认识的 WG_PROVIDER：${PROVIDER}（可选 xai、deepseek、anthropic）`);
   const json = await post("https://api.anthropic.com/v1/messages", { "x-api-key": needKey("ANTHROPIC_API_KEY"), "anthropic-version": "2023-06-01" }, {
     model: DEFAULT_MODEL,
     max_tokens: 16000,
@@ -158,4 +169,70 @@ export async function xPost(url, { mockFile = null } = {}) {
   if (!text || /^NOT_FOUND/.test(text)) throw new Error("X 搜索没有找到这条帖子");
   if (!r.citations.some(c => String(c).includes(`/status/${q.id}`))) throw new Error("X 搜索的引用里没有这条帖子，不能当原文");
   return text;
+}
+
+/* ---------- DeepSeek（OpenAI 兼容的 /chat/completions）----------
+   DeepSeek 在思考模式下不支持强制调用某个函数（返回 400），所以：开着思考时只给一个函数、tool_choice 用 auto，
+   提示里要求必须调用；模型若直接输出 JSON 也接受。WG_REASONING=none 时关掉思考、强制调用函数。 */
+const DS_EFFORT = { low: "low", medium: "high", high: "high", xhigh: "max", max: "max", none: "none" };
+export const DEEPSEEK_REASONING = DS_EFFORT[(process.env.WG_REASONING || "high").toLowerCase()] || "high";
+
+export function deepseekWriteRequest({ system, user, schema }) {
+  const thinking = DEEPSEEK_REASONING !== "none";
+  return {
+    model: DEFAULT_MODEL,
+    messages: [
+      { role: "system", content: `${system}\n\n写完后必须调用 submit_article 工具提交整篇文章（参数就是文章 JSON），不要把文章写在回复正文里。` },
+      { role: "user", content: user }
+    ],
+    tools: [{ type: "function", function: { name: TOOL.name, description: TOOL.description, parameters: schema } }],
+    tool_choice: thinking ? "auto" : { type: "function", function: { name: TOOL.name } },
+    ...(thinking ? { reasoning_effort: DEEPSEEK_REASONING } : { thinking: { type: "disabled" } }),
+    max_tokens: 65536,
+    stream: true,
+    stream_options: { include_usage: true }
+  };
+}
+
+/* 拼起流式返回：正文、函数参数（分片到达）、用量 */
+export function parseChatStream(raw) {
+  let content = "", finish = null, usage = null, err = null;
+  const calls = [];
+  for (const line of raw.split(/\r?\n/)) {
+    if (!line.startsWith("data:")) continue;
+    const data = line.slice(5).trim();
+    if (!data || data === "[DONE]") continue;
+    let ev; try { ev = JSON.parse(data); } catch { continue; }
+    if (ev.error) err = ev.error.message || JSON.stringify(ev.error);
+    if (ev.usage) usage = ev.usage;
+    for (const ch of ev.choices || []) {
+      const d = ch.delta || {};
+      if (d.content) content += d.content;
+      for (const tc of d.tool_calls || []) {
+        const i = tc.index ?? 0;
+        calls[i] ||= { name: "", arguments: "" };
+        if (tc.function?.name) calls[i].name = tc.function.name;
+        if (tc.function?.arguments) calls[i].arguments += tc.function.arguments;
+      }
+      if (ch.finish_reason) finish = ch.finish_reason;
+    }
+  }
+  if (err) throw new Error(`DeepSeek 返回错误：${err}`);
+  return { content, calls: calls.filter(Boolean), finish, usage };
+}
+
+export function parseDeepseekArticle({ content, calls, finish }) {
+  if (finish === "length") throw new Error("DeepSeek 输出被截断（达到 max_tokens），文章不完整");
+  const call = calls.find(c => c.name === TOOL.name);
+  const tryParse = t => { try { return JSON.parse(t); } catch { return null; } };
+  if (call) {
+    const a = tryParse(call.arguments);
+    if (!a) throw new Error("DeepSeek 返回的文章参数不是合法 JSON");
+    return a;
+  }
+  /* 没调用函数、直接在正文里给了 JSON：取 ```json 代码块或第一个完整对象 */
+  const block = content.match(/```(?:json)?\s*([\s\S]*?)```/);
+  const a = tryParse(block ? block[1] : content.slice(content.indexOf("{"), content.lastIndexOf("}") + 1));
+  if (a && a.sections && a.title) return a;
+  throw new Error("DeepSeek 没有按要求提交文章");
 }

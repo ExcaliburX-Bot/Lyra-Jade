@@ -24,7 +24,7 @@ AI 资讯解读站：自动从一手来源抓取 → 合并打分 → AI 写稿�
 
 ```bash
 npm run demo        # 用样例订阅和模拟模型把整条流水线跑一遍
-npm test            # 22 个测试：解析、合并、打分、X 监测、收件箱、校验、自动合并规则、端到端
+npm test            # 23 个测试：解析、合并、打分、X 监测、收件箱、校验、自动合并规则、端到端
 npm run dev         # 构建并在 http://localhost:4321 预览
 ```
 
@@ -39,6 +39,7 @@ npm run dev         # 构建并在 http://localhost:4321 预览
    | 名字 | 必填 | 作用 |
    | --- | --- | --- |
    | `XAI_API_KEY` | 是 | Grok 写稿 + X 监测（一个密钥两用） |
+   | `DEEPSEEK_API_KEY` | 改用 DeepSeek 写稿时 | 写稿（platform.deepseek.com 申请） |
    | `ANTHROPIC_API_KEY` | 改用 Claude 写稿时 | 写稿 |
    | `WG_BOT_TOKEN` | 建议 | 机器人账号的令牌；用它开的 PR 会自动触发校验 |
    | `WG_MERGE_TOKEN` | 阶段 B 才要 | 你本人的令牌，用于自动合并 |
@@ -47,8 +48,8 @@ npm run dev         # 构建并在 http://localhost:4321 预览
    | --- | --- | --- |
    | `WG_SITE_URL` | 无，必填 | 网站地址，如 `https://<用户名>.github.io/<仓库名>` |
    | `WG_DRAFT_TOP` | `1` | 每次定时写稿写几篇；每天 4 次，默认即每天最多 4 篇 |
-   | `WG_PROVIDER` | `xai` | 写稿用哪家：`xai`（Grok）或 `anthropic`（Claude） |
-   | `WG_MODEL` | `grok-4.7` / `claude-sonnet-5-5` | 写稿模型 |
+   | `WG_PROVIDER` | `xai` | 写稿用哪家：`xai`（Grok）、`deepseek` 或 `anthropic`（Claude）；手动运行「写稿」时也可以临时选 |
+   | `WG_MODEL` | `grok-4.7` / `deepseek-v4-pro` / `claude-sonnet-5-5` | 写稿模型；DeepSeek 更便宜的是 `deepseek-flash` |
    | `WG_X_MODEL` | `grok-4.7` | X 监测用的模型 |
    | `WG_REASONING` | `medium` | Grok 写稿的推理强度：`low` / `medium` / `high` / `xhigh`，越高越慢越贵 |
    | `WG_AUTOMERGE` | 关 | 设为 `on` 进入阶段 B 自动合并 |
@@ -65,7 +66,7 @@ npm run dev         # 构建并在 http://localhost:4321 预览
 - **加 / 修数据源**：编辑 `sources/sources.json`（RSS 写 `rss`；没有 RSS 的写 `page` 加 `pattern`）。先用 `node scripts/bot.mjs source-test --url … --type page --pattern …` 试抓。
 - **选题入口（小互）**：`sources.json` 里的 `xiaohu` 源只当线索：每篇只打开一次文章页取「查看主材料」链接，回到一手原文写；不用对方的标题、简介和正文。找不到一手原文的直接跳过，不改写对方的稿子。同样的方式可以接别的解读站：加 `"resolveOriginal": true`。
 - **X 监测名单**：`sources/x-accounts.json`，每组最多 20 个账号；KOL 两组默认关着。X 搜索按抓取的帖子数收费，用量记在 `data` 分支的 `usage.json`。
-- **换写稿模型**：默认 Grok；把变量 `WG_PROVIDER` 设为 `anthropic` 并加 `ANTHROPIC_API_KEY` 即改用 Claude。
+- **换写稿模型**：默认 Grok。改用 DeepSeek：加 `DEEPSEEK_API_KEY`，把变量 `WG_PROVIDER` 设为 `deepseek`；想先试一篇，手动运行「写稿」时在 provider 里选 deepseek 即可。定时写稿已避开 DeepSeek 的工作日高峰（UTC 01–04、06–10 点），按半价计费。
 - **导出单页**：`npm run build && node scripts/export.mjs <slug> 文件名.html`，把一篇文章导出成一个独立的 HTML 文件（样式、脚本、动态图都内嵌），双击就能打开，适合发给别人看。
 - **调写作规则**：`prompts/writer.md`。**改页面样式**：`site/assets/site.css`，图形组件在 `site/assets/components.js`。
 
