@@ -130,3 +130,32 @@ export async function xSearch({ system, user, handles, fromDate, toDate, mockFil
   }, "xAI X 搜索");
   return xaiTextAndCitations(json);
 }
+
+/* ---------- 按链接读一条 X 帖子（含作者自己的整串）---------- */
+export const X_POST_RE = /^https?:\/\/(?:www\.)?(?:x|twitter)\.com\/([A-Za-z0-9_]+)\/status\/(\d+)/;
+
+/* 帖子 ID 里带着发帖时间（雪花 ID），用来把搜索限定在发帖前后几天 */
+export function xPostDate(id) {
+  return new Date(Number((BigInt(id) >> 22n) + 1288834974657n));
+}
+
+export function xPostRequest(url) {
+  const m = String(url).match(X_POST_RE);
+  if (!m) throw new Error(`不是 X 帖子链接：${url}`);
+  const [, handle, id] = m, t = xPostDate(id), day = d => d.toISOString().slice(0, 10);
+  return {
+    handle, id,
+    fromDate: day(new Date(+t - 864e5)), toDate: day(new Date(+t + 2 * 864e5)),
+    system: "你是转录员。用 x_search 找到用户给的这条 X 帖子，逐字输出帖子正文。如果作者本人在同一串里接着发了后续帖子（thread），按顺序把作者自己的后续帖子也逐字输出，每条之间空一行。不翻译、不总结、不改写；不要输出别人的回复。找不到这条帖子时只输出 NOT_FOUND。",
+    user: url
+  };
+}
+
+export async function xPost(url, { mockFile = null } = {}) {
+  const q = xPostRequest(url);
+  const r = await xSearch({ system: q.system, user: q.user, handles: [q.handle], fromDate: q.fromDate, toDate: q.toDate, mockFile });
+  const text = r.text.trim();
+  if (!text || /^NOT_FOUND/.test(text)) throw new Error("X 搜索没有找到这条帖子");
+  if (!r.citations.some(c => String(c).includes(`/status/${q.id}`))) throw new Error("X 搜索的引用里没有这条帖子，不能当原文");
+  return text;
+}

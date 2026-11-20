@@ -6,7 +6,7 @@ import os from "node:os";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { parseAnthropic, parseXaiFunctionCall, xaiTextAndCitations, xaiWriteRequest, parseResponsesStream } from "../scripts/lib/llm.mjs";
+import { parseAnthropic, parseXaiFunctionCall, xaiTextAndCitations, xaiWriteRequest, parseResponsesStream, xPostDate, xPostRequest, xPost } from "../scripts/lib/llm.mjs";
 import { postsToItems, extractJson } from "../scripts/x-watch.mjs";
 import { cluster } from "../scripts/lib/score.mjs";
 import { checkInboxItem } from "../scripts/lib/inbox.mjs";
@@ -232,4 +232,16 @@ test("选题入口（发现渠道）：只取「查看主材料」链接回到�
   const skips = JSON.parse(fs.readFileSync(path.join(tmp, "data/skip.json"), "utf8"));
   assert.ok(skips.some(s => s.id === mediaOnly.id));
   fs.rmSync(tmp, { recursive: true, force: true });
+});
+
+test("按链接读 X 帖子：用帖子 ID 推算日期，只认引用了这条帖子的结果", async () => {
+  assert.equal(xPostDate("2123506733524136446").toISOString().slice(0, 10), "2026-11-19");
+  const q = xPostRequest("https://x.com/OpenAIDevs/status/2123506733524136446");
+  assert.deepEqual([q.handle, q.fromDate, q.toDate], ["OpenAIDevs", "2026-11-18", "2026-11-21"]);
+  assert.match(q.system, /整串|thread/);
+  assert.throws(() => xPostRequest("https://openai.com/a"), /不是 X 帖子链接/);
+  /* 样例响应里引用了 …0001 和 …0002，没有引用 …0999 */
+  const mock = path.join(FX, "xai/x-labs-test.json");
+  assert.match(await xPost("https://x.com/examplelabs/status/1990000000000000001", { mockFile: mock }), /Orbit-7/);
+  await assert.rejects(xPost("https://x.com/examplelabs/status/1990000000000000999", { mockFile: mock }), /引用里没有这条帖子/);
 });

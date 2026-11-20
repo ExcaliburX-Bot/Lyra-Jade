@@ -8,7 +8,7 @@ import path from "node:path";
 import { CONTENT, PROMPTS, ROOT, FIXTURES } from "./lib/paths.mjs";
 import { readJson, writeJson, dataFile } from "./lib/store.mjs";
 import { htmlToText, sha } from "./lib/text.mjs";
-import { writeArticle, DEFAULT_MODEL, PROVIDER } from "./lib/llm.mjs";
+import { writeArticle, xPost, DEFAULT_MODEL, PROVIDER } from "./lib/llm.mjs";
 import { validateArticle, reportMarkdown } from "./lib/validate.mjs";
 
 const args = process.argv.slice(2);
@@ -25,9 +25,15 @@ async function sourceText(url, postText = null) {
   const file = dataFile(`sources/${sha(url)}.txt`);
   if (fs.existsSync(file)) return fs.readFileSync(file, "utf8");
   if (isXPost(url)) {
-    if (!postText) throw Object.assign(new Error("主材料是 X 帖子，但没有它的原文（X 监测没抓到这条）"), { blocked: true });
+    let note = "X 帖子原文，由 X 监测（Grok X 搜索）返回";
+    /* X 监测没抓到这条（比如账号不在监测名单里）：按链接用 X 搜索读回来，连同作者自己的整串 */
+    if (!postText && !mock && process.env.XAI_API_KEY) {
+      try { postText = await xPost(url); note = "X 帖子原文（含作者自己的整串），写稿时按链接用 Grok X 搜索读取"; }
+      catch (e) { throw Object.assign(new Error(`主材料是 X 帖子，读取失败：${e.message}`), { blocked: true }); }
+    }
+    if (!postText) throw Object.assign(new Error("主材料是 X 帖子，但没有它的原文"), { blocked: true });
     fs.mkdirSync(path.dirname(file), { recursive: true });
-    fs.writeFileSync(file, `URL: ${url}\nFETCHED: ${new Date().toISOString()}\nNOTE: X 帖子原文，由 X 监测（Grok X 搜索）返回\n\n${postText}`);
+    fs.writeFileSync(file, `URL: ${url}\nFETCHED: ${new Date().toISOString()}\nNOTE: ${note}\n\n${postText}`);
     return postText;
   }
   let html;
