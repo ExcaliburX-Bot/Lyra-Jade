@@ -18,8 +18,8 @@ bash scripts/ci/commit-data.sh "data: 记录 $COUNT 篇新稿的原文存档与�
 # 2) 每篇稿子一个分支、一个 PR
 node -e '
   const a = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
-  for (const d of a) console.log([d.slug, d.file, d.errors, d.warnings, d.title].join("\t"));
-' "$LIST" | while IFS=$'\t' read -r SLUG FILE ERRORS WARNINGS TITLE; do
+  for (const d of a) console.log([d.slug, d.file, d.errors, d.warnings, `${d.provider || "?"} / ${d.model || "?"}`, d.title].join("\t"));
+' "$LIST" | while IFS=$'\t' read -r SLUG FILE ERRORS WARNINGS MODEL TITLE; do
   if [ ! -f "$FILE" ]; then echo "::warning::新稿列表里有 $FILE，但文件不存在，跳过"; continue; fi
   BR="draft/$SLUG"
   # 重写同一篇（比如按新规则重写）时，旧分支还在：换一个带时间的新分支，旧 PR 由人关闭
@@ -29,12 +29,12 @@ node -e '
   fi
   git switch -c "$BR" "$BASE"
   git add "$FILE"
-  git commit -m "draft: $TITLE"
+  git commit -m "draft: $TITLE（$MODEL）"
   git push -u origin "$BR"
 
   LABEL="待审核"; [ "$ERRORS" -gt 0 ] && LABEL="需修改"
   {
-    echo "> 自动生成的稿子。合并即发布；关闭即放弃。"
+    echo "> 自动生成的稿子。写稿模型：**$MODEL**。合并即发布；关闭即放弃。"
     echo "> 必须修改 **$ERRORS** 处，请人工确认 **$WARNINGS** 处。改完把文章里的 \`\"verified\": false\` 改成 \`true\`，页面才会显示「已核对」。"
     echo
     cat "data/reports/$SLUG.md"

@@ -146,7 +146,7 @@ async function main() {
       fs.mkdirSync(dataFile("reports"), { recursive: true });
       fs.writeFileSync(dataFile(`reports/${a.slug}.md`), reportMarkdown(a, r));
       if (!drafted.includes(c.id)) drafted.push(c.id);
-      made.push({ slug: a.slug, title: a.title, file: path.relative(ROOT, file), errors: r.errors.length, warnings: r.warnings.length });
+      made.push({ slug: a.slug, title: a.title, file: path.relative(ROOT, file), errors: r.errors.length, warnings: r.warnings.length, provider: a.pipeline.provider, model: a.pipeline.model });
       console.log(`  已写入 ${path.relative(ROOT, file)}：${r.errors.length} 个必须修改，${r.warnings.length} 个待确认`);
     } catch (e) {
       if (e.blocked && !only) {
