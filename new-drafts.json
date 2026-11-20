@@ -1,10 +1,10 @@
 [
   {
-    "slug": "gemini-4-neon-introducing",
-    "title": "谷歌发布 Gemini 4 Neon：每百万输入 token 3 美元，主打快而省的复杂任务",
-    "file": "content/articles/gemini-4-neon-introducing.json",
-    "errors": 14,
-    "warnings": 1,
+    "slug": "gemini-4-neon-intro",
+    "title": "Gemini 4 Neon 发布：100 万 token 上下文，输入每百万 token 3 美元、输出 15 美元",
+    "file": "content/articles/gemini-4-neon-intro.json",
+    "errors": 0,
+    "warnings": 5,
     "provider": "deepseek",
     "model": "deepseek-v4-pro"
   }
