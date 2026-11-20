@@ -9,7 +9,7 @@ AI 资讯解读站：自动从一手来源抓取 → 合并打分 → AI 写稿�
  sources.json（RSS / 列表页）──┐
  x-accounts.json（Grok X 搜索）─┼─► 收件箱 ─► 抓取（每 30 分钟）─► 候选清单
  Grok Bot（浏览器补抓）────────┘                                    │
-                                                    写稿（每天 4 次，每次 1 篇，Claude 或 Grok）
+                                                    写稿（每天 4 次，每次 1 篇，默认 Grok，可换 Claude）
                                                                     │
                                     文章 JSON + 审核报告 ─► 每篇一个 PR
                                                                     │
@@ -38,8 +38,8 @@ npm run dev         # 构建并在 http://localhost:4321 预览
 4. **密钥**（Settings → Secrets and variables → Actions → Secrets）：
    | 名字 | 必填 | 作用 |
    | --- | --- | --- |
-   | `ANTHROPIC_API_KEY` | 用 Claude 写稿时 | 写稿 |
-   | `XAI_API_KEY` | 用 X 监测或 Grok 写稿时 | X 搜索、写稿 |
+   | `XAI_API_KEY` | 是 | Grok 写稿 + X 监测（一个密钥两用） |
+   | `ANTHROPIC_API_KEY` | 改用 Claude 写稿时 | 写稿 |
    | `WG_BOT_TOKEN` | 建议 | 机器人账号的令牌；用它开的 PR 会自动触发校验 |
    | `WG_MERGE_TOKEN` | 阶段 B 才要 | 你本人的令牌，用于自动合并 |
 5. **变量**（同一页的 Variables）：
@@ -47,8 +47,8 @@ npm run dev         # 构建并在 http://localhost:4321 预览
    | --- | --- | --- |
    | `WG_SITE_URL` | 无，必填 | 网站地址，如 `https://<用户名>.github.io/<仓库名>` |
    | `WG_DRAFT_TOP` | `1` | 每次定时写稿写几篇；每天 4 次，默认即每天最多 4 篇 |
-   | `WG_PROVIDER` | `anthropic` | 写稿用哪家：`anthropic` 或 `xai` |
-   | `WG_MODEL` | `claude-sonnet-5-5` / `grok-4.7` | 写稿模型 |
+   | `WG_PROVIDER` | `xai` | 写稿用哪家：`xai`（Grok）或 `anthropic`（Claude） |
+   | `WG_MODEL` | `grok-4.7` / `claude-sonnet-5-5` | 写稿模型 |
    | `WG_X_MODEL` | `grok-4.7` | X 监测用的模型 |
    | `WG_AUTOMERGE` | 关 | 设为 `on` 进入阶段 B 自动合并 |
    | `WG_AUTOMERGE_CATEGORIES` | `product` | 允许自动合并的栏目，逗号分隔 |
@@ -63,7 +63,7 @@ npm run dev         # 构建并在 http://localhost:4321 预览
 - **审核一篇稿子**：打开 PR，先看描述里的「必须修改」，再看机器人的初审评论。核对完确认 `"verified": true`，合并即发布；不要的稿子直接关闭。
 - **加 / 修数据源**：编辑 `sources/sources.json`（RSS 写 `rss`；没有 RSS 的写 `page` 加 `pattern`）。先用 `node scripts/bot.mjs source-test --url … --type page --pattern …` 试抓。
 - **X 监测名单**：`sources/x-accounts.json`，每组最多 20 个账号；KOL 两组默认关着。X 搜索按抓取的帖子数收费，用量记在 `data` 分支的 `usage.json`。
-- **换写稿模型**：改变量 `WG_PROVIDER`。建议先手动对同一个候选各写一次比较。
+- **换写稿模型**：默认 Grok；把变量 `WG_PROVIDER` 设为 `anthropic` 并加 `ANTHROPIC_API_KEY` 即改用 Claude。
 - **调写作规则**：`prompts/writer.md`。**改页面样式**：`site/assets/site.css`，图形组件在 `site/assets/components.js`。
 
 ## 机器人账号与仓库保护

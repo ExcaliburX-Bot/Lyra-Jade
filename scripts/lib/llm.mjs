@@ -1,13 +1,13 @@
 /* 调用大模型：写稿用「强制工具调用」拿结构化 JSON；X 监测用 Grok 的 X 搜索
-   写稿模型由 WG_PROVIDER 决定：anthropic（默认，需要 ANTHROPIC_API_KEY）或 xai（需要 XAI_API_KEY）
+   写稿模型由 WG_PROVIDER 决定：xai（默认，需要 XAI_API_KEY）或 anthropic（需要 ANTHROPIC_API_KEY）
    WG_MODEL 可覆盖具体模型 */
 import fs from "node:fs";
 import path from "node:path";
 import { FIXTURES } from "./paths.mjs";
 
-export const PROVIDER = (process.env.WG_PROVIDER || "anthropic").toLowerCase();
+export const PROVIDER = (process.env.WG_PROVIDER || "xai").toLowerCase();
 const DEFAULTS = { anthropic: "claude-sonnet-5-5", xai: "grok-4.7" };
-export const DEFAULT_MODEL = process.env.WG_MODEL || DEFAULTS[PROVIDER] || DEFAULTS.anthropic;
+export const DEFAULT_MODEL = process.env.WG_MODEL || DEFAULTS[PROVIDER] || DEFAULTS.xai;
 export const XAI_SEARCH_MODEL = process.env.WG_X_MODEL || "grok-4.7";
 
 const TOOL = { name: "submit_article", description: "提交写好的解读文章（结构化）" };

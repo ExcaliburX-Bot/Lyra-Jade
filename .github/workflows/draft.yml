@@ -35,7 +35,7 @@ jobs:
           path: data
       - name: 写稿
         env:
-          WG_PROVIDER: ${{ vars.WG_PROVIDER }}          # anthropic（默认）或 xai
+          WG_PROVIDER: ${{ vars.WG_PROVIDER }}          # xai（默认，Grok）或 anthropic（Claude）
           WG_MODEL: ${{ vars.WG_MODEL }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
