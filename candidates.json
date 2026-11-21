@@ -1,49 +1,5 @@
 [
   {
-    "id": "5dbbce4400",
-    "title": "Seven new world-class models at scalable price-performance",
-    "url": "https://microsoft.ai/news/microsoft-ignite-2026/",
-    "publisher": "Microsoft AI",
-    "tier": "official",
-    "published": "2026-11-17T12:00:00.000Z",
-    "score": 6,
-    "category_hint": null,
-    "related": [
-      {
-        "title": "Microsoft launched MAI Code 2, MAI Image 2.7, MAI Realtime 1 and other models.",
-        "url": "https://microsoft.ai/news/microsoft-ignite-2026/",
-        "publisher": "@MicrosoftAI",
-        "tier": "official",
-        "text": "That’s a wrap on #MSIgnite! \n\nWe launched MAI Code 2 and MAI Code 2 Flash, MAI Cyber 2 Flash, MAI Image 2.7 and MAI Image 2.7 Flash, MAI Realtime 1, MAI Transcribe 2 (powering Dragon Copilot Transcribe) and Decision 1.1. \n\nEverything in one place 🔽 https://microsoft.ai/news/microsoft-ignite-2026/"
-      },
-      {
-        "title": "微软发布七款 MAI 模型：编程拿到 Opus 5.5 的 96% 成绩，按促销价成本只要 5%",
-        "url": "https://microsoft.ai/news/microsoft-ignite-2026/",
-        "publisher": "Microsoft AI",
-        "tier": "official"
-      }
-    ]
-  },
-  {
-    "id": "f4784c3040",
-    "title": "Can AI help scientists identify promising drug candidates?",
-    "url": "https://openai.com/index/introducing-medchembench",
-    "publisher": "OpenAI",
-    "tier": "official",
-    "published": "2026-11-20T00:00:00.000Z",
-    "score": 5.6,
-    "category_hint": "product",
-    "related": [
-      {
-        "title": "MedChemBench is a new benchmark for AI reasoning in medicinal chemistry.",
-        "url": "https://openai.com/index/introducing-medchembench/",
-        "publisher": "@OpenAI",
-        "tier": "official",
-        "text": "MedChemBench is a new benchmark for AI reasoning in medicinal chemistry.\n\nIt shows the progress our frontier models have made in their ability to help scientists use AI to identify promising drug candidates.\n\nhttps://openai.com/index/introducing-medchembench/"
-      }
-    ]
-  },
-  {
     "id": "a5b77eee49",
     "title": "OpenAI 发布 GPT-6.2 提示指南：能拆开的活交给子 Agent，精简AGENTS.md 只写代码里推不出来的事",
     "url": "https://learn.chatgpt.com/guides/prompting-gpt-6-2-astra",
@@ -115,6 +71,25 @@
         "url": "https://blogs.nvidia.com/blog/rtx-spark-desktop-local-ai-available-now/",
         "publisher": "NVIDIA",
         "tier": "official"
+      }
+    ]
+  },
+  {
+    "id": "f4784c3040",
+    "title": "Can AI help scientists identify promising drug candidates?",
+    "url": "https://openai.com/index/introducing-medchembench",
+    "publisher": "OpenAI",
+    "tier": "official",
+    "published": "2026-11-20T00:00:00.000Z",
+    "score": 5.1,
+    "category_hint": "product",
+    "related": [
+      {
+        "title": "MedChemBench is a new benchmark for AI reasoning in medicinal chemistry.",
+        "url": "https://openai.com/index/introducing-medchembench/",
+        "publisher": "@OpenAI",
+        "tier": "official",
+        "text": "MedChemBench is a new benchmark for AI reasoning in medicinal chemistry.\n\nIt shows the progress our frontier models have made in their ability to help scientists use AI to identify promising drug candidates.\n\nhttps://openai.com/index/introducing-medchembench/"
       }
     ]
   },
@@ -494,19 +469,6 @@
     "related": []
   },
   {
-    "id": "41dc972095",
-    "title": "NVIDIA published eight design guidelines for efficient sparse attention.",
-    "url": "https://developer.nvidia.com/blog/co-designing-sparse-attention-for-efficient-long-context-inference/",
-    "publisher": "@NVIDIAAI",
-    "tier": "official",
-    "published": "2026-11-20T20:27:01.000Z",
-    "score": 4.6,
-    "category_hint": "product",
-    "text": "Sparse attention does less work, but finding the right tokens still has a cost.\n\nCheck out eight design guidelines for efficient sparse attention on NVIDIA accelerated computing, from token selection to memory reuse.\n\nRead the breakdown: https://developer.nvidia.com/blog/co-designing-sparse-attention-for-efficient-long-context-inference/",
-    "via": "https://x.com/NVIDIAAI/status/2123875786323296459",
-    "related": []
-  },
-  {
     "id": "1112027d59",
     "title": "Into the Omniverse: How Developers Turn Ideas Into Simulations With Frontier AI Agents",
     "url": "https://blogs.nvidia.com/blog/developers-simulation-frontier-ai-agents/",
@@ -515,6 +477,30 @@
     "published": "2026-11-19T17:00:35.000Z",
     "score": 4.6,
     "category_hint": null,
+    "related": []
+  },
+  {
+    "id": "b4c1c8bf45",
+    "title": "We’re partnering with Blue Origin on our first heavy-lift Project Suncatcher launch.",
+    "url": "https://blog.google/innovation-and-ai/models-and-research/google-research/blue-origin-project-suncatcher-partnership/",
+    "publisher": "Google",
+    "tier": "official",
+    "published": "2026-11-19T13:00:00.000Z",
+    "score": 4.6,
+    "category_hint": null,
+    "related": []
+  },
+  {
+    "id": "a0ad6f8b6a",
+    "title": "Google AI Studio 推出全栈安卓开发：一句话做出带云数据库、Google 登录和 Gemini 的 App，直接装进自己手机",
+    "url": "https://developers.googleblog.com/build-full-stack-android-apps-with-gemini-in-google-ai-studio/",
+    "publisher": "developers.googleblog.com",
+    "tier": "official",
+    "published": "2026-11-18T00:00:00.000Z",
+    "score": 4.4,
+    "category_hint": null,
+    "via": "https://xiaohu.ai/article/gemini-android-ai-studio/",
+    "discovered_by": "xiaohu",
     "related": []
   }
 ]

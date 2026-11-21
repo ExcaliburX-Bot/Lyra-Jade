@@ -1,14 +1,13 @@
-# 候选清单（2026-11-21 15:49 UTC）
+# 候选清单（2026-11-21 21:23 UTC）
 
 | 分数 | 标题 | 发布方 | 层级 | 相关报道 |
 | --- | --- | --- | --- | --- |
-| 6 | [Seven new world-class models at scalable price-performance](https://microsoft.ai/news/microsoft-ignite-2026/) | Microsoft AI | official | 2 |
-| 5.6 | [Can AI help scientists identify promising drug candidates?](https://openai.com/index/introducing-medchembench) | OpenAI | official | 1 |
 | 5.4 | [OpenAI 发布 GPT-6.2 提示指南：能拆开的活交给子 Agent，精简AGENTS.md 只写代码里推不出来的事](https://learn.chatgpt.com/guides/prompting-gpt-6-2-astra) | learn.chatgpt.com | official | 0 |
 | 5.4 | [OpenAI 公开其个人 Agent Dot 背后的时间感知技术：Bot 如何能在特定状态下感知并提醒你](https://developers.openai.com/blog/time-awareness-and-async-input-for-personal-agents) | OpenAI | official | 0 |
 | 5.4 | [Thinking Machines 发布 Inkling 2 Mini 模型：32GB 内存的 Mac 就能本地跑 在断网的 MacBook 上几分钟写出能玩的飞行模拟器](https://thinkingmachines.ai/news/inkling-2-mini/) | thinkingmachines.ai | official | 0 |
 | 5.4 | [Introducing GPT-6.2 Astra and Sol](https://openai.com/index/introducing-gpt-6-2-astra-sol) | OpenAI | official | 1 |
 | 5.3 | [NVIDIA RTX Spark Compact Desktops Out Now](https://blogs.nvidia.com/blog/rtx-spark-desktop-local-ai-available-now/) | NVIDIA | official | 1 |
+| 5.1 | [Can AI help scientists identify promising drug candidates?](https://openai.com/index/introducing-medchembench) | OpenAI | official | 1 |
 | 5 | [Advancing chip design with OpenAI models](https://openai.com/index/advancing-chip-design-with-our-models) | OpenAI | official | 0 |
 | 5 | [Introducing ChatGPT for Sales](https://openai.com/index/introducing-chatgpt-for-sales) | OpenAI | official | 0 |
 | 5 | [Introducing OpenAI for Chile](https://openai.com/index/introducing-openai-for-chile) | OpenAI | official | 0 |
@@ -40,7 +39,8 @@
 | 4.6 | [Notion 团队 AI 工作指南：100 人各写一份技能，不如 2 人搭一座全队共用的工厂](https://www.notion.com/a-new-shape-for-work) | notion.com | official | 0 |
 | 4.6 | [a16z 每周图表：Z 世代观点全重合不到一成，过半基金经理预计巨头半年内砍 AI 开支](https://www.a16z.news/p/charts-of-the-week-there-is-no-gen) | a16z.news | official | 0 |
 | 4.6 | [Perplexity Computer now works directly in Chromium browsers via the extension.](https://pplx.ai/chrome-extension) | @perplexity_ai | official | 0 |
-| 4.6 | [NVIDIA published eight design guidelines for efficient sparse attention.](https://developer.nvidia.com/blog/co-designing-sparse-attention-for-efficient-long-context-inference/) | @NVIDIAAI | official | 0 |
 | 4.6 | [Into the Omniverse: How Developers Turn Ideas Into Simulations With Frontier AI Agents](https://blogs.nvidia.com/blog/developers-simulation-frontier-ai-agents/) | NVIDIA | official | 0 |
+| 4.6 | [We’re partnering with Blue Origin on our first heavy-lift Project Suncatcher launch.](https://blog.google/innovation-and-ai/models-and-research/google-research/blue-origin-project-suncatcher-partnership/) | Google | official | 0 |
+| 4.4 | [Google AI Studio 推出全栈安卓开发：一句话做出带云数据库、Google 登录和 Gemini 的 App，直接装进自己手机](https://developers.googleblog.com/build-full-stack-android-apps-with-gemini-in-google-ai-studio/) | developers.googleblog.com | official | 0 |
 
 **超过 30 天没有新内容的源**：Mistral 新闻、Kimi 博客
