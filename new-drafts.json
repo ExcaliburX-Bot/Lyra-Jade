@@ -1,10 +1,10 @@
 [
   {
-    "slug": "anthropic-ipo-close",
-    "title": "Anthropic 完成 IPO：每股 83 美元，IPO 加私募合计募资约 1,195 亿美元",
-    "file": "content/articles/anthropic-ipo-close.json",
-    "errors": 1,
-    "warnings": 2,
+    "slug": "genie-4-now-available",
+    "title": "Google 发布 Genie 4：边逛边用一句话改世界、配原生声音，Ultra 订阅用户即日可玩",
+    "file": "content/articles/genie-4-now-available.json",
+    "errors": 0,
+    "warnings": 0,
     "provider": "deepseek",
     "model": "deepseek-v4-pro"
   }
