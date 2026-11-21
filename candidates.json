@@ -6,7 +6,7 @@
     "publisher": "Microsoft AI",
     "tier": "official",
     "published": "2026-11-17T12:00:00.000Z",
-    "score": 6.5,
+    "score": 6,
     "category_hint": null,
     "related": [
       {
@@ -23,19 +23,6 @@
         "tier": "official"
       }
     ]
-  },
-  {
-    "id": "a5b77eee49",
-    "title": "OpenAI 发布 GPT-6.2 提示指南：能拆开的活交给子 Agent，精简AGENTS.md 只写代码里推不出来的事",
-    "url": "https://learn.chatgpt.com/guides/prompting-gpt-6-2-astra",
-    "publisher": "learn.chatgpt.com",
-    "tier": "official",
-    "published": "2026-11-21T00:00:00.000Z",
-    "score": 5.9,
-    "category_hint": null,
-    "via": "https://xiaohu.ai/article/gpt-6-2-codex-prompting-guide/",
-    "discovered_by": "xiaohu",
-    "related": []
   },
   {
     "id": "f4784c3040",
@@ -55,6 +42,45 @@
         "text": "MedChemBench is a new benchmark for AI reasoning in medicinal chemistry.\n\nIt shows the progress our frontier models have made in their ability to help scientists use AI to identify promising drug candidates.\n\nhttps://openai.com/index/introducing-medchembench/"
       }
     ]
+  },
+  {
+    "id": "a5b77eee49",
+    "title": "OpenAI 发布 GPT-6.2 提示指南：能拆开的活交给子 Agent，精简AGENTS.md 只写代码里推不出来的事",
+    "url": "https://learn.chatgpt.com/guides/prompting-gpt-6-2-astra",
+    "publisher": "learn.chatgpt.com",
+    "tier": "official",
+    "published": "2026-11-21T00:00:00.000Z",
+    "score": 5.4,
+    "category_hint": null,
+    "via": "https://xiaohu.ai/article/gpt-6-2-codex-prompting-guide/",
+    "discovered_by": "xiaohu",
+    "related": []
+  },
+  {
+    "id": "4bd6f0b210",
+    "title": "OpenAI 公开其个人 Agent Dot 背后的时间感知技术：Bot 如何能在特定状态下感知并提醒你",
+    "url": "https://developers.openai.com/blog/time-awareness-and-async-input-for-personal-agents",
+    "publisher": "OpenAI",
+    "tier": "official",
+    "published": "2026-11-21T00:00:00.000Z",
+    "score": 5.4,
+    "category_hint": null,
+    "via": "https://xiaohu.ai/article/openai-agent-time-async/",
+    "discovered_by": "xiaohu",
+    "related": []
+  },
+  {
+    "id": "a0ebc9ee45",
+    "title": "Thinking Machines 发布 Inkling 2 Mini 模型：32GB 内存的 Mac 就能本地跑 在断网的 MacBook 上几分钟写出能玩的飞行模拟器",
+    "url": "https://thinkingmachines.ai/news/inkling-2-mini/",
+    "publisher": "thinkingmachines.ai",
+    "tier": "official",
+    "published": "2026-11-21T00:00:00.000Z",
+    "score": 5.4,
+    "category_hint": null,
+    "via": "https://xiaohu.ai/article/thinking-machines-inkling-2-mini/",
+    "discovered_by": "xiaohu",
+    "related": []
   },
   {
     "id": "549a77347d",
@@ -91,82 +117,6 @@
         "tier": "official"
       }
     ]
-  },
-  {
-    "id": "3ea993db7e",
-    "title": "Combatting adversarial distillation",
-    "url": "https://openai.com/index/combatting-adversarial-distillation",
-    "publisher": "OpenAI",
-    "tier": "official",
-    "published": "2026-11-20T10:00:00.000Z",
-    "score": 5.2,
-    "category_hint": "product",
-    "related": []
-  },
-  {
-    "id": "bbe099f294",
-    "title": "Anthropic 数学家称和 Claude 证明了黎曼猜想：1700 万行 Lean 证明已公开，尚无外部核对",
-    "url": "https://alpo.ge/remark.pdf",
-    "publisher": "alpo.ge",
-    "tier": "official",
-    "published": "2026-11-21T00:00:00.000Z",
-    "score": 5.1,
-    "category_hint": null,
-    "via": "https://xiaohu.ai/article/riemann-hypothesis-proof-claim/",
-    "discovered_by": "xiaohu",
-    "related": []
-  },
-  {
-    "id": "3f1695fde4",
-    "title": "已经订阅了 Google AI服务的 免费领取一台Google Colab云电脑 上手指南：一条 SSH 连进 12 GB 内存 Ubuntu",
-    "url": "https://x.com/jandisufg/status/2123530059310850353",
-    "publisher": "@jandisufg",
-    "tier": "official",
-    "published": "2026-11-21T00:00:00.000Z",
-    "score": 5.1,
-    "category_hint": null,
-    "via": "https://xiaohu.ai/article/google-colab-cli-ssh/",
-    "discovered_by": "xiaohu",
-    "related": []
-  },
-  {
-    "id": "ca73c64f19",
-    "title": "Notion 团队 AI 工作指南：100 人各写一份技能，不如 2 人搭一座全队共用的工厂",
-    "url": "https://www.notion.com/a-new-shape-for-work",
-    "publisher": "notion.com",
-    "tier": "official",
-    "published": "2026-11-21T00:00:00.000Z",
-    "score": 5.1,
-    "category_hint": null,
-    "via": "https://xiaohu.ai/article/notion-new-shape-for-work/",
-    "discovered_by": "xiaohu",
-    "related": []
-  },
-  {
-    "id": "aaec692e1d",
-    "title": "Perplexity Computer now works directly in Chromium browsers via the extension.",
-    "url": "https://pplx.ai/chrome-extension",
-    "publisher": "@perplexity_ai",
-    "tier": "official",
-    "published": "2026-11-20T21:47:32.000Z",
-    "score": 5.1,
-    "category_hint": "product",
-    "text": "Perplexity Computer now works directly in Chromium browsers through the Perplexity extension.\n\nHand off a task from the side panel, and watch Computer work across your tabs and tools.\n\nGet the Perplexity extension from the Chrome Web Store:\n\nhttps://pplx.ai/chrome-extension",
-    "via": "https://x.com/perplexity_ai/status/2123896048510996827",
-    "related": []
-  },
-  {
-    "id": "41dc972095",
-    "title": "NVIDIA published eight design guidelines for efficient sparse attention.",
-    "url": "https://developer.nvidia.com/blog/co-designing-sparse-attention-for-efficient-long-context-inference/",
-    "publisher": "@NVIDIAAI",
-    "tier": "official",
-    "published": "2026-11-20T20:27:01.000Z",
-    "score": 5.1,
-    "category_hint": "product",
-    "text": "Sparse attention does less work, but finding the right tokens still has a cost.\n\nCheck out eight design guidelines for efficient sparse attention on NVIDIA accelerated computing, from token selection to memory reuse.\n\nRead the breakdown: https://developer.nvidia.com/blog/co-designing-sparse-attention-for-efficient-long-context-inference/",
-    "via": "https://x.com/NVIDIAAI/status/2123875786323296459",
-    "related": []
   },
   {
     "id": "c7d3ecb006",
@@ -402,6 +352,17 @@
     ]
   },
   {
+    "id": "3ea993db7e",
+    "title": "Combatting adversarial distillation",
+    "url": "https://openai.com/index/combatting-adversarial-distillation",
+    "publisher": "OpenAI",
+    "tier": "official",
+    "published": "2026-11-20T10:00:00.000Z",
+    "score": 4.7,
+    "category_hint": "product",
+    "related": []
+  },
+  {
     "id": "d15c456432",
     "title": "Hebbia sees improvements in financial research with GPT-6 Astra",
     "url": "https://openai.com/business/customer-stories/hebbia",
@@ -468,47 +429,92 @@
     "related": []
   },
   {
-    "id": "e683d40fba",
-    "title": "The Silent Consensus",
-    "url": "https://openai.com/index/the-silent-consensus",
-    "publisher": "OpenAI",
+    "id": "bbe099f294",
+    "title": "Anthropic 数学家称和 Claude 证明了黎曼猜想：1700 万行 Lean 证明已公开，尚无外部核对",
+    "url": "https://alpo.ge/remark.pdf",
+    "publisher": "alpo.ge",
     "tier": "official",
-    "published": "2026-11-18T10:00:00.000Z",
-    "score": 4.7,
-    "category_hint": "product",
+    "published": "2026-11-21T00:00:00.000Z",
+    "score": 4.6,
+    "category_hint": null,
+    "via": "https://xiaohu.ai/article/riemann-hypothesis-proof-claim/",
+    "discovered_by": "xiaohu",
     "related": []
   },
   {
-    "id": "9fa731b0ef",
-    "title": "Research acceleration: The jagged frontier",
-    "url": "https://openai.com/index/research-acceleration-jagged-frontier",
-    "publisher": "OpenAI",
+    "id": "3f1695fde4",
+    "title": "已经订阅了 Google AI服务的 免费领取一台Google Colab云电脑 上手指南：一条 SSH 连进 12 GB 内存 Ubuntu",
+    "url": "https://x.com/jandisufg/status/2123530059310850353",
+    "publisher": "@jandisufg",
     "tier": "official",
-    "published": "2026-11-18T08:00:00.000Z",
-    "score": 4.7,
-    "category_hint": "product",
+    "published": "2026-11-21T00:00:00.000Z",
+    "score": 4.6,
+    "category_hint": null,
+    "via": "https://xiaohu.ai/article/google-colab-cli-ssh/",
+    "discovered_by": "xiaohu",
     "related": []
   },
   {
-    "id": "b527b6f0dd",
-    "title": "How Sumitomo Life’s leaders helped teams adopt ChatGPT Enterprise",
-    "url": "https://openai.com/business/customer-stories/sumitomo-life",
-    "publisher": "OpenAI",
+    "id": "ca73c64f19",
+    "title": "Notion 团队 AI 工作指南：100 人各写一份技能，不如 2 人搭一座全队共用的工厂",
+    "url": "https://www.notion.com/a-new-shape-for-work",
+    "publisher": "notion.com",
     "tier": "official",
-    "published": "2026-11-18T08:00:00.000Z",
-    "score": 4.7,
-    "category_hint": "product",
+    "published": "2026-11-21T00:00:00.000Z",
+    "score": 4.6,
+    "category_hint": null,
+    "via": "https://xiaohu.ai/article/notion-new-shape-for-work/",
+    "discovered_by": "xiaohu",
     "related": []
   },
   {
-    "id": "53f2a14376",
-    "title": "Inside the Codex sandbox",
-    "url": "https://openai.com/index/inside-the-codex-sandbox",
-    "publisher": "OpenAI",
+    "id": "e032fea5d7",
+    "title": "a16z 每周图表：Z 世代观点全重合不到一成，过半基金经理预计巨头半年内砍 AI 开支",
+    "url": "https://www.a16z.news/p/charts-of-the-week-there-is-no-gen",
+    "publisher": "a16z.news",
     "tier": "official",
-    "published": "2026-11-18T08:00:00.000Z",
-    "score": 4.7,
+    "published": "2026-11-21T00:00:00.000Z",
+    "score": 4.6,
+    "category_hint": null,
+    "via": "https://xiaohu.ai/article/a16z-no-gen-z/",
+    "discovered_by": "xiaohu",
+    "related": []
+  },
+  {
+    "id": "aaec692e1d",
+    "title": "Perplexity Computer now works directly in Chromium browsers via the extension.",
+    "url": "https://pplx.ai/chrome-extension",
+    "publisher": "@perplexity_ai",
+    "tier": "official",
+    "published": "2026-11-20T21:47:32.000Z",
+    "score": 4.6,
     "category_hint": "product",
+    "text": "Perplexity Computer now works directly in Chromium browsers through the Perplexity extension.\n\nHand off a task from the side panel, and watch Computer work across your tabs and tools.\n\nGet the Perplexity extension from the Chrome Web Store:\n\nhttps://pplx.ai/chrome-extension",
+    "via": "https://x.com/perplexity_ai/status/2123896048510996827",
+    "related": []
+  },
+  {
+    "id": "41dc972095",
+    "title": "NVIDIA published eight design guidelines for efficient sparse attention.",
+    "url": "https://developer.nvidia.com/blog/co-designing-sparse-attention-for-efficient-long-context-inference/",
+    "publisher": "@NVIDIAAI",
+    "tier": "official",
+    "published": "2026-11-20T20:27:01.000Z",
+    "score": 4.6,
+    "category_hint": "product",
+    "text": "Sparse attention does less work, but finding the right tokens still has a cost.\n\nCheck out eight design guidelines for efficient sparse attention on NVIDIA accelerated computing, from token selection to memory reuse.\n\nRead the breakdown: https://developer.nvidia.com/blog/co-designing-sparse-attention-for-efficient-long-context-inference/",
+    "via": "https://x.com/NVIDIAAI/status/2123875786323296459",
+    "related": []
+  },
+  {
+    "id": "1112027d59",
+    "title": "Into the Omniverse: How Developers Turn Ideas Into Simulations With Frontier AI Agents",
+    "url": "https://blogs.nvidia.com/blog/developers-simulation-frontier-ai-agents/",
+    "publisher": "NVIDIA",
+    "tier": "official",
+    "published": "2026-11-19T17:00:35.000Z",
+    "score": 4.6,
+    "category_hint": null,
     "related": []
   }
 ]
