@@ -1,14 +1,60 @@
 [
   {
-    "id": "50e3ea47cb",
-    "title": "Genie 4 is now available",
-    "url": "https://deepmind.google/blog/genie-4-is-now-available/",
-    "publisher": "Google DeepMind",
+    "id": "5dbbce4400",
+    "title": "Seven new world-class models at scalable price-performance",
+    "url": "https://microsoft.ai/news/microsoft-ignite-2026/",
+    "publisher": "Microsoft AI",
     "tier": "official",
-    "published": "2026-11-18T18:13:42.000Z",
-    "score": 5.5,
-    "category_hint": "product",
+    "published": "2026-11-17T12:00:00.000Z",
+    "score": 6.5,
+    "category_hint": null,
+    "related": [
+      {
+        "title": "Microsoft launched MAI Code 2, MAI Image 2.7, MAI Realtime 1 and other models.",
+        "url": "https://microsoft.ai/news/microsoft-ignite-2026/",
+        "publisher": "@MicrosoftAI",
+        "tier": "official",
+        "text": "That’s a wrap on #MSIgnite! \n\nWe launched MAI Code 2 and MAI Code 2 Flash, MAI Cyber 2 Flash, MAI Image 2.7 and MAI Image 2.7 Flash, MAI Realtime 1, MAI Transcribe 2 (powering Dragon Copilot Transcribe) and Decision 1.1. \n\nEverything in one place 🔽 https://microsoft.ai/news/microsoft-ignite-2026/"
+      },
+      {
+        "title": "微软发布七款 MAI 模型：编程拿到 Opus 5.5 的 96% 成绩，按促销价成本只要 5%",
+        "url": "https://microsoft.ai/news/microsoft-ignite-2026/",
+        "publisher": "Microsoft AI",
+        "tier": "official"
+      }
+    ]
+  },
+  {
+    "id": "a5b77eee49",
+    "title": "OpenAI 发布 GPT-6.2 提示指南：能拆开的活交给子 Agent，精简AGENTS.md 只写代码里推不出来的事",
+    "url": "https://learn.chatgpt.com/guides/prompting-gpt-6-2-astra",
+    "publisher": "learn.chatgpt.com",
+    "tier": "official",
+    "published": "2026-11-21T00:00:00.000Z",
+    "score": 5.9,
+    "category_hint": null,
+    "via": "https://xiaohu.ai/article/gpt-6-2-codex-prompting-guide/",
+    "discovered_by": "xiaohu",
     "related": []
+  },
+  {
+    "id": "f4784c3040",
+    "title": "Can AI help scientists identify promising drug candidates?",
+    "url": "https://openai.com/index/introducing-medchembench",
+    "publisher": "OpenAI",
+    "tier": "official",
+    "published": "2026-11-20T00:00:00.000Z",
+    "score": 5.6,
+    "category_hint": "product",
+    "related": [
+      {
+        "title": "MedChemBench is a new benchmark for AI reasoning in medicinal chemistry.",
+        "url": "https://openai.com/index/introducing-medchembench/",
+        "publisher": "@OpenAI",
+        "tier": "official",
+        "text": "MedChemBench is a new benchmark for AI reasoning in medicinal chemistry.\n\nIt shows the progress our frontier models have made in their ability to help scientists use AI to identify promising drug candidates.\n\nhttps://openai.com/index/introducing-medchembench/"
+      }
+    ]
   },
   {
     "id": "549a77347d",
@@ -68,6 +114,58 @@
     "category_hint": null,
     "via": "https://xiaohu.ai/article/riemann-hypothesis-proof-claim/",
     "discovered_by": "xiaohu",
+    "related": []
+  },
+  {
+    "id": "3f1695fde4",
+    "title": "已经订阅了 Google AI服务的 免费领取一台Google Colab云电脑 上手指南：一条 SSH 连进 12 GB 内存 Ubuntu",
+    "url": "https://x.com/jandisufg/status/2123530059310850353",
+    "publisher": "@jandisufg",
+    "tier": "official",
+    "published": "2026-11-21T00:00:00.000Z",
+    "score": 5.1,
+    "category_hint": null,
+    "via": "https://xiaohu.ai/article/google-colab-cli-ssh/",
+    "discovered_by": "xiaohu",
+    "related": []
+  },
+  {
+    "id": "ca73c64f19",
+    "title": "Notion 团队 AI 工作指南：100 人各写一份技能，不如 2 人搭一座全队共用的工厂",
+    "url": "https://www.notion.com/a-new-shape-for-work",
+    "publisher": "notion.com",
+    "tier": "official",
+    "published": "2026-11-21T00:00:00.000Z",
+    "score": 5.1,
+    "category_hint": null,
+    "via": "https://xiaohu.ai/article/notion-new-shape-for-work/",
+    "discovered_by": "xiaohu",
+    "related": []
+  },
+  {
+    "id": "aaec692e1d",
+    "title": "Perplexity Computer now works directly in Chromium browsers via the extension.",
+    "url": "https://pplx.ai/chrome-extension",
+    "publisher": "@perplexity_ai",
+    "tier": "official",
+    "published": "2026-11-20T21:47:32.000Z",
+    "score": 5.1,
+    "category_hint": "product",
+    "text": "Perplexity Computer now works directly in Chromium browsers through the Perplexity extension.\n\nHand off a task from the side panel, and watch Computer work across your tabs and tools.\n\nGet the Perplexity extension from the Chrome Web Store:\n\nhttps://pplx.ai/chrome-extension",
+    "via": "https://x.com/perplexity_ai/status/2123896048510996827",
+    "related": []
+  },
+  {
+    "id": "41dc972095",
+    "title": "NVIDIA published eight design guidelines for efficient sparse attention.",
+    "url": "https://developer.nvidia.com/blog/co-designing-sparse-attention-for-efficient-long-context-inference/",
+    "publisher": "@NVIDIAAI",
+    "tier": "official",
+    "published": "2026-11-20T20:27:01.000Z",
+    "score": 5.1,
+    "category_hint": "product",
+    "text": "Sparse attention does less work, but finding the right tokens still has a cost.\n\nCheck out eight design guidelines for efficient sparse attention on NVIDIA accelerated computing, from token selection to memory reuse.\n\nRead the breakdown: https://developer.nvidia.com/blog/co-designing-sparse-attention-for-efficient-long-context-inference/",
+    "via": "https://x.com/NVIDIAAI/status/2123875786323296459",
     "related": []
   },
   {
@@ -268,17 +366,6 @@
     "related": []
   },
   {
-    "id": "1a3d12e007",
-    "title": "How Watch Duty is using Gemini to get wildfire alerts out faster",
-    "url": "https://blog.google/company-news/outreach-and-initiatives/google-org/watch-duty-gemini-tool/",
-    "publisher": "Google",
-    "tier": "official",
-    "published": "2026-11-20T17:00:00.000Z",
-    "score": 4.8,
-    "category_hint": null,
-    "related": []
-  },
-  {
     "id": "d3bf659ccf",
     "title": "MAI Image 2.7: Frontier quality at a fraction of the cost",
     "url": "https://microsoft.ai/news/introducing-mai-image-2-7/",
@@ -291,24 +378,6 @@
       {
         "title": "微软发布 MAI Image 2.7 和 Canvas：改图榜第一，价格约为 GPT Image 2.6 的五分之一",
         "url": "https://microsoft.ai/news/introducing-mai-image-2-7/",
-        "publisher": "Microsoft AI",
-        "tier": "official"
-      }
-    ]
-  },
-  {
-    "id": "5dbbce4400",
-    "title": "Seven new world-class models at scalable price-performance",
-    "url": "https://microsoft.ai/news/microsoft-ignite-2026/",
-    "publisher": "Microsoft AI",
-    "tier": "official",
-    "published": "2026-11-17T12:00:00.000Z",
-    "score": 4.8,
-    "category_hint": null,
-    "related": [
-      {
-        "title": "微软发布七款 MAI 模型：编程拿到 Opus 5.5 的 96% 成绩，按促销价成本只要 5%",
-        "url": "https://microsoft.ai/news/microsoft-ignite-2026/",
         "publisher": "Microsoft AI",
         "tier": "official"
       }
@@ -331,17 +400,6 @@
         "tier": "official"
       }
     ]
-  },
-  {
-    "id": "f4784c3040",
-    "title": "Can AI help scientists identify promising drug candidates?",
-    "url": "https://openai.com/index/introducing-medchembench",
-    "publisher": "OpenAI",
-    "tier": "official",
-    "published": "2026-11-20T00:00:00.000Z",
-    "score": 4.7,
-    "category_hint": "product",
-    "related": []
   },
   {
     "id": "d15c456432",
@@ -451,39 +509,6 @@
     "published": "2026-11-18T08:00:00.000Z",
     "score": 4.7,
     "category_hint": "product",
-    "related": []
-  },
-  {
-    "id": "8b6ac2940f",
-    "title": "Managing frontier AI risk: From training to deployment",
-    "url": "https://openai.com/index/managing-frontier-ai-risk",
-    "publisher": "OpenAI",
-    "tier": "official",
-    "published": "2026-11-18T06:00:00.000Z",
-    "score": 4.7,
-    "category_hint": "product",
-    "related": []
-  },
-  {
-    "id": "1112027d59",
-    "title": "Into the Omniverse: How Developers Turn Ideas Into Simulations With Frontier AI Agents",
-    "url": "https://blogs.nvidia.com/blog/developers-simulation-frontier-ai-agents/",
-    "publisher": "NVIDIA",
-    "tier": "official",
-    "published": "2026-11-19T17:00:35.000Z",
-    "score": 4.6,
-    "category_hint": null,
-    "related": []
-  },
-  {
-    "id": "b4c1c8bf45",
-    "title": "We’re partnering with Blue Origin on our first heavy-lift Project Suncatcher launch.",
-    "url": "https://blog.google/innovation-and-ai/models-and-research/google-research/blue-origin-project-suncatcher-partnership/",
-    "publisher": "Google",
-    "tier": "official",
-    "published": "2026-11-19T13:00:00.000Z",
-    "score": 4.6,
-    "category_hint": null,
     "related": []
   }
 ]
