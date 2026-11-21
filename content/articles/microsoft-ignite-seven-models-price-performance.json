@@ -1,0 +1,376 @@
+{
+  "slug": "microsoft-ignite-seven-models-price-performance",
+  "date": "2026-11-17",
+  "category": "product",
+  "publisher": "Microsoft AI",
+  "title": "微软一口气发布 7 款新模型：代码价格低至竞品 5%，质量对标 98%",
+  "summary": "如果你在跑代码、图像、语音或医疗转录，微软这次在 Ignite 2026 放出的 7 款模型，核心卖点都指向同一件事：用更少的钱，拿到接近甚至超过顶级模型的效果。",
+  "ai_summary": "微软在 Ignite 2026 发布 7 款新模型和加速器 Maia 200，主打价格性能比。代码上，MAI Code 2 达 GPT-6.1 Sol 98% 的代码质量、价格约 40%，对 Opus 5.5 达 96% 表现、价格仅 5%。MAI Realtime 1 起步价 0.01 美元/音频分钟；MAI Image 2.7 在 Artificial Analysis 图像编辑榜排第一，价格为 GPT Image 2.6 Sunburst（max）的五分之一。医疗转录每月处理 1,000 万次问诊、错误率减半。这些多为微软自报数据，缺少独立复测，需自己验证。",
+  "brief": [
+    "MAI Code 2 达 GPT-6.1 Sol 98% 代码质量、约 40% 价格；对 Opus 5.5 达 96% 表现、仅 5% 价格。",
+    "MAI Code 2 Flash 对标 GPT-6 Luna 约 65% 价格、Haiku 5.5 约 20% 价格，性能「可比」。",
+    "MAI Realtime 1 起步价 0.01 美元/音频分钟；MAI Image 2.7 在 Artificial Analysis 图像编辑榜列第 1。",
+    "Decision 1.1 比 GPT-6.1 Sol 快 50 倍、便宜 79 倍；Maia 200 每瓦 token 提升 1.7 倍。"
+  ],
+  "readMinutes": 6,
+  "sections": [
+    {
+      "h": "这是什么：微软把「价格性能比」做成一次集中发布",
+      "blocks": [
+        {
+          "p": "微软在 Ignite 2026 上放出一批新模型。官方开头的说法是：token 花费正在暴涨，开发者不光要能力最强的模型，还要一个价格能让自己 24 小时不间断跑智能体（agent，能自主完成任务的 AI 程序）、做真实工程工作的模型。"
+        },
+        {
+          "p": "这次发布可以分成两块：7 款模型，外加一个硬件加速器 Maia 200。7 款模型覆盖代码、图像、实时语音、网络安全、决策、转录，全部围绕同一个卖点——用相对竞品百分之几的价格，拿到接近甚至超过它的质量。"
+        },
+        {
+          "list": [
+            "MAI Cyber 2 Flash：网络安全，每任务成本不到 GPT-6 Astra 的 2%。",
+            "MAI Code 2 / MAI Code 2 Flash：代码生成。",
+            "MAI Image 2.7：图像编辑，Artificial Analysis 榜第 1。",
+            "MAI Realtime 1：实时语音，0.01 美元/音频分钟起步。",
+            "MAI Transcribe 2（产品形态为 Dragon Copilot Transcribe）：转录。",
+            "Decision 1.1：决策模型。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "代码模型：价格打到了竞品的 5% 到 65%",
+      "blocks": [
+        {
+          "p": "写代码是 agent 里最高频、最烧 token 的场景之一，价格弹性也最明显。微软用两个代码模型分别对标不同竞品：主力 MAI Code 2，以及更轻的 MAI Code 2 Flash。"
+        },
+        {
+          "p": "MAI Code 2 按微软说法，达到 GPT-6.1 Sol 98% 的代码质量，价格大约是后者的 40%。换一个对手，对 Opus 5.5 达到 96% 的表现，价格只要后者的 5%。如果你现在主要花在 Opus 5.5 上，这组数字意味着同样预算能买到的代码生成量会多很多。"
+        },
+        {
+          "p": "MAI Code 2 Flash 的定位是轻量，微软只说性能与竞品「可比」：对标 GPT-6 Luna 时价格约 65%，对标 Haiku 5.5 时价格约 20%。「可比」不等于「超过」，原文没有给出具体分数。"
+        },
+        {
+          "fig": {
+            "type": "bars",
+            "title": "代码模型：把对标竞品的价格压到多少",
+            "subtitle": "单位：%——数值是该模型价格占对标竞品价格的比例，越低越便宜",
+            "note": "数据来自微软 Ignite 2026 发布稿；性能与质量均为微软自报，具体评测集未公布。",
+            "legend": [
+              {
+                "tone": "main",
+                "label": "微软 MAI 代码模型的价格占比"
+              }
+            ],
+            "groups": [
+              {
+                "label": "MAI Code 2",
+                "items": [
+                  {
+                    "label": "对标 GPT-6.1 Sol",
+                    "sub": "质量达其 98%",
+                    "value": 40,
+                    "tone": "main"
+                  },
+                  {
+                    "label": "对标 Opus 5.5",
+                    "sub": "表现达其 96%",
+                    "value": 5,
+                    "tone": "main"
+                  }
+                ]
+              },
+              {
+                "label": "MAI Code 2 Flash",
+                "items": [
+                  {
+                    "label": "对标 GPT-6 Luna",
+                    "sub": "性能「可比」",
+                    "value": 65,
+                    "tone": "main"
+                  },
+                  {
+                    "label": "对标 Haiku 5.5",
+                    "sub": "性能「可比」",
+                    "value": 20,
+                    "tone": "main"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "图像和语音：一个上榜首，一个 0.01 美元起步",
+      "blocks": [
+        {
+          "p": "图像方面，MAI Image 2.7 在 Artificial Analysis（一家做 AI 模型评测与排行的机构）的图像编辑榜上排第 1。微软称它超过了 GPT Image 2.6 Sunburst（max），而价格只有后者的五分之一。"
+        },
+        {
+          "p": "实时语音方面，MAI Realtime 1 被微软称为超过 GPT-Realtime 2.1，起步价是每音频分钟 0.01 美元。注意这是「起步价」，实际账单通常还会随用量档位、并发数变化。"
+        }
+      ]
+    },
+    {
+      "h": "医疗转录与决策：一个有落地量，一个又快又省",
+      "blocks": [
+        {
+          "p": "Dragon Copilot Transcribe 是面向医疗场景的转录产品，底座是 MAI Transcribe 2。微软称这是「全球最快、最准的多语言转录模型」——这是厂商自己的说法。它目前已每月处理 1,000 万次患者问诊，多语言错误率减半。"
+        },
+        {
+          "p": "Decision 1.1 是微软最新的决策模型，官方称比 GPT-6.1 Sol 快 50 倍、便宜 79 倍。这类倍数一般指「每个决策任务」的相对比较，原文没有写清任务类型和测试口径，建议当成方向性数据看。"
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "质量与效率：四组关键对比",
+            "subtitle": "微软自报口径；% 表示达到对标竞品的比例，倍表示相对倍率",
+            "note": "98%、96% 对应 MAI Code 2 的代码质量/表现；50x、79x 对应 Decision 1.1 的速度/成本。",
+            "items": [
+              {
+                "value": 98,
+                "unit": "%",
+                "label": "MAI Code 2 代码质量 vs GPT-6.1 Sol"
+              },
+              {
+                "value": 96,
+                "unit": "%",
+                "label": "MAI Code 2 表现 vs Opus 5.5"
+              },
+              {
+                "value": 50,
+                "unit": "倍",
+                "label": "Decision 1.1 速度 vs GPT-6.1 Sol"
+              },
+              {
+                "value": 79,
+                "unit": "倍",
+                "label": "Decision 1.1 便宜程度 vs GPT-6.1 Sol"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "硬件：Maia 200 已在生产环境跑微软最大的模型",
+      "blocks": [
+        {
+          "p": "Maia 200 是微软第二代 AI 加速器（可以理解为自研的 AI 专用芯片），现在已进入生产环境，用来运行微软最大的模型。官方给的能效数字是：每瓦产出的 token 数提升 1.7 倍。"
+        },
+        {
+          "p": "这是能效指标，不是绝对速度指标。对在意电费、单位算力成本的团队更有参考价值；但原文没有给出芯片规格、显存、带宽这些具体参数。"
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "其余关键数字：语音、医疗、网络安全、硬件",
+            "subtitle": "单位见各条目；均来自微软发布稿",
+            "note": "Realtime 1 为起步价；问诊量为已落地量；Cyber 2 Flash 为「不到 2%」；Maia 200 为能效。",
+            "items": [
+              {
+                "value": 0.01,
+                "unit": "美元/音频分钟",
+                "label": "MAI Realtime 1 起步价"
+              },
+              {
+                "value": 10,
+                "unit": "百万次/月",
+                "label": "Dragon Copilot Transcribe 月问诊量"
+              },
+              {
+                "value": 2,
+                "unit": "%（不到）",
+                "label": "MAI Cyber 2 Flash 每任务成本 vs GPT-6 Astra"
+              },
+              {
+                "value": 1.7,
+                "unit": "倍",
+                "label": "Maia 200 每瓦 token 提升"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "价格怎么读：只有一个给了绝对价",
+      "blocks": [
+        {
+          "p": "这次发布里，唯一给出绝对价格的是 MAI Realtime 1：每音频分钟 0.01 美元起步。其余模型都用「相对竞品的百分比」来表达，例如 Code 2 是 GPT-6.1 Sol 的约 40%、是 Opus 5.5 的 5%，Image 2.7 是 GPT Image 2.6 Sunburst（max）的五分之一。"
+        },
+        {
+          "p": "这么表达的好处是方便快速比价；坏处是，如果不知道竞品自己的单价，就推不出 MAI 模型的实际美元价格。原文没有给出这些竞品的单价，也没有 MAI 模型自己的标价表。"
+        }
+      ]
+    },
+    {
+      "h": "官方还没说的",
+      "blocks": [
+        {
+          "list": [
+            "各模型的具体美元价格没有公布，唯一例外是 MAI Realtime 1 的 0.01 美元/音频分钟起步价。",
+            "上线时间、可用区域、以及具体进入 Azure 或 Copilot 哪个产品线，没有说明。",
+            "「98%、96%、可比」所依赖的具体评测集、上下文长度、测试口径没有公布。",
+            "CyberGym-E2E 由谁评测、样本量多大，没有说明。",
+            "Maia 200 的芯片规格、显存、带宽、对外供应方式没有公布。",
+            "除 Artificial Analysis 图像编辑榜外，其余结果没有第三方独立复测。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "适合谁：想省钱跑量的人，先小规模试",
+      "blocks": [
+        {
+          "p": "价值很直接：如果你的应用以代码 agent、实时语音、转录或决策为主，而且 token 用量大，这批模型的相对价格数字意味着同样预算能跑更多任务。尤其 Code 2 对 Opus 5.5 只要 5% 的价格、Realtime 1 从 0.01 美元/音频分钟起步，对成本敏感的场景有吸引力。"
+        },
+        {
+          "p": "代价也要算进去：这些对比基本是微软自报口径，「98%」「96%」「可比」都依赖一个没公开的测试基准，不能直接等同于「换过去就一样好用」；工具链切换和迁移成本也需要你自己评估。"
+        },
+        {
+          "list": [
+            "如果你主要跑代码 agent 且在意成本：先拿 MAI Code 2 / Flash 在自己的评测集上跑一轮再决定。",
+            "如果你做语音客服或实时通话：MAI Realtime 1 的起步价值得用样本来测延迟和质量。",
+            "如果你在医疗或转录场景：Dragon Copilot Transcribe 已有每月 1,000 万次的落地量，重点看它对多语言和医学术语的表现。",
+            "如果你在比芯片能效：Maia 200 只给了每瓦 token 的 1.7 倍，还缺规格，先别急着下结论。"
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Seven new world-class models at scalable price-performance",
+      "publisher": "Microsoft AI",
+      "date": "2026-11-17",
+      "url": "https://microsoft.ai/news/microsoft-ignite-2026/"
+    },
+    "more": [],
+    "note": "本文所有数字均来自微软 Ignite 2026 官方发布稿；文中 3 张图为数据可视化，非示意图。相对价格、性能、速度、能效对比均为微软自报口径，未做独立复测，正文已逐处标注。"
+  },
+  "claims": [
+    {
+      "text": "微软这次共发布 7 款模型，另有加速器 Maia 200。",
+      "value": "seven",
+      "source_url": "https://microsoft.ai/news/microsoft-ignite-2026/",
+      "as_written": "7 款",
+      "quote": "a family of seven new world class models at a truly exceptional price-performance"
+    },
+    {
+      "text": "MAI Cyber 2 Flash 在 CyberGym-E2E 基准上，每任务成本不到 GPT-6 Astra 的 2%，质量还超过它（微软口径）。",
+      "value": "less than 2%",
+      "source_url": "https://microsoft.ai/news/microsoft-ignite-2026/",
+      "as_written": "不到 2%",
+      "quote": "MAI Cyber 2 Flash beats GPT-6 Astra's quality at less than 2% of the cost per task on the CyberGym-E2E benchmark."
+    },
+    {
+      "text": "MAI Code 2 的代码质量达到 GPT-6.1 Sol 的 98%。",
+      "value": "98%",
+      "source_url": "https://microsoft.ai/news/microsoft-ignite-2026/",
+      "as_written": "98%",
+      "quote": "MAI Code 2 reaches 98% of the coding quality of GPT-6.1 Sol at about 40% of the price."
+    },
+    {
+      "text": "MAI Code 2 的价格约为 GPT-6.1 Sol 的 40%。",
+      "value": "40%",
+      "source_url": "https://microsoft.ai/news/microsoft-ignite-2026/",
+      "as_written": "约 40%",
+      "quote": "MAI Code 2 reaches 98% of the coding quality of GPT-6.1 Sol at about 40% of the price."
+    },
+    {
+      "text": "MAI Code 2 对 Opus 5.5 达到其 96% 的表现。",
+      "value": "96%",
+      "source_url": "https://microsoft.ai/news/microsoft-ignite-2026/",
+      "as_written": "96%",
+      "quote": "And against Opus 5.5, it reaches 96% performance for just 5% of the price."
+    },
+    {
+      "text": "MAI Code 2 对 Opus 5.5 的价格只有其 5%。",
+      "value": "5%",
+      "source_url": "https://microsoft.ai/news/microsoft-ignite-2026/",
+      "as_written": "5%",
+      "quote": "And against Opus 5.5, it reaches 96% performance for just 5% of the price."
+    },
+    {
+      "text": "MAI Code 2 Flash 对标 GPT-6 Luna 时价格约为其 65%。",
+      "value": "65%",
+      "source_url": "https://microsoft.ai/news/microsoft-ignite-2026/",
+      "as_written": "约 65%",
+      "quote": "MAI Code 2 Flash shows comparable performance GPT-6 Luna at 65% of the price, and Haiku 5.5 at 20% of the price."
+    },
+    {
+      "text": "MAI Code 2 Flash 对标 Haiku 5.5 时价格约为其 20%。",
+      "value": "20%",
+      "source_url": "https://microsoft.ai/news/microsoft-ignite-2026/",
+      "as_written": "约 20%",
+      "quote": "MAI Code 2 Flash shows comparable performance GPT-6 Luna at 65% of the price, and Haiku 5.5 at 20% of the price."
+    },
+    {
+      "text": "MAI Image 2.7 在 Artificial Analysis 图像编辑榜上排第 1。",
+      "value": "#1",
+      "source_url": "https://microsoft.ai/news/microsoft-ignite-2026/",
+      "as_written": "第 1",
+      "quote": "MAI Image 2.7 is #1 on Artificial Analysis image editing, outperforming GPT Image 2.6 Sunburst (max) at just one-fifth of the price."
+    },
+    {
+      "text": "MAI Image 2.7 的价格约为 GPT Image 2.6 Sunburst（max）的五分之一。",
+      "value": "one-fifth",
+      "source_url": "https://microsoft.ai/news/microsoft-ignite-2026/",
+      "as_written": "五分之一",
+      "quote": "MAI Image 2.7 is #1 on Artificial Analysis image editing, outperforming GPT Image 2.6 Sunburst (max) at just one-fifth of the price."
+    },
+    {
+      "text": "MAI Realtime 1 起步价 0.01 美元/音频分钟。",
+      "value": "$0.01",
+      "source_url": "https://microsoft.ai/news/microsoft-ignite-2026/",
+      "as_written": "0.01 美元",
+      "quote": "MAI Realtime 1 outperforms GPT-Realtime 2.1 and starts at just $0.01 per audio minute."
+    },
+    {
+      "text": "Dragon Copilot Transcribe 每月处理 1,000 万次患者问诊。",
+      "value": "10 million",
+      "source_url": "https://microsoft.ai/news/microsoft-ignite-2026/",
+      "as_written": "1,000 万次",
+      "quote": "already powers 10 million patient encounters a month with multilingual error rates halved"
+    },
+    {
+      "text": "Dragon Copilot Transcribe 的多语言错误率减半。",
+      "value": "halved",
+      "source_url": "https://microsoft.ai/news/microsoft-ignite-2026/",
+      "as_written": "减半",
+      "quote": "already powers 10 million patient encounters a month with multilingual error rates halved"
+    },
+    {
+      "text": "Decision 1.1 比 GPT-6.1 Sol 快 50 倍。",
+      "value": "50x",
+      "source_url": "https://microsoft.ai/news/microsoft-ignite-2026/",
+      "as_written": "50 倍",
+      "quote": "Decision 1.1 is the latest decision model from Microsoft, 50x faster and 79x cheaper than GPT-6.1 Sol."
+    },
+    {
+      "text": "Decision 1.1 比 GPT-6.1 Sol 便宜 79 倍。",
+      "value": "79x",
+      "source_url": "https://microsoft.ai/news/microsoft-ignite-2026/",
+      "as_written": "79 倍",
+      "quote": "Decision 1.1 is the latest decision model from Microsoft, 50x faster and 79x cheaper than GPT-6.1 Sol."
+    },
+    {
+      "text": "Maia 200 每瓦产生的 token 数提升 1.7 倍。",
+      "value": "1.7x",
+      "source_url": "https://microsoft.ai/news/microsoft-ignite-2026/",
+      "as_written": "1.7 倍",
+      "quote": "achieving 1.7x more tokens per watt"
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "origin": "auto",
+    "candidate": "5dbbce4400",
+    "tier": "official",
+    "via": null,
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "generated_at": "2026-11-21T17:39:19.913Z"
+  }
+}
