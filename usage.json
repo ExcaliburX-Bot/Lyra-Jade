@@ -3,5 +3,10 @@
     "x_search_calls": 58,
     "x_posts_fetched": 132,
     "x_users_fetched": 0
+  },
+  "2026-11-21": {
+    "x_search_calls": 92,
+    "x_posts_fetched": 343,
+    "x_users_fetched": 0
   }
 }
