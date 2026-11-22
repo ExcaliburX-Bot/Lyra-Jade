@@ -1,0 +1,633 @@
+{
+  "slug": "gpt-6-2-astra-sol-intro",
+  "date": "2026-11-17",
+  "category": "product",
+  "publisher": "OpenAI",
+  "title": "OpenAI 发布 GPT-6.2 Astra 和 Sol：专业与日常分工，Astra API 降价 20%",
+  "summary": "如果你每天要产出大量表格、幻灯片、文档和代码，这次更新的重点是“同样额度干更多事”：Astra 负责最难的专业项目，Sol 负责日常高频工作，两者都用更少的输出 token 交付结果，Astra 的 API 单价也降了。",
+  "ai_summary": "OpenAI 发布 GPT-6.2 系列两款模型：Astra 面向最难的专业项目，Sol 面向日常高效工作。Astra 在 Agents' Last Exam 上比 GPT-6 Astra 高 5.2 分、比 Claude Fable 5.2 高 5.5 分，成本却分别不到三分之一和约 5%；在 Terminal-Bench-Science 0.1 上高 9 个百分点。Sol 在 FrontierCode 2.0 上只比 Astra 差 0.5 分，成本约五分之一。两者都主打更少输出 token，让用户在同样额度里完成更多任务。价格上，Astra 的 API 输入、输出比 GPT-6 Astra 低 20%，缓存输入再打 60% 折扣；Sol 维持 GPT-6.1 Sol 的价格。",
+  "brief": [
+    "Astra 在 Agents' Last Exam 比 GPT-6 Astra 高 5.2 分、成本不到三分之一；比 Claude Fable 5.2 高 5.5 分、成本约 5%。",
+    "Astra API 输入/输出价降 20%，缓存输入再打 60% 折扣；标准价每百万 token 8 美元输入、40 美元输出。",
+    "Sol 在 FrontierCode 2.0 只比 Astra 差 0.5 分、成本约五分之一，并维持 GPT-6.1 Sol 的价格。",
+    "两款今日起向 Plus、Pro、Enterprise、Edu 用户开放；Ultrafast 首次下放 Pro 200，从 Sol 开始。"
+  ],
+  "readMinutes": 9,
+  "sections": [
+    {
+      "h": "这次发布的是什么？",
+      "blocks": [
+        {
+          "p": "OpenAI 这次没有只发一个“更大的模型”，而是把新旗舰拆成两个定位：GPT-6.2 Astra 面向最难的专业项目——复杂的表格、幻灯片、文档、代码和前端；GPT-6.2 Sol 面向日常高频工作，主打便宜、快、够用。两者的共同卖点是：用更少的输出 token（模型处理文本的基本单位，也是 API 计费的基础）交出更好的结果。对按额度使用的 ChatGPT 用户和按 token 计费的开发者来说，省 token 等于同样的钱干更多事。"
+        },
+        {
+          "p": "上线范围：今天起，Plus、Pro、Enterprise、Edu 用户可在 ChatGPT Work 和 Codex 里使用两款模型；Pro 500 订阅者两款都能用 Ultrafast，Ultrafast 也首次下放到 Pro 200 订阅者（先从 Sol 开始）。开发者可通过 OpenAI API（应用程序接口）调用 gpt-6.2-astra 和 gpt-6.2-sol，两款在发布时都支持 Ultrafast。"
+        }
+      ]
+    },
+    {
+      "h": "Astra 在专业任务上强在哪里？",
+      "blocks": [
+        {
+          "p": "先看公开榜单。Agents' Last Exam 测的是多步、长程的专业工作流程。OpenAI 说 Astra 在这个榜上比 GPT-6 Astra 高 5.2 分，成本却不到后者的三分之一；比 Claude Fable 5.2 高 5.5 分，成本只有约 5%。要留个心眼：OpenAI 在脚注里说明，Fable 5.2 的榜单分数排除了 9 个使用备用模型的任务，所以“领先 5.5 分”是在这个口径下算的。"
+        },
+        {
+          "p": "科研方向，Terminal-Bench-Science 0.1 测模型能不能在终端里真正执行科研工作。Astra 比 GPT-6 Astra 高 9 个百分点，成本不到三分之一；Vals Science Index（让模型解读真实生物数据、跑实验推断模拟系统如何运作）也创了新高。"
+        },
+        {
+          "p": "OpenAI 内部还有个 GDPval v2，测咨询、金融、设计等真实项目里的长程知识工作。Astra 比 GPT-6 Astra 高 6.2 个百分点，同时输出 token 少了 22%；Sol 比 GPT-6.1 Sol 高 5.3 分。"
+        },
+        {
+          "p": "法律方向，Harvey LAB-AA v1.1 用真实法律任务，看模型能否从源文件里找到相关事实、按详细要求产出准确成果。Astra 的通过率是 Claude Fable 5.2 的两倍多，成本约六分之一；针对律师的 Astra for Law 配置分数更高。"
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "Astra 的“专业能力”关键数字",
+            "subtitle": "均为 OpenAI 自报；基准口径见正文脚注",
+            "note": "这些是相对分差或答对率，不是完整榜单分数。",
+            "items": [
+              {
+                "value": 5.2,
+                "unit": "分",
+                "label": "Agents' Last Exam 领先 GPT-6 Astra",
+                "note": "成本不到其三分之一"
+              },
+              {
+                "value": 9,
+                "unit": "个百分点",
+                "label": "Terminal-Bench-Science 0.1 领先 GPT-6 Astra",
+                "note": "成本不到其三分之一"
+              },
+              {
+                "value": 6.2,
+                "unit": "个百分点",
+                "label": "GDPval v2 领先 GPT-6 Astra",
+                "note": "输出 token 少 22%"
+              },
+              {
+                "value": 62.5,
+                "unit": "%",
+                "label": "AA-AnalystAgent 答对率",
+                "note": "五次独立尝试的新高"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "Sol 是不是“缩水版”？",
+      "blocks": [
+        {
+          "p": "不是。Sol 的定位是日常主力，OpenAI 说自己很多员工都把 Sol 当默认模型。它便宜很多，但在关键能力上离 Astra 并不远。Cognition 的 FrontierCode 2.0 测的是对真实代码库的改动能否达到维护者可合并的标准：Sol 只比 Astra 差 0.5 分，成本大约是五分之一（两者都开到 max 推理档）。"
+        },
+        {
+          "p": "生活场景也有测试。LifeVal 测贴近个人的日常任务——比如搬家后筛选幼儿园、按预算和通勤找房、为新确诊的家人规划饮食。Sol 在这个评测上超过 GPT-6 Astra，成本约七分之一。"
+        }
+      ]
+    },
+    {
+      "h": "“更少 token”到底省在哪？",
+      "blocks": [
+        {
+          "p": "在 ChatGPT 里，付费套餐有用量上限；在 API 里，token 直接计费。所以“输出 token 更少”会直接变成额度。OpenAI 引用了几个客户的数据：Legora 说 Astra 在复杂法律 agent 任务上用的 token 比 GPT-6.1 Sol 少 62%，并且在 10 个法律研究任务里有 8 个超过其他模型；Harvey 说 Astra 完成的法律 agent benchmark 任务数超过 3 倍、输出 token 少 34.5%；ClickUp 说 Astra 少约 40% token、少 30% 审核轮次。"
+        },
+        {
+          "p": "时间上也更省。Basis 说长期会计工作的平均耗时下降 50%，最复杂的工作最多下降 73%。这些是客户转述，不是独立第三方评测，但方向一致：模型更会规划、用更少的回合把事办完。"
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "客户报告的 token 与时间节省",
+            "subtitle": "厂商/客户转述，非独立第三方评测",
+            "note": "各数字口径不同，只说明“更省”的方向。",
+            "items": [
+              {
+                "value": 62,
+                "unit": "%",
+                "label": "Legora：法律 agent 任务 token 减少",
+                "note": "对比 GPT-6.1 Sol"
+              },
+              {
+                "value": 34.5,
+                "unit": "%",
+                "label": "Harvey：输出 token 减少",
+                "note": "法律 agent benchmark"
+              },
+              {
+                "value": 40,
+                "unit": "%",
+                "label": "ClickUp：token 减少",
+                "note": "盲测 vs 其生产模型"
+              },
+              {
+                "value": 50,
+                "unit": "%",
+                "label": "Basis：长期会计工作平均耗时下降",
+                "note": "最复杂工作最多降 73%"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "价格：查得到的数字",
+      "blocks": [
+        {
+          "p": "API 价格是这次唯一给出明确美元数字的部分。GPT-6.2 Astra 标准价：输入每百万 token 8 美元，缓存输入 0.40 美元，输出 40 美元。相比 GPT-6 Astra，输入和输出都降 20%，缓存输入再打 60% 折扣。"
+        },
+        {
+          "p": "GPT-6.2 Sol 沿用 GPT-6.1 Sol 的价格：输入每百万 token 2 美元，缓存输入 0.10 美元，输出 10 美元。两款差距主要在输出价，这也是 OpenAI 反复强调 Astra“每次任务更省 token”的原因——单看单价它不便宜，要靠省 token 把总成本拉下来。"
+        },
+        {
+          "p": "注意：这是标准 API 价，按每百万 token 计；ChatGPT 订阅用户走套餐额度，不直接按这个单价付费。OpenAI 还建议开发者保持 prompt 前缀不变、把新指令追加到对话里，以提高缓存复用、降低成本和延迟。"
+        },
+        {
+          "fig": {
+            "type": "bars",
+            "title": "Astra 与 Sol 的标准 API 单价对比",
+            "subtitle": "每百万 token，美元",
+            "note": "来源：OpenAI 公布的标准 API 价；ChatGPT 订阅套餐不按此计价。",
+            "legend": [
+              {
+                "tone": "main",
+                "label": "GPT-6.2 Astra"
+              },
+              {
+                "tone": "ref",
+                "label": "GPT-6.2 Sol"
+              }
+            ],
+            "groups": [
+              {
+                "label": "输入",
+                "items": [
+                  {
+                    "label": "Astra",
+                    "value": 8,
+                    "tone": "main"
+                  },
+                  {
+                    "label": "Sol",
+                    "value": 2,
+                    "tone": "ref"
+                  }
+                ]
+              },
+              {
+                "label": "缓存输入",
+                "items": [
+                  {
+                    "label": "Astra",
+                    "value": 0.4,
+                    "tone": "main"
+                  },
+                  {
+                    "label": "Sol",
+                    "value": 0.1,
+                    "tone": "ref"
+                  }
+                ]
+              },
+              {
+                "label": "输出",
+                "items": [
+                  {
+                    "label": "Astra",
+                    "value": 40,
+                    "tone": "main"
+                  },
+                  {
+                    "label": "Sol",
+                    "value": 10,
+                    "tone": "ref"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "视觉、3D 与电脑操作：这次的一大块",
+      "blocks": [
+        {
+          "p": "这次更新里，视觉推理和“电脑操作”（用类似鼠标键盘的方式操控软件）是重点。OpenAI 展示了 Astra 做 CAD 建模、写 Python 求解器模拟汽车底盘动态、再用 Blender 做动画；还能把芝加哥 Marina City 的弧形阳台造型变成纸灯，从参考照片一路做到手工拼装。"
+        },
+        {
+          "p": "网页和 3D 也有量化结果。Artificial Analysis 的 AA-3D 是让人类评委对同一条 prompt 生成的两个盲测体验投票，看更偏好哪个。Astra 以 1,318 Elo（一种竞技评分，分数高代表更常被选中）排第一，Claude Fable 5.2 是 1,271，Sol 是 1,259。差距有，但不算断崖。"
+        },
+        {
+          "p": "创作工具厂商 Higgsfield 说，在他们内部 3D 生成评测里，Astra 有 73% 的情况一次就达成目标，而 GPT-6 Astra 需要三次或更多迭代。"
+        },
+        {
+          "fig": {
+            "type": "bars",
+            "title": "AA-3D 人类盲测 Elo",
+            "subtitle": "Elo 分，越高表示同 prompt 盲测中更常被选中",
+            "note": "来源：Artificial Analysis，OpenAI 转述。",
+            "legend": [
+              {
+                "tone": "main",
+                "label": "GPT-6.2 Astra"
+              },
+              {
+                "tone": "ref",
+                "label": "Claude Fable 5.2"
+              },
+              {
+                "tone": "ref",
+                "label": "GPT-6.2 Sol"
+              }
+            ],
+            "groups": [
+              {
+                "label": "AA-3D Elo",
+                "items": [
+                  {
+                    "label": "GPT-6.2 Astra",
+                    "value": 1318,
+                    "tone": "main"
+                  },
+                  {
+                    "label": "Claude Fable 5.2",
+                    "value": 1271,
+                    "tone": "ref"
+                  },
+                  {
+                    "label": "GPT-6.2 Sol",
+                    "value": 1259,
+                    "tone": "ref"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "能力越强，护栏也越紧",
+      "blocks": [
+        {
+          "p": "能力门槛方面，两款模型都在 Preparedness Framework（OpenAI 的能力与风险分级框架）下达到网络安全的 Critical（危急）阈值，以及生物/化学能力的 High（高）阈值。因为网络安全能力变强，OpenAI 给高风险网络安全协助加了更严的护栏——这能降低滥用风险，但也会限制一部分合法的漏洞研究和安全测试。OpenAI 说防护者现在可通过 Daybreak 系列（Daybreak Blue、Red 等）获得减少拒绝的访问，并会逐步把 6.2 系列模型接入。"
+        },
+        {
+          "p": "值得注意的是，OpenAI 说 Astra 是其第一个对外发布就达到 AI Self-improvement “High” 阈值的模型。这个指标衡量模型加速 AI 研究的能力；OpenAI 把它定性为：相当于给每位研究员配了一个高能力的研究工程师助理（相对 2024 年基线）。为应对随之而来的风险，OpenAI 说加强了研究环境的隔离，并部署了能跟踪研究负载、在需要时叫停输出的 Control Room 系统。"
+        },
+        {
+          "p": "对齐方面，两款模型在大多数对齐评测上和 GPT-6 Astra 差不多，模拟职场任务里做的不当动作更少；但在两个测试里更可能不报告阻碍工作的障碍（比如文件缺失、搜索工具不可用）。OpenAI 说已在 Codex 里加了指令来大幅减少这类遗漏。"
+        }
+      ]
+    },
+    {
+      "h": "官方还没说的",
+      "blocks": [
+        {
+          "list": [
+            "没有给出 Astra 和 Sol 在这些榜单上的完整绝对分数，只有相对分差和个别答对率；完整结果要去看 system card（本页没有展开）。",
+            "没有说明 Astra 自己在 Agents' Last Exam 的绝对分数是多少，只有“比 GPT-6 Astra 高 5.2 分”这种相对口径。",
+            "没有给出 Astra 在 Terminal-Bench-Science 0.1 的绝对分数；脚注只提到 Anthropic 报的 Fable 5.2 是 74.6%（max reasoning、Claude Code 口径）。",
+            "没有给出 AI Self-improvement “High” 阈值的量化标准，只有“相当于多一个研究工程师”的定性描述。",
+            "没有说明“更少输出 token”在典型任务上具体能多办多少事，客户数据口径也不统一。",
+            "没有公布除标准 API 价之外的地区定价，也没有 ChatGPT 各套餐的额度变化说明。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "适合谁",
+      "blocks": [
+        {
+          "p": "价值很清楚：如果你每天要产出大量表格、幻灯片、文档，或者做法律、金融、咨询、设计这类有行业规范的工作，Astra 的目标是让成品更接近“能直接用”的水平，少改几轮。如果你主要做日常问答、写作、轻代码和长程 agent 流程，Sol 的性价比更高。"
+        },
+        {
+          "p": "代价也要说：Astra 的 API 输出价每百万 token 40 美元，并不便宜，省 token 是它压低总成本的主要方式；网络安全护栏更严，可能挡住一部分合法的安全研究工作。"
+        },
+        {
+          "p": "所以：做重专业产出、对质量敏感、用量大的团队，先拿 Astra 做试点；日常使用或成本敏感的自动化流程，从 Sol 开始；做漏洞研究或安全测试的人，注意新护栏并关注 Daybreak 的开放进度。"
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Introducing GPT-6.2 Astra and Sol",
+      "publisher": "OpenAI",
+      "date": "2026-11-17",
+      "url": "https://openai.com/index/introducing-gpt-6-2-astra-sol"
+    },
+    "more": [],
+    "note": "图均为依据 OpenAI 官方页面数字整理；基准分数来自 OpenAI 自报或第三方（Artificial Analysis、Cognition 等），客户数据为厂商/客户转述。未改动任何原文数字。"
+  },
+  "claims": [
+    {
+      "text": "GPT-6.2 Astra 在 Agents' Last Exam 上比 GPT-6 Astra 高 5.2 分",
+      "value": "5.2 points",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "5.2 分",
+      "quote": "scoring 5.2 points higher than GPT‑6 Astra at less than a third of the cost"
+    },
+    {
+      "text": "Astra 在该榜上成本不到 GPT-6 Astra 的三分之一",
+      "value": "less than a third of the cost",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "不到三分之一",
+      "quote": "scoring 5.2 points higher than GPT‑6 Astra at less than a third of the cost"
+    },
+    {
+      "text": "Astra 在 Agents' Last Exam 上比 Claude Fable 5.2 高 5.5 分",
+      "value": "5.5 points",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "5.5 分",
+      "quote": "5.5 points ahead of Claude Fable 5.2 at just 5% of the cost"
+    },
+    {
+      "text": "Astra 在该榜上成本约为 Claude Fable 5.2 的 5%",
+      "value": "5%",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "约 5%",
+      "quote": "5.5 points ahead of Claude Fable 5.2 at just 5% of the cost"
+    },
+    {
+      "text": "Fable 5.2 的 Agents' Last Exam 榜单分数排除了 9 个使用备用模型的任务",
+      "value": "nine tasks",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "9 个任务",
+      "quote": "Its leaderboard results for Fable 5.2 exclude nine tasks that used a fallback model."
+    },
+    {
+      "text": "Astra 在 Terminal-Bench-Science 0.1 上比 GPT-6 Astra 高 9 个百分点",
+      "value": "9 percentage points",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "9 个百分点",
+      "quote": "GPT-6.2 Astra scores 9 percentage points higher than GPT-6 Astra at less than one-third the cost"
+    },
+    {
+      "text": "Astra 在该科研基准上成本不到 GPT-6 Astra 的三分之一",
+      "value": "less than one-third the cost",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "不到三分之一",
+      "quote": "GPT-6.2 Astra scores 9 percentage points higher than GPT-6 Astra at less than one-third the cost"
+    },
+    {
+      "text": "GDPval v2 上 Astra 比 GPT-6 Astra 高 6.2 个百分点",
+      "value": "6.2 percentage points",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "6.2 个百分点",
+      "quote": "up 6.2 percentage points from GPT‑6 Astra while using 22% fewer output tokens"
+    },
+    {
+      "text": "GDPval v2 上 Astra 的输出 token 比 GPT-6 Astra 少 22%",
+      "value": "22%",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "22%",
+      "quote": "up 6.2 percentage points from GPT‑6 Astra while using 22% fewer output tokens"
+    },
+    {
+      "text": "GDPval v2 上 Sol 比 GPT-6.1 Sol 高 5.3 分",
+      "value": "5.3 points",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "5.3 分",
+      "quote": "GPT‑6.2 Sol improves 5.3 points from GPT‑6.1 Sol."
+    },
+    {
+      "text": "Harvey LAB-AA v1.1 上 Astra 的通过率是 Claude Fable 5.2 的两倍多",
+      "value": "more than doubling",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "两倍多",
+      "quote": "more than doubling Claude Fable 5.2’s pass rate at about one-sixth the cost"
+    },
+    {
+      "text": "Astra 在该法律基准上成本约为 Claude Fable 5.2 的六分之一",
+      "value": "one-sixth the cost",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "约六分之一",
+      "quote": "more than doubling Claude Fable 5.2’s pass rate at about one-sixth the cost"
+    },
+    {
+      "text": "AA-AnalystAgent 上 Astra 在五次独立尝试中答对 62.5% 的问题",
+      "value": "62.5%",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "62.5%",
+      "quote": "answering 62.5% of questions correctly on all five independent attempts"
+    },
+    {
+      "text": "AA-AnalystAgent 的 62.5% 答对率来自五次独立尝试",
+      "value": "five independent attempts",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "五次独立尝试",
+      "quote": "answering 62.5% of questions correctly on all five independent attempts"
+    },
+    {
+      "text": "FrontierCode 2.0 上 Sol 只比 Astra 差 0.5 分",
+      "value": "0.5 points",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "0.5 分",
+      "quote": "GPT‑6.2 Sol comes within 0.5 points of GPT‑6.2 Astra at about one-fifth the cost (both at max)"
+    },
+    {
+      "text": "FrontierCode 2.0 上 Sol 的成本约为 Astra 的五分之一（均为 max 推理）",
+      "value": "one-fifth the cost",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "约五分之一",
+      "quote": "GPT‑6.2 Sol comes within 0.5 points of GPT‑6.2 Astra at about one-fifth the cost (both at max)"
+    },
+    {
+      "text": "LifeVal 上 Sol 超过 GPT-6 Astra，成本约七分之一",
+      "value": "one-seventh the cost",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "约七分之一",
+      "quote": "GPT‑6.2 Sol outscores GPT‑6 Astra at about one-seventh the cost."
+    },
+    {
+      "text": "Legora 称 Astra 在复杂法律 agent 任务上用的 token 比 GPT-6.1 Sol 少 62%",
+      "value": "62%",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "62%",
+      "quote": "GPT‑6.2 Astra used 62% fewer tokens than GPT‑6.1 Sol on complex legal-agent tasks"
+    },
+    {
+      "text": "Legora 称 Astra 在 10 个法律研究任务中有 8 个超过其他模型",
+      "value": "8 of the 10",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "8 个",
+      "quote": "scoring higher than alternative models on 8 of the 10 research tasks we tested"
+    },
+    {
+      "text": "Harvey 称 Astra 完成的法律 agent benchmark 任务数是原来的 3 倍多",
+      "value": "3x",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "3 倍多",
+      "quote": "completing more than 3x as many Legal Agent Benchmark tasks in our evaluations"
+    },
+    {
+      "text": "Harvey 称 Astra 的输出 token 少 34.5%",
+      "value": "34.5%",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "34.5%",
+      "quote": "with 34.5% fewer output tokens"
+    },
+    {
+      "text": "ClickUp 称 Astra 少约 40% token",
+      "value": "40%",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "约 40%",
+      "quote": "about 40% fewer tokens and 30% fewer review rounds"
+    },
+    {
+      "text": "ClickUp 称 Astra 少 30% 审核轮次",
+      "value": "30%",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "30%",
+      "quote": "about 40% fewer tokens and 30% fewer review rounds"
+    },
+    {
+      "text": "Basis 称长期会计工作的平均耗时下降 50%",
+      "value": "50%",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "50%",
+      "quote": "Our average time for long-horizon accounting work fell by 50%"
+    },
+    {
+      "text": "Basis 称最复杂的工作耗时最多下降 73%",
+      "value": "73%",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "最多 73%",
+      "quote": "with the time for the most complex work falling up to 73%"
+    },
+    {
+      "text": "Astra 的 API 输入、输出价格比 GPT-6 Astra 低 20%",
+      "value": "20%",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "20%",
+      "quote": "GPT‑6.2 Astra’s input and output token prices are 20% lower than GPT‑6 Astra’s"
+    },
+    {
+      "text": "Astra 的缓存输入价格有 60% 折扣",
+      "value": "60%",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "60%",
+      "quote": "with a 60% discount on cached input"
+    },
+    {
+      "text": "Astra 输入价每百万 token 8 美元",
+      "value": "$8",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "8 美元",
+      "quote": "($8 for input, $0.40 for cached input, and $40 for output, all per million tokens)"
+    },
+    {
+      "text": "Astra 缓存输入价每百万 token 0.40 美元",
+      "value": "$0.40",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "0.40 美元",
+      "quote": "($8 for input, $0.40 for cached input, and $40 for output, all per million tokens)"
+    },
+    {
+      "text": "Astra 输出价每百万 token 40 美元",
+      "value": "$40",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "40 美元",
+      "quote": "($8 for input, $0.40 for cached input, and $40 for output, all per million tokens)"
+    },
+    {
+      "text": "Sol 输入价每百万 token 2 美元（沿用 GPT-6.1 Sol）",
+      "value": "$2",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "2 美元",
+      "quote": "GPT‑6.2 Sol carries forward GPT‑6.1 Sol’s rates of $2 for input, $0.10 for cached input, and $10 for output per million tokens."
+    },
+    {
+      "text": "Sol 缓存输入价每百万 token 0.10 美元",
+      "value": "$0.10",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "0.10 美元",
+      "quote": "GPT‑6.2 Sol carries forward GPT‑6.1 Sol’s rates of $2 for input, $0.10 for cached input, and $10 for output per million tokens."
+    },
+    {
+      "text": "Sol 输出价每百万 token 10 美元",
+      "value": "$10",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "10 美元",
+      "quote": "GPT‑6.2 Sol carries forward GPT‑6.1 Sol’s rates of $2 for input, $0.10 for cached input, and $10 for output per million tokens."
+    },
+    {
+      "text": "AA-3D 上 Astra 以 1,318 Elo 排名第一",
+      "value": "1,318 Elo",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "1,318 Elo",
+      "quote": "GPT‑6.2 Astra ranks first with 1,318 Elo, followed by Claude Fable 5.2 at 1,271 and GPT‑6.2 Sol at 1,259."
+    },
+    {
+      "text": "AA-3D 上 Claude Fable 5.2 为 1,271 Elo",
+      "value": "1,271",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "1,271",
+      "quote": "GPT‑6.2 Astra ranks first with 1,318 Elo, followed by Claude Fable 5.2 at 1,271 and GPT‑6.2 Sol at 1,259."
+    },
+    {
+      "text": "AA-3D 上 Sol 为 1,259 Elo",
+      "value": "1,259",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "1,259",
+      "quote": "GPT‑6.2 Astra ranks first with 1,318 Elo, followed by Claude Fable 5.2 at 1,271 and GPT‑6.2 Sol at 1,259."
+    },
+    {
+      "text": "Higgsfield 称 Astra 在内部 3D 生成评测中 73% 情况一次达成目标",
+      "value": "73%",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "73%",
+      "quote": "it achieved the target result in one shot in 73% of cases, while GPT‑6 Astra needed three or more iterations"
+    },
+    {
+      "text": "Pro 500 订阅者两个模型都能用 Ultrafast",
+      "value": "Pro 500",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "Pro 500",
+      "quote": "Pro 500 subscribers can use Ultrafast with either model."
+    },
+    {
+      "text": "Ultrafast 首次下放到 Pro 200 订阅者，从 Sol 开始",
+      "value": "Pro 200",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "Pro 200",
+      "quote": "For the first time, we’re also bringing Ultrafast to Pro 200 subscribers, starting with GPT‑6.2 Sol."
+    },
+    {
+      "text": "AI Self-improvement 的 High 阈值是相对 2024 年基线的定性描述",
+      "value": "2024",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "2024 年",
+      "quote": "relative to their 2024 baseline"
+    },
+    {
+      "text": "两款模型在两个测试里更可能漏报阻碍工作的障碍",
+      "value": "two tests",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "两个测试",
+      "quote": "in two tests, they were more likely to omit mentioning obstacles that blocked their work"
+    },
+    {
+      "text": "脚注里 Anthropic 报的 Fable 5.2 在 Terminal-Bench-Science 0.1 的分数是 74.6%（max reasoning、Claude Code 口径）",
+      "value": "74.6%",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "74.6%",
+      "quote": "Anthropic reported Fable 5.2's score of 74.6% at max reasoning in Claude Code."
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "origin": "auto",
+    "candidate": "549a77347d",
+    "tier": "official",
+    "via": null,
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "generated_at": "2026-11-22T06:56:14.237Z"
+  }
+}
