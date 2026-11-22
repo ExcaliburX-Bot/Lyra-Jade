@@ -1,8 +1,8 @@
 [
   {
-    "slug": "microsoft-ignite-seven-models-price-performance",
-    "title": "微软一口气发布 7 款新模型：代码价格低至竞品 5%，质量对标 98%",
-    "file": "content/articles/microsoft-ignite-seven-models-price-performance.json",
+    "slug": "gpt-6-2-astra-sol-intro",
+    "title": "OpenAI 发布 GPT-6.2 Astra 和 Sol：专业与日常分工，Astra API 降价 20%",
+    "file": "content/articles/gpt-6-2-astra-sol-intro.json",
     "errors": 0,
     "warnings": 0,
     "provider": "deepseek",
