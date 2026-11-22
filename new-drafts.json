@@ -1,8 +1,8 @@
 [
   {
-    "slug": "gpt-6-2-astra-sol-intro",
-    "title": "OpenAI 发布 GPT-6.2 Astra 和 Sol：专业与日常分工，Astra API 降价 20%",
-    "file": "content/articles/gpt-6-2-astra-sol-intro.json",
+    "slug": "openai-medchembench-drug-candidate-benchmark",
+    "title": "OpenAI 发布 MedChemBench：GPT-6.2 Astra 药物化学推理得分 84.5%",
+    "file": "content/articles/openai-medchembench-drug-candidate-benchmark.json",
     "errors": 0,
     "warnings": 0,
     "provider": "deepseek",
