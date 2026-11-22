@@ -1,4 +1,4 @@
-# 候选清单（2026-11-22 08:33 UTC）
+# 候选清单（2026-11-22 16:48 UTC）
 
 | 分数 | 标题 | 发布方 | 层级 | 相关报道 |
 | --- | --- | --- | --- | --- |
@@ -27,7 +27,6 @@
 | 4.7 | [Combatting adversarial distillation](https://openai.com/index/combatting-adversarial-distillation) | OpenAI | official | 0 |
 | 4.7 | [Hebbia sees improvements in financial research with GPT-6 Astra](https://openai.com/business/customer-stories/hebbia) | OpenAI | official | 0 |
 | 4.6 | [Into the Omniverse: How Developers Turn Ideas Into Simulations With Frontier AI Agents](https://blogs.nvidia.com/blog/developers-simulation-frontier-ai-agents/) | NVIDIA | official | 0 |
-| 4.6 | [We’re partnering with Blue Origin on our first heavy-lift Project Suncatcher launch.](https://blog.google/innovation-and-ai/models-and-research/google-research/blue-origin-project-suncatcher-partnership/) | Google | official | 0 |
 | 4.4 | [Inworld 开源两款语音模型：降噪时留下笑声和呼吸，能智能判断你「说完了」笔记本就能跑](https://inworld.ai/blog/introducing-voice-isolator) | inworld.ai | official | 0 |
 | 4.4 | [Google 发布 Gemini 4 Neon 模型：由旗舰 Carbon 蒸馏而来 编程 Agent 榜第一 智能指数 61 分排总榜第 3](https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/) | Google | official | 0 |
 | 4.4 | [Google AI Studio 推出全栈安卓开发：一句话做出带云数据库、Google 登录和 Gemini 的 App，直接装进自己手机](https://developers.googleblog.com/build-full-stack-android-apps-with-gemini-in-google-ai-studio/) | developers.googleblog.com | official | 0 |
@@ -42,5 +41,6 @@
 | 4.2 | [Explore the Codex Security Plugin](https://openai.com/business/learn/codex-security-plugin-demo) | OpenAI | official | 0 |
 | 4.2 | [Get started with Daybreak Blue](https://openai.com/business/learn/daybreak-blue-onboarding-demo) | OpenAI | official | 0 |
 | 4.2 | [The Silent Consensus](https://openai.com/index/the-silent-consensus) | OpenAI | official | 0 |
+| 4.2 | [Research acceleration: The jagged frontier](https://openai.com/index/research-acceleration-jagged-frontier) | OpenAI | official | 0 |
 
 **超过 30 天没有新内容的源**：Mistral 新闻、Kimi 博客

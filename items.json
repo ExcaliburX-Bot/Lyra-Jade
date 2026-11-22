@@ -2564,5 +2564,33 @@
     "fetched_at": "2026-11-21T15:49:45.441Z",
     "via": "https://xiaohu.ai/article/thinking-machines-inkling-2-mini/",
     "discovered_by": "xiaohu"
+  },
+  "528d6924cf9a": {
+    "id": "528d6924cf9a",
+    "key": "https://noemamag.com/the-mythology-of-conscious-ai",
+    "title": "The Mythology of Conscious AI",
+    "url": "https://www.noemamag.com/the-mythology-of-conscious-ai/",
+    "published": "2026-11-22T02:10:02.000Z",
+    "summary": "Article URL: https://www.noemamag.com/the-mythology-of-conscious-ai/ \n\n Comments URL: https://news.ycombinator.com/item?id=50595537 \n\n Points: 124\n\n # Comments: 328",
+    "source": "hn-ai",
+    "publisher": "Hacker News",
+    "tier": "discovery",
+    "weight": 1,
+    "category_hint": null,
+    "fetched_at": "2026-11-22T16:48:24.212Z"
+  },
+  "3d1bee2216f8": {
+    "id": "3d1bee2216f8",
+    "key": "https://pandex.io/",
+    "title": "Pandex – Official European Law for AI Agents, over MCP",
+    "url": "https://www.pandex.io",
+    "published": "2026-11-21T20:47:41.000Z",
+    "summary": "Article URL: https://www.pandex.io \n\n Comments URL: https://news.ycombinator.com/item?id=50593481 \n\n Points: 125\n\n # Comments: 31",
+    "source": "hn-ai",
+    "publisher": "Hacker News",
+    "tier": "discovery",
+    "weight": 1,
+    "category_hint": null,
+    "fetched_at": "2026-11-22T16:48:24.212Z"
   }
 }

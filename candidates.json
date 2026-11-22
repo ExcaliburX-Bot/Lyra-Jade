@@ -316,17 +316,6 @@
     "related": []
   },
   {
-    "id": "b4c1c8bf45",
-    "title": "We’re partnering with Blue Origin on our first heavy-lift Project Suncatcher launch.",
-    "url": "https://blog.google/innovation-and-ai/models-and-research/google-research/blue-origin-project-suncatcher-partnership/",
-    "publisher": "Google",
-    "tier": "official",
-    "published": "2026-11-19T13:00:00.000Z",
-    "score": 4.6,
-    "category_hint": null,
-    "related": []
-  },
-  {
     "id": "fca930afdd",
     "title": "Inworld 开源两款语音模型：降噪时留下笑声和呼吸，能智能判断你「说完了」笔记本就能跑",
     "url": "https://inworld.ai/blog/introducing-voice-isolator",
@@ -490,6 +479,17 @@
     "publisher": "OpenAI",
     "tier": "official",
     "published": "2026-11-18T10:00:00.000Z",
+    "score": 4.2,
+    "category_hint": "product",
+    "related": []
+  },
+  {
+    "id": "9fa731b0ef",
+    "title": "Research acceleration: The jagged frontier",
+    "url": "https://openai.com/index/research-acceleration-jagged-frontier",
+    "publisher": "OpenAI",
+    "tier": "official",
+    "published": "2026-11-18T08:00:00.000Z",
     "score": 4.2,
     "category_hint": "product",
     "related": []
