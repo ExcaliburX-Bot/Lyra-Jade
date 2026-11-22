@@ -1,44 +1,5 @@
 [
   {
-    "id": "a5b77eee49",
-    "title": "OpenAI 发布 GPT-6.2 提示指南：能拆开的活交给子 Agent，精简AGENTS.md 只写代码里推不出来的事",
-    "url": "https://learn.chatgpt.com/guides/prompting-gpt-6-2-astra",
-    "publisher": "learn.chatgpt.com",
-    "tier": "official",
-    "published": "2026-11-21T00:00:00.000Z",
-    "score": 5.4,
-    "category_hint": null,
-    "via": "https://xiaohu.ai/article/gpt-6-2-codex-prompting-guide/",
-    "discovered_by": "xiaohu",
-    "related": []
-  },
-  {
-    "id": "4bd6f0b210",
-    "title": "OpenAI 公开其个人 Agent Dot 背后的时间感知技术：Bot 如何能在特定状态下感知并提醒你",
-    "url": "https://developers.openai.com/blog/time-awareness-and-async-input-for-personal-agents",
-    "publisher": "OpenAI",
-    "tier": "official",
-    "published": "2026-11-21T00:00:00.000Z",
-    "score": 5.4,
-    "category_hint": null,
-    "via": "https://xiaohu.ai/article/openai-agent-time-async/",
-    "discovered_by": "xiaohu",
-    "related": []
-  },
-  {
-    "id": "a0ebc9ee45",
-    "title": "Thinking Machines 发布 Inkling 2 Mini 模型：32GB 内存的 Mac 就能本地跑 在断网的 MacBook 上几分钟写出能玩的飞行模拟器",
-    "url": "https://thinkingmachines.ai/news/inkling-2-mini/",
-    "publisher": "thinkingmachines.ai",
-    "tier": "official",
-    "published": "2026-11-21T00:00:00.000Z",
-    "score": 5.4,
-    "category_hint": null,
-    "via": "https://xiaohu.ai/article/thinking-machines-inkling-2-mini/",
-    "discovered_by": "xiaohu",
-    "related": []
-  },
-  {
     "id": "549a77347d",
     "title": "Introducing GPT-6.2 Astra and Sol",
     "url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
@@ -52,24 +13,6 @@
         "title": "OpenAI 发布 GPT-6.2 Astra 和 Sol：Astra 专业和科研测试创新高，每道题成本不到上一代三分之一",
         "url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
         "publisher": "OpenAI",
-        "tier": "official"
-      }
-    ]
-  },
-  {
-    "id": "1c3eaf246b",
-    "title": "NVIDIA RTX Spark Compact Desktops Out Now",
-    "url": "https://blogs.nvidia.com/blog/rtx-spark-desktop-local-ai-available-now/",
-    "publisher": "NVIDIA",
-    "tier": "official",
-    "published": "2026-11-18T14:00:31.000Z",
-    "score": 5.3,
-    "category_hint": null,
-    "related": [
-      {
-        "title": "英伟达 RTX Spark 小主机开卖：最高 128GB 统一内存，本地能跑 1200 亿参数大模型",
-        "url": "https://blogs.nvidia.com/blog/rtx-spark-desktop-local-ai-available-now/",
-        "publisher": "NVIDIA",
         "tier": "official"
       }
     ]
@@ -226,6 +169,45 @@
     "related": []
   },
   {
+    "id": "a5b77eee49",
+    "title": "OpenAI 发布 GPT-6.2 提示指南：能拆开的活交给子 Agent，精简AGENTS.md 只写代码里推不出来的事",
+    "url": "https://learn.chatgpt.com/guides/prompting-gpt-6-2-astra",
+    "publisher": "learn.chatgpt.com",
+    "tier": "official",
+    "published": "2026-11-21T00:00:00.000Z",
+    "score": 4.9,
+    "category_hint": null,
+    "via": "https://xiaohu.ai/article/gpt-6-2-codex-prompting-guide/",
+    "discovered_by": "xiaohu",
+    "related": []
+  },
+  {
+    "id": "4bd6f0b210",
+    "title": "OpenAI 公开其个人 Agent Dot 背后的时间感知技术：Bot 如何能在特定状态下感知并提醒你",
+    "url": "https://developers.openai.com/blog/time-awareness-and-async-input-for-personal-agents",
+    "publisher": "OpenAI",
+    "tier": "official",
+    "published": "2026-11-21T00:00:00.000Z",
+    "score": 4.9,
+    "category_hint": null,
+    "via": "https://xiaohu.ai/article/openai-agent-time-async/",
+    "discovered_by": "xiaohu",
+    "related": []
+  },
+  {
+    "id": "a0ebc9ee45",
+    "title": "Thinking Machines 发布 Inkling 2 Mini 模型：32GB 内存的 Mac 就能本地跑 在断网的 MacBook 上几分钟写出能玩的飞行模拟器",
+    "url": "https://thinkingmachines.ai/news/inkling-2-mini/",
+    "publisher": "thinkingmachines.ai",
+    "tier": "official",
+    "published": "2026-11-21T00:00:00.000Z",
+    "score": 4.9,
+    "category_hint": null,
+    "via": "https://xiaohu.ai/article/thinking-machines-inkling-2-mini/",
+    "discovered_by": "xiaohu",
+    "related": []
+  },
+  {
     "id": "6a368ee477",
     "title": "Pika 发布了一个全新的 AI视频工具Enact：能模仿片场当导演现场实时导戏 视频一边播一边改，能拖人摆位、还能给 AI 演员说戏",
     "url": "https://pika.art/blog/pika-enact",
@@ -265,30 +247,22 @@
     "related": []
   },
   {
-    "id": "fca930afdd",
-    "title": "Inworld 开源两款语音模型：降噪时留下笑声和呼吸，能智能判断你「说完了」笔记本就能跑",
-    "url": "https://inworld.ai/blog/introducing-voice-isolator",
-    "publisher": "inworld.ai",
+    "id": "1c3eaf246b",
+    "title": "NVIDIA RTX Spark Compact Desktops Out Now",
+    "url": "https://blogs.nvidia.com/blog/rtx-spark-desktop-local-ai-available-now/",
+    "publisher": "NVIDIA",
     "tier": "official",
-    "published": "2026-11-19T00:00:00.000Z",
-    "score": 4.9,
+    "published": "2026-11-18T14:00:31.000Z",
+    "score": 4.8,
     "category_hint": null,
-    "via": "https://xiaohu.ai/article/inworld-voice-isolator-sava/",
-    "discovered_by": "xiaohu",
-    "related": []
-  },
-  {
-    "id": "b2c084a412",
-    "title": "Google 发布 Gemini 4 Neon 模型：由旗舰 Carbon 蒸馏而来 编程 Agent 榜第一 智能指数 61 分排总榜第 3",
-    "url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
-    "publisher": "Google",
-    "tier": "official",
-    "published": "2026-11-19T00:00:00.000Z",
-    "score": 4.9,
-    "category_hint": null,
-    "via": "https://xiaohu.ai/article/gemini-4-neon/",
-    "discovered_by": "xiaohu",
-    "related": []
+    "related": [
+      {
+        "title": "英伟达 RTX Spark 小主机开卖：最高 128GB 统一内存，本地能跑 1200 亿参数大模型",
+        "url": "https://blogs.nvidia.com/blog/rtx-spark-desktop-local-ai-available-now/",
+        "publisher": "NVIDIA",
+        "tier": "official"
+      }
+    ]
   },
   {
     "id": "d3bf659ccf",
@@ -360,115 +334,6 @@
     "related": []
   },
   {
-    "id": "4b08ec5026",
-    "title": "Deploying Daybreak Red",
-    "url": "https://openai.com/business/learn/deploying-daybreak-red",
-    "publisher": "OpenAI",
-    "tier": "official",
-    "published": "2026-11-19T00:00:00.000Z",
-    "score": 4.7,
-    "category_hint": "product",
-    "related": []
-  },
-  {
-    "id": "cb99e2baa6",
-    "title": "See PR scans in action",
-    "url": "https://openai.com/business/learn/pr-scans-demo",
-    "publisher": "OpenAI",
-    "tier": "official",
-    "published": "2026-11-19T00:00:00.000Z",
-    "score": 4.7,
-    "category_hint": "product",
-    "related": []
-  },
-  {
-    "id": "e29ac258c0",
-    "title": "Explore the Codex Security Plugin",
-    "url": "https://openai.com/business/learn/codex-security-plugin-demo",
-    "publisher": "OpenAI",
-    "tier": "official",
-    "published": "2026-11-19T00:00:00.000Z",
-    "score": 4.7,
-    "category_hint": "product",
-    "related": []
-  },
-  {
-    "id": "a2fb003440",
-    "title": "Get started with Daybreak Blue",
-    "url": "https://openai.com/business/learn/daybreak-blue-onboarding-demo",
-    "publisher": "OpenAI",
-    "tier": "official",
-    "published": "2026-11-19T00:00:00.000Z",
-    "score": 4.7,
-    "category_hint": "product",
-    "related": []
-  },
-  {
-    "id": "bbe099f294",
-    "title": "Anthropic 数学家称和 Claude 证明了黎曼猜想：1700 万行 Lean 证明已公开，尚无外部核对",
-    "url": "https://alpo.ge/remark.pdf",
-    "publisher": "alpo.ge",
-    "tier": "official",
-    "published": "2026-11-21T00:00:00.000Z",
-    "score": 4.6,
-    "category_hint": null,
-    "via": "https://xiaohu.ai/article/riemann-hypothesis-proof-claim/",
-    "discovered_by": "xiaohu",
-    "related": []
-  },
-  {
-    "id": "3f1695fde4",
-    "title": "已经订阅了 Google AI服务的 免费领取一台Google Colab云电脑 上手指南：一条 SSH 连进 12 GB 内存 Ubuntu",
-    "url": "https://x.com/jandisufg/status/2123530059310850353",
-    "publisher": "@jandisufg",
-    "tier": "official",
-    "published": "2026-11-21T00:00:00.000Z",
-    "score": 4.6,
-    "category_hint": null,
-    "via": "https://xiaohu.ai/article/google-colab-cli-ssh/",
-    "discovered_by": "xiaohu",
-    "related": []
-  },
-  {
-    "id": "ca73c64f19",
-    "title": "Notion 团队 AI 工作指南：100 人各写一份技能，不如 2 人搭一座全队共用的工厂",
-    "url": "https://www.notion.com/a-new-shape-for-work",
-    "publisher": "notion.com",
-    "tier": "official",
-    "published": "2026-11-21T00:00:00.000Z",
-    "score": 4.6,
-    "category_hint": null,
-    "via": "https://xiaohu.ai/article/notion-new-shape-for-work/",
-    "discovered_by": "xiaohu",
-    "related": []
-  },
-  {
-    "id": "e032fea5d7",
-    "title": "a16z 每周图表：Z 世代观点全重合不到一成，过半基金经理预计巨头半年内砍 AI 开支",
-    "url": "https://www.a16z.news/p/charts-of-the-week-there-is-no-gen",
-    "publisher": "a16z.news",
-    "tier": "official",
-    "published": "2026-11-21T00:00:00.000Z",
-    "score": 4.6,
-    "category_hint": null,
-    "via": "https://xiaohu.ai/article/a16z-no-gen-z/",
-    "discovered_by": "xiaohu",
-    "related": []
-  },
-  {
-    "id": "aaec692e1d",
-    "title": "Perplexity Computer now works directly in Chromium browsers via the extension.",
-    "url": "https://pplx.ai/chrome-extension",
-    "publisher": "@perplexity_ai",
-    "tier": "official",
-    "published": "2026-11-20T21:47:32.000Z",
-    "score": 4.6,
-    "category_hint": "product",
-    "text": "Perplexity Computer now works directly in Chromium browsers through the Perplexity extension.\n\nHand off a task from the side panel, and watch Computer work across your tabs and tools.\n\nGet the Perplexity extension from the Chrome Web Store:\n\nhttps://pplx.ai/chrome-extension",
-    "via": "https://x.com/perplexity_ai/status/2123896048510996827",
-    "related": []
-  },
-  {
     "id": "1112027d59",
     "title": "Into the Omniverse: How Developers Turn Ideas Into Simulations With Frontier AI Agents",
     "url": "https://blogs.nvidia.com/blog/developers-simulation-frontier-ai-agents/",
@@ -491,6 +356,32 @@
     "related": []
   },
   {
+    "id": "fca930afdd",
+    "title": "Inworld 开源两款语音模型：降噪时留下笑声和呼吸，能智能判断你「说完了」笔记本就能跑",
+    "url": "https://inworld.ai/blog/introducing-voice-isolator",
+    "publisher": "inworld.ai",
+    "tier": "official",
+    "published": "2026-11-19T00:00:00.000Z",
+    "score": 4.4,
+    "category_hint": null,
+    "via": "https://xiaohu.ai/article/inworld-voice-isolator-sava/",
+    "discovered_by": "xiaohu",
+    "related": []
+  },
+  {
+    "id": "b2c084a412",
+    "title": "Google 发布 Gemini 4 Neon 模型：由旗舰 Carbon 蒸馏而来 编程 Agent 榜第一 智能指数 61 分排总榜第 3",
+    "url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+    "publisher": "Google",
+    "tier": "official",
+    "published": "2026-11-19T00:00:00.000Z",
+    "score": 4.4,
+    "category_hint": null,
+    "via": "https://xiaohu.ai/article/gemini-4-neon/",
+    "discovered_by": "xiaohu",
+    "related": []
+  },
+  {
     "id": "a0ad6f8b6a",
     "title": "Google AI Studio 推出全栈安卓开发：一句话做出带云数据库、Google 登录和 Gemini 的 App，直接装进自己手机",
     "url": "https://developers.googleblog.com/build-full-stack-android-apps-with-gemini-in-google-ai-studio/",
@@ -501,6 +392,113 @@
     "category_hint": null,
     "via": "https://xiaohu.ai/article/gemini-android-ai-studio/",
     "discovered_by": "xiaohu",
+    "related": []
+  },
+  {
+    "id": "b8930a9a56",
+    "title": "PostHog 分享决策模型的四种用法：拦在大模型前面、给模型派活、给搜索重排、替规则挑图表",
+    "url": "https://newsletter.posthog.com/p/decision-models",
+    "publisher": "newsletter.posthog.com",
+    "tier": "official",
+    "published": "2026-11-18T00:00:00.000Z",
+    "score": 4.4,
+    "category_hint": null,
+    "via": "https://xiaohu.ai/article/posthog-decision-models/",
+    "discovered_by": "xiaohu",
+    "related": []
+  },
+  {
+    "id": "93085d2b25",
+    "title": "Anthropic 推出 Claude Code 实验功能 Code Mode：写一段代码串起多次工具调用，能并行跑命令、只读需要的结果",
+    "url": "https://code.claude.com/docs/en/code-mode",
+    "publisher": "code.claude.com",
+    "tier": "official",
+    "published": "2026-11-18T00:00:00.000Z",
+    "score": 4.4,
+    "category_hint": null,
+    "via": "https://xiaohu.ai/article/claude-code-mode/",
+    "discovered_by": "xiaohu",
+    "related": []
+  },
+  {
+    "id": "9be79e84af",
+    "title": "Mirelo 发布 Sound Agent：一句话给视频加音效、去配乐、拆人声，还能配成 32 种语言",
+    "url": "https://mirelo.ai/blog/mirelo-sound-agent",
+    "publisher": "mirelo.ai",
+    "tier": "official",
+    "published": "2026-11-17T00:00:00.000Z",
+    "score": 4.4,
+    "category_hint": null,
+    "via": "https://xiaohu.ai/article/mirelo-sound-agent/",
+    "discovered_by": "xiaohu",
+    "related": []
+  },
+  {
+    "id": "19739ec972",
+    "title": "Higgsfield 发布 AI 品牌吉祥物教程：不训练模型，靠固定描述和三张参考表画同一只熊",
+    "url": "https://higgsfield.ai/zh/blog/consistent-brand-mascot-ai",
+    "publisher": "higgsfield.ai",
+    "tier": "official",
+    "published": "2026-11-17T00:00:00.000Z",
+    "score": 4.4,
+    "category_hint": null,
+    "via": "https://xiaohu.ai/article/higgsfield-brand-mascot/",
+    "discovered_by": "xiaohu",
+    "related": []
+  },
+  {
+    "id": "feb2ba2115",
+    "title": "Introducing Our Smallest, Most Efficient Model: Muse Ember",
+    "url": "https://research.meta.ai/blog/muse-ember",
+    "publisher": "Meta",
+    "tier": "official",
+    "published": "2026-11-09T12:00:00.000Z",
+    "score": 4.4,
+    "category_hint": null,
+    "related": []
+  },
+  {
+    "id": "4b08ec5026",
+    "title": "Deploying Daybreak Red",
+    "url": "https://openai.com/business/learn/deploying-daybreak-red",
+    "publisher": "OpenAI",
+    "tier": "official",
+    "published": "2026-11-19T00:00:00.000Z",
+    "score": 4.2,
+    "category_hint": "product",
+    "related": []
+  },
+  {
+    "id": "cb99e2baa6",
+    "title": "See PR scans in action",
+    "url": "https://openai.com/business/learn/pr-scans-demo",
+    "publisher": "OpenAI",
+    "tier": "official",
+    "published": "2026-11-19T00:00:00.000Z",
+    "score": 4.2,
+    "category_hint": "product",
+    "related": []
+  },
+  {
+    "id": "e29ac258c0",
+    "title": "Explore the Codex Security Plugin",
+    "url": "https://openai.com/business/learn/codex-security-plugin-demo",
+    "publisher": "OpenAI",
+    "tier": "official",
+    "published": "2026-11-19T00:00:00.000Z",
+    "score": 4.2,
+    "category_hint": "product",
+    "related": []
+  },
+  {
+    "id": "a2fb003440",
+    "title": "Get started with Daybreak Blue",
+    "url": "https://openai.com/business/learn/daybreak-blue-onboarding-demo",
+    "publisher": "OpenAI",
+    "tier": "official",
+    "published": "2026-11-19T00:00:00.000Z",
+    "score": 4.2,
+    "category_hint": "product",
     "related": []
   }
 ]
