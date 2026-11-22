@@ -1,0 +1,424 @@
+{
+  "slug": "openai-medchembench-drug-candidate-benchmark",
+  "date": "2026-11-20",
+  "category": "product",
+  "publisher": "OpenAI",
+  "title": "OpenAI 发布 MedChemBench：GPT-6.2 Astra 药物化学推理得分 84.5%",
+  "summary": "药物化学家每天都要回答一个问题：下一个该合成、测试哪个化合物。OpenAI 新发布的 MedChemBench 用 99 道来自已发表研究的题，考察 AI 能否把分子结构、实验证据和下一步选药决策连起来。表现最好的 GPT-6.2 Astra 在 xhigh 档拿到 84.5% 总分，但化合物选择和数值预测仍是短板。",
+  "ai_summary": "OpenAI 在 2026 年 11 月 20 日发布 MedChemBench，一个面向药物化学推理的评测基准。它用 99 道来自已发表研究的题，考察 AI 能否把分子结构、实验证据和下一步该测试的化合物联系起来。在最高 xhigh 档，GPT-6.2 Astra 拿到 84.5% 总分，高于 GPT-6 Astra 的 83.3% 和 GPT-5.6 Sol 的 58.2%；分项看，Astra 重建分子结构很强，拿到 95.4%，但化合物选择和数值预测只有约一半得分。对想用 AI 辅助药物发现的科学家，这能看出模型长短处；不过 OpenAI 明确说，这不等于模型能发现新药，也无法排除模型见过公开资料，且每题只试一次、无工具反馈。",
+  "brief": [
+    "MedChemBench 共 99 道题，取材自 117 篇论文与专利，包含 761 个不同分子结构。",
+    "xhigh 档总分：GPT-6.2 Astra 84.5%、GPT-6 Astra 83.3%、GPT-6.1 Sol 82.0%、GPT-5.6 Sol 58.2%。",
+    "Astra 重建分子结构拿到 95.4%，但化合物选择和数值预测只有约一半得分。",
+    "18 原子环的空间推理题里，GPT-6 Astra 10 次全对，GPT-5.6 系列 10 次全错。"
+  ],
+  "readMinutes": 5,
+  "sections": [
+    {
+      "h": "MedChemBench 是什么：一套考药物化学推理的题",
+      "blocks": [
+        {
+          "p": "OpenAI 在 2026 年 11 月 20 日发布 MedChemBench。它本身不是直接找药的 AI，而是一套评测题：看模型能不能把「分子长什么样」和「实验测出什么」对上，再决定下一步该试哪个化合物。所谓药物化学（medicinal chemistry），就是研究如何设计、改造化合物并评估其药用的学科。"
+        },
+        {
+          "p": "这类工作最难的地方是权衡：改善一个性质，常常会让另一个变差。一个化合物可能对疾病相关蛋白作用很强，却吸收不好，或在体内分解太快。真人药物化学家的日常，就是设计、合成、测试一连串相近化合物，再判断接下来往哪走。MedChemBench 想测的，就是 AI 有没有这层「把结构变化和实验证据连起来」的推理能力。"
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "MedChemBench 的规模",
+            "subtitle": "基准构成（单位见各标签）",
+            "note": "数据来自 OpenAI 发布页。",
+            "items": [
+              {
+                "value": 99,
+                "unit": "道题",
+                "label": "题目",
+                "note": "来自已发表研究"
+              },
+              {
+                "value": 117,
+                "unit": "篇",
+                "label": "论文与专利",
+                "note": "题目取材来源"
+              },
+              {
+                "value": 761,
+                "unit": "个",
+                "label": "不同分子结构",
+                "note": "基准包含"
+              },
+              {
+                "value": 4,
+                "unit": "类",
+                "label": "评分维度",
+                "note": "结构、推理、选择、预测"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "它考哪四项能力？",
+      "blocks": [
+        {
+          "p": "MedChemBench 把评分拆成四类。大多数题目里，模型拿到的是某个研究节点能看到的上下文：生物靶点、研究目标、已经研究过的化合物、选出的实验发现。然后从四个维度评分："
+        },
+        {
+          "list": [
+            "分子结构：按题目给的化学图和基团组装分子，原子连接方式和立体化学（原子在空间的排布）都要对。",
+            "科学推理：解释要有题目给到的证据支撑，比如为什么选这个化合物而不是另一个。",
+            "排序与选择：给出的化合物排序和选择，要符合题目写明的要求。",
+            "性质预测：预测的数值和类别要贴近来源文献里报告的结果，包括实测性质和计算性质。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "分数怎么读：谁拿了多少分",
+      "blocks": [
+        {
+          "p": "在推理强度最高的共享档 xhigh（一种让模型多思考的设置），总分最高的是 GPT-6.2 Astra，拿到 84.5% 的可得分；其后是 GPT-6 Astra 83.3%、GPT-6.1 Sol 82.0%、GPT-6.1 Terra 75.1%，GPT-5.6 Sol 则只有 58.2%。"
+        },
+        {
+          "fig": {
+            "type": "bars",
+            "title": "xhigh 档五个模型的 MedChemBench 总分",
+            "subtitle": "单位：可得分的百分比（%），分数越高越好",
+            "note": "数据来自 OpenAI 发布页；同一 xhigh 推理档，其余模型得分见原文。",
+            "legend": [
+              {
+                "tone": "main",
+                "label": "Astra 系列"
+              },
+              {
+                "tone": "ref",
+                "label": "GPT-6.1 系列"
+              },
+              {
+                "tone": "laptop",
+                "label": "GPT-5.6 对照"
+              }
+            ],
+            "groups": [
+              {
+                "label": "xhigh 档总分",
+                "items": [
+                  {
+                    "label": "GPT-6.2 Astra",
+                    "value": 84.5,
+                    "tone": "main"
+                  },
+                  {
+                    "label": "GPT-6 Astra",
+                    "value": 83.3,
+                    "tone": "main"
+                  },
+                  {
+                    "label": "GPT-6.1 Sol",
+                    "value": 82,
+                    "tone": "ref"
+                  },
+                  {
+                    "label": "GPT-6.1 Terra",
+                    "value": 75.1,
+                    "tone": "ref"
+                  },
+                  {
+                    "label": "GPT-5.6 Sol",
+                    "value": 58.2,
+                    "tone": "laptop"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "p": "这里 84.5% 指的是「可得分的百分比」，不是简单答对率——有的题会给部分分，越接近实测值分数越高。同一个模型换推理档也会变：GPT-6 Astra 在 max 档（最大推理强度）到 83.8%。原文的图 2 画了 9 个模型、51 个「模型 × 推理档」组合，横轴是输出 token 数，趋势是推理用得越多、分数越高，但模型之间仍有明显差距。"
+        }
+      ]
+    },
+    {
+      "h": "一个具体难题：抑制靶点，还要能吸收、别代谢太快",
+      "blocks": [
+        {
+          "p": "MedChemBench 里有一道题来自 PRMT5 抑制剂研究。PRMT5 是癌症药物发现中研究的一个蛋白。模型拿到分子结构和早前的实验结果，要同时预测三个相关化合物的三种性质：在细胞里阻断 PRMT5 的强度、穿过细胞屏障的难易，以及在肝酶实验里被分解的速度。"
+        },
+        {
+          "p": "题目把后续实验藏了起来，而后续实验显示了一种权衡：化合物 23 在更低浓度就能阻断 PRMT5，但化合物 24 更容易穿过细胞屏障、在肝酶实验里分解更慢。也就是说，没有一个化合物三样全赢。这正是药物化学的核心难点——对靶点更强，不代表渗透性更好、分解更慢。"
+        },
+        {
+          "p": "评分时会检查模型重建的分子结构对不对、预测值离实测有多近；越接近，部分分越高。题目里已经给出的测量值，也必须复现正确。"
+        }
+      ]
+    },
+    {
+      "h": "先别急着推理：模型得先把分子画对",
+      "blocks": [
+        {
+          "p": "在讨论性质之前，模型得先正确识别分子。化学图里编码着原子连接、环结构和立体化学，MedChemBench 会检查模型重建时有没有保留这些信息。"
+        },
+        {
+          "p": "有一道题要求从一个中心结构和两个连接基团组装分子，同时保住一个 18 原子环。xhigh 档下，GPT-6 Astra 十次回答全部正确；GPT-5.6 Sol 和 GPT-5.6 Luna 十次全部失败。举例里，GPT-5.6 Sol 拼出了 15 原子环，GPT-5.6 Luna 把分子拆成两个互不相连的片段。这些错误会直接改变被分析分子的身份。"
+        },
+        {
+          "p": "这也是 Astra 最稳的一项：结构部分在 xhigh 档拿到 95.4% 的可得分。相比之下，化合物选择和数值预测只有约一半。换句话说，模型「看得清分子、讲得清道理」，但「挑对下一个化合物、算准具体数值」还差不少。"
+        },
+        {
+          "fig": {
+            "type": "bars",
+            "title": "Astra：结构重建强，选择与预测弱",
+            "subtitle": "单位：可得分的百分比（%）；右侧为定性标注",
+            "note": "原文写选择与预测约一半、未给精确百分比，此处只以文字标明，不虚构数字。",
+            "legend": [
+              {
+                "tone": "main",
+                "label": "Astra 强项"
+              },
+              {
+                "tone": "laptop",
+                "label": "Astra 短板"
+              }
+            ],
+            "groups": [
+              {
+                "label": "xhigh 档分项",
+                "items": [
+                  {
+                    "label": "分子结构重建",
+                    "value": 95.4,
+                    "tone": "main"
+                  },
+                  {
+                    "label": "选择与数值预测",
+                    "status": "约一半（原文未给精确值）",
+                    "tone": "laptop"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "官方还没说的",
+      "blocks": [
+        {
+          "list": [
+            "MedChemBench 的题库、评分脚本是否完全公开下载：原文只放了论文链接，没写发布时间和获取方式。",
+            "这套基准会不会成为 OpenAI 的对外产品或 API：原文没有提。",
+            "其他公司模型的表现：本次只评了 11 个 GPT 模型，没有列出外部模型对照。",
+            "模型训练数据是否包含这些论文与专利：OpenAI 明说无法排除模型此前见过这些公开来源。",
+            "这些分数能否代表实验室里的真实找药能力：OpenAI 明确说不能据此断定模型能发现新药或改善实验决策。",
+            "每次是否只回答一次、有没有工具：原文说明是单次回答，没有工具、反馈或新实验。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "适合谁",
+      "blocks": [
+        {
+          "p": "价值：对做药物化学、计算化学，或想判断「AI 现在能不能帮我挑化合物」的团队，MedChemBench 给出一张相对具体的四维体检表——分子结构、科学推理、排序选择、性质预测分开看，比一个笼统总分更有用。"
+        },
+        {
+          "p": "代价：它考的是历史文献上的推理，不是真实药研流程；题目可能被模型见过，且都是单次、无工具回答。把它当成「AI 能替代化学家」的证明，会明显高估。"
+        },
+        {
+          "list": [
+            "如果你是药物化学研究者：可以把它当一张能力地图，重点看选择和性质预测这两项短板。",
+            "如果你是 AI 团队或评测作者：这份「结构与推理强、选择与预测弱」的拆解，适合作为后续改进和对照的起点。",
+            "如果你只关心「AI 会不会很快找到新药」：更稳的结论是还早，当前结果说明的是推理能力在进步，不等于能发现新药。"
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Can AI help scientists identify promising drug candidates?",
+      "publisher": "OpenAI",
+      "date": "2026-11-20",
+      "url": "https://openai.com/index/introducing-medchembench"
+    },
+    "more": [],
+    "note": "配图按 OpenAI 发布页列出的得分绘制；「选择与预测约一半」原文写作 about half，配图只以文字标注、未虚构精确数字。所有得分均为 OpenAI 自行发布，未经第三方独立复核。"
+  },
+  "claims": [
+    {
+      "text": "OpenAI 于 2026 年 11 月 20 日发布 MedChemBench。",
+      "value": "November 20, 2026",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "2026 年 11 月 20 日",
+      "quote": "OpenAI November 20, 2026"
+    },
+    {
+      "text": "MedChemBench 用 99 道来自已发表研究的题目衡量这些能力。",
+      "value": "99",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "99 道",
+      "quote": "MedChemBench measures these abilities through 99 problems drawn from published research."
+    },
+    {
+      "text": "基准取材自 117 篇论文与专利。",
+      "value": "117",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "117 篇",
+      "quote": "MedChemBench draws on 117 papers and patents and includes 761 distinct molecular structures."
+    },
+    {
+      "text": "基准包含 761 个不同分子结构。",
+      "value": "761",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "761 个",
+      "quote": "MedChemBench draws on 117 papers and patents and includes 761 distinct molecular structures."
+    },
+    {
+      "text": "基准评估四类能力。",
+      "value": "four",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "四类",
+      "quote": "The benchmark evaluates four components:"
+    },
+    {
+      "text": "xhigh 档下 GPT-6.2 Astra 拿到 84.5% 的可得分。",
+      "value": "84.5%",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "84.5%",
+      "quote": "At the xhigh reasoning setting, GPT‑6.2 Astra earned 84.5% of the available credit"
+    },
+    {
+      "text": "xhigh 档下 GPT-6 Astra 拿到 83.3% 的可得分。",
+      "value": "83.3%",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "83.3%",
+      "quote": "compared with 83.3% for GPT‑6 Astra, 82.0% for GPT‑6.1 Sol, and 58.2% for GPT‑5.6 Sol."
+    },
+    {
+      "text": "xhigh 档下 GPT-6.1 Sol 拿到 82.0% 的可得分。",
+      "value": "82.0%",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "82.0%",
+      "quote": "compared with 83.3% for GPT‑6 Astra, 82.0% for GPT‑6.1 Sol, and 58.2% for GPT‑5.6 Sol."
+    },
+    {
+      "text": "xhigh 档下 GPT-5.6 Sol 拿到 58.2% 的可得分。",
+      "value": "58.2%",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "58.2%",
+      "quote": "compared with 83.3% for GPT‑6 Astra, 82.0% for GPT‑6.1 Sol, and 58.2% for GPT‑5.6 Sol."
+    },
+    {
+      "text": "xhigh 档下 GPT-6.1 Terra 拿到 75.1% 的可得分。",
+      "value": "75.1%",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "75.1%",
+      "quote": "compared with 82.0% for GPT‑6.1 Sol, 75.1% for GPT‑6.1 Terra, and 58.2% for GPT‑5.6 Sol."
+    },
+    {
+      "text": "GPT-6 Astra 在 max 推理档达到 83.8%。",
+      "value": "83.8%",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "83.8%",
+      "quote": "At max effort, GPT‑6 Astra reached 83.8%."
+    },
+    {
+      "text": "Astra 在结构部分 xhigh 档拿到 95.4% 的可得分。",
+      "value": "95.4%",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "95.4%",
+      "quote": "While measuring the benchmark for structure components, Astra earned 95.4% of the available credit at xhigh."
+    },
+    {
+      "text": "Astra 在选择化合物和预测数值性质上只拿到约一半得分。",
+      "value": "about half",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "约一半",
+      "quote": "Astra earned 95.4% of the available structure credit at xhigh, but only about half the credit for selecting compounds and predicting numerical properties."
+    },
+    {
+      "text": "空间推理题要求组装分子时保住一个 18 原子环。",
+      "value": "18",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "18 原子环",
+      "quote": "One problem asks models to assemble a molecule from a central structure and two attached groups while preserving an 18-atom ring."
+    },
+    {
+      "text": "GPT-6 Astra 在这道空间推理题 10 次回答全部正确。",
+      "value": "ten",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "10 次",
+      "quote": "GPT‑6 Astra reconstructed this compound correctly in all ten responses."
+    },
+    {
+      "text": "举例中 GPT-5.6 Sol 拼出了 15 原子环。",
+      "value": "15",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "15 原子环",
+      "quote": "GPT‑5.6 Sol produced a 15-atom ring, while GPT‑5.6 Luna split the molecule into two disconnected fragments."
+    },
+    {
+      "text": "OpenAI 共评估了 11 个 GPT 模型。",
+      "value": "eleven",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "11 个",
+      "quote": "We evaluated eleven GPT models at different reasoning-effort settings."
+    },
+    {
+      "text": "原文图 2 展示了 51 个「模型 × 推理档」组合。",
+      "value": "51",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "51 个组合",
+      "quote": "Each point represents a model at one reasoning setting, showing 51 combinations across nine models from GPT‑5.6 onward."
+    },
+    {
+      "text": "原文图 2 展示了 9 个模型。",
+      "value": "nine",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "9 个",
+      "quote": "Each point represents a model at one reasoning setting, showing 51 combinations across nine models from GPT‑5.6 onward."
+    },
+    {
+      "text": "原文图 2 的误差线为 95% 不确定区间。",
+      "value": "95%",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "95% 不确定区间",
+      "quote": "Scores are averaged across 99 problems; bars show 95% uncertainty intervals."
+    },
+    {
+      "text": "PRMT5 例题要求模型同时预测三个相关化合物的行为。",
+      "value": "three",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "三个",
+      "quote": "It must predict how three related compounds will behave: how strongly they block PRMT5 in cells, how readily they cross a cell barrier, and how quickly liver enzymes break them down in a laboratory assay."
+    },
+    {
+      "text": "空间推理题要求从一个中心结构和两个连接基团组装分子。",
+      "value": "two",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "两个",
+      "quote": "One problem asks models to assemble a molecule from a central structure and two attached groups while preserving an 18-atom ring."
+    },
+    {
+      "text": "GPT-5.6 Luna 把分子拆成两个互不相连的片段。",
+      "value": "two",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "两个",
+      "quote": "GPT‑5.6 Sol produced a 15-atom ring, while GPT‑5.6 Luna split the molecule into two disconnected fragments."
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "origin": "auto",
+    "candidate": "f4784c3040",
+    "tier": "official",
+    "via": null,
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "generated_at": "2026-11-22T17:54:46.513Z"
+  }
+}
