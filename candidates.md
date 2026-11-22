@@ -1,8 +1,7 @@
-# 候选清单（2026-11-22 01:28 UTC）
+# 候选清单（2026-11-22 08:33 UTC）
 
 | 分数 | 标题 | 发布方 | 层级 | 相关报道 |
 | --- | --- | --- | --- | --- |
-| 5.4 | [Introducing GPT-6.2 Astra and Sol](https://openai.com/index/introducing-gpt-6-2-astra-sol) | OpenAI | official | 1 |
 | 5.1 | [Can AI help scientists identify promising drug candidates?](https://openai.com/index/introducing-medchembench) | OpenAI | official | 1 |
 | 5 | [Advancing chip design with OpenAI models](https://openai.com/index/advancing-chip-design-with-our-models) | OpenAI | official | 0 |
 | 5 | [Introducing ChatGPT for Sales](https://openai.com/index/introducing-chatgpt-for-sales) | OpenAI | official | 0 |
@@ -27,7 +26,6 @@
 | 4.8 | [MAI Realtime 1: Leading voice AI at $0.01 per audio minute](https://microsoft.ai/news/introducing-mai-realtime-1/) | Microsoft AI | official | 1 |
 | 4.7 | [Combatting adversarial distillation](https://openai.com/index/combatting-adversarial-distillation) | OpenAI | official | 0 |
 | 4.7 | [Hebbia sees improvements in financial research with GPT-6 Astra](https://openai.com/business/customer-stories/hebbia) | OpenAI | official | 0 |
-| 4.7 | [How OpenAI’s Performance Factory keeps ChatGPT fast](https://openai.com/index/how-openai-performance-factory-keeps-chatgpt-fast) | OpenAI | official | 0 |
 | 4.6 | [Into the Omniverse: How Developers Turn Ideas Into Simulations With Frontier AI Agents](https://blogs.nvidia.com/blog/developers-simulation-frontier-ai-agents/) | NVIDIA | official | 0 |
 | 4.6 | [We’re partnering with Blue Origin on our first heavy-lift Project Suncatcher launch.](https://blog.google/innovation-and-ai/models-and-research/google-research/blue-origin-project-suncatcher-partnership/) | Google | official | 0 |
 | 4.4 | [Inworld 开源两款语音模型：降噪时留下笑声和呼吸，能智能判断你「说完了」笔记本就能跑](https://inworld.ai/blog/introducing-voice-isolator) | inworld.ai | official | 0 |
@@ -38,9 +36,11 @@
 | 4.4 | [Mirelo 发布 Sound Agent：一句话给视频加音效、去配乐、拆人声，还能配成 32 种语言](https://mirelo.ai/blog/mirelo-sound-agent) | mirelo.ai | official | 0 |
 | 4.4 | [Higgsfield 发布 AI 品牌吉祥物教程：不训练模型，靠固定描述和三张参考表画同一只熊](https://higgsfield.ai/zh/blog/consistent-brand-mascot-ai) | higgsfield.ai | official | 0 |
 | 4.4 | [Introducing Our Smallest, Most Efficient Model: Muse Ember](https://research.meta.ai/blog/muse-ember) | Meta | official | 0 |
+| 4.2 | [How OpenAI’s Performance Factory keeps ChatGPT fast](https://openai.com/index/how-openai-performance-factory-keeps-chatgpt-fast) | OpenAI | official | 0 |
 | 4.2 | [Deploying Daybreak Red](https://openai.com/business/learn/deploying-daybreak-red) | OpenAI | official | 0 |
 | 4.2 | [See PR scans in action](https://openai.com/business/learn/pr-scans-demo) | OpenAI | official | 0 |
 | 4.2 | [Explore the Codex Security Plugin](https://openai.com/business/learn/codex-security-plugin-demo) | OpenAI | official | 0 |
 | 4.2 | [Get started with Daybreak Blue](https://openai.com/business/learn/daybreak-blue-onboarding-demo) | OpenAI | official | 0 |
+| 4.2 | [The Silent Consensus](https://openai.com/index/the-silent-consensus) | OpenAI | official | 0 |
 
 **超过 30 天没有新内容的源**：Mistral 新闻、Kimi 博客

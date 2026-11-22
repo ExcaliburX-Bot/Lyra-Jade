@@ -1,23 +1,5 @@
 [
   {
-    "id": "549a77347d",
-    "title": "Introducing GPT-6.2 Astra and Sol",
-    "url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
-    "publisher": "OpenAI",
-    "tier": "official",
-    "published": "2026-11-17T17:45:00.000Z",
-    "score": 5.4,
-    "category_hint": "product",
-    "related": [
-      {
-        "title": "OpenAI 发布 GPT-6.2 Astra 和 Sol：Astra 专业和科研测试创新高，每道题成本不到上一代三分之一",
-        "url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
-        "publisher": "OpenAI",
-        "tier": "official"
-      }
-    ]
-  },
-  {
     "id": "f4784c3040",
     "title": "Can AI help scientists identify promising drug candidates?",
     "url": "https://openai.com/index/introducing-medchembench",
@@ -323,17 +305,6 @@
     "related": []
   },
   {
-    "id": "6687f7be62",
-    "title": "How OpenAI’s Performance Factory keeps ChatGPT fast",
-    "url": "https://openai.com/index/how-openai-performance-factory-keeps-chatgpt-fast",
-    "publisher": "OpenAI",
-    "tier": "official",
-    "published": "2026-11-19T08:00:00.000Z",
-    "score": 4.7,
-    "category_hint": "product",
-    "related": []
-  },
-  {
     "id": "1112027d59",
     "title": "Into the Omniverse: How Developers Turn Ideas Into Simulations With Frontier AI Agents",
     "url": "https://blogs.nvidia.com/blog/developers-simulation-frontier-ai-agents/",
@@ -458,6 +429,17 @@
     "related": []
   },
   {
+    "id": "6687f7be62",
+    "title": "How OpenAI’s Performance Factory keeps ChatGPT fast",
+    "url": "https://openai.com/index/how-openai-performance-factory-keeps-chatgpt-fast",
+    "publisher": "OpenAI",
+    "tier": "official",
+    "published": "2026-11-19T08:00:00.000Z",
+    "score": 4.2,
+    "category_hint": "product",
+    "related": []
+  },
+  {
     "id": "4b08ec5026",
     "title": "Deploying Daybreak Red",
     "url": "https://openai.com/business/learn/deploying-daybreak-red",
@@ -497,6 +479,17 @@
     "publisher": "OpenAI",
     "tier": "official",
     "published": "2026-11-19T00:00:00.000Z",
+    "score": 4.2,
+    "category_hint": "product",
+    "related": []
+  },
+  {
+    "id": "e683d40fba",
+    "title": "The Silent Consensus",
+    "url": "https://openai.com/index/the-silent-consensus",
+    "publisher": "OpenAI",
+    "tier": "official",
+    "published": "2026-11-18T10:00:00.000Z",
     "score": 4.2,
     "category_hint": "product",
     "related": []
