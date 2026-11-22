@@ -1511,20 +1511,6 @@
     "category_hint": "insight",
     "fetched_at": "2026-11-20T07:04:20.911Z"
   },
-  "615945605d4f": {
-    "id": "615945605d4f",
-    "key": "https://lspace.beehiiv.com/podcast/s/latent_space_the_ai_engineer_podcast/one_million_ai_engineer_special_how_stanford_teaches_ai-native_engineering_mihail_eric_monaco",
-    "title": "[One Million AI Engineer Special] How Stanford Teaches AI-Native Engineering — Mihail Eric, Monaco",
-    "url": "https://lspace.beehiiv.com/podcast/s/latent_space_the_ai_engineer_podcast/one_million_ai_engineer_special_how_stanford_teaches_ai-native_engineering_mihail_eric_monaco",
-    "published": "2026-11-08T21:23:29.000Z",
-    "summary": "What do you assign when a coding agent can finish last year’s homework in one prompt? In the second run of Stanford’s CS146S, Mihail Eric brought open-source maintainers into the course. Students have to learn an unfamiliar repo, propose a change, and ...",
-    "source": "latent-space-podcast",
-    "publisher": "Latent Space",
-    "tier": "discovery",
-    "weight": 0.8,
-    "category_hint": "insight",
-    "fetched_at": "2026-11-20T07:04:20.911Z"
-  },
   "0ad43e166bcf": {
     "id": "0ad43e166bcf",
     "key": "https://kling.ai/",
@@ -2592,5 +2578,19 @@
     "weight": 1,
     "category_hint": null,
     "fetched_at": "2026-11-22T16:48:24.212Z"
+  },
+  "de5cd1a6d51d": {
+    "id": "de5cd1a6d51d",
+    "key": "https://openai.com/index/perplexity-and-intelligence",
+    "title": "Perplexity and Intelligence",
+    "url": "https://openai.com/index/perplexity-and-intelligence",
+    "published": "2026-11-22T00:00:00.000Z",
+    "summary": "How perplexity measures progress in AI models, and why it could help developers establish a shared approach to evaluating emerging capabilities.",
+    "source": "openai-news",
+    "publisher": "OpenAI",
+    "tier": "official",
+    "weight": 1.2,
+    "category_hint": "product",
+    "fetched_at": "2026-11-22T22:16:04.908Z"
   }
 }

@@ -17,19 +17,19 @@
   "openai-news": {
     "etag": null,
     "lastModified": null,
-    "lastOk": "2026-11-22T16:48:24.212Z",
-    "lastNew": "2026-11-21T00:53:57.555Z"
+    "lastOk": "2026-11-22T22:16:04.908Z",
+    "lastNew": "2026-11-22T22:16:04.908Z"
   },
   "deepmind-blog": {
-    "etag": "\"CZ5yTg\"",
+    "etag": "\"wj71UQ\"",
     "lastModified": null,
-    "lastOk": "2026-11-22T16:48:24.212Z",
+    "lastOk": "2026-11-22T22:16:04.908Z",
     "lastNew": "2026-11-20T07:04:20.911Z"
   },
   "google-innovation-ai": {
     "etag": null,
     "lastModified": null,
-    "lastOk": "2026-11-22T16:48:24.212Z",
+    "lastOk": "2026-11-22T22:16:04.908Z",
     "lastNew": "2026-11-20T19:11:53.348Z"
   },
   "nvidia-blog": {
@@ -46,13 +46,13 @@
   "hf-blog": {
     "etag": "W/\"4217c-lsdoxghiK3DBEQ5fzRniwnuc+GU\"",
     "lastModified": null,
-    "lastOk": "2026-11-22T16:48:24.212Z",
+    "lastOk": "2026-11-22T22:16:04.908Z",
     "lastNew": "2026-11-21T00:53:57.555Z"
   },
   "anthropic-news": {
     "etag": null,
     "lastModified": null,
-    "lastOk": "2026-11-22T16:48:24.212Z",
+    "lastOk": "2026-11-22T22:16:04.908Z",
     "seen": [
       "https://anthropic.com/news/public-benefit-fund",
       "https://anthropic.com/news/s1-sec",
@@ -80,7 +80,7 @@
   "microsoft-ai-news": {
     "etag": null,
     "lastModified": null,
-    "lastOk": "2026-11-22T16:48:24.212Z",
+    "lastOk": "2026-11-22T22:16:04.908Z",
     "lastNew": "2026-11-20T07:04:20.911Z",
     "seen": [
       "https://microsoft.ai/news/microsoft-ignite-2026",
@@ -95,7 +95,7 @@
   "meta-research": {
     "etag": null,
     "lastModified": null,
-    "lastOk": "2026-11-22T16:48:24.212Z",
+    "lastOk": "2026-11-22T22:16:04.908Z",
     "lastNew": "2026-11-20T07:04:20.911Z",
     "seen": [
       "https://research.meta.ai/blog/muse-ember",
@@ -107,7 +107,7 @@
   "kimi-blog": {
     "etag": null,
     "lastModified": null,
-    "lastOk": "2026-11-22T16:48:24.212Z",
+    "lastOk": "2026-11-22T22:16:04.908Z",
     "seen": [
       "https://kimi.ai/blog/kimi-k3-1-pro",
       "https://kimi.ai/blog/kimi-k3",

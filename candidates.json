@@ -1,22 +1,14 @@
 [
   {
-    "id": "f4784c3040",
-    "title": "Can AI help scientists identify promising drug candidates?",
-    "url": "https://openai.com/index/introducing-medchembench",
+    "id": "de5cd1a6d5",
+    "title": "Perplexity and Intelligence",
+    "url": "https://openai.com/index/perplexity-and-intelligence",
     "publisher": "OpenAI",
     "tier": "official",
-    "published": "2026-11-20T00:00:00.000Z",
-    "score": 5.1,
+    "published": "2026-11-22T00:00:00.000Z",
+    "score": 5.2,
     "category_hint": "product",
-    "related": [
-      {
-        "title": "MedChemBench is a new benchmark for AI reasoning in medicinal chemistry.",
-        "url": "https://openai.com/index/introducing-medchembench/",
-        "publisher": "@OpenAI",
-        "tier": "official",
-        "text": "MedChemBench is a new benchmark for AI reasoning in medicinal chemistry.\n\nIt shows the progress our frontier models have made in their ability to help scientists use AI to identify promising drug candidates.\n\nhttps://openai.com/index/introducing-medchembench/"
-      }
-    ]
+    "related": []
   },
   {
     "id": "c7d3ecb006",
@@ -216,19 +208,6 @@
     "related": []
   },
   {
-    "id": "a3b508c32e",
-    "title": "Microsoft launched Canvas, a new workspace powered by MAI Image 2.7 Flash",
-    "url": "https://labs.microsoft.ai/?model=canvas",
-    "publisher": "@MicrosoftAI",
-    "tier": "official",
-    "published": "2026-11-19T17:04:38.000Z",
-    "score": 4.9,
-    "category_hint": "product",
-    "text": "Meet Canvas, our new interactive workspace powered by MAI Image 2.7 Flash.\n\nTurn sketches into polished diagrams, make precise image edits and refine your creations without starting over.\n\nSee it in action and try it yourself: https://labs.microsoft.ai/?model=canvas",
-    "via": "https://x.com/MicrosoftAI/status/2123462465740533910",
-    "related": []
-  },
-  {
     "id": "1c3eaf246b",
     "title": "NVIDIA RTX Spark Compact Desktops Out Now",
     "url": "https://blogs.nvidia.com/blog/rtx-spark-desktop-local-ai-available-now/",
@@ -305,14 +284,16 @@
     "related": []
   },
   {
-    "id": "1112027d59",
-    "title": "Into the Omniverse: How Developers Turn Ideas Into Simulations With Frontier AI Agents",
-    "url": "https://blogs.nvidia.com/blog/developers-simulation-frontier-ai-agents/",
-    "publisher": "NVIDIA",
+    "id": "a3b508c32e",
+    "title": "Microsoft launched Canvas, a new workspace powered by MAI Image 2.7 Flash",
+    "url": "https://labs.microsoft.ai/?model=canvas",
+    "publisher": "@MicrosoftAI",
     "tier": "official",
-    "published": "2026-11-19T17:00:35.000Z",
-    "score": 4.6,
-    "category_hint": null,
+    "published": "2026-11-19T17:04:38.000Z",
+    "score": 4.4,
+    "category_hint": "product",
+    "text": "Meet Canvas, our new interactive workspace powered by MAI Image 2.7 Flash.\n\nTurn sketches into polished diagrams, make precise image edits and refine your creations without starting over.\n\nSee it in action and try it yourself: https://labs.microsoft.ai/?model=canvas",
+    "via": "https://x.com/MicrosoftAI/status/2123462465740533910",
     "related": []
   },
   {
@@ -487,6 +468,17 @@
     "id": "9fa731b0ef",
     "title": "Research acceleration: The jagged frontier",
     "url": "https://openai.com/index/research-acceleration-jagged-frontier",
+    "publisher": "OpenAI",
+    "tier": "official",
+    "published": "2026-11-18T08:00:00.000Z",
+    "score": 4.2,
+    "category_hint": "product",
+    "related": []
+  },
+  {
+    "id": "b527b6f0dd",
+    "title": "How Sumitomo Life’s leaders helped teams adopt ChatGPT Enterprise",
+    "url": "https://openai.com/business/customer-stories/sumitomo-life",
     "publisher": "OpenAI",
     "tier": "official",
     "published": "2026-11-18T08:00:00.000Z",
