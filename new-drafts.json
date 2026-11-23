@@ -1,8 +1,35 @@
 [
   {
-    "slug": "chatgpt-for-sales",
-    "title": "ChatGPT for Sales 上线：30 多个合作伙伴插件装进 ChatGPT，客户自述省下约 65% 手工活",
-    "file": "content/articles/chatgpt-for-sales.json",
+    "slug": "openai-for-chile-partnership",
+    "title": "OpenAI 与智利政府合作：帮公务员学 AI、扶持本地创业公司",
+    "file": "content/articles/openai-for-chile-partnership.json",
+    "errors": 0,
+    "warnings": 0,
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro"
+  },
+  {
+    "slug": "lvmh-media-openai-partnership",
+    "title": "LVMH 媒体部门与 OpenAI 战略合作：17 个媒体品牌内容接入 ChatGPT",
+    "file": "content/articles/lvmh-media-openai-partnership.json",
+    "errors": 0,
+    "warnings": 1,
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro"
+  },
+  {
+    "slug": "openai-computer-use-healthcare-agents",
+    "title": "OpenAI 医疗电脑操作智能体上线：99% 任务评为安全，Luna 单次 8.5 美分",
+    "file": "content/articles/openai-computer-use-healthcare-agents.json",
+    "errors": 0,
+    "warnings": 0,
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro"
+  },
+  {
+    "slug": "kings-trust-openai-1m-ai-skills-partnership",
+    "title": "The King's Trust 与 OpenAI 启动 100 万英镑合作，帮 25,000 名年轻人学 AI",
+    "file": "content/articles/kings-trust-openai-1m-ai-skills-partnership.json",
     "errors": 0,
     "warnings": 0,
     "provider": "deepseek",
