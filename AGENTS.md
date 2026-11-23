@@ -6,7 +6,8 @@
 ## 1. 这个项目是什么
 
 玲珑玉是 AI 资讯解读站：从一手来源抓取发布 → 合并打分成候选 → 模型写稿配图 → 自动校验 → 开 PR → 审核合并 → 发布到 GitHub Pages。
-定时、确定的活由 GitHub Actions 做（抓取、X 监测、写稿、校验、发布）。**你负责需要判断的活**：选题、初审、修源、加源、抓需要浏览器的网站、周报。
+定时、确定的活由 GitHub Actions 做（抓取、X 监测、写稿、校验、发布）。**你负责需要判断的活**：选题、初审、修源、加源、抓需要浏览器的网站、看 X、周报。
+Actions 里按量计费的「X 监测」已停用，X 上的发布由你用 Grok 自带的 X 访问来看（`bot/skills/x-watch.md`）。
 你停了，网站照常更新，只是少了初审。所以宁可少做，不要做错。
 
 ## 2. 准备（只做一次）
@@ -27,6 +28,7 @@ node scripts/bot.mjs status                             # 能输出状态就说�
 | --- | --- |
 | 读仓库里的一切、读 data 分支 | 直接读 |
 | 往素材库加你在网页上发现的一手发布 | `node scripts/bot.mjs inbox-add …`，再 `bash scripts/ci/commit-data.sh "bot: 收件箱"` |
+| 把在 X 上读到的发布帖放进素材库，并存档帖子原文 | `node scripts/bot.mjs x-add --url <帖子链接> --file <帖子原文.txt>`，再推送 data |
 | 标记某个候选不写 | `node scripts/bot.mjs skip <ID> --reason "…"`，再推送 data |
 | 让流水线写某个候选 | `gh workflow run draft.yml -f id=<候选ID>` |
 | 初审 `draft/*` PR：改那一篇文章的 JSON、评论、打标签 | 见 `bot/skills/pr-review.md` |
@@ -83,6 +85,7 @@ node scripts/bot.mjs source-test --id <源ID>        # 试抓清单里的源
 node scripts/bot.mjs source-test --url <地址> --type page --pattern '^/blog/[a-z0-9-]+$'
 node scripts/bot.mjs inbox-add --title … --url … --tier official --publisher …
 node scripts/bot.mjs skip <候选ID> --reason …
+node scripts/bot.mjs x-add --url https://x.com/<账号>/status/<ID> --file /tmp/post.txt
 node scripts/bot.mjs weekly > /tmp/weekly.md
 node scripts/validate.mjs content/articles/<slug>.json   # 在 draft 分支上校验一篇
 bash scripts/ci/commit-data.sh "bot: …"              # 推送 data/ 的改动

@@ -6,6 +6,8 @@
    node scripts/bot.mjs source-test --id <sources.json 里的 id>
    node scripts/bot.mjs skip <候选ID> --reason "为什么不写"   标记不写，定时写稿会跳过它
    node scripts/bot.mjs source-add --url U --file 原文.txt   人工补原文：原站拒绝程序抓取时，由人从浏览器复制正文存档
+   node scripts/bot.mjs x-add --url https://x.com/<账号>/status/<ID> --file 帖子.txt [--title T] [--tier official] [--category product]
+                                                  Grok Bot 在 X 上读到的帖子：放进收件箱，并把帖子原文（含作者自己的整串）存档，写稿时不再调用 xAI API
    node scripts/bot.mjs weekly [--days 7]         周报（Markdown），可以直接贴进 GitHub Issue */
 import fs from "node:fs";
 import path from "node:path";
@@ -139,6 +141,43 @@ function sourceAdd() {
   console.log(`已存档 ${path.relative(process.cwd(), out)}（${text.length} 字）。推送 data 后，用「写稿」指定这个候选即可。`);
 }
 
-const commands = { status, skip, "source-add": sourceAdd, "inbox-add": inboxAdd, "source-test": sourceTest, weekly };
-if (!commands[cmd]) { console.log(fs.readFileSync(new URL(import.meta.url), "utf8").split("\n").slice(1, 9).join("\n")); process.exit(cmd ? 1 : 0); }
-await commands[cmd]();
+/* Grok Bot 用订阅自带的 X 访问读帖子，代替按量计费的 xAI X 搜索。
+   帖子原文存进 data/sources/，写稿时直接用存档；名单里的账号用名单的层级，名单外的默认只算线索（discovery） */
+export function xAddItem({ url, text, title, tier, category }, groups = []) {
+  const m = String(url || "").match(/^https:\/\/(?:www\.)?(?:x|twitter)\.com\/([A-Za-z0-9_]{1,15})\/status\/(\d{5,25})/);
+  if (!m) throw new Error("--url 要是 X 帖子链接，形如 https://x.com/<账号>/status/<数字ID>");
+  const body = String(text || "").trim();
+  if (body.length < 20) throw new Error(`帖子原文只有 ${body.length} 字，看起来没复制完整`);
+  const [, handle, id] = m;
+  const group = groups.find(g => g.enabled !== false && (g.handles || []).some(h => h.toLowerCase() === handle.toLowerCase()));
+  const canon = `https://x.com/${handle}/status/${id}`;
+  const published = new Date(Number((BigInt(id) >> 22n) + 1288834974657n)).toISOString();
+  const item = {
+    title: (title || body.split("\n")[0]).trim().slice(0, 200), url: canon, publisher: `@${handle}`,
+    tier: tier || group?.tier || "discovery", source: `bot:x${group ? ":" + group.id : ""}`, published,
+    summary: body.slice(0, 280), ...(category || group?.category ? { category: category || group.category } : {})
+  };
+  return { item, archive: `URL: ${canon}\nFETCHED: ${new Date().toISOString()}\nNOTE: X 帖子原文（含作者自己的整串），由 Grok Bot 在 X 上读取\n\n${body}` };
+}
+
+function xAdd() {
+  const file = arg("--file");
+  if (!file || !fs.existsSync(file)) { console.error("要给 --file（帖子原文的文本文件，含作者自己的整串）"); process.exit(1); }
+  let r;
+  try { r = xAddItem({ url: arg("--url"), text: fs.readFileSync(file, "utf8"), title: arg("--title"), tier: arg("--tier"), category: arg("--category") }, readJson(X_ACCOUNTS, [])); }
+  catch (e) { console.error(`没有写入：${e.message}`); process.exit(1); }
+  const problems = checkInboxItem(r.item);
+  if (problems.length) { console.error(`没有写入：${problems.join("；")}`); process.exit(1); }
+  const out = dataFile(`sources/${sha(r.item.url)}.txt`);
+  fs.mkdirSync(path.dirname(out), { recursive: true });
+  fs.writeFileSync(out, r.archive);
+  const inbox = writeInbox(`bot-x-${new Date().toISOString().replace(/[:.]/g, "")}`, [r.item]);
+  console.log(`已写入 ${path.relative(process.cwd(), inbox)}（层级 ${r.item.tier}），帖子原文已存档。用 bash scripts/ci/commit-data.sh "bot: X 帖子" 推送到 data 分支。`);
+}
+
+const commands = { status, skip, "x-add": xAdd, "source-add": sourceAdd, "inbox-add": inboxAdd, "source-test": sourceTest, weekly };
+/* 被测试 import 时不执行命令 */
+if (process.argv[1] && path.resolve(process.argv[1]) === new URL(import.meta.url).pathname) {
+  if (!commands[cmd]) { console.log(fs.readFileSync(new URL(import.meta.url), "utf8").split("\n").slice(1, 11).join("\n")); process.exit(cmd ? 1 : 0); }
+  await commands[cmd]();
+}

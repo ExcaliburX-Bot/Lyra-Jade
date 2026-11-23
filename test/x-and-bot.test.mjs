@@ -390,3 +390,19 @@ test("日期事实：原文写 November 20, 2026 或 Today 都能对上", async 
   assert.equal(dateCheck("2026-11-18", normNum("Today, Anthropic announced"), ["2026-11-20"]), false);
   assert.equal(dateCheck("83%", normNum("83%"), []), false);
 });
+
+test("bot x-add：名单账号的帖子按官方层级入收件箱，名单外只算线索", async () => {
+  const { xAddItem } = await import("../scripts/bot.mjs");
+  const groups = [{ id: "x-labs-global", tier: "official", category: "product", enabled: true, handles: ["OpenAI"] }];
+  const text = "Introducing GPT-6.2 Astra. Available today in the API at $4 per million input tokens.";
+  const { item, archive } = xAddItem({ url: "https://twitter.com/openai/status/1991234567890123456?s=20", text }, groups);
+  assert.equal(item.url, "https://x.com/openai/status/1991234567890123456");
+  assert.equal(item.tier, "official");
+  assert.equal(item.source, "bot:x:x-labs-global");
+  assert.equal(item.publisher, "@openai");
+  assert.match(item.published, /^20\d\d-/);
+  assert.match(archive, /Grok Bot/);
+  assert.equal(xAddItem({ url: "https://x.com/someone/status/1991234567890123456", text }, groups).item.tier, "discovery");
+  assert.throws(() => xAddItem({ url: "https://x.com/OpenAI", text }, groups), /帖子链接/);
+  assert.throws(() => xAddItem({ url: "https://x.com/OpenAI/status/1991234567890123456", text: "hi" }, groups), /没复制完整/);
+});
