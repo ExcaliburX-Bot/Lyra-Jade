@@ -1,10 +1,7 @@
-# 候选清单（2026-11-23 02:56 UTC）
+# 候选清单（2026-11-23 11:42 UTC）
 
 | 分数 | 标题 | 发布方 | 层级 | 相关报道 |
 | --- | --- | --- | --- | --- |
-| 5.9 | [LangChain 公开「知识工厂」搭法：Agent 干活时标出缺的知识，后台 Agent 定期补进知识库](https://x.com/hwchase17/status/2124181216719151585) | @hwchase17 | official | 0 |
-| 5 | [Advancing chip design with OpenAI models](https://openai.com/index/advancing-chip-design-with-our-models) | OpenAI | official | 0 |
-| 5 | [Introducing ChatGPT for Sales](https://openai.com/index/introducing-chatgpt-for-sales) | OpenAI | official | 0 |
 | 5 | [Introducing OpenAI for Chile](https://openai.com/index/introducing-openai-for-chile) | OpenAI | official | 0 |
 | 5 | [LVMH’s Media Division announces strategic partnership with OpenAI](https://openai.com/index/lvmh-media-division-partnership) | OpenAI | official | 0 |
 | 5 | [Advancing computer-use agents for healthcare teams](https://openai.com/index/advancing-computer-use-for-healthcare-teams) | OpenAI | official | 0 |
@@ -22,7 +19,6 @@
 | 4.8 | [MAI Image 2.7: Frontier quality at a fraction of the cost](https://microsoft.ai/news/introducing-mai-image-2-7/) | Microsoft AI | official | 1 |
 | 4.8 | [MAI Realtime 1: Leading voice AI at $0.01 per audio minute](https://microsoft.ai/news/introducing-mai-realtime-1/) | Microsoft AI | official | 1 |
 | 4.7 | [Perplexity and Intelligence](https://openai.com/index/perplexity-and-intelligence) | OpenAI | official | 0 |
-| 4.7 | [Combatting adversarial distillation](https://openai.com/index/combatting-adversarial-distillation) | OpenAI | official | 0 |
 | 4.4 | [Pika 发布了一个全新的 AI视频工具Enact：能模仿片场当导演现场实时导戏 视频一边播一边改，能拖人摆位、还能给 AI 演员说戏](https://pika.art/blog/pika-enact) | pika.art | official | 0 |
 | 4.4 | [Ideogram 发布了 Ideogram 4.6 模型：原生 4K 出图 宣称为迄今最精确的改图模型](https://ideogram.ai/models/4.6) | ideogram.ai | official | 0 |
 | 4.4 | [Microsoft launched Canvas, a new workspace powered by MAI Image 2.7 Flash](https://labs.microsoft.ai/?model=canvas) | @MicrosoftAI | official | 0 |
@@ -34,6 +30,7 @@
 | 4.4 | [Mirelo 发布 Sound Agent：一句话给视频加音效、去配乐、拆人声，还能配成 32 种语言](https://mirelo.ai/blog/mirelo-sound-agent) | mirelo.ai | official | 0 |
 | 4.4 | [Higgsfield 发布 AI 品牌吉祥物教程：不训练模型，靠固定描述和三张参考表画同一只熊](https://higgsfield.ai/zh/blog/consistent-brand-mascot-ai) | higgsfield.ai | official | 0 |
 | 4.4 | [Introducing Our Smallest, Most Efficient Model: Muse Ember](https://research.meta.ai/blog/muse-ember) | Meta | official | 0 |
+| 4.2 | [Combatting adversarial distillation](https://openai.com/index/combatting-adversarial-distillation) | OpenAI | official | 0 |
 | 4.2 | [Hebbia sees improvements in financial research with GPT-6 Astra](https://openai.com/business/customer-stories/hebbia) | OpenAI | official | 0 |
 | 4.2 | [How OpenAI’s Performance Factory keeps ChatGPT fast](https://openai.com/index/how-openai-performance-factory-keeps-chatgpt-fast) | OpenAI | official | 0 |
 | 4.2 | [Deploying Daybreak Red](https://openai.com/business/learn/deploying-daybreak-red) | OpenAI | official | 0 |
@@ -42,5 +39,8 @@
 | 4.2 | [Get started with Daybreak Blue](https://openai.com/business/learn/daybreak-blue-onboarding-demo) | OpenAI | official | 0 |
 | 4.2 | [The Silent Consensus](https://openai.com/index/the-silent-consensus) | OpenAI | official | 0 |
 | 4.2 | [Research acceleration: The jagged frontier](https://openai.com/index/research-acceleration-jagged-frontier) | OpenAI | official | 0 |
+| 4.2 | [How Sumitomo Life’s leaders helped teams adopt ChatGPT Enterprise](https://openai.com/business/customer-stories/sumitomo-life) | OpenAI | official | 0 |
+| 4.2 | [Inside the Codex sandbox](https://openai.com/index/inside-the-codex-sandbox) | OpenAI | official | 0 |
+| 4.2 | [Managing frontier AI risk: From training to deployment](https://openai.com/index/managing-frontier-ai-risk) | OpenAI | official | 0 |
 
 **超过 30 天没有新内容的源**：Mistral 新闻、Kimi 博客

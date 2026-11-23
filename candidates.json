@@ -1,40 +1,5 @@
 [
   {
-    "id": "d9d43bef55",
-    "title": "LangChain 公开「知识工厂」搭法：Agent 干活时标出缺的知识，后台 Agent 定期补进知识库",
-    "url": "https://x.com/hwchase17/status/2124181216719151585",
-    "publisher": "@hwchase17",
-    "tier": "official",
-    "published": "2026-11-23T00:00:00.000Z",
-    "score": 5.9,
-    "category_hint": null,
-    "via": "https://xiaohu.ai/article/langchain-knowledge-factory/",
-    "discovered_by": "xiaohu",
-    "related": []
-  },
-  {
-    "id": "c7d3ecb006",
-    "title": "Advancing chip design with OpenAI models",
-    "url": "https://openai.com/index/advancing-chip-design-with-our-models",
-    "publisher": "OpenAI",
-    "tier": "official",
-    "published": "2026-11-18T00:00:00.000Z",
-    "score": 5,
-    "category_hint": "product",
-    "related": []
-  },
-  {
-    "id": "c6c361c53b",
-    "title": "Introducing ChatGPT for Sales",
-    "url": "https://openai.com/index/introducing-chatgpt-for-sales",
-    "publisher": "OpenAI",
-    "tier": "official",
-    "published": "2026-11-17T08:00:00.000Z",
-    "score": 5,
-    "category_hint": "product",
-    "related": []
-  },
-  {
     "id": "58da9c66b1",
     "title": "Introducing OpenAI for Chile",
     "url": "https://openai.com/index/introducing-openai-for-chile",
@@ -249,17 +214,6 @@
     "related": []
   },
   {
-    "id": "3ea993db7e",
-    "title": "Combatting adversarial distillation",
-    "url": "https://openai.com/index/combatting-adversarial-distillation",
-    "publisher": "OpenAI",
-    "tier": "official",
-    "published": "2026-11-20T10:00:00.000Z",
-    "score": 4.7,
-    "category_hint": "product",
-    "related": []
-  },
-  {
     "id": "6a368ee477",
     "title": "Pika 发布了一个全新的 AI视频工具Enact：能模仿片场当导演现场实时导戏 视频一边播一边改，能拖人摆位、还能给 AI 演员说戏",
     "url": "https://pika.art/blog/pika-enact",
@@ -401,6 +355,17 @@
     "related": []
   },
   {
+    "id": "3ea993db7e",
+    "title": "Combatting adversarial distillation",
+    "url": "https://openai.com/index/combatting-adversarial-distillation",
+    "publisher": "OpenAI",
+    "tier": "official",
+    "published": "2026-11-20T10:00:00.000Z",
+    "score": 4.2,
+    "category_hint": "product",
+    "related": []
+  },
+  {
     "id": "d15c456432",
     "title": "Hebbia sees improvements in financial research with GPT-6 Astra",
     "url": "https://openai.com/business/customer-stories/hebbia",
@@ -484,6 +449,39 @@
     "publisher": "OpenAI",
     "tier": "official",
     "published": "2026-11-18T08:00:00.000Z",
+    "score": 4.2,
+    "category_hint": "product",
+    "related": []
+  },
+  {
+    "id": "b527b6f0dd",
+    "title": "How Sumitomo Life’s leaders helped teams adopt ChatGPT Enterprise",
+    "url": "https://openai.com/business/customer-stories/sumitomo-life",
+    "publisher": "OpenAI",
+    "tier": "official",
+    "published": "2026-11-18T08:00:00.000Z",
+    "score": 4.2,
+    "category_hint": "product",
+    "related": []
+  },
+  {
+    "id": "53f2a14376",
+    "title": "Inside the Codex sandbox",
+    "url": "https://openai.com/index/inside-the-codex-sandbox",
+    "publisher": "OpenAI",
+    "tier": "official",
+    "published": "2026-11-18T08:00:00.000Z",
+    "score": 4.2,
+    "category_hint": "product",
+    "related": []
+  },
+  {
+    "id": "8b6ac2940f",
+    "title": "Managing frontier AI risk: From training to deployment",
+    "url": "https://openai.com/index/managing-frontier-ai-risk",
+    "publisher": "OpenAI",
+    "tier": "official",
+    "published": "2026-11-18T06:00:00.000Z",
     "score": 4.2,
     "category_hint": "product",
     "related": []
