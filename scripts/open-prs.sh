@@ -41,18 +41,24 @@ node -e '
   } > /tmp/pr-body.md
 
   gh label create "$LABEL" --force >/dev/null 2>&1 || true
-  gh pr create --base "$BASE" --head "$BR" --title "稿件：$TITLE" --body-file /tmp/pr-body.md --label "$LABEL" \
-    || gh pr create --base "$BASE" --head "$BR" --title "稿件：$TITLE" --body-file /tmp/pr-body.md
+  PR_URL=$(gh pr create --base "$BASE" --head "$BR" --title "稿件：$TITLE" --body-file /tmp/pr-body.md --label "$LABEL" \
+    || gh pr create --base "$BASE" --head "$BR" --title "稿件：$TITLE" --body-file /tmp/pr-body.md)
+  echo "$PR_URL"
+  NUM="${PR_URL##*/}"
+  REPO="${GITHUB_REPOSITORY:-$(gh repo view --json nameWithOwner --jq .nameWithOwner)}"
+  # 标签和审核人用 REST 接口加：gh pr edit 走 GraphQL，用机器人的 classic 令牌会失败
   # 0 个必须修改的稿子打上 auto-publish。仓库变量 WG_AUTOMERGE=direct 时，「自动合并」工作流检查后直接合并发布；
   # 没开时这个标签只是「校验通过」的标记。要用机器人令牌（WG_BOT_TOKEN）开 PR 才会触发，GITHUB_TOKEN 打的标签不触发工作流。
   # （不在 draft.yml 里读变量：改带定时的工作流文件会让定时任务失效，见开发指南第 7 节）
   if [ "$ERRORS" -eq 0 ]; then
     gh label create auto-publish --color 0E8A16 --description "校验通过，自动上线" --force >/dev/null 2>&1 || true
-    gh pr edit "$BR" --add-label auto-publish >/dev/null 2>&1 || echo "::warning::没能打上 auto-publish 标签，这篇需要人工合并"
+    gh api "repos/$REPO/issues/$NUM/labels" -f "labels[]=auto-publish" >/dev/null || echo "::warning::没能打上 auto-publish 标签，这篇需要人工合并"
   fi
   # 点名请人审核：GitHub 一定会发邮件和手机推送。默认是仓库主人，可用变量 WG_REVIEWER 改成别人（逗号分隔）
   REVIEWER="${WG_REVIEWER:-${GITHUB_REPOSITORY_OWNER:-}}"
-  [ -n "$REVIEWER" ] && { gh pr edit "$BR" --add-reviewer "$REVIEWER" >/dev/null 2>&1 \
-    || echo "::warning::没能请 $REVIEWER 审核（不影响稿子）"; }
+  if [ -n "$REVIEWER" ]; then
+    ARGS=(); IFS=',' read -ra RS <<< "$REVIEWER"; for r in "${RS[@]}"; do ARGS+=(-f "reviewers[]=${r// /}"); done
+    gh api "repos/$REPO/pulls/$NUM/requested_reviewers" "${ARGS[@]}" >/dev/null || echo "::warning::没能请 $REVIEWER 审核（不影响稿子）"
+  fi
   git switch "$BASE"
 done
