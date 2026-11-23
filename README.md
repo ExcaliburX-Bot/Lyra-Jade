@@ -24,7 +24,7 @@ AI 资讯解读站：自动从一手来源抓取 → 合并打分 → AI 写稿�
 
 ```bash
 npm run demo        # 用样例订阅和模拟模型把整条流水线跑一遍
-npm test            # 29 个测试：解析、合并、打分、X 监测、收件箱、校验、自动合并规则、端到端
+npm test            # 30 个测试：解析、合并、打分、X 监测、收件箱、校验、自动合并规则、端到端
 npm run dev         # 构建并在 http://localhost:4321 预览
 ```
 
@@ -42,7 +42,7 @@ npm run dev         # 构建并在 http://localhost:4321 预览
    | `DEEPSEEK_API_KEY` | 改用 DeepSeek 写稿时 | 写稿（platform.deepseek.com 申请） |
    | `ANTHROPIC_API_KEY` | 改用 Claude 写稿时 | 写稿 |
    | `WG_BOT_TOKEN` | 建议 | 机器人账号的令牌；用它开的 PR 会自动触发校验 |
-   | `WG_MERGE_TOKEN` | 阶段 B 才要 | 你本人的令牌，用于自动合并 |
+   | `WG_MERGE_TOKEN` | 自动上线才要 | 你本人的细粒度令牌（只授权本仓库，Contents、Pull requests 可读写），用于自动合并 |
 5. **变量**（同一页的 Variables；`WG_` 是项目早期代号的缩写，变量名保持不变）：
    | 名字 | 默认 | 作用 |
    | --- | --- | --- |
@@ -53,7 +53,7 @@ npm run dev         # 构建并在 http://localhost:4321 预览
    | `WG_MODEL` | `grok-4.7` / `deepseek-v4-pro` / `claude-sonnet-5-5` | 写稿模型；DeepSeek 更便宜的是 `deepseek-flash` |
    | `WG_X_MODEL` | `grok-4.7` | X 监测用的模型 |
    | `WG_REASONING` | `medium` | Grok 写稿的推理强度：`low` / `medium` / `high` / `xhigh`，越高越慢越贵 |
-   | `WG_AUTOMERGE` | 关 | 设为 `on` 进入阶段 B 自动合并 |
+   | `WG_AUTOMERGE` | 关 | `direct`＝校验 0 个必须修改、主材料是官方或一手的新稿直接上线；`on`＝阶段 B，Grok Bot 初审打 `bot-reviewed` 后才合并。两种都要配 `WG_MERGE_TOKEN` |
    | `WG_AUTOMERGE_CATEGORIES` | `product` | 允许自动合并的栏目，逗号分隔 |
 6. **开启 Pages**：Settings → Pages → Source 选 *GitHub Actions*。
 7. 依次手动运行「X 监测」（如果配了 xAI）、「抓取」、「写稿」，就会看到第一批 PR。

@@ -10,10 +10,13 @@ import { validateArticle } from "../lib/validate.mjs";
 import { loadSourceTexts } from "../lib/archive.mjs";
 
 const CATEGORIES = (process.env.WG_AUTOMERGE_CATEGORIES || "product").split(",").map(s => s.trim()).filter(Boolean);
-const LABEL = process.env.WG_AUTOMERGE_LABEL || "bot-reviewed";
+/* 两种模式：on＝Grok Bot 初审后打 bot-reviewed 才合并（阶段 B）；direct＝校验通过就直接上线，打 auto-publish */
+const MODE = process.env.WG_AUTOMERGE_MODE || "on";
+const LABEL = process.env.WG_AUTOMERGE_LABEL || (MODE === "direct" ? "auto-publish" : "bot-reviewed");
 
 /* 纯函数：给定 PR 信息和文章，返回不能自动合并的原因（空数组 = 可以） */
-export function automergeProblems(pr, article, { categories = CATEGORIES, label = LABEL, sourceTexts = {} } = {}) {
+export function automergeProblems(pr, article, { categories = CATEGORIES, label = LABEL, sourceTexts = {}, mode = MODE } = {}) {
+  const direct = mode === "direct";
   const p = [];
   if (pr.isCrossRepository) p.push("来自别人 fork 的 PR，不自动合并");
   if (!pr.headRefName?.startsWith("draft/")) p.push(`分支 ${pr.headRefName} 不是写稿流水线开的 draft/ 分支`);
@@ -25,9 +28,11 @@ export function automergeProblems(pr, article, { categories = CATEGORIES, label 
   if (f && !/^content\/articles\/[a-z0-9-]+\.json$/.test(f.path)) p.push(`改的不是文章文件：${f.path}`);
   if (pr.fileIsNew !== true) p.push("不是新增文章（改已有文章必须人工合并）");
   if (!article) { p.push("读不出文章 JSON"); return p; }
-  if (article.verified !== true) p.push("verified 不是 true（初审还没核对完）");
-  if (article.pipeline?.tier !== "official") p.push(`主材料层级是 ${article.pipeline?.tier || "未知"}，不是 official`);
-  if (!categories.includes(article.category)) p.push(`栏目 ${article.category} 不在自动合并范围（${categories.join("、")}）`);
+  /* 直接上线模式不等人工核对、不限栏目，但主材料仍必须是官方或一手 */
+  if (!direct && article.verified !== true) p.push("verified 不是 true（初审还没核对完）");
+  const tiers = direct ? ["official", "primary"] : ["official"];
+  if (!tiers.includes(article.pipeline?.tier)) p.push(`主材料层级是 ${article.pipeline?.tier || "未知"}，不是 ${tiers.join(" 或 ")}`);
+  if (!direct && !categories.includes(article.category)) p.push(`栏目 ${article.category} 不在自动合并范围（${categories.join("、")}）`);
   const r = validateArticle(article, { sourceTexts });
   if (r.errors.length) p.push(`校验有 ${r.errors.length} 个必须修改：${r.errors.slice(0, 3).join("；")}`);
   const unarchived = (article.claims || []).filter(c => !sourceTexts[c.source_url]).length;

@@ -148,6 +148,21 @@ test("自动合并（阶段 B）：只合并符合全部条件的新稿", async 
   assert.match(automergeProblems(pr, ok, { categories: ["product"], sourceTexts: {} }).join("；"), /没有存档/);
 });
 
+test("直接上线模式：不等人工核对、不限栏目，但仍要校验通过、官方或一手来源", async () => {
+  const { automergeProblems } = await import("../scripts/ci/automerge-check.mjs");
+  const src = fs.readFileSync(path.join(FX, "pages/source.html"), "utf8");
+  const a = structuredClone(readJson("llm-article.json"));
+  Object.assign(a, { date: "2026-11-18", verified: false, category: "insight", pipeline: { tier: "primary" }, sources: { ...a.sources, main: { url: "https://example.com/blog/orbit-7" } } });
+  a.sections[2].blocks[0].p = "想在自己机器上跑编程 Agent 的团队可以试试。";
+  a.claims = a.claims.filter(c => c.value !== "120ms");
+  const pr = { headRefName: "draft/orbit-7", labels: [{ name: "auto-publish" }], files: [{ path: "content/articles/orbit-7.json" }], fileIsNew: true };
+  const o = { mode: "direct", label: "auto-publish", categories: ["product"], sourceTexts: Object.fromEntries(a.claims.map(c => [c.source_url, src])) };
+  assert.deepEqual(automergeProblems(pr, a, o), []);
+  assert.match(automergeProblems(pr, { ...a, pipeline: { tier: "media" } }, o).join(""), /official 或 primary/);
+  assert.match(automergeProblems({ ...pr, labels: [{ name: "auto-publish" }, { name: "需修改" }] }, a, o).join(""), /需修改/);
+  assert.match(automergeProblems(pr, a, { ...o, sourceTexts: {} }).join(""), /没有存档/);
+});
+
 test("机器人标记不写的候选，定时写稿会跳过", () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "wg-skip-"));
   const env = { ...process.env, WG_DATA: path.join(tmp, "data"), WG_CONTENT: path.join(tmp, "content"), WG_SOURCES: path.join(FX, "sources.test.json"), WG_X_ACCOUNTS: path.join(FX, "x-accounts.test.json") };

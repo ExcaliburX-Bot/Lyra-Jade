@@ -1,5 +1,6 @@
-# 阶段 B：Grok Bot 初审通过并打上 bot-reviewed 标签的稿子，符合条件就自动合并。
-# 默认关闭：仓库变量 WG_AUTOMERGE 设为 on 才生效（见开发指南第 8 节的放权条件）。
+# 自动合并。默认关闭，仓库变量 WG_AUTOMERGE 决定模式：
+#   on     ＝阶段 B：Grok Bot 初审通过、打上 bot-reviewed 的稿子，符合条件才合并
+#   direct ＝直接上线：写稿时校验 0 个必须修改的稿子会被打上 auto-publish，符合条件立即合并发布
 # 安全：用 pull_request_target，跑的是主分支的代码；PR 里的文章只当数据读，不执行 PR 的任何代码。
 name: 自动合并（阶段 B）
 on:
@@ -10,7 +11,7 @@ permissions:
   pull-requests: read
 jobs:
   automerge:
-    if: github.event.label.name == 'bot-reviewed' && vars.WG_AUTOMERGE == 'on'
+    if: (github.event.label.name == 'bot-reviewed' && vars.WG_AUTOMERGE == 'on') || (github.event.label.name == 'auto-publish' && vars.WG_AUTOMERGE == 'direct')
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -27,6 +28,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           WG_AUTOMERGE_CATEGORIES: ${{ vars.WG_AUTOMERGE_CATEGORIES }}
+          WG_AUTOMERGE_MODE: ${{ vars.WG_AUTOMERGE }}
           WG_BASE_REF: ${{ github.event.pull_request.base.ref }}
         run: node scripts/ci/automerge-check.mjs ${{ github.event.pull_request.number }}
       - if: steps.check.outputs.eligible == 'true'
