@@ -33,6 +33,6 @@ jobs:
         run: node scripts/ci/automerge-check.mjs ${{ github.event.pull_request.number }}
       - if: steps.check.outputs.eligible == 'true'
         env:
-          # 你本人的令牌（你是管理员，可以按规则绕过「需要代码负责人批准」）；机器人读不到它
+          # 你本人的令牌（你是管理员，--admin 按规则绕过「需要批准」）；机器人读不到它
           GH_TOKEN: ${{ secrets.WG_MERGE_TOKEN }}
-        run: gh pr merge ${{ github.event.pull_request.number }} --squash --delete-branch --repo ${{ github.repository }}
+        run: gh pr merge ${{ github.event.pull_request.number }} --squash --delete-branch --admin --repo ${{ github.repository }}
