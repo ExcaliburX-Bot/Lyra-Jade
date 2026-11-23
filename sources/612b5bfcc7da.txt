@@ -1,0 +1,7 @@
+URL: https://x.com/perplexitydevs/status/2124937019839443452
+FETCHED: 2026-11-23T23:43:27.336Z
+NOTE: X 帖子原文（含作者自己的整串），由 Grok Bot 在 X 上读取
+
+We've added Agent monitors to the Monitor API.
+
+An Agent monitor accepts a task in plain language, runs the Agent API on a schedule, and sends an alert with sources when the answer changes. https://t.co/hbv3ysdM6l

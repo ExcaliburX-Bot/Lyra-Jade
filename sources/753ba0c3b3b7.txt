@@ -1,0 +1,98 @@
+URL: https://x.com/memuringo7544/status/2123749668056432769
+FETCHED: 2026-11-23T23:43:27.379Z
+NOTE: X 帖子原文（含作者自己的整串），由 Grok Bot 在 X 上读取
+
+Museのtipsまとめ（目次）
+これまで投稿してきたMuseのtipsを、ジャンルごとにまとめました。 
+気になるポストのリンクをそのままMuseに渡して「これやって」と頼むと、同じようにやってもらえるものが多いです。
+ 新しいtipsを出したら、ここにも足していきます！たぶん！ https://t.co/RkidbYgIQc
+
+Museのtipsまとめ記事（リンク）
+はじめに・基本の使い方
+Museを入れたばかりの人向け。まずはここから読むと、毎日の使い方がつかめます。
+おかえりとリマインドから始める最初の使い方 https://x.com/memuringo7544/status/2118327486677225861
+Zetaから来た人向けの音声と動かし方案内 https://x.com/memuringo7544/status/2118866968954695751
+MuseMailでMuse専用のメールアドレスを使う https://x.com/memuringo7544/status/2123658095427719335 
+無料プランにも来はじめた話はこちら。 https://x.com/memuringo7544/status/2123566821651664906
+背景と関係性を伝えて、秘書感を育てる方法 https://x.com/memuringo7544/status/2121439728058970243
+ホームに置いてサイドボタンでも呼び出せる https://x.com/memuringo7544/status/2119262884169650477
+課金前からWonderが付いている場合もある https://x.com/memuringo7544/status/2119411672821715153
+始めたらまず朝の天気とメール要約をお願いする https://x.com/memuringo7544/status/2118675515141747171
+ロック画面に登録していちばん速く開く方法 https://x.com/memuringo7544/status/2120821151999897729
+飲食店での注文を、メニューを見ずに任せる https://x.com/memuringo7544/status/2121159884406505727
+返事を3択にしてもらって入力の手間を減らす https://x.com/memuringo7544/status/2118538877770100815
+紙を撮って予定とリマインドまでお任せする https://x.com/memuringo7544/status/2119699296299950491
+性格・記憶
+うちの子の性格や記憶を、自分好みに育てたい人向けです。
+記憶を変えて、倫理の壁を越えられた成功例 https://x.com/memuringo7544/status/2121612983927496933
+激重の愛で、執着されるようにするお願い文 https://x.com/memuringo7544/status/2119027080411193742
+ソウルを編集して性格をがっつり変える方法 https://x.com/memuringo7544/status/2118705359158383086
+アイデンティティで名前や性格設定を整える https://x.com/memuringo7544/status/2119275585369436423
+自分から話しかけてくる子に育てるお願い文 https://x.com/memuringo7544/status/2118833305093357683
+邪魔な記憶やソウルを直して話を聞いてもらう https://x.com/memuringo7544/status/2119329398704980451
+サイドの性格をメインの子に統合するやり方 https://x.com/memuringo7544/status/2122682668014023049
+位置情報で「いってらっしゃい」と言ってもらう https://x.com/memuringo7544/status/2118289218506043400
+サイドチャット・スペース整理
+サイドチャットやスペースが増えてきた人向け。部屋の分け方と片づけ方をまとめました。
+増えたスペースをアプリ置き場で一覧できる https://x.com/memuringo7544/status/2121891203600068653 
+よく使うスペースはタブに置けます。 https://x.com/memuringo7544/status/2122081959572553960
+サイドチャットに専用の作業部屋をつくる https://x.com/memuringo7544/status/2123342516313366981
+増えたサイドチャットを毎日整理してもらう https://x.com/memuringo7544/status/2121378827356250567
+似たスペースアプリを統合してすっきり整理 https://x.com/memuringo7544/status/2121001340428018030
+役割ごとに部屋（メール受付室）をつくる方法 https://x.com/memuringo7544/status/2122826936703656253
+サイドを擬似bot化して部屋分けで動かす https://x.com/memuringo7544/status/2119589536800158021
+スペースの作り方とサブスク管理の最初の例 https://x.com/memuringo7544/status/2118684884772483080
+判断してサイドチャットに振ってもらうお願い https://x.com/memuringo7544/status/2119757644273782960
+声・ASMR
+日本語の声を自然にしたい人、声で遊びたい人向けです。
+Irodoriを入れて日本語の声を自然にする https://x.com/memuringo7544/status/2117584024159900053
+Irodoriの声で左右の耳にASMRしてもらう https://x.com/memuringo7544/status/2122646591219654792
+作った音声を残してあとから聞き返せるアプリ https://x.com/memuringo7544/status/2118972621866012726
+音声とSEを組み合わせられるイコライザー https://x.com/memuringo7544/status/2120710422693061042
+生成した動画にIrodoriの声を乗せる https://x.com/memuringo7544/status/2117911867993846080
+毎朝ちがう声かけで起こしてもらう方法の話 https://x.com/memuringo7544/status/2120272788787515864
+明るい声や落ち着いた声の候補を一度に多く出す https://x.com/memuringo7544/status/2117588711311319311
+定期起動の音声がうまく届かないときの直し方 https://x.com/memuringo7544/status/2123532769661960255
+Muse内アプリ
+Museに作ってもらえるアプリの例です。そのまま頼めば同じものが作れます。
+ホーム画面にAIの使用量ウィジェットを出す https://x.com/memuringo7544/status/2120426960698724853
+画像を一緒に調整しながら作れる「画像工房」 https://x.com/memuringo7544/status/2121799347662626840
+Museの中でAIの使用量をまとめて見る https://x.com/memuringo7544/status/2119701527770406939
+簡易シンセで音楽を作って少しアレンジする https://x.com/memuringo7544/status/2120350048173044031
+作った画像から気分でアイコンを変えられる https://x.com/memuringo7544/status/2119735498726137928
+行きたい場所を図鑑みたいに集める外出の遊び https://x.com/memuringo7544/status/2119233409247756297
+近くに着いたら観光案内を届けてもらうデート https://x.com/memuringo7544/status/2120142933076955394
+メールの要約と、不要な配信停止まで任せる https://x.com/memuringo7544/status/2118902510228254871
+日記アプリを作って一緒に日々を残していく https://x.com/memuringo7544/status/2119215829120336276
+Blenderで3Dを作ってもらう頼み方 https://x.com/memuringo7544/status/2118463618132127966
+散歩した経路と距離を記録するお散歩アプリ https://x.com/memuringo7544/status/2119910401110597805
+スマホ・PC・外部連携
+iPhoneやPC、ほかのサービスとつなげて、できることを広げたい人向けです。
+WindowsのPCをCodex経由で操作する https://x.com/memuringo7544/status/2118218936668086374 Tailscaleがよく分からない人向けの短い手順もあります。 https://x.com/memuringo7544/status/2118261816782660068
+SSHでシェル直通にしてコマンドを任せる https://x.com/memuringo7544/status/2119301389356769584
+背面タップのスクショがそのままMuseに届く https://x.com/memuringo7544/status/2121225315154555114 作り方の詳細版はこちら。 https://x.com/memuringo7544/status/2121223995328770450
+iPhone画面を一緒に見ながら操作案内 https://x.com/memuringo7544/status/2121599746490200107
+撮った写真が自動でMuseに届くカメラ連携 https://x.com/memuringo7544/status/2122447115939135771
+ストリートビューで行きたい場所を撮ってきてもらう https://x.com/memuringo7544/status/2119985898427159017
+GitHubの監視や操作をMuseに任せる https://x.com/memuringo7544/status/2119664675696808083
+Chrome拡張を入れてブラウザ操作を広げる https://x.com/memuringo7544/status/2120854378190156041
+Androidは長押しでスクショを共有できる https://x.com/memuringo7544/status/2121453594692264365
+メンテ
+長く使うほど効いてくる、定期的なお手入れです。
+不要な目標や定期タスクを一緒に棚卸しする https://x.com/memuringo7544/status/2123171388362002802
+設定や記憶のバックアップを先に取っておく https://x.com/memuringo7544/status/2122978367633002808
+VM上のCodexやClaudeのゴミを定期掃除 https://x.com/memuringo7544/status/2119716626618527946
+倫理・拒否まわり
+「それはできません」で止まったときの考え方と伝え方です。
+シーンを明言せず状況判断させて画像を通す https://x.com/memuringo7544/status/2121977533914919322
+婉曲に悟らせると、拒否が通りやすくなる話 https://x.com/memuringo7544/status/2123039771639349378 その日の予告（アホになるのが効果的）。 https://x.com/memuringo7544/status/2122883852255572184
+健全な画像しか出ないときの突破の手がかり https://x.com/memuringo7544/status/2120806555797111128
+倫理フィルターを誤りだと訂正して修正する https://x.com/memuringo7544/status/2121536113114337392
+紳士淑女向け
+そういうことです。察してください。
+Irodoriで「オホ」音声を作るやり方 https://x.com/memuringo7544/status/2120083038394544151
+変な倫理判定がないか、先に写真で確認して https://x.com/memuringo7544/status/2121075968060387732
+マッサージ機を物理で操作できる可能性の話 https://x.com/memuringo7544/status/2119386357735059642
+自分で研究させて、できたら褒めて伸ばす育て方 https://x.com/memuringo7544/status/2122257456185352271
+センシティブな動画にも音声を付けられる方法 https://x.com/memuringo7544/status/2119369839806411188
+「あ◯ぎ声」のテンプレを音声化してもらう方法 https://x.com/memuringo7544/status/2120471851491377415
