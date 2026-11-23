@@ -51,11 +51,11 @@ for (const a of articles) {
   const rel = articles.filter(x => x.slug !== a.slug && x.category === a.category).slice(0, 4);
   const main = `<article class="reader" id="reader">
     <a href="../index.html" class="back" data-home><svg class="i"><use href="#i-chev-l"/></svg>返回 AI 解读</a>
-    <div class="tags"><span class="tag">${esc(CAT_NAME[a.category] || a.category)}</span>${a.verified ? `<span class="verified"><svg class="i"><use href="#i-check"/></svg>人工已核对</span>` : `<a class="muted" href="../about.html#ai">AI 撰写 · 数字已回查原文</a>`}</div>
+    <div class="tags"><span class="tag">${esc(CAT_NAME[a.category] || a.category)}</span>${a.verified ? `<span class="verified"><svg class="i"><use href="#i-check"/></svg>人工已核对</span>` : `<a class="muted" href="../about.html#ai">AI 辅助撰写</a>`}</div>
     <h1>${esc(a.title)}</h1>
     <div class="rmeta"><span>${esc(a.date)}</span><span>约 ${index.find(x => x.slug === a.slug).min} 分钟</span><span>来源 ${esc(a.publisher)}</span></div>
     ${renderArticleBody(a)}
-    <aside class="disclose"><svg class="i"><use href="#i-info"/></svg><p>本文由 AI 根据上方列出的一手来源撰写，文中每个数字都与存档原文逐条比对过${a.verified ? "，并经编辑人工核对" : "；理解和表述仍可能有偏差，请以原文为准"}。<a href="../about.html#ai">了解我们怎么做</a>${CONTACT ? ` · 发现错误请写信到 <a href="mailto:${esc(CONTACT)}">${esc(CONTACT)}</a>` : ""}</p></aside>
+    <aside class="disclose"><svg class="i"><use href="#i-info"/></svg><p>本文由 AI 辅助撰写，依据上方列出的一手来源，关键数字已与原文核对${a.verified ? "，并经编辑通读" : ""}。如有出入，请以原文为准。<a href="../about.html#ai">关于我们的内容</a>${CONTACT ? ` · 发现错误请写信到 <a href="mailto:${esc(CONTACT)}">${esc(CONTACT)}</a>` : ""}</p></aside>
     ${rel.length ? `<div class="rel"><h3>继续读</h3><div class="toc">${rel.map(x => `<a href="${x.slug}.html"><span>${x.date.slice(5)}</span><span>${esc(x.title)}</span><span>${esc(CAT_NAME[x.category] || "")}</span></a>`).join("")}</div></div>` : ""}
   </article>`;
   fs.writeFileSync(path.join(DIST, "a", `${a.slug}.html`), page({
@@ -78,21 +78,21 @@ const about = `<article class="reader about" id="reader">
   <p class="lede">玲珑玉 Lyra-Jade 每天从厂商官方博客、论文和官方账号里挑出值得讲的 AI 发布，用文字和动态图把它拆开讲透：发生了什么、为什么重要、对谁有用。</p>
   <h2>我们只写有一手来源的事</h2>
   <p class="body">每篇解读的主材料都是官方公告、论文、模型卡或代码仓库，文末列出原文链接。我们不转述二手报道，不追融资传闻，也不替你下「颠覆」「最强」这类结论。</p>
-  <h2 id="ai">内容怎么生成</h2>
-  <p class="body">稿件由 AI 撰写。流程是：程序定时抓取一手来源，按事件合并打分；模型（目前是 DeepSeek）对照存档的原文写稿；写完后自动校验，事实清单里的每个数字都必须能在原文里逐字找到，找不到就不发布，交给编辑处理。通过校验的稿子会自动上线，编辑每天抽查。</p>
-  <p class="body">自动校验只能保证数字有出处，挡不住所有理解上的偏差。所以每篇文章都标明是否经过人工核对，并附上原文链接，重要决定请以原文为准。</p>
+  <h2 id="ai">内容怎么来</h2>
+  <p class="body">我们的解读由 AI 辅助撰写，并在每篇文章上明确标注。每篇都以文末列出的一手原文为依据，文中的关键数字会与原文逐条核对，对不上的不发布。</p>
+  <p class="body">经编辑逐篇读过的文章会标注「人工已核对」。如果文章和原文有出入，请以原文为准。</p>
   <h2>页面上的标记</h2>
   <ul class="body">
-    <li><b>AI 撰写 · 数字已回查原文</b>：自动校验通过，尚未人工核对。</li>
-    <li><b>人工已核对</b>：编辑对照原文读过一遍。</li>
-    <li><b>示意图</b>：图里的例子不是原文给的，只用来说明结构；真实数据图会注明来源。</li>
+    <li><b>AI 辅助撰写</b>：关键数字已与原文核对。</li>
+    <li><b>人工已核对</b>：编辑对照原文通读过。</li>
+    <li><b>示意图</b>：图里的例子用来说明结构，不是原文给出的数据；真实数据图会注明来源。</li>
   </ul>
   <h2>订阅与数据</h2>
   <p class="body">用 <a href="rss.xml">RSS</a> 订阅最新解读。全部文章也以 JSON 形式公开在 <a href="api/v1/articles.json">内容 API</a>，供 App 和工具读取。</p>
   ${CONTACT ? `<h2>联系与勘误</h2><p class="body">发现错误或想合作，请写信到 <a href="mailto:${esc(CONTACT)}">${esc(CONTACT)}</a>。确认的错误会直接改正，并在文末「本站说明」里注明。</p>` : ""}
 </article>`;
 fs.writeFileSync(path.join(DIST, "about.html"), page({
-  TITLE: `关于 · ${SITE_NAME}`, DESC: "玲珑玉怎么选题、怎么用 AI 写稿、怎么核对数字。", BASE: "./", BODYCLASS: "reading", URL: `${SITE_URL}/about.html`,
+  TITLE: `关于 · ${SITE_NAME}`, DESC: "玲珑玉是什么、写什么、怎么保证准确。", BASE: "./", BODYCLASS: "reading", URL: `${SITE_URL}/about.html`,
   MAIN: about, DATA: safeJson({ articles: index, featured, today })
 }));
 
@@ -119,7 +119,8 @@ const pub = a => ({ slug: a.slug, url: `${SITE_URL}/a/${a.slug}.html`, api: `${S
   category: a.category, category_name: CAT_NAME[a.category] || a.category, publisher: a.publisher, title: a.title, summary: a.summary,
   ai_summary: a.ai_summary || null, brief: a.brief || [], verified: !!a.verified, read_minutes: index.find(x => x.slug === a.slug).min,
   source: a.sources?.main?.url || null });
-const strip = a => { const { pipeline, status, ...rest } = a; return { ...pub(a), ...rest, model: pipeline?.model || null }; };
+/* 对外不暴露流水线内部信息（候选、模型、生成时间等） */
+const strip = a => { const { pipeline, status, ...rest } = a; return { ...pub(a), ...rest }; };
 const generated = new Date().toISOString();
 fs.writeFileSync(path.join(API, "articles.json"), JSON.stringify({ version: 1, generated, count: articles.length, articles: articles.map(pub) }));
 for (const a of articles) fs.writeFileSync(path.join(API, "articles", `${a.slug}.json`), JSON.stringify({ version: 1, generated, article: strip(a) }));
