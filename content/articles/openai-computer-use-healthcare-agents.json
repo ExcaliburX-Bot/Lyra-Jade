@@ -1,0 +1,376 @@
+{
+  "slug": "openai-computer-use-healthcare-agents",
+  "category": "product",
+  "date": "2026-11-16",
+  "publisher": "OpenAI",
+  "title": "OpenAI 医疗电脑操作智能体上线：99% 任务评为安全，Luna 单次 8.5 美分",
+  "summary": "医生不用再手动在病历和保险门户之间搬信息：OpenAI 的电脑操作智能体可以直接在现有软件里点击、输入、跨系统完成预授权和转诊。文章公布了安全与成本数据，并开放给机构、开发者和美国临床医生使用。",
+  "ai_summary": "OpenAI 在 2026 年 11 月 16 日公布面向医疗团队的「电脑操作智能体」：能直接点击、输入并在不同软件间切换，替团队完成预授权、转诊等重复流程。关键数字：325 个 EHR 收件箱任务中 99% 被评为安全；646 次医生评估中 93% 选「很有帮助」或「极有帮助」。行政任务上，GPT-6 Astra 在 Stanford 的 HealthAdminBench 拿到 94.3% 评分点，GPT-6 Luna 拿到 91.8%，但 Luna 每次任务成本仅 8.5 美分、便宜 98%（均按最大推理力度）。CVS Health、Cigna 等已投入生产或试点。限制是：这些是评估和基准测试结果，不是真实临床结局，完整定价和更广范围的对照测试原文未给。",
+  "brief": [
+    "临床安全评估覆盖 325 个 EHR 收件箱任务，99% 被判为安全；医生 646 次评估里 93% 选「很有/极有帮助」。",
+    "跑分显示 Luna 更划算：HealthAdminBench 上比 Astra 只低一点，但单任务成本 8.5 美分、便宜 98%。",
+    "CVS Health 的一个智能体一个周末清掉积压数月的文件发送，另一个每天处理数万次咨询的系统步骤。",
+    "今天起可通过 OpenAI API、ChatGPT for Healthcare 和 ChatGPT for Clinicians 使用；美国临床医生可免费注册。"
+  ],
+  "readMinutes": 7,
+  "sections": [
+    {
+      "h": "这是什么：让 AI 直接在软件里点按钮、填表",
+      "blocks": [
+        {
+          "p": "医疗系统里的信息经常是散的：病历在一个系统，保险公司门户在另一个，转诊、预授权、出院安排常常要靠人手工来回搬运。OpenAI 这次公布的「电脑操作智能体」（computer-use agent）就是让 AI 像人一样点击、输入、在应用之间切换，替团队完成这些多步骤流程。"
+        },
+        {
+          "p": "它的重点是「在团队已经在用的软件里干活」，而不是另做一套新系统。OpenAI 表示，这些能力今天已经能通过 OpenAI API、ChatGPT for Healthcare 和 ChatGPT for Clinicians 使用；机构还可以配置审批流程、控制智能体能访问什么，并留下审计日志。"
+        },
+        {
+          "p": "同时公布的还有与 Abridge、Ambience、Cigna Healthcare、CVS Health 等机构的合作，覆盖预授权、转诊、出院计划和两次就诊之间的随访。"
+        }
+      ]
+    },
+    {
+      "h": "一个完整例子：从下背痛消息到 MRI 授权",
+      "blocks": [
+        {
+          "p": "OpenAI 用一份合成患者数据（不是真实患者）演示了完整流程：患者给医生发消息说下背痛；智能体在电子健康记录系统（EHR，医生用来记病历、开检查、收发消息的系统）里查看就诊记录、物理治疗记录和既往影像。"
+        },
+        {
+          "p": "接着它起草三样东西，都留给医生审核：MRI 医嘱、就诊记录、给患者的回复。然后它用同一批记录，在保险公司的门户里准备预授权（prior authorization，做 MRI 等检查前先取得保险公司同意）申请，交给授权专员复核。"
+        },
+        {
+          "fig": {
+            "type": "steps",
+            "title": "从患者消息到 MRI 授权：一个完整的多步骤流程",
+            "subtitle": "示意：OpenAI 基于合成患者数据的演示流程",
+            "note": "环节顺序来自 OpenAI 的描述；这是合成数据演示，不是真实患者。",
+            "steps": [
+              {
+                "name": "患者发消息",
+                "tool": "患者消息入口",
+                "desc": "患者告诉医生自己有下背痛"
+              },
+              {
+                "name": "查阅记录",
+                "tool": "EHR",
+                "desc": "智能体查看就诊记录、物理治疗记录和既往影像"
+              },
+              {
+                "name": "起草并留审",
+                "tool": "EHR",
+                "desc": "起草 MRI 医嘱、就诊记录、给患者的回复，留给医生审核"
+              },
+              {
+                "name": "准备预授权",
+                "tool": "保险公司门户",
+                "desc": "用同一批记录准备预授权申请，交给授权专员复核"
+              },
+              {
+                "name": "专员审核",
+                "tool": "人工复核",
+                "desc": "授权专员复核后再提交"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "安全与帮助程度：99% 判为安全，但这是评估者打分",
+      "blocks": [
+        {
+          "p": "安全是医疗场景里最敏感的一环。OpenAI 用 GPT-6 Astra 在医生收件箱的常见任务上做了评估。这些任务由医生参与设计，既要求模型理解患者的长期病史，也要求它会操作复杂界面；评估者不只看模型做了什么，还看它生成的病历、医嘱和患者消息，判断这些工作在任务背景下是否有帮助、是否临床安全。"
+        },
+        {
+          "p": "「临床安全」的定义是：模型工作中的不准确、遗漏或动作，是否可能合理导致患者伤害。结果上，325 个被评估的任务里 99% 被评为安全。帮助程度方面，医生按五分制打分，646 次评估里有 93% 选了「很有帮助」或「极有帮助」。"
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "安全与帮助程度：评估者打分，不是真实临床结局",
+            "subtitle": "评估者/医生打分（百分比与次数）",
+            "note": "数据为 OpenAI 自述评估：99% 对应 325 个任务，93% 对应 646 次评估。均为打分结果，不是真实临床结局。",
+            "items": [
+              {
+                "value": 99,
+                "unit": "%",
+                "label": "325 个任务被评为安全",
+                "note": "对 EHR 收件箱任务的临床安全评估"
+              },
+              {
+                "value": 325,
+                "unit": "个",
+                "label": "被评估的任务总数",
+                "note": "覆盖医生收件箱常见任务"
+              },
+              {
+                "value": 93,
+                "unit": "%",
+                "label": "医生评「很有/极有帮助」",
+                "note": "五分制下，646 次评估"
+              },
+              {
+                "value": 646,
+                "unit": "次",
+                "label": "医生评估次数",
+                "note": "与 93% 同一批评估"
+              }
+            ]
+          }
+        },
+        {
+          "p": "要说明的是，这两组数字是评估者和医生的打分，不是真实部署后的患者临床结局。它的价值在于给了一个可以复现的衡量口径。"
+        }
+      ]
+    },
+    {
+      "h": "行政任务跑分：Luna 便宜 98%，得分只低一点",
+      "blocks": [
+        {
+          "p": "行政任务也测了，对象包括预授权、申诉、医疗设备订购。基准用的是 Stanford 研究者做的 HealthAdminBench，一个独立衡量常见行政流程表现的测试。"
+        },
+        {
+          "p": "结果：GPT-6 Astra 拿到可用评分点的 94.3%，GPT-6 Luna 拿到 91.8%。但 Luna 每次任务的成本只有 8.5 美分，比 Astra 便宜 98%。两个模型都在最大推理力度（花更多算力思考，通常更慢、更贵）下测试。"
+        },
+        {
+          "fig": {
+            "type": "bars",
+            "title": "行政任务跑分：Luna 便宜得多，得分只差一点",
+            "subtitle": "HealthAdminBench 得分（可用评分点的百分比）",
+            "note": "两者均在最大推理力度下测；Luna 每次任务成本 8.5 美分，比 Astra 便宜 98%。Astra 绝对成本未公布。",
+            "legend": [
+              {
+                "tone": "main",
+                "label": "GPT-6 Astra"
+              },
+              {
+                "tone": "ref",
+                "label": "GPT-6 Luna"
+              }
+            ],
+            "groups": [
+              {
+                "label": "HealthAdminBench 得分",
+                "items": [
+                  {
+                    "label": "GPT-6 Astra",
+                    "value": 94.3,
+                    "tone": "main"
+                  },
+                  {
+                    "label": "GPT-6 Luna",
+                    "value": 91.8,
+                    "tone": "ref"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "p": "这说明对每天跑大量重复流程的机构来说，选择不一定是越贵越好：得分差距很小，成本差距很大。注意 94.3% 和 91.8% 是「评分点」得分，不是真实任务成功率，也不能直接外推到所有行政场景。"
+        }
+      ]
+    },
+    {
+      "h": "合作方在做什么：从清积压到管转诊",
+      "blocks": [
+        {
+          "p": "OpenAI 说合作伙伴「服务于数百个医疗系统、为数亿患者提供照护」。下面几家是已经披露的具体做法："
+        },
+        {
+          "list": [
+            "CVS Health：用电脑操作在多个临床系统间自动完成发送文件、处理转诊、支持专科咨询等步骤，其中不少是 API（应用程序接口，让两个软件直接交换数据）覆盖不到的。一个生产流程里，智能体用一个周末清掉积压数月的文件发送；另一个每天处理数万次咨询的系统步骤。CVS 加了校验和人工监督，用截图和动作记录核对，并把基于 OpenAI Agents SDK 做的 Agent Kit 开源。",
+            "Cigna Healthcare：以前个案经理要翻 10 个以上的临床和行政系统拼信息，现在电脑操作能把相关信息在几秒内汇总，省下找信息的时间。Cigna 说从概念到部署用了不到八周。",
+            "Abridge：在开发住院场景的电脑操作智能体。医生可以让 Abridge Assistant 帮忙解决患者的出院障碍，智能体能同时处理药物获取和居家照护协调，需要临床判断时再把医生叫回来。",
+            "Ambience：重点是让电脑操作「可治理」。演示里，它用病历证据在保险公司网站上准备预授权，遇到记录含糊就停下来问医生，等批准后才提交；机构可以设定它能做哪些动作、随时暂停，并拿到逐步审计日志。",
+            "Assort：解决转诊闭环。Assort 原本能通过 Athena 的 API 把转诊附到患者病历，但最后一步还要在 EHR 界面里手工完成；现在用 Codex 的电脑操作，智能体直接在 Athena 里选转诊医生、填转诊详情、标记「已预约」，转诊就从员工跟进列表里消失。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "数据安全、审批与获取方式（价格）",
+      "blocks": [
+        {
+          "p": "电脑操作智能体能进 EHR 和保险公司门户，权限和审计就比功能更重要。ChatGPT for Healthcare 提供基于角色的访问控制和审计日志；机构还能再加审核/批准步骤，并限制智能体能访问哪些应用、哪些记录。OpenAI 表示，机构数据不会用来训练其基础模型。"
+        },
+        {
+          "p": "涉及受保护健康信息的 HIPAA 合规流程（HIPAA 是美国保护患者健康信息隐私和安全的法律），机构需要用 OpenAI 商业伙伴协议（BAA）覆盖的合格服务，并配置要求的安全和留存选项。"
+        },
+        {
+          "p": "获取方式：医疗机构联系销售团队；现有客户让工作区管理员在 ChatGPT Work 和 Codex 里启用电脑操作；美国临床医生今天起可免费注册 ChatGPT for Clinicians；开发者用 OpenAI API 构建，并参考电脑操作指南。"
+        },
+        {
+          "p": "价格方面，原文只给了 Luna 行政任务每次 8.5 美分、比 Astra 便宜 98% 这一个具体数字。Astra 的绝对成本、API 的完整计费标准都没有公布，所以 8.5 美分只能当作 Luna 在行政基准任务上的成本参照。"
+        }
+      ]
+    },
+    {
+      "h": "官方还没说的",
+      "blocks": [
+        {
+          "list": [
+            "完整定价：API 计费标准、Astra 的单任务成本都没给，只有 Luna 的 8.5 美分。",
+            "99% 安全、93% 有帮助背后的评估细节：多少位评估者/医生、如何抽样，原文没有展开。",
+            "这些是评估和基准得分，不是真实临床结局（如授权通过率、患者等待时间有没有真的缩短）。",
+            "Cigna「10 个以上系统」具体是几个、汇总后具体省了多少时间，原文只写了「几秒」和「不到八周」。",
+            "各合作方试点的规模、上线节奏和覆盖地区没有统一说明。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "适合谁",
+      "blocks": [
+        {
+          "p": "价值很直接：把搬信息、填表、跨系统追流程的时间省下来，让团队把精力放回患者。代价也很清楚：医疗场景里不能直接「放手」，需要评估、人工审核、审计日志和 HIPAA 合规配置。"
+        },
+        {
+          "p": "如果你在医疗机构负责运营或信息化，最现实的起点是先找一两个高频、低风险的行政流程（如预授权、转诊闭环）试点，而不是一上来就做临床决策。如果你是开发者，可以先用 OpenAI API 和电脑操作指南做小范围验证。如果你是美国临床医生，可以先免费注册 ChatGPT for Clinicians 体验，但要把生成的内容当草稿、自己复核。"
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Advancing computer-use agents for healthcare teams",
+      "publisher": "OpenAI",
+      "date": "2026-11-16",
+      "url": "https://openai.com/index/advancing-computer-use-for-healthcare-teams"
+    },
+    "more": [],
+    "note": "图中 MRI 授权流程为 OpenAI 基于合成患者数据给出的示例，任务名与环节为示意；安全/帮助程度与跑分数字来自 OpenAI 自述评估和 Stanford HealthAdminBench 基准口径。"
+  },
+  "claims": [
+    {
+      "text": "OpenAI 在 2026 年 11 月 16 日公布医疗电脑操作智能体进展",
+      "value": "November 16, 2026",
+      "source_url": "https://openai.com/index/advancing-computer-use-for-healthcare-teams",
+      "as_written": "2026 年 11 月 16 日",
+      "quote": "November 16, 2026"
+    },
+    {
+      "text": "325 个被评估任务中，99% 被评为安全",
+      "value": "99%",
+      "source_url": "https://openai.com/index/advancing-computer-use-for-healthcare-teams",
+      "as_written": "99%",
+      "quote": "Overall, 99% of 325 reviewed tasks were rated safe."
+    },
+    {
+      "text": "临床安全评估共覆盖 325 个任务",
+      "value": "325",
+      "source_url": "https://openai.com/index/advancing-computer-use-for-healthcare-teams",
+      "as_written": "325 个",
+      "quote": "Overall, 99% of 325 reviewed tasks were rated safe."
+    },
+    {
+      "text": "医生按五分制打分，646 次评估中 93% 为「很有帮助」或「极有帮助」",
+      "value": "93%",
+      "source_url": "https://openai.com/index/advancing-computer-use-for-healthcare-teams",
+      "as_written": "93%",
+      "quote": "Physicians rated helpfulness on a five-point scale, selecting “very helpful” or “extremely helpful” in 93% of 646 assessments."
+    },
+    {
+      "text": "医生帮助程度评估共 646 次",
+      "value": "646",
+      "source_url": "https://openai.com/index/advancing-computer-use-for-healthcare-teams",
+      "as_written": "646 次",
+      "quote": "Physicians rated helpfulness on a five-point scale, selecting “very helpful” or “extremely helpful” in 93% of 646 assessments."
+    },
+    {
+      "text": "医生打分采用五分制",
+      "value": "five-point",
+      "source_url": "https://openai.com/index/advancing-computer-use-for-healthcare-teams",
+      "as_written": "五分制",
+      "quote": "Physicians rated helpfulness on a five-point scale, selecting “very helpful” or “extremely helpful” in 93% of 646 assessments."
+    },
+    {
+      "text": "HealthAdminBench 上 GPT-6 Astra 拿到 94.3% 的可用评分点",
+      "value": "94.3%",
+      "source_url": "https://openai.com/index/advancing-computer-use-for-healthcare-teams",
+      "as_written": "94.3%",
+      "quote": "GPT-6 Astra earned 94.3% of available rubric points, while GPT-6 Luna earned 91.8%, despite costing 98% less at 8.5 cents per task."
+    },
+    {
+      "text": "HealthAdminBench 上 GPT-6 Luna 拿到 91.8% 的可用评分点",
+      "value": "91.8%",
+      "source_url": "https://openai.com/index/advancing-computer-use-for-healthcare-teams",
+      "as_written": "91.8%",
+      "quote": "GPT-6 Astra earned 94.3% of available rubric points, while GPT-6 Luna earned 91.8%, despite costing 98% less at 8.5 cents per task."
+    },
+    {
+      "text": "GPT-6 Luna 每次任务成本 8.5 美分",
+      "value": "8.5 cents",
+      "source_url": "https://openai.com/index/advancing-computer-use-for-healthcare-teams",
+      "as_written": "8.5 美分",
+      "quote": "GPT-6 Astra earned 94.3% of available rubric points, while GPT-6 Luna earned 91.8%, despite costing 98% less at 8.5 cents per task."
+    },
+    {
+      "text": "GPT-6 Luna 比 Astra 便宜 98%",
+      "value": "98%",
+      "source_url": "https://openai.com/index/advancing-computer-use-for-healthcare-teams",
+      "as_written": "便宜 98%",
+      "quote": "GPT-6 Astra earned 94.3% of available rubric points, while GPT-6 Luna earned 91.8%, despite costing 98% less at 8.5 cents per task."
+    },
+    {
+      "text": "Cigna 个案经理以前要翻 10 个以上的独立临床和行政系统",
+      "value": "10",
+      "source_url": "https://openai.com/index/advancing-computer-use-for-healthcare-teams",
+      "as_written": "10 个以上",
+      "quote": "Previously, Cigna Healthcare case managers had to navigate more than 10 separate clinical and administrative systems to gather this context."
+    },
+    {
+      "text": "Cigna 从概念到部署用了不到八周",
+      "value": "eight weeks",
+      "source_url": "https://openai.com/index/advancing-computer-use-for-healthcare-teams",
+      "as_written": "不到 8 周",
+      "quote": "Moving from concept to deployment in under eight weeks"
+    },
+    {
+      "text": "电脑操作可在几秒内把 Cigna 相关信息汇总起来",
+      "value": "seconds",
+      "source_url": "https://openai.com/index/advancing-computer-use-for-healthcare-teams",
+      "as_written": "几秒",
+      "quote": "Computer use can now help navigate these systems and bring relevant information together in seconds"
+    },
+    {
+      "text": "CVS 一个生产流程里，智能体用一个周末清掉积压数月的文件发送",
+      "value": "a weekend",
+      "source_url": "https://openai.com/index/advancing-computer-use-for-healthcare-teams",
+      "as_written": "一个周末",
+      "quote": "In one production workflow, an agent cleared a months-long document-sending backlog over a weekend."
+    },
+    {
+      "text": "CVS 另一个智能体每天处理数万次咨询的系统步骤",
+      "value": "tens of thousands",
+      "source_url": "https://openai.com/index/advancing-computer-use-for-healthcare-teams",
+      "as_written": "每天数万次",
+      "quote": "Another handles the system steps for tens of thousands of consults each day"
+    },
+    {
+      "text": "合作伙伴服务于数百个医疗系统",
+      "value": "hundreds",
+      "source_url": "https://openai.com/index/advancing-computer-use-for-healthcare-teams",
+      "as_written": "数百个",
+      "quote": "Our partners build software used in hundreds of health systems, coordinate care for members globally, and deliver care to hundreds of millions of patients."
+    },
+    {
+      "text": "合作伙伴为数亿患者提供照护",
+      "value": "hundreds of millions",
+      "source_url": "https://openai.com/index/advancing-computer-use-for-healthcare-teams",
+      "as_written": "数亿",
+      "quote": "Our partners build software used in hundreds of health systems, coordinate care for members globally, and deliver care to hundreds of millions of patients."
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "origin": "auto",
+    "candidate": "b0ded74e06",
+    "tier": "official",
+    "via": null,
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "generated_at": "2026-11-23T22:11:14.492Z"
+  }
+}
