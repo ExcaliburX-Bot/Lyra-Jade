@@ -1,0 +1,242 @@
+{
+  "slug": "genie-4-now-available",
+  "date": "2026-11-18",
+  "category": "product",
+  "publisher": "Google DeepMind",
+  "title": "Google 发布 Genie 4：边逛边用一句话改世界、配原生声音，Ultra 订阅用户即日可玩",
+  "summary": "想在浏览器里一边逛自己生成的世界、一边用一句话改天气、加角色，还能听见随场景变化的声音？Google DeepMind 把 Project Genie 升级到了 Genie 4，Google AI Ultra 订阅用户从 11 月 18 日起就能体验。",
+  "ai_summary": "11 月 18 日，Google DeepMind 向 Google AI Ultra 订阅者推出新版 Project Genie，核心是 Genie 4 世界模型。你能在浏览器里一边探索生成的世界，一边用自然语言实时改天气、加角色，还首次配上随场景变化的原生声音。Genie 3 同步升级：单次生成最长可探索 3 分钟（此前 60 秒），支持 360 度全景图片作起点。新增的 Project Genie 智能体能靠对话搭复杂环境。它最适合想快速把想法变成可玩世界的创作者；但两个模型仍属前沿研究，官方还在处理镜头延迟、音频和场景一致性等问题，Google AI Pro 用户需加入候补名单。",
+  "brief": [
+    "Genie 4 支持边逛边用文字实时改天气、加角色、调整剧情，并首次配上随场景变化的原生声音。",
+    "Genie 3 单次生成上限从 60 秒提到 3 分钟，还能把多个世界串联成更长旅程。",
+    "新的 Project Genie 智能体靠自然语言对话就能搭出环境，并配上氛围配乐。",
+    "作品可发布到社区画廊供人探索和再创作，所有生成视频和音频都带 SynthID 水印。"
+  ],
+  "readMinutes": 6,
+  "sections": [
+    {
+      "h": "Genie 4 是什么？",
+      "blocks": [
+        {
+          "p": "Project Genie 是 Google 今年早些时候推出的实验性研究原型，用来生成和探索可互动的数字世界。11 月 18 日，Google DeepMind 把它升级成面向 Google AI Ultra 订阅用户的新体验，主角是新模型 Genie 4，同时还有升级后的 Genie 3、Project Genie 智能体和一个社区画廊。"
+        },
+        {
+          "p": "简单说，世界模型（world model）是能理解并生成一个可探索环境、而不只是输出一张图的模型。Project Genie 把 Google 的世界模型和 Gemini 模型组合在一起，让用户在浏览器里直接生成、走进并改造这些世界。"
+        }
+      ]
+    },
+    {
+      "h": "Genie 4 新在哪？边逛边改，还带声音",
+      "blocks": [
+        {
+          "p": "过去用 Project Genie 更像是「先生成一个世界，再进去逛」。Genie 4 改成「边逛边改」：你在世界里探索时可以直接输入新的提示词，实时改变环境，比如换天气、加一个角色、让剧情转向。"
+        },
+        {
+          "p": "更重要的是声音。Genie 4 首次给画面配上实时原生音频，会随场景变化，从环境音到角色对话都有。官方强调这是第一次：之前的世界生成基本只有画面。"
+        },
+        {
+          "p": "官方把 Genie 4 称为「目前最真实、最可交互的世界模型」。需要说明，这是厂商自己的定位，不是第三方评测的结论。"
+        }
+      ]
+    },
+    {
+      "h": "Genie 3 升级了什么？更长、能看全景、能串联",
+      "blocks": [
+        {
+          "p": "Genie 4 负责最高画质、物理效果和原生声音；Genie 3 继续留在模型选择器（model picker）里，适合想要更长探索或从全景照片起步的用户。"
+        },
+        {
+          "list": [
+            "单次生成最长可探索 3 分钟，此前是 60 秒。",
+            "可以把多个世界连起来，组成更长的旅程。",
+            "用一张 360 度全景照片就能「种」出一个新世界。",
+            "边逛边用自然语言动态改变环境。"
+          ]
+        },
+        {
+          "p": "官方演示把这几样串在一起：一路飞过森林、水下遗迹和冰海，边飞边让场景变化，甚至召唤一条龙来骑。"
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "Genie 3 这次升级的关键数字",
+            "subtitle": "数值单位：分钟、秒、度（按条目标注）",
+            "note": "数据来自 Google DeepMind 官方博客",
+            "items": [
+              {
+                "value": 3,
+                "unit": "分钟",
+                "label": "单次生成最长探索",
+                "note": "从 60 秒提升"
+              },
+              {
+                "value": 60,
+                "unit": "秒",
+                "label": "此前单次上限",
+                "note": "本次更新前的时长"
+              },
+              {
+                "value": 360,
+                "unit": "° 全景",
+                "label": "可作世界起点",
+                "note": "用 360 度全景照片生成新世界"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "Project Genie 智能体：对话就能搭世界",
+      "blocks": [
+        {
+          "p": "以前生成世界要依赖单条文字或图片提示词。新的 Project Genie 智能体进一步降低门槛：你用自然语言描述想法，它就会调度 Google 的一套多模态模型，先做出世界的基础视觉、定下风格，再配上契合氛围的原创配乐。"
+        },
+        {
+          "p": "探索时还能把 Gemini 模型带进会话：它会观察屏幕上发生的事，弹出带上下文的建议，或者在剧情推进时自动触发世界内事件。"
+        },
+        {
+          "p": "这里的「多模态模型」指能同时处理文字、图片等多种输入输出的模型。官方展示的例子包括：把山坡咖啡馆改成沙漠里的玻璃亭，以及在外太空漫步时召唤一艘外星飞船出现。"
+        },
+        {
+          "fig": {
+            "type": "steps",
+            "title": "从一句话到可分享的世界",
+            "subtitle": "按官方描述的功能流程整理（示意）",
+            "note": "顺序依据官方博客的发布内容整理，步骤名称是功能描述，不是官方界面文案",
+            "steps": [
+              {
+                "name": "描述想法",
+                "tool": "自然语言",
+                "desc": "告诉 Project Genie 智能体你想要的世界"
+              },
+              {
+                "name": "生成初始世界",
+                "tool": "Project Genie agent + 多模态模型",
+                "desc": "产出视觉风格和氛围配乐"
+              },
+              {
+                "name": "边逛边改",
+                "tool": "Genie 4 / Genie 3",
+                "desc": "实时改天气、加角色、配原生声音"
+              },
+              {
+                "name": "发布画廊",
+                "tool": "社区画廊",
+                "desc": "别人可探索和再创作"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "社区画廊：能玩什么、怎么分享",
+      "blocks": [
+        {
+          "p": "画廊里既有人工挑选的精选世界，也有社区作品。官方举了几个例子：「Living Memory」把个人照片变成可探索空间；「Dino Field Guide」用 360 度全景图做史前栖息地；「Rock Paper Scissors」让 Gemini 当实时裁判，把桌面物品变成一场石头剪刀布。"
+        },
+        {
+          "p": "还有和创作者合作的作品：「Villa Giallo」与创意技术人 Will aka BLVCKL!GHT 合作，把哥特庄园做成逐房间解谜；「The Life of Ants」与电影人 Anand Gandhi 合作，用 Genie 4 的照片级真实感让你从蚂蚁视角探索蚁群。"
+        },
+        {
+          "p": "你不仅能玩，还能改：用 Project Genie 智能体对现成世界做「再创作」，调整底层结构、配乐或规则，再发布到社区画廊，让别人继续探索和再创作。"
+        }
+      ]
+    },
+    {
+      "h": "安全和已知限制",
+      "blocks": [
+        {
+          "p": "Google 说，所有在 Project Genie 里生成的视频和音频都带 SynthID 水印，所有模型输入输出都会经过安全筛查。SynthID 是 Google 用来标记 AI 生成内容的水印技术。"
+        },
+        {
+          "p": "官方同时承认，Genie 3 和 Genie 4 仍是前沿研究阶段的世界模型，正在处理的难题包括：镜头延迟、复杂的物理交互、实时音频精度，以及长期场景一致性（场景里的东西能不能长时间保持稳定）。更细的模型限制可以看官方给出的 Genie 4 模型研究概述。"
+        }
+      ]
+    },
+    {
+      "h": "官方还没说的",
+      "blocks": [
+        {
+          "list": [
+            "订阅价格：只说有 Google AI Ultra 和 Pro 两个层级，具体费用没写。",
+            "哪些地区、哪些账号算「符合条件」的 Ultra 订阅用户，没写。",
+            "Google AI Pro 用户什么时候能从候补名单转正，没写。",
+            "Genie 4 自己的单次会话时长、分辨率、帧率，没写；官方只给了 Genie 3 的 3 分钟上限。",
+            "同一天提到的「Genie 4 上 Gemini API」的细节，本文没有展开。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "适合谁",
+      "blocks": [
+        {
+          "p": "这次更新的最大价值，是把「生成一个世界」变成「持续改造一个世界」，并且能分享、能再创作。对想快速把想法做成可玩空间的创作者、做前期概念设计的人、做教学演示的人，会比较有吸引力。"
+        },
+        {
+          "p": "代价是：目前需要 Google AI Ultra 订阅；模型仍是研究原型，有上面列出的已知限制；Pro 用户还得排队。"
+        },
+        {
+          "list": [
+            "如果你是 Google AI Ultra 订阅用户：现在就可以去 Project Genie 网站试。",
+            "如果你是 Google AI Pro 用户：去同一页面加入候补名单。",
+            "如果你想把它当稳定生产工具：建议先当研究预览来试，别急着用在正式项目里。"
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Genie 4 is now available",
+      "publisher": "Google DeepMind",
+      "date": "2026-11-18",
+      "url": "https://deepmind.google/blog/genie-4-is-now-available/"
+    },
+    "more": [],
+    "note": "正文与图内的数字均来自 Google DeepMind 官方博客《Genie 4 is now available》；文中两张图均为按官方内容整理或示意，不是官方图表。"
+  },
+  "claims": [
+    {
+      "text": "Genie 4 于 11 月 18 日开始向符合条件的 Google AI Ultra 订阅用户推出",
+      "value": "Nov 18, 2026",
+      "source_url": "https://deepmind.google/blog/genie-4-is-now-available/",
+      "as_written": "11 月 18 日",
+      "quote": "Nov 18, 2026"
+    },
+    {
+      "text": "Genie 3 单次生成最长可探索 3 分钟",
+      "value": "3 minutes",
+      "source_url": "https://deepmind.google/blog/genie-4-is-now-available/",
+      "as_written": "3 分钟",
+      "quote": "Explore for up to 3 minutes per generation (up from 60 seconds)"
+    },
+    {
+      "text": "此前 Genie 3 单次生成上限为 60 秒",
+      "value": "60 seconds",
+      "source_url": "https://deepmind.google/blog/genie-4-is-now-available/",
+      "as_written": "60 秒",
+      "quote": "Explore for up to 3 minutes per generation (up from 60 seconds)"
+    },
+    {
+      "text": "Genie 3 支持用 360 度全景图片作世界起点",
+      "value": "360-degree",
+      "source_url": "https://deepmind.google/blog/genie-4-is-now-available/",
+      "as_written": "360 度",
+      "quote": "Seed new worlds from 360-degree panorama images."
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "origin": "auto",
+    "candidate": "50e3ea47cb",
+    "tier": "official",
+    "via": null,
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "generated_at": "2026-11-21T07:16:24.006Z"
+  }
+}
