@@ -28,6 +28,8 @@ jobs:
       - run: node scripts/build.mjs
         env:
           WG_SITE_URL: ${{ vars.WG_SITE_URL }}
+          WG_CF_ANALYTICS: ${{ vars.WG_CF_ANALYTICS }}     # Cloudflare Web Analytics 站点令牌，可不配
+          WG_CONTACT_EMAIL: ${{ vars.WG_CONTACT_EMAIL }}   # 关于页和文末显示的勘误邮箱，可不配
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

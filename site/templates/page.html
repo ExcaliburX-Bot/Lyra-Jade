@@ -5,15 +5,28 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{TITLE}}</title>
 <meta name="description" content="{{DESC}}">
+<link rel="canonical" href="{{URL}}">
+<meta property="og:site_name" content="玲珑玉 Lyra-Jade">
+<meta property="og:type" content="{{OGTYPE}}">
+<meta property="og:url" content="{{URL}}">
 <meta property="og:title" content="{{TITLE}}">
 <meta property="og:description" content="{{DESC}}">
+<meta property="og:image" content="{{OGIMAGE}}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{TITLE}}">
+<meta name="twitter:description" content="{{DESC}}">
+<meta name="twitter:image" content="{{OGIMAGE}}">
+<meta name="theme-color" content="#19191c">
 <link rel="alternate" type="application/rss+xml" title="玲珑玉 Lyra-Jade" href="{{BASE}}rss.xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{BASE}}assets/site.css">
 <script>(function(){try{var m=JSON.parse(localStorage.getItem("wg-prefs")||"{}").theme||"dark";if(m==="light"||(m==="system"&&!matchMedia("(prefers-color-scheme: dark)").matches))document.documentElement.classList.remove("dark")}catch(e){}})()</script>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Ccircle cx=%2216%22 cy=%2216%22 r=%2210%22 fill=%22%23f5b301%22/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%228%22 fill=%22%23f2638b%22/%3E%3Ctext x=%2216%22 y=%2223%22 font-size=%2219%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22sans-serif%22 font-weight=%22700%22%3E%E7%8E%89%3C/text%3E%3C/svg%3E">
+{{ANALYTICS}}
 </head>
 <body class="{{BODYCLASS}}">
 
@@ -26,8 +39,8 @@
   <button class="side-search" data-open-search><svg class="i"><use href="#i-search"/></svg><span data-t="searchOrAsk"></span><kbd>⌘K</kbd></button>
   <nav class="side-nav" id="sideNav"></nav>
   <div class="side-foot">
-    <button class="btn btn-light btn-block" data-open-login><svg class="i"><use href="#i-user"/></svg><span data-t="loginSignup"></span></button>
-    <p data-t="syncHint"></p>
+    <a class="btn btn-light btn-block" href="{{BASE}}rss.xml"><svg class="i"><use href="#i-rss"/></svg><span>RSS 订阅</span></a>
+    <p>新解读发布后自动推送到你的阅读器</p>
   </div>
 </aside>
 <div class="side-scrim" id="sideScrim"></div>
@@ -39,7 +52,6 @@
     <a href="{{BASE}}index.html" data-home class="hide-sm">玲珑玉</a><span class="hide-sm">/</span><b data-t="navJiedu"></b>
   </div>
   <button class="icon-btn" data-open-search aria-label="搜索"><svg class="i"><use href="#i-search"/></svg></button>
-  <a class="top-link hide-sm" href="#" data-todo><span class="v">v1</span><span data-t="changelog"></span></a>
   <div class="theme-wrap">
     <button class="icon-btn" id="themeBtn" aria-label="深浅色"><svg class="i"><use href="#i-contrast"/></svg></button>
     <div class="menu" id="themeMenu">
@@ -49,12 +61,8 @@
       <div class="note" data-t="themeNote"></div>
     </div>
   </div>
-  <div class="lang" role="group" aria-label="Language">
-    <button data-lang="zh">中</button><button data-lang="en">EN</button><button data-lang="ja">日</button>
-  </div>
-  <button class="top-link hide-sm" data-open-login data-t="login"></button>
-  <a class="top-link rose hide-sm" href="#" data-todo data-t="member"></a>
-  <button class="btn btn-light" data-subscribe data-t="subscribe"></button>
+  <a class="top-link hide-sm" href="{{BASE}}about.html">关于</a>
+  <a class="btn btn-light" href="{{BASE}}rss.xml"><svg class="i"><use href="#i-rss"/></svg><span>RSS 订阅</span></a>
 </header>
 
 <main>
@@ -68,33 +76,13 @@
     </div>
     <div class="wrap foot-bar">
       <span>© 2026 玲珑玉 Lyra-Jade · <span data-t="footMotto"></span></span>
-      <nav><a href="#" data-todo data-t="member"></a><a href="#" data-subscribe data-t="subscribe"></a><a href="#" data-open-search data-t="search"></a><a href="#" data-todo data-t="submit"></a><a href="#" data-todo>RSS</a><a href="#" data-todo data-t="podFeed"></a></nav>
+      <nav><a href="{{BASE}}about.html">关于本站</a><a href="{{BASE}}about.html#ai">AI 生成说明</a><a href="#" data-open-search data-t="search"></a><a href="{{BASE}}rss.xml">RSS</a><a href="{{BASE}}api/v1/articles.json">内容 API</a></nav>
     </div>
   </footer>
 </main>
 
 <button class="totop" id="toTop" aria-label="回到顶部"><svg class="i"><use href="#i-up"/></svg></button>
 <div class="toast" id="toast"></div>
-
-<!-- ============ 登录弹窗 ============ -->
-<div class="scrim" id="loginScrim">
-  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
-    <button class="icon-btn x" data-close aria-label="关闭"><svg class="i"><use href="#i-x"/></svg></button>
-    <div class="over">ACCOUNT</div>
-    <h3 id="loginTitle" data-t="login"></h3>
-    <div class="tabs"><button class="on" data-tab="in" data-t="login"></button><button data-tab="up" data-t="signupFree"></button></div>
-    <button class="btn btn-rose" data-fake><svg class="i"><use href="#i-google"/></svg><span data-t="google"></span></button>
-    <div class="or" data-t="orEmail"></div>
-    <form id="loginForm">
-      <input class="field" type="email" required data-ph="emailPh">
-      <input class="field" type="password" id="pwd" data-ph="pwdPh">
-      <button class="btn btn-ghost" type="submit" id="loginSubmit" data-t="login"></button>
-      <button class="btn btn-ghost" type="button" data-fake data-t="magic"></button>
-    </form>
-    <div class="tip" id="loginTip"></div>
-    <div class="dlinks"><a href="#" data-tabto="up" data-t="noAccount"></a><a href="#" data-fake data-t="redeem"></a></div>
-  </div>
-</div>
 
 <!-- ============ 搜索弹窗 ============ -->
 <div class="scrim" id="searchScrim">
@@ -131,6 +119,9 @@
   <symbol id="i-chev-r" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
   <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></symbol>
   <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-rss" viewBox="0 0 24 24"><path d="M5 11a8 8 0 0 1 8 8M5 5a14 14 0 0 1 14 14"/><circle cx="6" cy="18" r="1.5"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></symbol>
+  <symbol id="i-code" viewBox="0 0 24 24"><path d="m8 7-5 5 5 5M16 7l5 5-5 5"/></symbol>
   <symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z"/></symbol>
   <symbol id="i-google" viewBox="0 0 24 24"><path d="M21 12.2c0-.7-.1-1.3-.2-1.9H12v3.6h5a4.3 4.3 0 0 1-1.9 2.8v2.3h3A9 9 0 0 0 21 12.2Z"/><path d="M12 21a8.9 8.9 0 0 0 6.1-2.2l-3-2.3a5.6 5.6 0 0 1-8.3-2.9H3.7v2.4A9 9 0 0 0 12 21Z"/><path d="M6.8 13.6a5.4 5.4 0 0 1 0-3.4V7.8H3.7a9 9 0 0 0 0 8.2Z"/><path d="M12 6.6c1.4 0 2.6.5 3.6 1.4l2.7-2.7A9 9 0 0 0 3.7 7.8l3.1 2.4A5.4 5.4 0 0 1 12 6.6Z"/></symbol>
 </svg>

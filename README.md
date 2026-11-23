@@ -24,7 +24,7 @@ AI 资讯解读站：自动从一手来源抓取 → 合并打分 → AI 写稿�
 
 ```bash
 npm run demo        # 用样例订阅和模拟模型把整条流水线跑一遍
-npm test            # 30 个测试：解析、合并、打分、X 监测、收件箱、校验、自动合并规则、端到端
+npm test            # 31 个测试：解析、合并、打分、X 监测、收件箱、校验、自动合并规则、端到端
 npm run dev         # 构建并在 http://localhost:4321 预览
 ```
 
@@ -47,6 +47,8 @@ npm run dev         # 构建并在 http://localhost:4321 预览
    | 名字 | 默认 | 作用 |
    | --- | --- | --- |
    | `WG_SITE_URL` | 无，必填 | 网站地址，如 `https://<用户名>.github.io/<仓库名>` |
+   | `WG_CF_ANALYTICS` | 无 | Cloudflare Web Analytics 的站点令牌，配了才加访问统计（免费，不用 Cookie） |
+   | `WG_CONTACT_EMAIL` | 无 | 勘误和合作邮箱，显示在关于页和每篇文末 |
    | `WG_DRAFT_TOP` | `1` | 每次定时写稿写几篇；每天 4 次，默认即每天最多 4 篇 |
    | `WG_REVIEWER` | 仓库主人 | 新稿子自动请谁审核（GitHub 会发邮件和手机推送），多人用逗号分隔 |
    | `WG_PROVIDER` | `xai` | 写稿用哪家：`xai`（Grok）、`deepseek` 或 `anthropic`（Claude）；手动运行「写稿」时也可以临时选 |
@@ -100,7 +102,7 @@ npm run dev         # 构建并在 http://localhost:4321 预览
 | `scripts/x-watch.mjs` | X 监测（Grok X 搜索），只收真实引用过的帖子 |
 | `scripts/draft.mjs` | 回溯并存档原文、调用模型写稿、校验、写审核报告 |
 | `scripts/validate.mjs` | 校验文章：每个数字回查原文、图形字段完整、夸张词提醒 |
-| `scripts/build.mjs` | 生成首页、文章页、RSS |
+| `scripts/build.mjs` | 生成首页、文章页、关于页、RSS、sitemap，以及只读内容 API（`api/v1/`，App 直接读） |
 | `scripts/bot.mjs` | 机器人工具：状态、收件箱、试抓源、跳过候选、周报 |
 | `scripts/open-prs.sh` | 每篇新稿开一个 PR |
 | `scripts/ci/` | data 分支的检出与提交、自动合并检查 |

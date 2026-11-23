@@ -7,11 +7,11 @@ const SITE = { brand: "玲珑玉 Lyra-Jade", today: "2026-11-18", pageSize: 30 }
    2. 多语言文案
    ========================================================= */
 const I18N = {
-  zh:{searchOrAsk:"搜索，或问 AI 助手",loginSignup:"登录 / 免费注册",syncHint:"收藏、阅读进度跨设备同步",navJiedu:"AI 解读",changelog:"进化日志",
+  zh:{searchOrAsk:"搜索解读",loginSignup:"登录 / 免费注册",syncHint:"收藏、阅读进度跨设备同步",navJiedu:"AI 解读",changelog:"进化日志",
     themeSystem:"跟随系统",themeLight:"浅色",themeDark:"深色",themeNote:"文章页另有阅读主题，在文章右下角 Aa 里切换",sysNow:"现在是{x}",
     login:"登录",member:"会员",subscribe:"订阅",search:"搜索",submit:"投稿",podFeed:"播客订阅源",
     eyebrow:"AI 信息侦查员 · 每日更新",h1a:"AI 精华，",h1b:"讲到你懂。",
-    stats:"已核对来源 · 讲透不注水 · 中英日同步更新 · 解读 <b>{a}</b> 篇，实操库 <b>{b}</b> 篇",
+    stats:"只用一手来源 · 每个数字回查原文 · 讲透不注水 · 已解读 <b>{n}</b> 篇",
     qPh:"搜标题或标签，比如「语音」「Agent」",all:"全部",byTime:"按时间",byLane:"按栏目",
     featured:"今日精选",readFull:"读全文",min:"{n} 分钟",verified:"已核对",
     countLine:"最新解读 · 共 <b>{n}</b> 篇，按发布时间排",countFiltered:"「{c}」· 共 <b>{n}</b> 篇",countSearch:"搜索「{q}」· 找到 <b>{n}</b> 篇",
@@ -20,13 +20,13 @@ const I18N = {
     loadMore:"加载更多",noMore:"已经到底了",empty:"没有找到相关解读，换个关键词试试",
     lanePieces:"{n} 篇",seeAll:"看全部",archive:"全部 {n} 篇目录 · 按月份",ym:"{y} 年 {m} 月",
     pod:"播客",
-    grpDaily:"每天更新",grpLearn:"学与做",grpCoop:"找我们合作",
+    grpDaily:"每天更新",grpLearn:"关于",grpCoop:"开发者",nRss:"RSS 订阅",nHow:"AI 生成说明",nApi:"内容 API",
     nToday:"今天",nMember:"会员计划",nBrief:"我的日报",nWeekly:"周报",nTopics:"专题",nPodcast:"播客",nTut:"教程与课程",nIdeas:"灵感库",nStudio:"我们出品",nAbout:"关于我们",tagMember:"会员",tagNew:"新",
-    subTitle:"别靠刷到。",subText:"订阅解读日报，每晚一封，当天的新解读都在里面。",subBtn:"免费订阅",
+    subTitle:"别靠刷到。",subText:"用 RSS 订阅，新解读一发布就送到你的阅读器。",subBtn:"RSS 订阅",
     footTag:"每天替你读完全球 AI，再陪你把它用起来。",footMotto:"保持好奇，继续创造",
     signupFree:"注册（免费）",google:"用 Google 账号登录",orEmail:"或用邮箱",emailPh:"你的邮箱",pwdPh:"密码",magic:"邮箱收登录链接",noAccount:"没有账号？免费注册 →",redeem:"有激活码？直接兑换会员 →",signup:"注册",
     demo:"演示版：还没接入后端",todo:"演示版：这个栏目还没搭建",
-    searchPh:"搜索解读，或直接提问…",kNav:"选择",kOpen:"打开",kClose:"关闭",sArticles:"解读",sAsk:"问 AI 助手",
+    searchPh:"搜索标题、厂商或栏目…",kNav:"选择",kOpen:"打开",kClose:"关闭",sArticles:"解读",sAsk:"问 AI 助手",
     askStub:"接入 AI 后，这里会基于站内全部解读直接回答「{q}」，并附上引用的文章。",recent:"最近更新",
     back:"返回 AI 解读",srcTitle:"已核对来源",related:"继续读",
     bodyH1:"发生了什么",bodyH2:"为什么值得关注",bodyH3:"怎么用起来",
@@ -98,13 +98,13 @@ const CATS = [
 ];
 const HANDS_ON = new Set(["howto","visual"]); // 计入「实操库」的栏目
 
-/* 侧栏 / 页脚导航 */
+/* 侧栏 / 页脚导航：只放已经做好的页面；会员、日报、播客等做好后再加回来 */
 const NAV = [
-  {t:"nToday",i:"sun"},{t:"nMember",i:"gem"},
-  {g:"grpDaily"},{t:"navJiedu",i:"book",on:true},{t:"nBrief",i:"news",tag:"tagMember",tc:"gold"},{t:"nWeekly",i:"cal"},{t:"nTopics",i:"layers"},{t:"nPodcast",i:"head"},
-  {g:"grpLearn"},{t:"nTut",i:"cap"},{t:"nIdeas",i:"bulb",tag:"tagNew",tc:"new"},{t:"nStudio",i:"grid"},
-  {g:"grpCoop"},{t:"nAbout",ava:true}
+  {g:"grpDaily"},{t:"navJiedu",i:"book",on:true},{t:"nRss",i:"rss",href:"rss.xml"},
+  {g:"grpLearn"},{t:"nAbout",ava:true,href:"about.html"},{t:"nHow",i:"info",href:"about.html#ai"},
+  {g:"grpCoop"},{t:"nApi",i:"code",href:"api/v1/articles.json"}
 ];
+const FOOT = { fDaily:[["navJiedu"],["nRss","rss.xml"]], fLearn:[["nAbout","about.html"],["nHow","about.html#ai"]], fCoop:[["nApi","api/v1/articles.json"]] };
 
 /* =========================================================
    3. 数据：由 build.mjs 注入 window.SITE_DATA
@@ -122,6 +122,7 @@ const artUrl = a => `${BASE}a/${a.slug}.html`;
    ========================================================= */
 const S = { lang:"zh", cat:"all", view:"time", q:"", shown:SITE.pageSize, theme:"dark" };
 try{ Object.assign(S, JSON.parse(localStorage.getItem("wg-prefs")||"{}")); S.q=""; S.shown=SITE.pageSize; S.cat="all"; }catch(e){}
+S.lang="zh"; // 目前只有中文内容；英文、日文版做好后再开放切换
 const save=()=>{try{localStorage.setItem("wg-prefs",JSON.stringify({lang:S.lang,view:S.view,theme:S.theme}))}catch(e){}};
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const t=(k,v={})=>{let s=(I18N[S.lang][k]??I18N.zh[k]??k);if(typeof s==="string")for(const x in v)s=s.replaceAll(`{${x}}`,v[x]);return s};
@@ -132,6 +133,7 @@ function toast(msg){const el=$("#toast");el.textContent=msg;el.classList.add("sh
 
 function mdLabel(iso){const[y,m,d]=iso.split("-").map(Number);return S.lang==="en"?t("md",{mon:MON_EN[m-1],d}):t("md",{m,d})}
 function short(iso){return iso.slice(5)}
+function fmtDate(d){return d.toISOString().slice(0,10)}
 
 /* 生成式封面：根据文章随机生成配色和版式，替换成真实图片时改这里 */
 function cover(a){
@@ -177,21 +179,18 @@ function renderStatic(){
   $$("[data-ph]").forEach(el=>el.placeholder=t(el.dataset.ph));
   if(LIST)$("#q").placeholder=t("qPh");
   $$(".lang button").forEach(b=>b.classList.toggle("on",b.dataset.lang===S.lang));
-  const hands=ARTICLES.filter(a=>HANDS_ON.has(a.cat)).length;
-  if(LIST)$("#heroStats").innerHTML=t("stats",{a:ARTICLES.length-hands,b:hands});
+  if(LIST)$("#heroStats").innerHTML=t("stats",{n:ARTICLES.length});
   // 侧栏
   $("#sideNav").innerHTML=NAV.map(n=>n.g?`<div class="side-group">${t(n.g)}</div>`:
-    `<a href="#" class="${n.on?"on":""}" ${n.on?"data-home":"data-todo"}>${n.ava?`<span class="ava">玉</span>`:icon(n.i)}<span>${t(n.t)}</span>${n.tag?`<em class="${n.tc}">${t(n.tag)}</em>`:""}</a>`).join("")+
-    `<div class="sub-card"><strong>${t("subTitle")}</strong><p>${t("subText")}</p><button class="btn btn-light btn-block" data-subscribe>${t("subBtn")}</button></div>`;
+    `<a href="${n.href?BASE+n.href:BASE+"index.html"}" class="${n.on&&LIST?"on":""}" ${n.href?"":"data-home"}>${n.ava?`<span class="ava">玉</span>`:icon(n.i)}<span>${t(n.t)}</span></a>`).join("")+
+    `<div class="sub-card"><strong>${t("subTitle")}</strong><p>${t("subText")}</p><a class="btn btn-light btn-block" href="${BASE}rss.xml">${t("subBtn")}</a></div>`;
   // 页脚
-  const li=arr=>arr.map(k=>`<li><a href="#" ${k==="navJiedu"?"data-home":"data-todo"}>${t(k)}</a></li>`).join("");
-  $("#fDaily").innerHTML=li(["navJiedu","nBrief","nWeekly","nTopics","nPodcast"]);
-  $("#fLearn").innerHTML=li(["nTut","nStudio","nIdeas"]);
-  $("#fCoop").innerHTML=li(["nAbout","changelog"]);
+  const li=arr=>arr.map(([k,h])=>`<li><a href="${h?BASE+h:BASE+"index.html"}" ${h?"":"data-home"}>${t(k)}</a></li>`).join("");
+  for(const id in FOOT) $("#"+id).innerHTML=li(FOOT[id]);
   // 栏目筛选
   const cnt=k=>ARTICLES.filter(a=>a.cat===k).length;
   if(LIST)$("#chips").innerHTML=`<button class="chip" data-cat="all" aria-pressed="${S.cat==="all"}">${t("all")}</button>`+
-    CATS.map(c=>`<button class="chip" data-cat="${c.k}" aria-pressed="${S.cat===c.k}">${c[S.lang]}<span>${cnt(c.k)}</span></button>`).join("");
+    CATS.filter(c=>cnt(c.k)>0).map(c=>`<button class="chip" data-cat="${c.k}" aria-pressed="${S.cat===c.k}">${c[S.lang]}<span>${cnt(c.k)}</span></button>`).join("");
   $$(".seg button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.view===S.view));
   // 主题菜单
   $$("#themeMenu [data-theme]").forEach(b=>b.classList.toggle("on",b.dataset.theme===S.theme));
@@ -203,7 +202,7 @@ function renderFeatured(){
   $("#featBox").innerHTML=show?`<div class="label">${t("featured")}</div>
   <section class="feat">
     <div>
-      <div class="tags"><span class="tag">${catName(FEATURED.cat)}</span><span class="verified">${icon("check")}${t("verified")}</span><span class="mono muted">№ ${FEATURED.no??""} · ${esc(FEATURED.co)}</span></div>
+      <div class="tags"><span class="tag">${catName(FEATURED.cat)}</span>${FEATURED.verified?`<span class="verified">${icon("check")}${t("verified")}</span>`:""}<span class="mono muted">№ ${FEATURED.no??""} · ${esc(FEATURED.co)}</span></div>
       <h2><a href="${artUrl(FEATURED)}">${esc(FEATURED.title)}</a></h2>
       <p>${esc(FEATURED.summary)}</p>
       <div class="row"><a class="btn btn-light" href="${artUrl(FEATURED)}">${t("readFull")}</a><span>${short(FEATURED.date)} · ${t("min",{n:FEATURED.min})}</span></div>
@@ -280,13 +279,10 @@ function renderSearch(){
   const hits=(q?ARTICLES.filter(a=>a.title.toLowerCase().includes(ql)||a.co.toLowerCase().includes(ql)||catName(a.cat).toLowerCase().includes(ql)):ARTICLES).slice(0,8);
   const hl=s=>q?esc(s).replace(new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"gi"),m=>`<mark>${m}</mark>`):esc(s);
   sAct=Math.min(sAct,Math.max(hits.length-1,0));
-  $("#sres").innerHTML=(q?`<div class="grp">${t("sAsk")}</div><div class="ask">${icon("chat")}<span>${esc(t("askStub",{q}))}</span></div>`:"")+
-    `<div class="grp">${q?t("sArticles"):t("recent")}</div>`+
+  $("#sres").innerHTML=`<div class="grp">${q?t("sArticles"):t("recent")}</div>`+
     (hits.length?hits.map((a,i)=>`<a href="${artUrl(a)}" class="${i===sAct?"act":""}"><span class="tag">${catName(a.cat)}</span><span class="t">${hl(a.title)}</span><span class="muted mono" style="font-size:11px">${short(a.date)}</span></a>`).join(""):`<div class="empty" style="padding:24px">${t("empty")}</div>`);
 }
 function openSearch(){closeAll();$("#searchScrim").classList.add("show");$("#sq").value="";sAct=0;renderSearch();setTimeout(()=>$("#sq").focus(),20)}
-function openLogin(tab="in"){closeAll();$("#loginScrim").classList.add("show");setTab(tab);setTimeout(()=>$("#loginForm input").focus(),20)}
-function setTab(tab){$$(".tabs button").forEach(b=>b.classList.toggle("on",b.dataset.tab===tab));$("#loginSubmit").textContent=tab==="in"?t("login"):t("signup");$("#loginTitle").textContent=tab==="in"?t("login"):t("signup");$("#loginTip").textContent=""}
 function closeAll(){$$(".scrim").forEach(s=>s.classList.remove("show"));$("#themeMenu").classList.remove("show")}
 
 /* =========================================================
@@ -304,16 +300,12 @@ document.addEventListener("click",e=>{
   if(d.cat){S.cat=d.cat;S.shown=SITE.pageSize;renderStatic();renderFeed();return}
   if(d.catAll){S.cat=d.catAll;S.view="time";S.shown=SITE.pageSize;save();renderStatic();renderFeed();$(".filters").scrollIntoView({behavior:"smooth"});return}
   if(d.view){S.view=d.view;save();renderStatic();renderFeed();return}
-  if(d.lang){S.lang=d.lang;save();renderAll();if($("#loginScrim").classList.contains("show"))setTab($(".tabs .on").dataset.tab);return}
+  if(d.lang){S.lang=d.lang;save();renderAll();return}
   if(d.theme){S.theme=d.theme;save();applyTheme();renderStatic();return}
   if("openSearch" in d){openSearch();return}
-  if("openLogin" in d){openLogin();return}
   if("subscribe" in d){toast(t("demo"));return}
   if("todo" in d){toast(t("todo"));return}
-  if("fake" in d){$("#loginTip").textContent=t("demo");toast(t("demo"));return}
   if("close" in d){closeAll();return}
-  if(d.tab){setTab(d.tab);return}
-  if(d.tabto){setTab(d.tabto);return}
   if(d.goto){document.getElementById(d.goto)?.scrollIntoView({behavior:"smooth",block:"start"});return}
   if(d.scroll){const tr=el.closest(".lane").querySelector(".track");tr.scrollBy({left:tr.clientWidth*.9*(+d.scroll)});return}
   if("home" in d){if(!LIST){location.href=BASE+"index.html";return}window.scrollTo({top:0,behavior:"smooth"});document.body.classList.remove("side-open");return}
@@ -333,7 +325,6 @@ $$(".scrim").forEach(s=>s.addEventListener("click",e=>{if(e.target===s)closeAll(
 $("#sres").addEventListener("click",e=>{if(e.target.closest("a"))closeAll()});
 $("#sq").addEventListener("input",()=>{sAct=0;renderSearch()});
 let qT;if(LIST)$("#q").addEventListener("input",e=>{clearTimeout(qT);qT=setTimeout(()=>{S.q=e.target.value;S.shown=SITE.pageSize;renderFeed()},120)});
-$("#loginForm").addEventListener("submit",e=>{e.preventDefault();$("#loginTip").textContent=t("demo")});
 if(LIST)$("#archive").addEventListener("toggle",renderArchive);
 $("#closeSide").addEventListener("click",()=>{if(innerWidth<=860)document.body.classList.remove("side-open");else document.body.classList.add("side-off")});
 $("#openSide").addEventListener("click",()=>{if(innerWidth<=860)document.body.classList.add("side-open");else document.body.classList.remove("side-off")});

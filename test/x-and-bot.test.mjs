@@ -421,3 +421,21 @@ test("bot x-add：名单账号的帖子按官方层级入收件箱，名单外�
   assert.throws(() => xAddItem({ url: "https://x.com/OpenAI", text }, groups), /帖子链接/);
   assert.throws(() => xAddItem({ url: "https://x.com/OpenAI/status/1991234567890123456", text: "hi" }, groups), /没复制完整/);
 });
+
+test("构建：关于页、sitemap、内容 API 都生成，且 API 不带流水线内部字段", async () => {
+  const { execFileSync } = await import("node:child_process");
+  const os = await import("node:os");
+  const out = fs.mkdtempSync(path.join(os.tmpdir(), "lj-build-"));
+  execFileSync("node", ["scripts/build.mjs"], { env: { ...process.env, WG_DIST: out, WG_SITE_URL: "https://lyra.example" }, stdio: "pipe" });
+  for (const f of ["about.html", "404.html", "sitemap.xml", "robots.txt", "rss.xml", "api/v1/index.json", "api/v1/articles.json", "api/v1/categories.json"])
+    assert.ok(fs.existsSync(path.join(out, f)), f);
+  const list = JSON.parse(fs.readFileSync(path.join(out, "api/v1/articles.json"), "utf8"));
+  assert.equal(list.version, 1);
+  if (list.count) {
+    const one = JSON.parse(fs.readFileSync(path.join(out, `api/v1/articles/${list.articles[0].slug}.json`), "utf8")).article;
+    assert.equal(one.pipeline, undefined);
+    assert.match(one.url, /^https:\/\/lyra\.example\/a\//);
+  }
+  assert.match(fs.readFileSync(path.join(out, "index.html"), "utf8"), /og:image" content="https:\/\/lyra\.example\/assets\/og\.png/);
+  fs.rmSync(out, { recursive: true, force: true });
+});
