@@ -1,10 +1,10 @@
 [
   {
-    "slug": "openai-medchembench-drug-candidate-benchmark",
-    "title": "OpenAI 发布 MedChemBench：GPT-6.2 Astra 药物化学推理得分 84.5%",
-    "file": "content/articles/openai-medchembench-drug-candidate-benchmark.json",
+    "slug": "openai-models-chip-design",
+    "title": "OpenAI 模型参与芯片设计：Jalapeño 面积降 13%，AMD 旗舰 GPU 提升最多 14%",
+    "file": "content/articles/openai-models-chip-design.json",
     "errors": 0,
-    "warnings": 0,
+    "warnings": 2,
     "provider": "deepseek",
     "model": "deepseek-v4-pro"
   }

@@ -1,0 +1,8 @@
+[
+  {
+    "id": "d9d43bef55",
+    "reason": "主材料是 X 帖子，读取失败：xAI X 搜索 返回 403：{\"code\":\"permission-denied\",\"error\":\"Your team 615e02b5-01ff-42e0-867c-40565fbe0765 has either used all available credits or reached its monthly spending limit. To continue making API requests, please purchase more credits or raise your spending limit.\"}，自动跳过",
+    "title": "LangChain 公开「知识工厂」搭法：Agent 干活时标出缺的知识，后台 Agent 定期补进知识库",
+    "at": "2026-11-23T07:41:44.490Z"
+  }
+]
