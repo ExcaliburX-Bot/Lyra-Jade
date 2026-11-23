@@ -379,3 +379,14 @@ test("引文比对：弯引号、破折号写法不同不算改写", async () =>
   const reworded = [{ ...claims[0], quote: "ranks first on Zapier's AutomationBench" }];
   assert.match(validateArticle({ ...base, claims: reworded }, { sourceTexts: { s: src } }).warnings.join(""), /引文和原文对不上/);
 });
+
+test("日期事实：原文写 November 20, 2026 或 Today 都能对上", async () => {
+  const { dateCheck } = await import("../scripts/lib/validate.mjs");
+  const { normNum } = await import("../scripts/lib/text.mjs");
+  assert.equal(dateCheck("2026-11-20", normNum("Posted November 20, 2026 by the team"), []), true);
+  assert.equal(dateCheck("2026年11月20日", normNum("Nov 20, 2026"), []), true);
+  assert.equal(dateCheck("2026-11-20", normNum("Today, Anthropic announced the closing"), ["2026-11-20"]), "relative");
+  assert.equal(dateCheck("2026-11-19", normNum("Yesterday we shipped"), ["2026-11-20"]), "relative");
+  assert.equal(dateCheck("2026-11-18", normNum("Today, Anthropic announced"), ["2026-11-20"]), false);
+  assert.equal(dateCheck("83%", normNum("83%"), []), false);
+});

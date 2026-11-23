@@ -10,6 +10,23 @@ const HYPE = ["革命性", "炸裂", "颠覆", "史诗级", "遥遥领先", "王
 const TITLE_RANK = /第一|最强|最好|最佳|榜首|冠军|SOTA|No\.?\s?1|#1/i;
 const SCHEMATIC = ["timeline", "route", "steps", "pipeline", "beforeafter"];
 
+/* 日期类事实：原文常写「November 20, 2026」或「Today」，模型统一写成 2026-11-20。
+   返回 true＝原文里有同一天的其他写法；"relative"＝原文是 Today/Yesterday 且换算后和发布日一致；false＝找不到 */
+const MONTHS = ["january","february","march","april","may","june","july","august","september","october","november","december"];
+export function dateCheck(value, hay, pubDates = []) {
+  const m = String(value).trim().match(/^(\d{4})[-/.年](\d{1,2})[-/.月](\d{1,2})日?$/);
+  if (!m) return false;
+  const [y, mo, d] = [+m[1], +m[2], +m[3]], full = MONTHS[mo - 1], short = full.slice(0, 3), p2 = n => String(n).padStart(2, "0");
+  const variants = [`${full} ${d}, ${y}`, `${short} ${d}, ${y}`, `${short}. ${d}, ${y}`, `${d} ${full} ${y}`, `${d} ${short} ${y}`,
+    `${y}年${mo}月${d}日`, `${y}/${p2(mo)}/${p2(d)}`, `${y}/${mo}/${d}`, `${mo}/${d}/${y}`, `${y}-${p2(mo)}-${p2(d)}`];
+  if (variants.some(v => hay.includes(normNum(v)))) return true;
+  const iso = `${y}-${p2(mo)}-${p2(d)}`, shift = (s, n) => new Date(Date.parse(s + "T00:00:00Z") + n * 864e5).toISOString().slice(0, 10);
+  const pubs = pubDates.filter(Boolean);
+  if (/today|今天|今日/.test(hay) && pubs.includes(iso)) return "relative";
+  if (/yesterday|昨天|昨日/.test(hay) && pubs.some(p => shift(p, -1) === iso)) return "relative";
+  return false;
+}
+
 export function validateArticle(a, { sourceTexts = {} } = {}) {
   const errors = [], warnings = [];
   const need = (cond, msg) => { if (!cond) errors.push(msg); };
@@ -51,7 +68,11 @@ export function validateArticle(a, { sourceTexts = {} } = {}) {
     const text = sourceTexts[c.source_url];
     if (!text) { warnings.push(`事实 #${i + 1}「${c.text}」的原文没有存档，无法自动回查，需人工核对`); return; }
     const hay = normNum(text);
-    if (!hay.includes(normNum(c.value)) && !hay.includes(numCore(c.value))) errors.push(`事实 #${i + 1}「${c.text}」：数值 ${c.value} 在原文里找不到`);
+    if (!hay.includes(normNum(c.value)) && !hay.includes(numCore(c.value))) {
+      const d = dateCheck(c.value, hay, [a.date, a.sources?.main?.date]);
+      if (d === "relative") warnings.push(`事实 #${i + 1}「${c.text}」：原文写的是相对日期（如 Today），已按发布日换算为 ${c.value}，请确认`);
+      else if (!d) errors.push(`事实 #${i + 1}「${c.text}」：数值 ${c.value} 在原文里找不到`);
+    }
     if (c.quote && !hay.includes(normNum(c.quote))) warnings.push(`事实 #${i + 1} 的引文和原文对不上，可能是改写过`);
   });
 
