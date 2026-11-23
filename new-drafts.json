@@ -1,10 +1,10 @@
 [
   {
-    "slug": "openai-models-chip-design",
-    "title": "OpenAI 模型参与芯片设计：Jalapeño 面积降 13%，AMD 旗舰 GPU 提升最多 14%",
-    "file": "content/articles/openai-models-chip-design.json",
+    "slug": "chatgpt-for-sales",
+    "title": "ChatGPT for Sales 上线：30 多个合作伙伴插件装进 ChatGPT，客户自述省下约 65% 手工活",
+    "file": "content/articles/chatgpt-for-sales.json",
     "errors": 0,
-    "warnings": 2,
+    "warnings": 0,
     "provider": "deepseek",
     "model": "deepseek-v4-pro"
   }
