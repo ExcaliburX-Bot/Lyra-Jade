@@ -1,3 +1,0 @@
-# 改名为 CODEOWNERS 并把 your-github-name 换成你的 GitHub 用户名，然后在主分支规则里勾选「需要代码负责人批准」。
-# 这样机器人账号无论如何都合并不了主分支；阶段 B 的自动合并由 automerge.yml 用你的令牌执行。
-* @your-github-name

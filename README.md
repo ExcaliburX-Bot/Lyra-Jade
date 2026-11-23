@@ -77,12 +77,12 @@ npm run dev         # 构建并在 http://localhost:4321 预览
 
 1. **建一个机器人 GitHub 账号**（例如 `lyra-jade-bot`），在仓库 Settings → Collaborators 里邀请它。
 2. 机器人账号创建一个 **classic 令牌，只勾 `repo`**，不要勾 `workflow`。不勾 `workflow`，它就改不了 `.github/workflows/`，也就没法写新工作流去读密钥。（细粒度令牌一般用不了别人名下的个人仓库，所以这里用 classic。）把令牌交给 Grok Bot，同时存成本仓库的密钥 `WG_BOT_TOKEN`。
-3. 把 `.github/CODEOWNERS.example` 改名为 `CODEOWNERS`，填上你的用户名。
+3. `.github/CODEOWNERS` 已填好仓库主人（换主人时改这里）。
 4. Settings → Rules → Rulesets → New branch ruleset，目标选默认分支（`main`）：
    - 勾选 *Require a pull request before merging*，批准数 1，勾选 *Require review from Code Owners*；
    - 勾选 *Require status checks to pass*，加上 `validate`；
    - 勾选 *Block force pushes*；
-   - Bypass list 加 *Repository admin*，方式选 *For pull requests only*。
+   - Bypass list 加 *Repository admin*，方式选 *Always*（这样你和你授权的编程代理仍能直接推送 main，机器人账号不是管理员，照样被拦）。
    这样机器人（不是代码负责人）合并不了任何 PR；你作为管理员照常合并。
 5. 再建一条规则保护 `data` 分支：只勾 *Restrict deletions* 和 *Block force pushes*（允许正常推送）。
 6. 按 `bot/README.md` 在 Grok Bot 里建 Bot、技能和定时任务。
