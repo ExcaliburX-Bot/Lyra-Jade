@@ -1,13 +1,15 @@
 [
   {
-    "id": "de5cd1a6d5",
-    "title": "Perplexity and Intelligence",
-    "url": "https://openai.com/index/perplexity-and-intelligence",
-    "publisher": "OpenAI",
+    "id": "d9d43bef55",
+    "title": "LangChain 公开「知识工厂」搭法：Agent 干活时标出缺的知识，后台 Agent 定期补进知识库",
+    "url": "https://x.com/hwchase17/status/2124181216719151585",
+    "publisher": "@hwchase17",
     "tier": "official",
-    "published": "2026-11-22T00:00:00.000Z",
-    "score": 5.2,
-    "category_hint": "product",
+    "published": "2026-11-23T00:00:00.000Z",
+    "score": 5.9,
+    "category_hint": null,
+    "via": "https://xiaohu.ai/article/langchain-knowledge-factory/",
+    "discovered_by": "xiaohu",
     "related": []
   },
   {
@@ -182,32 +184,6 @@
     "related": []
   },
   {
-    "id": "6a368ee477",
-    "title": "Pika 发布了一个全新的 AI视频工具Enact：能模仿片场当导演现场实时导戏 视频一边播一边改，能拖人摆位、还能给 AI 演员说戏",
-    "url": "https://pika.art/blog/pika-enact",
-    "publisher": "pika.art",
-    "tier": "official",
-    "published": "2026-11-20T00:00:00.000Z",
-    "score": 4.9,
-    "category_hint": null,
-    "via": "https://xiaohu.ai/article/pika-enact/",
-    "discovered_by": "xiaohu",
-    "related": []
-  },
-  {
-    "id": "a03947fc9e",
-    "title": "Ideogram 发布了 Ideogram 4.6 模型：原生 4K 出图 宣称为迄今最精确的改图模型",
-    "url": "https://ideogram.ai/models/4.6",
-    "publisher": "ideogram.ai",
-    "tier": "official",
-    "published": "2026-11-20T00:00:00.000Z",
-    "score": 4.9,
-    "category_hint": null,
-    "via": "https://xiaohu.ai/article/ideogram-4-6/",
-    "discovered_by": "xiaohu",
-    "related": []
-  },
-  {
     "id": "1c3eaf246b",
     "title": "NVIDIA RTX Spark Compact Desktops Out Now",
     "url": "https://blogs.nvidia.com/blog/rtx-spark-desktop-local-ai-available-now/",
@@ -262,6 +238,17 @@
     ]
   },
   {
+    "id": "de5cd1a6d5",
+    "title": "Perplexity and Intelligence",
+    "url": "https://openai.com/index/perplexity-and-intelligence",
+    "publisher": "OpenAI",
+    "tier": "official",
+    "published": "2026-11-22T00:00:00.000Z",
+    "score": 4.7,
+    "category_hint": "product",
+    "related": []
+  },
+  {
     "id": "3ea993db7e",
     "title": "Combatting adversarial distillation",
     "url": "https://openai.com/index/combatting-adversarial-distillation",
@@ -273,14 +260,29 @@
     "related": []
   },
   {
-    "id": "d15c456432",
-    "title": "Hebbia sees improvements in financial research with GPT-6 Astra",
-    "url": "https://openai.com/business/customer-stories/hebbia",
-    "publisher": "OpenAI",
+    "id": "6a368ee477",
+    "title": "Pika 发布了一个全新的 AI视频工具Enact：能模仿片场当导演现场实时导戏 视频一边播一边改，能拖人摆位、还能给 AI 演员说戏",
+    "url": "https://pika.art/blog/pika-enact",
+    "publisher": "pika.art",
     "tier": "official",
     "published": "2026-11-20T00:00:00.000Z",
-    "score": 4.7,
-    "category_hint": "product",
+    "score": 4.4,
+    "category_hint": null,
+    "via": "https://xiaohu.ai/article/pika-enact/",
+    "discovered_by": "xiaohu",
+    "related": []
+  },
+  {
+    "id": "a03947fc9e",
+    "title": "Ideogram 发布了 Ideogram 4.6 模型：原生 4K 出图 宣称为迄今最精确的改图模型",
+    "url": "https://ideogram.ai/models/4.6",
+    "publisher": "ideogram.ai",
+    "tier": "official",
+    "published": "2026-11-20T00:00:00.000Z",
+    "score": 4.4,
+    "category_hint": null,
+    "via": "https://xiaohu.ai/article/ideogram-4-6/",
+    "discovered_by": "xiaohu",
     "related": []
   },
   {
@@ -399,6 +401,17 @@
     "related": []
   },
   {
+    "id": "d15c456432",
+    "title": "Hebbia sees improvements in financial research with GPT-6 Astra",
+    "url": "https://openai.com/business/customer-stories/hebbia",
+    "publisher": "OpenAI",
+    "tier": "official",
+    "published": "2026-11-20T00:00:00.000Z",
+    "score": 4.2,
+    "category_hint": "product",
+    "related": []
+  },
+  {
     "id": "6687f7be62",
     "title": "How OpenAI’s Performance Factory keeps ChatGPT fast",
     "url": "https://openai.com/index/how-openai-performance-factory-keeps-chatgpt-fast",
@@ -468,17 +481,6 @@
     "id": "9fa731b0ef",
     "title": "Research acceleration: The jagged frontier",
     "url": "https://openai.com/index/research-acceleration-jagged-frontier",
-    "publisher": "OpenAI",
-    "tier": "official",
-    "published": "2026-11-18T08:00:00.000Z",
-    "score": 4.2,
-    "category_hint": "product",
-    "related": []
-  },
-  {
-    "id": "b527b6f0dd",
-    "title": "How Sumitomo Life’s leaders helped teams adopt ChatGPT Enterprise",
-    "url": "https://openai.com/business/customer-stories/sumitomo-life",
     "publisher": "OpenAI",
     "tier": "official",
     "published": "2026-11-18T08:00:00.000Z",

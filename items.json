@@ -2592,5 +2592,63 @@
     "weight": 1.2,
     "category_hint": "product",
     "fetched_at": "2026-11-22T22:16:04.908Z"
+  },
+  "1ba4d31258de": {
+    "id": "1ba4d31258de",
+    "key": "https://gpupartner.com/blog/beginners-guide-local-ai-inkling-qwen-unsloth",
+    "title": "A Beginner's Guide to Local AI with Inkling, Qwen, and Unsloth",
+    "url": "https://www.gpupartner.com/blog/beginners-guide-local-ai-inkling-qwen-unsloth",
+    "published": "2026-11-22T21:01:16.000Z",
+    "summary": "Article URL: https://www.gpupartner.com/blog/beginners-guide-local-ai-inkling-qwen-unsloth \n\n Comments URL: https://news.ycombinator.com/item?id=50603845 \n\n Points: 271\n\n # Comments: 119",
+    "source": "hn-ai",
+    "publisher": "Hacker News",
+    "tier": "discovery",
+    "weight": 1,
+    "category_hint": null,
+    "fetched_at": "2026-11-23T02:56:21.352Z"
+  },
+  "315e82c2f910": {
+    "id": "315e82c2f910",
+    "key": "https://bloodinthemachine.com/p/ai-is-becoming-a-disaster-for-the",
+    "title": "AI is becoming a disaster for the climate",
+    "url": "https://www.bloodinthemachine.com/p/ai-is-becoming-a-disaster-for-the",
+    "published": "2026-11-22T12:19:46.000Z",
+    "summary": "Article URL: https://www.bloodinthemachine.com/p/ai-is-becoming-a-disaster-for-the \n\n Comments URL: https://news.ycombinator.com/item?id=50598961 \n\n Points: 108\n\n # Comments: 46",
+    "source": "hn-ai",
+    "publisher": "Hacker News",
+    "tier": "discovery",
+    "weight": 1,
+    "category_hint": null,
+    "fetched_at": "2026-11-23T02:56:21.352Z"
+  },
+  "ce0bcf2918b4": {
+    "id": "ce0bcf2918b4",
+    "key": "https://dragos.com/blog/ai-supply-chain-security-canary-tokens",
+    "title": "AI Supply Chain Security: What Canary Tokens Found",
+    "url": "https://www.dragos.com/blog/ai-supply-chain-security-canary-tokens",
+    "published": "2026-11-22T05:11:43.000Z",
+    "summary": "Article URL: https://www.dragos.com/blog/ai-supply-chain-security-canary-tokens \n\n Comments URL: https://news.ycombinator.com/item?id=50596511 \n\n Points: 101\n\n # Comments: 22",
+    "source": "hn-ai",
+    "publisher": "Hacker News",
+    "tier": "discovery",
+    "weight": 1,
+    "category_hint": null,
+    "fetched_at": "2026-11-23T02:56:21.352Z"
+  },
+  "2400f88a7f7c": {
+    "id": "2400f88a7f7c",
+    "key": "https://x.com/hwchase17/status/2124181216719151585",
+    "title": "LangChain 公开「知识工厂」搭法：Agent 干活时标出缺的知识，后台 Agent 定期补进知识库",
+    "url": "https://x.com/hwchase17/status/2124181216719151585",
+    "published": "2026-11-23T00:00:00.000Z",
+    "summary": "",
+    "source": "xiaohu",
+    "publisher": "@hwchase17",
+    "tier": "official",
+    "weight": 1,
+    "category_hint": null,
+    "fetched_at": "2026-11-23T02:56:21.352Z",
+    "via": "https://xiaohu.ai/article/langchain-knowledge-factory/",
+    "discovered_by": "xiaohu"
   }
 }
