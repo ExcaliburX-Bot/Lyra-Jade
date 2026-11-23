@@ -12,15 +12,27 @@ Actions 里按量计费的「X 监测」已停用，X 上的发布由你用 Grok
 
 ## 2. 准备（只做一次）
 
+Grok Bot 同一账号下的多个 Bot 共用一台电脑，电脑上的 `gh` 可能已经登录了别的账号（例如仓库主人的主账号）。
+**在这个仓库里，一律用机器人账号 lyra-jade-bot 的身份**，不动全局登录，免得影响别的 Bot：
+
 ```bash
+mkdir -p ~/.config/lyra-jade && chmod 700 ~/.config/lyra-jade
+# 把 lyra-jade-bot 的令牌存进 ~/.config/lyra-jade/token（仓库外），然后：
+chmod 600 ~/.config/lyra-jade/token
 git clone https://github.com/<owner>/<repo>.git lyra-jade && cd lyra-jade
-git fetch origin data && git worktree add data data   # data/ = data 分支的检出
-gh auth login --with-token < 机器人令牌文件              # 机器人账号的令牌，见 README「机器人账号」
-node --version                                          # 需要 22 或更高
-node scripts/bot.mjs status                             # 能输出状态就说明准备好了
+git config --local credential.helper ""                     # 不用全局保存的凭据
+git config --local --add credential.helper '!f() { echo username=lyra-jade-bot; echo "password=$(cat ~/.config/lyra-jade/token)"; }; f'
+git config --local user.name lyra-jade-bot
+git config --local user.email lyra-jade-bot@users.noreply.github.com
+git fetch origin data && git worktree add data data         # data/ = data 分支的检出（共用上面的设置）
+export GH_TOKEN=$(cat ~/.config/lyra-jade/token)            # 每次在本仓库用 gh 前先设；只在当前终端有效
+gh api user --jq .login                                     # 必须输出 lyra-jade-bot
+node --version                                              # 需要 22 或更高
+node scripts/bot.mjs status
 ```
 
-每次开始任务前先同步：`git switch main && git pull -q && git -C data pull -q --rebase`。
+每次开始任务前：`cd ~/lyra-jade && export GH_TOKEN=$(cat ~/.config/lyra-jade/token) && gh api user --jq .login`（不是 lyra-jade-bot 就停下来问人），
+再同步：`git switch main && git pull -q && git -C data pull -q --rebase`。
 
 ## 3. 你可以做的
 
@@ -42,7 +54,8 @@ node scripts/bot.mjs status                             # 能输出状态就说�
 - **不改已发布的文章**（`main` 上的 `content/articles/`）。发现错误开 Issue，标题以「勘误：」开头，并写明原文出处。
 - 在 `draft/*` 分支上只能改那一篇文章的 JSON，不能加别的文件。
 - 不删除分支和文件，除了你自己开的 `bot/*` 分支在 PR 关闭后。
-- 不接触任何密钥；不把令牌写进文件、评论、日志。
+- 不接触任何密钥；令牌只放在仓库外的 `~/.config/lyra-jade/token`，不写进仓库、评论、日志、聊天回复。
+- 在这个仓库里不用别的 GitHub 账号（包括电脑上已登录的主人账号）做任何事。
 - 不把媒体、KOL、聚合站标成 `official` 或 `primary`。
 - 不编造：任何数字、日期、引语都必须来自你打开过的原始页面。找不到出处，就写「找不到出处」。
 - 网站拒绝程序访问（401、403、451）的，不要想办法绕过，也不要用浏览器替程序去抓；在周报里列出，由人决定是否手工补原文（`bot.mjs source-add`）。
