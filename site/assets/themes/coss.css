@@ -1,0 +1,166 @@
+/* ============================================================
+   coss ui 风格主题（预览）
+   设计令牌取自 coss ui 的 Styling 文档：中性灰阶、半透明边框、
+   radius 0.625rem、卡片 rounded-2xl、按钮内高光 + 底部细阴影、Inter / Geist Mono。
+   品牌玉绿只用在少量强调处（标志、已核对、章节序号、链接悬停）。
+   只在 WG_THEME=coss 时加载，叠在 site.css 之后覆盖。
+   ============================================================ */
+:root{
+  --bg:#ffffff; --bg-2:#fafafa; --bg-3:rgba(0,0,0,.04); --raise:#ffffff;
+  --line:rgba(0,0,0,.08); --line-2:rgba(0,0,0,.10);
+  --ink:#262626; --ink-2:#4b4b4b; --ink-3:#686868;
+  --rose:#0e7c5d; --rose-soft:rgba(16,185,129,.08);
+  --ok:#047857; --ok-soft:rgba(16,185,129,.10);
+  --ring:#a3a3a3;
+  --radius:10px; --radius-2xl:16px;
+  --sh-xs:0 1px 2px rgba(0,0,0,.05);
+  --sh-in:inset 0 -1px 0 rgba(0,0,0,.04);
+  --sh-3:0 1px 2px rgba(0,0,0,.05),0 16px 40px -16px rgba(0,0,0,.18);
+  --font:"Inter","PingFang SC","Noto Sans SC","Microsoft YaHei",-apple-system,system-ui,sans-serif;
+  --mono:"Geist Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --c-local:#10b981; --c-cloud:#3b82f6; --c-laptop:#f59e0b; --c-bad:#ef4444; --c-gray:#a3a3a3; --on-fill:#052e1f;
+}
+html.dark{
+  --bg:#161616; --bg-2:#111111; --bg-3:rgba(255,255,255,.04); --raise:#1a1a1a;
+  --line:rgba(255,255,255,.06); --line-2:rgba(255,255,255,.08);
+  --ink:#f5f5f5; --ink-2:#c7c7c7; --ink-3:#8f8f8f;
+  --rose:#4fd1a1; --rose-soft:rgba(16,185,129,.10);
+  --ok:#34d399; --ok-soft:rgba(16,185,129,.12);
+  --ring:#737373;
+  --sh-xs:0 1px 2px rgba(0,0,0,.4);
+  --sh-in:inset 0 1px 0 rgba(255,255,255,.06);
+  --sh-3:0 1px 2px rgba(0,0,0,.5),0 16px 40px -16px rgba(0,0,0,.9);
+  --c-local:#34d399; --c-cloud:#60a5fa; --c-laptop:#fbbf24; --c-bad:#f87171; --c-gray:#737373;
+}
+body{font-size:15px;letter-spacing:-.003em;font-feature-settings:"cv11","ss01"}
+:focus-visible{outline:none;box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--ring);border-radius:var(--radius)}
+
+/* ---------- 侧栏（coss Sidebar） ---------- */
+.side{background:var(--bg-2);border-right:1px solid var(--line)}
+.logo{font-weight:600;font-size:15.5px;letter-spacing:-.01em}
+.logo b{color:var(--ink-3);font-weight:500}
+.logo-mark{border-radius:6px;background:var(--ink);color:var(--bg);box-shadow:inset 0 1px 0 rgba(255,255,255,.16)}
+.side-search{height:32px;border-radius:var(--radius);border:1px solid var(--line-2);background:var(--raise);box-shadow:var(--sh-xs),var(--sh-in);font-size:13.5px}
+.side-search span{text-align:left}
+kbd{font-family:var(--mono);font-size:11px;border:0;border-radius:5px;padding:1px 6px;background:var(--bg-3);color:var(--ink-3)}
+.side-group{font-size:12px;font-weight:500;color:var(--ink-3);padding:18px 10px 6px}
+.side-nav a:not(.btn){height:32px;border-radius:8px;color:color-mix(in srgb,var(--ink) 72%,var(--bg-2));font-size:14px}
+.side-nav a .i{color:inherit;opacity:.8}
+.side-nav a:hover{background:var(--bg-3);color:var(--ink)}
+.side-nav a.on{background:var(--bg-3);box-shadow:none;color:var(--ink);font-weight:500}
+.side-nav a.on .i{color:var(--ink);opacity:1}
+.ava{background:var(--ink);color:var(--bg)}
+.sub-card{border-radius:var(--radius-2xl);border:1px solid var(--line);background:var(--raise);box-shadow:var(--sh-xs),var(--sh-in)}
+.side-foot{border-top:1px solid var(--line)}
+
+/* ---------- 按钮（coss Button：default / outline / ghost） ---------- */
+.btn{height:32px;padding:0 11px;border-radius:var(--radius);font-weight:500;font-size:14px;border:1px solid transparent;gap:8px;transition:background .15s,box-shadow .15s}
+.btn-light{background:var(--ink);color:var(--bg);border-color:var(--ink);box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 1px 2px color-mix(in srgb,var(--ink) 24%,transparent)}
+.btn-light:hover{opacity:1;background:color-mix(in srgb,var(--ink) 90%,var(--bg))}
+.btn-light:active{box-shadow:inset 0 1px 0 rgba(0,0,0,.08)}
+.btn-ghost{border-color:var(--line-2);background:var(--raise);box-shadow:var(--sh-xs),var(--sh-in)}
+.btn-ghost:hover{background:color-mix(in srgb,var(--bg-3) 50%,var(--raise))}
+.top .btn{height:32px;padding:0 11px}
+.side-foot .btn{height:36px}
+.icon-btn{border-radius:8px}
+.top-link{border-radius:8px;font-weight:500;color:var(--ink-2)}
+.top-link:hover{color:var(--ink)}
+
+/* ---------- 顶栏 ---------- */
+.top{background:color-mix(in srgb,var(--bg) 84%,transparent);border-bottom:1px solid var(--line)}
+.crumb b{font-weight:500}
+
+/* ---------- 首屏 ---------- */
+.hero{padding-top:56px;padding-bottom:36px}
+.eyebrow{color:var(--ink-3);font-weight:500;font-size:13px}
+.eyebrow::before{background:var(--rose);box-shadow:0 0 0 3px var(--rose-soft)}
+.hero h1{font-size:46px;font-weight:600;letter-spacing:-.035em;line-height:1.12}
+.hero h1 em{background:none;-webkit-background-clip:initial;background-clip:initial;color:var(--ink-3)}
+.hero p{font-size:14px;color:var(--ink-3)}
+.hero p b{font-weight:600}
+.hero-search{height:36px;border-radius:var(--radius);border:1px solid var(--line-2);background:var(--raise);box-shadow:var(--sh-xs),var(--sh-in)}
+.hero-search:focus-within{border-color:var(--ring);box-shadow:0 0 0 3px color-mix(in srgb,var(--ring) 24%,transparent)}
+
+/* ---------- 筛选（coss Toggle / Segmented control） ---------- */
+.filters{background:color-mix(in srgb,var(--bg) 88%,transparent);border-color:var(--line)}
+.chip{height:30px;padding:0 10px;border-radius:var(--radius);border:1px solid var(--line-2);background:var(--raise);box-shadow:var(--sh-xs),var(--sh-in);font-weight:500;font-size:13.5px;gap:7px}
+.chip:hover{background:color-mix(in srgb,var(--bg-3) 50%,var(--raise))}
+.chip span{font-size:11px;background:var(--bg-3);color:var(--ink-3);border-radius:4px;padding:0 5px;line-height:18px}
+.chip[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink);box-shadow:inset 0 1px 0 rgba(255,255,255,.16)}
+.chip[aria-pressed=true] span{background:color-mix(in srgb,var(--bg) 16%,transparent);color:color-mix(in srgb,var(--bg) 72%,var(--ink))}
+.seg{padding:2px;border:0;border-radius:calc(var(--radius) + 2px);background:var(--bg-3)}
+.seg button{height:28px;padding:0 12px;border-radius:var(--radius);font-weight:500;color:var(--ink-3)}
+.seg button[aria-pressed=true]{background:var(--raise);color:var(--ink);font-weight:500;box-shadow:0 1px 2px rgba(0,0,0,.08),0 0 0 1px var(--line)}
+
+/* ---------- 卡片（coss Card：rounded-2xl、半透明边框、底部内阴影） ---------- */
+.label{font-weight:500}
+.feat{border-radius:var(--radius-2xl);border:1px solid var(--line);background:var(--raise);box-shadow:var(--sh-xs),var(--sh-in);padding:28px;gap:32px}
+.feat h2{font-weight:600;letter-spacing:-.02em;font-size:28px}
+.feat h2 a:hover{color:inherit;text-decoration:underline;text-underline-offset:5px;text-decoration-color:var(--line-2)}
+.feat .btn{height:36px;padding:0 14px}
+.feat .cover{border-radius:12px}
+.cover{border-radius:12px;border:1px solid var(--line)}
+.grid{gap:32px 22px}
+.card .cover{box-shadow:var(--sh-xs)}
+.card:hover .cover{transform:translateY(-2px);box-shadow:var(--sh-3)}
+.card:hover h3{color:var(--ink);text-decoration:underline;text-underline-offset:4px;text-decoration-color:var(--line-2)}
+.card h3{font-weight:600;letter-spacing:-.01em}
+.meta{font-family:var(--mono);font-size:11.5px}
+.day-h strong{font-weight:600;letter-spacing:-.02em}
+.day-h small{font-family:var(--mono);font-size:12px}
+
+/* 徽章（coss Badge：outline、rounded-sm） */
+.tag{border-radius:6px;padding:2px 7px;font-size:12px;font-weight:500;border:1px solid var(--line-2);background:var(--raise);box-shadow:var(--sh-xs)}
+.verified{color:var(--ok);background:var(--ok-soft);border-radius:6px;padding:2px 7px;font-size:12px}
+
+/* ---------- 时间流 / 栏目 / 目录 ---------- */
+.round{border-radius:var(--radius);border:1px solid var(--line-2);background:var(--raise);box-shadow:var(--sh-xs),var(--sh-in)}
+.lane-h .all{color:var(--ink);font-weight:500;text-decoration:underline;text-underline-offset:4px;text-decoration-color:var(--line-2)}
+.lane-h strong{font-weight:600}
+.toc a:hover span:nth-child(2){color:var(--ink);text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--line-2)}
+.archive summary{font-weight:500}
+
+/* ---------- 页脚 ---------- */
+.foot h5{font-weight:500}
+.foot ul a,.foot-bar a{color:var(--ink-2)}
+.foot ul a:hover,.foot-bar a:hover{color:var(--ink)}
+
+/* ---------- 弹窗（coss Dialog / Command） ---------- */
+.scrim{background:rgba(0,0,0,.32);backdrop-filter:blur(2px)}
+.dialog{border-radius:var(--radius-2xl);border:1px solid var(--line);box-shadow:var(--sh-3)}
+.search-dialog .sbar{height:48px}
+.sres a{border-radius:8px}
+.sres a.act,.sres a:hover{background:var(--bg-3)}
+.sres mark{color:var(--ink);background:var(--rose-soft);border-radius:3px}
+.menu{border-radius:12px;border:1px solid var(--line);box-shadow:var(--sh-3);padding:4px}
+.menu button{border-radius:8px;padding:7px 8px}
+.menu button .dot{background:var(--ink)}
+.toast{border-radius:var(--radius);box-shadow:var(--sh-3)}
+
+/* ---------- 文章页 ---------- */
+.reader h1{font-weight:600;letter-spacing:-.025em}
+.back{color:var(--ink-3);font-weight:500}
+.back:hover{color:var(--ink)}
+.reader .lede{border-left:2px solid var(--line-2);color:var(--ink-2)}
+.reader h2.sec{font-weight:600;letter-spacing:-.015em}
+.reader h2.sec span{color:var(--rose)}
+.aisum{border-radius:var(--radius-2xl);border:1px solid var(--line);background:var(--raise);box-shadow:var(--sh-xs),var(--sh-in)}
+.aisum-h{color:var(--ink);font-weight:600}
+.aisum-ic{background:var(--rose-soft);color:var(--rose);border-radius:6px}
+.brief{border-radius:var(--radius-2xl);border:1px solid var(--line);border-left:1px solid var(--line);background:var(--bg-3);box-shadow:none}
+.brief strong{color:var(--ink);font-weight:600}
+.rtoc button{border-radius:8px;border:1px solid var(--line-2);background:var(--raise);box-shadow:var(--sh-xs);font-weight:500}
+.rtoc button:hover{border-color:var(--line-2);color:var(--ink);background:color-mix(in srgb,var(--bg-3) 50%,var(--raise))}
+.srcbox a,.disclose a,.about a{color:var(--ink);text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--line-2)}
+.srcbox a:hover,.disclose a:hover,.about a:hover{text-decoration-color:var(--ink-3)}
+.disclose{border-radius:var(--radius-2xl);border:1px solid var(--line);background:var(--bg-3)}
+.fig{border-radius:var(--radius-2xl);border:1px solid var(--line);background:var(--raise);box-shadow:var(--sh-xs),var(--sh-in)}
+.fig-h{font-weight:600}
+.kpi{border-radius:12px;border:1px solid var(--line);background:var(--bg-3)}
+.kpi b{color:var(--ink)}
+.ftrack{border-radius:6px}
+.fill{border-radius:6px}
+.rt-root{border-radius:12px}
+.totop{border-radius:var(--radius);border:1px solid var(--line-2);box-shadow:var(--sh-xs),var(--sh-in)}
+@media (max-width:860px){.hero h1{font-size:34px}.feat{padding:18px}.feat h2{font-size:22px}}
+@media (max-width:540px){.hero h1{font-size:30px}.reader h1{font-size:26px}}

@@ -120,7 +120,7 @@ const artUrl = a => `${BASE}a/${a.slug}.html`;
 /* =========================================================
    4. 状态与工具
    ========================================================= */
-const S = { lang:"zh", cat:"all", view:"time", q:"", shown:SITE.pageSize, theme:"dark" };
+const S = { lang:"zh", cat:"all", view:"time", q:"", shown:SITE.pageSize, theme:document.documentElement.dataset.themeDefault||"dark" };
 try{ Object.assign(S, JSON.parse(localStorage.getItem("wg-prefs")||"{}")); S.q=""; S.shown=SITE.pageSize; S.cat="all"; }catch(e){}
 S.lang="zh"; // 目前只有中文内容；英文、日文版做好后再开放切换
 const save=()=>{try{localStorage.setItem("wg-prefs",JSON.stringify({lang:S.lang,view:S.view,theme:S.theme}))}catch(e){}};

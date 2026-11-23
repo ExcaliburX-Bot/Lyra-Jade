@@ -16,11 +16,17 @@ const CF = (process.env.WG_CF_ANALYTICS || "").trim();
 const ANALYTICS = /^[A-Za-z0-9]{16,64}$/.test(CF) ? `<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"${CF}"}'></script>` : "";
 const CONTACT = (process.env.WG_CONTACT_EMAIL || "").trim();
 const OGIMAGE = `${SITE_URL}/assets/og.png`;
+/* 主题：WG_THEME=coss 时叠加 assets/themes/coss.css（coss ui 风格，默认浅色）；不设就是线上的原样 */
+const THEME = (process.env.WG_THEME || "").trim();
+const THEME_HEAD = THEME === "coss"
+  ? `<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">\n<link rel="stylesheet" href="{{BASE}}assets/themes/coss.css">`
+  : "";
 const CAT_NAME = { product: "产品发布", research: "研究解读", deep: "深度", biz: "商业动态", howto: "AI 实操", visual: "商业视觉实战", insight: "洞察", other: "其他" };
 
 const tpl = fs.readFileSync(path.join(SITE, "templates/page.html"), "utf8");
 const listing = fs.readFileSync(path.join(SITE, "templates/listing.html"), "utf8");
-const page = v => tpl.replace(/\{\{(\w+)\}\}/g, (m, k) => ({ ANALYTICS, OGIMAGE, OGTYPE: "website", ...v })[k] ?? "");
+const tplT = THEME === "coss" ? tpl.replace("{{ANALYTICS}}", THEME_HEAD + "\n{{ANALYTICS}}").replace('.theme||"dark"', '.theme||"light"').replace('<html lang="zh-CN" class="dark">', '<html lang="zh-CN" class="" data-theme-default="light">') : tpl;
+const page = v => tplT.replace(/\{\{(\w+)\}\}/g, (m, k) => ({ ANALYTICS, OGIMAGE, OGTYPE: "website", ...v })[k] ?? "");
 const safeJson = x => JSON.stringify(x).replace(/</g, "\\u003c");
 const textLen = a => (a.sections || []).flatMap(s => s.blocks.map(b => b.p || (b.list || []).join(""))).join("").length;
 
