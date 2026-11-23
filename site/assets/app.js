@@ -87,10 +87,10 @@ const MON_EN=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov",
 
 /* 栏目定义：key、三语名称、封面主色相 */
 const CATS = [
-  {k:"product", zh:"产品发布", en:"Launches", ja:"新製品", hue:340},
+  {k:"product", zh:"产品发布", en:"Launches", ja:"新製品", hue:158},
   {k:"research",zh:"研究解读", en:"Research", ja:"研究解説", hue:220},
   {k:"deep",    zh:"深度",     en:"Deep dives",ja:"深掘り", hue:30},
-  {k:"biz",     zh:"商业动态", en:"Business", ja:"ビジネス", hue:160},
+  {k:"biz",     zh:"商业动态", en:"Business", ja:"ビジネス", hue:300},
   {k:"howto",   zh:"AI 实操",  en:"How-to",   ja:"AI 実践", hue:265},
   {k:"visual",  zh:"商业视觉实战",en:"Visual work",ja:"ビジュアル実践",hue:15},
   {k:"insight", zh:"洞察",     en:"Insights", ja:"インサイト",hue:190},

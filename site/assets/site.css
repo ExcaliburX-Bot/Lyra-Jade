@@ -1,9 +1,10 @@
 /* ============ 主题变量 ============ */
+/* 品牌色是玉绿（2026-11-23 起）。变量名 --rose 沿用早期写法，改品牌色只改这两行里的 --rose / --rose-soft */
 :root{
   --bg:#f6f5f2; --bg-2:#efeee9; --bg-3:#e6e4dd; --raise:#ffffff;
   --line:rgba(0,0,0,.08); --line-2:rgba(0,0,0,.14);
   --ink:#19191c; --ink-2:#55555d; --ink-3:#8a8a93;
-  --rose:#d6406c; --rose-soft:#fbe3ea; --gold:#a8791c; --gold-soft:#f6ebcf;
+  --rose:#0e7c5d; --rose-soft:#dcf2e9; --gold:#a8791c; --gold-soft:#f6ebcf;
   --ok:#23915c; --ok-soft:#dcf2e6; --violet:#6b54e0;
   --sh-1:0 1px 2px rgba(0,0,0,.06); --sh-3:0 2px 6px rgba(0,0,0,.06),0 30px 70px -24px rgba(0,0,0,.25);
   --c-local:#3fa86e; --c-cloud:#3f74d8; --c-laptop:#d39a3a; --c-bad:#e06a4f; --c-gray:#9aa0a8; --on-fill:#13241a;
@@ -15,7 +16,7 @@ html.dark{
   --bg:#19191c; --bg-2:#1f1f23; --bg-3:#28282d; --raise:#222226;
   --line:rgba(255,255,255,.075); --line-2:rgba(255,255,255,.14);
   --ink:#ececee; --ink-2:#adadb5; --ink-3:#7c7c85;
-  --rose:#f2638b; --rose-soft:#2a1119; --gold:#e3b257; --gold-soft:#251c0a;
+  --rose:#4fd1a1; --rose-soft:#0e241d; --gold:#e3b257; --gold-soft:#251c0a;
   --ok:#4cc58c; --ok-soft:#0f2319; --violet:#9b85ff;
   --sh-1:0 1px 2px rgba(0,0,0,.4); --sh-3:0 2px 6px rgba(0,0,0,.4),0 30px 70px -24px rgba(0,0,0,.9);
   --c-local:#8fe06a; --c-cloud:#7ea6ff; --c-laptop:#e0a352; --c-bad:#ef7f62; --c-gray:#8a909a; --on-fill:#13241a;
@@ -37,7 +38,7 @@ svg.i{width:16px;height:16px;flex:none;stroke:currentColor;fill:none;stroke-widt
 body.side-off .side{transform:translateX(-100%)}
 .side-head{display:flex;align-items:center;justify-content:space-between;padding:16px 16px 12px 18px}
 .logo{display:flex;align-items:center;gap:8px;font-weight:700;font-size:17px;letter-spacing:-.01em}
-.logo-mark{width:22px;height:22px;border-radius:7px;background:linear-gradient(135deg,var(--rose),#ff9a6b);display:grid;place-items:center;color:#fff;font-size:12px;font-weight:700}
+.logo-mark{width:22px;height:22px;border-radius:7px;background:linear-gradient(135deg,#0c6e52,#1fa67d);display:grid;place-items:center;color:#fff;font-size:12px;font-weight:700}
 .logo b{color:var(--rose);font-weight:700}
 .icon-btn{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:var(--ink-2)}
 .icon-btn:hover{background:var(--bg-3);color:var(--ink)}
@@ -55,7 +56,7 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line-2);bord
 .side-nav a em.gold{color:var(--gold);background:var(--gold-soft)}
 .side-nav a em.new{color:#fff;background:var(--rose)}
 .side-group{font-size:12px;color:var(--ink-3);padding:16px 10px 6px}
-.ava{width:18px;height:18px;border-radius:50%;background:linear-gradient(135deg,#ffb36b,var(--rose));display:grid;place-items:center;font-size:10px;color:#fff;font-weight:700}
+.ava{width:18px;height:18px;border-radius:50%;background:linear-gradient(135deg,#1fa67d,#0c6e52);display:grid;place-items:center;font-size:10px;color:#fff;font-weight:700}
 .sub-card{margin:16px 4px 4px;padding:14px;border:1px solid var(--line-2);border-radius:14px;background:var(--raise)}
 .sub-card strong{display:block;font-size:14px}
 .sub-card p{margin:4px 0 12px;color:var(--ink-3);font-size:12.5px;line-height:1.5}
@@ -64,7 +65,7 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line-2);bord
 .btn-light:hover{opacity:.9}
 .btn-ghost{border:1px solid var(--line-2)}
 .btn-ghost:hover{background:var(--bg-3)}
-.btn-rose{background:var(--rose);color:#fff}
+.btn-rose{background:#0e7c5d;color:#fff}
 .btn-block{width:100%}
 .side-foot{padding:12px;border-top:1px solid var(--line)}
 .side-foot .btn{height:38px}
@@ -100,7 +101,7 @@ body.side-off .crumb .open-side{display:grid}
 .eyebrow{display:flex;align-items:center;gap:7px;color:var(--rose);font-size:13px;font-weight:500}
 .eyebrow::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--rose)}
 .hero h1{margin:10px 0 8px;font-size:44px;line-height:1.15;letter-spacing:-.02em;font-weight:700}
-.hero h1 em{font-style:normal;background:linear-gradient(90deg,var(--rose),#ff8f73);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero h1 em{font-style:normal;background:linear-gradient(90deg,var(--rose),#8fe3c4);-webkit-background-clip:text;background-clip:text;color:transparent}
 .hero p{margin:0;color:var(--ink-3);font-size:14px}
 .hero p b{color:var(--ink);font-weight:600}
 .hero-search{width:346px;flex:none;display:flex;align-items:center;gap:10px;height:38px;padding:0 12px;border:1px solid var(--line-2);border-radius:10px;background:var(--raise);color:var(--ink-3)}
