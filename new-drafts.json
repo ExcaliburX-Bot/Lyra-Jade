@@ -1,10 +1,10 @@
 [
   {
-    "slug": "langchain-knowledge-factory",
-    "title": "LangChain 提出「知识工厂」框架：让 AI 代理真正懂公司的规矩",
-    "file": "content/articles/langchain-knowledge-factory.json",
-    "errors": 1,
-    "warnings": 3,
+    "slug": "vercel-board",
+    "title": "Vercel 推出 Board：多 agent 协作的共享消息板，v0 软件工厂已靠它合并超过 50% PR",
+    "file": "content/articles/vercel-board.json",
+    "errors": 0,
+    "warnings": 0,
     "provider": "deepseek",
     "model": "deepseek-v4-pro"
   }
