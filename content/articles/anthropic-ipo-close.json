@@ -134,7 +134,7 @@
                 ]
               }
             ],
-            "note": "「公司拿到」是 IPO 毛收入的一部分，不与 935 相加；原文写 IPO 毛收入约 93.5 billion，其中约 91.6 billion 归公司。"
+            "note": "「公司拿到」是 IPO 毛收入的一部分，不与 935 亿美元相加；原文写 IPO 毛收入约 $93.5 billion（935 亿美元），其中约 $91.6 billion（916 亿美元）归公司。"
           }
         }
       ]
@@ -269,14 +269,14 @@
       "quote": "23,648,646 shares sold by certain selling stockholders"
     },
     {
-      "text": "IPO 毛收入约 93.5 亿美元，未扣承销折扣、佣金和其他费用。",
+      "text": "IPO 毛收入约 935 亿美元，未扣承销折扣、佣金和其他费用。",
       "value": "$93.5 billion",
       "source_url": "https://www.anthropic.com/news/ipo-close",
       "as_written": "约 935 亿美元",
       "quote": "were approximately $93.5 billion"
     },
     {
-      "text": "其中约 91.6 亿美元归 Anthropic。",
+      "text": "其中约 916 亿美元归 Anthropic。",
       "value": "$91.6 billion",
       "source_url": "https://www.anthropic.com/news/ipo-close",
       "as_written": "约 916 亿美元",
@@ -297,14 +297,14 @@
       "quote": "an aggregate of 313,253,007 shares of Class N common stock"
     },
     {
-      "text": "私募合计购买价约 26.0 亿美元。",
+      "text": "私募合计购买价约 260 亿美元。",
       "value": "$26.0 billion",
       "source_url": "https://www.anthropic.com/news/ipo-close",
       "as_written": "约 260 亿美元",
       "quote": "for an aggregate purchase price of approximately $26.0 billion"
     },
     {
-      "text": "IPO 与私募合计毛收入约 119.5 亿美元，未扣承销折扣、佣金和其他费用。",
+      "text": "IPO 与私募合计毛收入约 1,195 亿美元，未扣承销折扣、佣金和其他费用。",
       "value": "$119.5 billion",
       "source_url": "https://www.anthropic.com/news/ipo-close",
       "as_written": "约 1,195 亿美元",
@@ -318,14 +318,14 @@
       "quote": "was declared effective by the Securities and Exchange Commission on November 18, 2026"
     },
     {
-      "text": "站内相关文章显示，Anthropic 在 Series H 轮融资 65 亿美元。",
+      "text": "站内相关文章显示，Anthropic 在 Series H 轮融资 650 亿美元。",
       "value": "$65B",
       "source_url": "https://www.anthropic.com/news/ipo-close",
       "as_written": "650 亿美元",
       "quote": "Anthropic raises $65B in Series H funding at $965B post-money valuation"
     },
     {
-      "text": "该 Series H 轮投后估值为 965 亿美元。",
+      "text": "该 Series H 轮投后估值为 9,650 亿美元。",
       "value": "$965B",
       "source_url": "https://www.anthropic.com/news/ipo-close",
       "as_written": "9,650 亿美元",
