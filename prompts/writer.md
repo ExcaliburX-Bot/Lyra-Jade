@@ -70,6 +70,40 @@
 | 两种做法在流程或架构上差在哪一层 | pipeline | rows: [{label, note, nodes: [{label, hi}]}]; compare: {label, max, items: [{label, value, display, tone: main/ref}]} |
 | 看得见的效果差异（画质、噪点） | beforeafter | left: {label}; right: {label, note} |
 
+| 每一类东西各有哪几个参数、开关（「旋钮」），配一张示意小图 | schematic（规格示意） | items: [{glyph, title, sub, rows: [{k, v}]}]（1–5 行；v 里用反引号标参数名，例如 "`start_page` 到 `end_page`"） |
+| 一件事分 2–4 个阶段发生，每个阶段配一张小图 | storyboard（分镜） | panels: [{glyph, title, text, tone}]；新增或关键的那一格 tone 设 hi |
+| 一个结构或关系，一张图就讲清 | illustration（单张示意） | glyph; legend: [{tone, label}]（可选） |
+
+## 示意小图零件（glyph）
+
+schematic、storyboard、illustration 和 cards（每张卡可以用 glyph 代替 icon）里的 glyph，都从下面选零件、给参数，程序会画出来。选和这篇的视觉比喻一致的零件：讲「取一部分」就用 pages / sheet / tracks / wave / frames / doc 的 select 框出那一部分；讲「谁指挥谁」用 hub；讲「从本机到云端」用 devices。
+
+| kind | 画的是 | 参数 |
+| --- | --- | --- |
+| pages | 一排页面，框出几页 | count（页数，≤16）, select: [起, 止]（从 1 数） |
+| sheet | 表格格子，框出一块 | rows, cols, select: [起行, 起列, 止行, 止列] |
+| tracks | 几条时间轨道（字幕 / 画面 / 声音），框出一段 | lanes: [轨道名], select: [0–1 的起点, 终点] |
+| wave | 音频波形，框出一截 | select: [0–1, 0–1] |
+| frames | 视频胶片，选中几帧 | count（≤12）, select: [起, 止] |
+| doc | 一页文字，高亮几行 | lines, select: [起, 止] |
+| context | 上下文窗口 / token 条，各部分占多少 | total, segments: [{size, tone, label}] |
+| stack | 分层架构（从上到下） | layers: [{label, tone}] |
+| flow | 2–4 个节点连成一条线 | nodes: [{label, tone}] |
+| hub | 一个中心连几个子节点（指挥官和子代理） | center: {label, tone}, nodes: [{label, tone}] |
+| chat | 一段对话（最多 4 轮） | turns: [{role: user/ai/tool, text, tone}] |
+| window | 软件界面，列表里哪几行是重点 | title, items: [{label, tone}] |
+| dots | 点阵比例（100 个里有几个） | total（≤200）, hi |
+| ring | 环形百分比 | value, max（默认 100）, label, display |
+| area | 面积对比（芯片变小多少） | before: {label, value}, after: {label, value} |
+| devices | 两台设备之间传东西 | left / right: {kind: laptop/phone/server/cloud/chip, label, tone}, arrow |
+| funnel | 逐级筛选 | stages: [{label, value, display, tone}] |
+| clock | 一天 24 小时里的时段 | segments: [{from, to, tone, label}]（小时） |
+| matrix | 勾选矩阵（谁有哪些权限、哪个型号支持哪些功能） | rows, cols, cells: [[0 没有 / 1 有 / 2 重点]] |
+
+- 零件里的数字（页数、比例、百分比）如果来自原文，要进 claims；只是为了画图举的例子，subtitle 写「示意」。
+- 零件里的文字要短：节点、轨道、标签 2–8 个字。
+- 一篇里示意零件 1–3 张就够，不要每张图都用。
+
 - 选图型看「读者要比较什么」：比大小用 columns / bars，比有无和新旧用 compare，比多个维度用 table，讲几种用法用 cards，讲怎么调用用 code。
 - 并列的选项不要用 steps；只比两三个数字不要用 pipeline。
 - 数值字段（value、max）填数字本身，例如 70.9，不要写成「70.9%」；要显示的写法放 display，例如「约 101 万」。

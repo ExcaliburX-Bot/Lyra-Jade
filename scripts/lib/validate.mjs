@@ -1,6 +1,6 @@
 /* 发布前的自动检查：格式、图的数据、数字能不能在原文里找到、措辞
    errors 必须清零才能合并；warnings 交给编辑判断 */
-import { FIGURE_SPEC } from "../../site/assets/components.js";
+import { FIGURE_SPEC, GLYPH_SPEC } from "../../site/assets/components.js";
 import { normNum } from "./text.mjs";
 /* 「500,000+」「约 30%」这类：比对时去掉前后的修饰符 */
 const numCore = v => normNum(v).replace(/^(约|超过|逾|近|~|≈|>|＞|\+)+/, "").replace(/(\+|以上|左右|多)+$/, "");
@@ -8,7 +8,7 @@ const numCore = v => normNum(v).replace(/^(约|超过|逾|近|~|≈|>|＞|\+)+/,
 const CATEGORIES = ["product", "research", "deep", "biz", "howto", "visual", "insight", "other"];
 const HYPE = ["革命性", "炸裂", "颠覆", "史诗级", "遥遥领先", "王炸", "吊打", "震撼发布", "杀疯了", "天花板", "很炫", "碾压", "封神", "秒杀"];
 const TITLE_RANK = /第一|最强|最好|最佳|榜首|冠军|SOTA|No\.?\s?1|#1/i;
-const SCHEMATIC = ["timeline", "route", "steps", "pipeline", "beforeafter"];
+const SCHEMATIC = ["timeline", "route", "steps", "pipeline", "beforeafter", "schematic", "storyboard", "illustration"];
 
 /* 日期类事实：原文常写「November 20, 2026」或「Today」，模型统一写成 2026-11-20。
    返回 true＝原文里有同一天的其他写法；"relative"＝原文是 Today/Yesterday 且换算后和发布日一致；false＝找不到 */
@@ -58,6 +58,14 @@ export function validateArticle(a, { sourceTexts = {} } = {}) {
     if (f.type === "capacity") (f.items || []).forEach(it => need(typeof it.value === "number" && it.value >= 0 && it.value <= f.max, `${where}：${it.label} 的数值不在 0 到 max 之间`));
     if (f.type === "bars") (f.groups || []).flatMap(g => g.items || []).forEach(it => need(typeof it.value === "number" || it.status, `${where}：${it.label} 既没有数值也没有状态说明`));
     if (f.type === "timeline") (f.lanes || []).flatMap(l => l.segments || []).forEach(s => need(s.from < s.to && s.from >= f.axis.from && s.to <= f.axis.to, `${where}：时间段 ${s.from}–${s.to} 超出坐标轴`));
+    /* 示意小图零件：零件名要认识、必填参数要有 */
+    const glyphs = [f.glyph, ...(f.items || []).map(x => x?.glyph), ...(f.panels || []).map(x => x?.glyph)].filter(Boolean);
+    glyphs.forEach(g => {
+      if (!GLYPH_SPEC[g.kind]) { errors.push(`${where}：不认识的示意零件 ${g.kind}`); return; }
+      GLYPH_SPEC[g.kind].forEach(k => need(g[k] != null, `${where}：示意零件 ${g.kind} 缺少参数 ${k}`));
+    });
+    if (f.type === "storyboard") need((f.panels || []).length >= 2 && f.panels.length <= 4, `${where}：分镜要 2–4 格`);
+    if (f.type === "schematic") need((f.items || []).length >= 1 && f.items.length <= 5, `${where}：规格示意 1–5 行`);
     /* 颜色要在副标题里交代：用了琥珀（hi）或蓝（def），副标题就得说它们代表什么 */
     const tones = JSON.stringify(f).match(/"(tone|state)":"(hi|def)"/g) || [];
     if (tones.some(t => t.endsWith('"hi"')) && !/琥珀|橙/.test(f.subtitle || "")) warnings.push(`${where}：用了琥珀色（hi），副标题要说明它代表什么`);

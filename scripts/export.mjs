@@ -17,9 +17,10 @@ let html = fs.readFileSync(page, "utf8");
 const swap = (from, to) => { if (!html.includes(from)) throw new Error(`页面结构变了，找不到：${from}`); html = html.replace(from, () => to); };
 
 swap(`<link rel="stylesheet" href="../assets/site.css">`, `<style>\n${read("site.css")}\n</style>`);
+swap(`<link rel="stylesheet" href="../assets/themes/coss.css">`, `<style>\n${read("themes/coss.css")}\n</style>`);
 swap(`<script src="../assets/app.js"></script>`, `<script>\n${safe(read("app.js"))}\n</script>`);
 swap(`<script type="module">import {initFigures} from "../assets/components.js";initFigures(document);</script>`,
-     `<script type="module">\n${safe(read("components.js"))}\ninitFigures(document);\n</script>`);
+     `<script type="module">\n${safe(read("glyphs.js"))}\n${safe(read("components.js").replace(/^import .*glyphs\.js";$/m, ""))}\ninitFigures(document);\n</script>`);
 swap(`window.SITE_BASE="../"`, `window.SITE_BASE="#"`);
 /* 单文件里没有网站的其他页面：站内链接改成不跳转 */
 html = html.replace(/href="\.\.\/[^"]*"/g, 'href="#"');

@@ -113,7 +113,10 @@
                         "cards",
                         "columns",
                         "compare",
-                        "quote"
+                        "quote",
+                        "schematic",
+                        "storyboard",
+                        "illustration"
                       ]
                     },
                     "title": {

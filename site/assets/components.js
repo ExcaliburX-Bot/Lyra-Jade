@@ -6,6 +6,9 @@
    新增图型：在 FIGS 里加一个函数，在 FIGURE_SPEC 里写清必填字段
    ========================================================= */
 
+import { glyph, GLYPHS, GLYPH_SPEC } from "./glyphs.js";
+export { GLYPHS, GLYPH_SPEC };
+
 export const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const pct = (v, max) => Math.max(0, Math.min(100, (v / max) * 100)).toFixed(2) + "%";
 
@@ -25,7 +28,11 @@ export const FIGURE_SPEC = {
   cards: ["items"],
   columns: ["items"],
   compare: ["left", "right"],
-  quote: ["text", "who", "source_url"]
+  quote: ["text", "who", "source_url"],
+  /* 示意小图零件（见 glyphs.js） */
+  schematic: ["items"],
+  storyboard: ["panels"],
+  illustration: ["glyph"]
 };
 
 /* 颜色语义（全站统一，图的副标题里要说明本图用到的颜色）：
@@ -45,6 +52,8 @@ const ICONS = {
   cpu: '<rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/>', robot: '<rect x="4" y="8" width="16" height="11" rx="3"/><path d="M12 4v4M9 13h.01M15 13h.01M9 16h6"/>'
 };
 const icon = n => ICONS[n] ? `<svg class="fic" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n]}</svg>` : "";
+/* 一行里的 `xxx` 渲染成参数标签 */
+const inlineCode = s => esc(s).replace(/`([^`]+)`/g, "<code>$1</code>");
 const fmt = v => typeof v === "number" ? v.toLocaleString("en-US") : esc(v);
 
 export const FIGS = {
@@ -100,7 +109,7 @@ export const FIGS = {
   },
 
   /* 卡片网格：每张卡 icon（见 ICONS）、title、desc、tags（参数或关键词，等宽字体） */
-  cards: f => `<div class="fcards${f.items.length === 3 ? " c3" : ""}">${f.items.map((c, i) => `<div class="fcard t-${TONE(c.tone)}" style="--i:${i}">${icon(c.icon)}<b>${esc(c.title)}</b>${c.desc ? `<p>${esc(c.desc)}</p>` : ""}${c.tags?.length ? `<div class="ftags">${c.tags.map(t => `<code>${esc(t)}</code>`).join("")}</div>` : ""}</div>`).join("")}</div>`,
+  cards: f => `<div class="fcards${f.items.length === 3 ? " c3" : ""}">${f.items.map((c, i) => `<div class="fcard t-${TONE(c.tone)}" style="--i:${i}">${c.glyph ? `<div class="fcard-g">${glyph(c.glyph)}</div>` : icon(c.icon)}<b>${esc(c.title)}</b>${c.desc ? `<p>${esc(c.desc)}</p>` : ""}${c.tags?.length ? `<div class="ftags">${c.tags.map(t => `<code>${esc(t)}</code>`).join("")}</div>` : ""}</div>`).join("")}</div>`,
 
   /* 竖向柱状图：items [{label, sub, value, display, tone, calc}] */
   columns: f => {
@@ -115,6 +124,15 @@ export const FIGS = {
     const col = c => `<div class="fcmp-col"><h5>${esc(c.label)}${c.sub ? `<small>${esc(c.sub)}</small>` : ""}</h5>${c.items.map((it, i) => `<div class="fcmp-it s-${["hi", "def", "dim"].includes(it.state) ? it.state : "base"}" style="--i:${i}"><span>${esc(it.label)}</span>${it.tag ? `<code>${esc(it.tag)}</code>` : ""}</div>`).join("")}</div>`;
     return `<div class="fcmp">${col(f.left)}${f.arrow === false ? "" : `<div class="fcmp-arrow" aria-hidden="true">→</div>`}${col(f.right)}</div>${f.footer ? `<div class="fcmp-foot">${esc(f.footer)}</div>` : ""}`;
   },
+
+  /* 规格示意：左边一张小图，右边标题 + 几行「旋钮」：items [{glyph, title, sub, rows: [{k, v}]}]，v 里用 `参数名` 标参数 */
+  schematic: f => `<div class="fsch">${f.items.map((it, i) => `<div class="fsch-it" style="--i:${i}"><div class="fsch-g">${glyph(it.glyph)}</div><div class="fsch-t"><b>${esc(it.title)}</b>${it.sub ? `<span>${esc(it.sub)}</span>` : ""}${(it.rows || []).length ? `<dl>${it.rows.map(r => `<dt>${esc(r.k)}</dt><dd>${inlineCode(r.v)}</dd>`).join("")}</dl>` : ""}</div></div>`).join("")}</div>`,
+
+  /* 分镜：2–4 格，每格一张小图 + 编号 + 一句话：panels [{glyph, title, text, tone}] */
+  storyboard: f => `<div class="fsb" style="--n:${Math.min(f.panels.length, 4)}">${f.panels.slice(0, 4).map((p, i) => `<div class="fsb-p t-${TONE(p.tone)}" style="--i:${i}"><div class="fsb-g">${glyph(p.glyph)}</div><b><i>${i + 1}</i>${esc(p.title)}</b>${p.text ? `<p>${inlineCode(p.text)}</p>` : ""}</div>`).join("")}</div>`,
+
+  /* 单张大示意图：glyph + 可选的图例 legend [{tone, label}] */
+  illustration: f => `<div class="fill-g">${glyph(f.glyph)}</div>${f.legend?.length ? `<div class="legend">${f.legend.map(l => `<span><i class="t-${TONE(l.tone)}"></i>${esc(l.label)}</span>`).join("")}</div>` : ""}`,
 
   /* 官方引语：text 必须逐字来自原文；zh 是中文意思 */
   quote: f => `<blockquote class="fquote"><p class="q-orig">${esc(f.text)}</p>${f.zh ? `<p class="q-zh">${esc(f.zh)}</p>` : ""}<footer><b>${esc(f.who)}</b>${f.role ? ` · ${esc(f.role)}` : ""} · <a href="${esc(f.source_url)}" target="_blank" rel="noopener">出处 ↗</a></footer></blockquote>`
