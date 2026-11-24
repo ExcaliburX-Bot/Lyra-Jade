@@ -8,7 +8,7 @@ const SITE = { brand: "玲珑玉 Lyra-Jade", today: "2026-11-18", pageSize: 30 }
    ========================================================= */
 const I18N = {
   zh:{searchOrAsk:"搜索解读",loginSignup:"登录 / 免费注册",syncHint:"收藏、阅读进度跨设备同步",navJiedu:"AI 解读",changelog:"进化日志",
-    themeSystem:"跟随系统",themeLight:"浅色",themeDark:"深色",themeNote:"文章页另有阅读主题，在文章右下角 Aa 里切换",sysNow:"现在是{x}",
+    themeSystem:"跟随系统",themeLight:"浅色",themeDark:"深色",themeNote:"",styleTitle:"风格",styleVivid:"鲜明",styleVividNote:"彩色封面，默认",styleCoss:"简约",styleCossNote:"黑白灰，适合长读",sysNow:"现在是{x}",
     login:"登录",member:"会员",subscribe:"订阅",search:"搜索",submit:"投稿",podFeed:"播客订阅源",
     eyebrow:"AI 信息侦查员 · 每日更新",h1a:"AI 精华，",h1b:"讲到你懂。",
     stats:"只用一手来源 · 每个数字回查原文 · 讲透不注水 · 已解读 <b>{n}</b> 篇",
@@ -120,10 +120,10 @@ const artUrl = a => `${BASE}a/${a.slug}.html`;
 /* =========================================================
    4. 状态与工具
    ========================================================= */
-const S = { lang:"zh", cat:"all", view:"time", q:"", shown:SITE.pageSize, theme:"dark" };
+const S = { lang:"zh", cat:"all", view:"time", q:"", shown:SITE.pageSize, theme:document.documentElement.dataset.themeDefault||"dark", style:"vivid" };
 try{ Object.assign(S, JSON.parse(localStorage.getItem("wg-prefs")||"{}")); S.q=""; S.shown=SITE.pageSize; S.cat="all"; }catch(e){}
 S.lang="zh"; // 目前只有中文内容；英文、日文版做好后再开放切换
-const save=()=>{try{localStorage.setItem("wg-prefs",JSON.stringify({lang:S.lang,view:S.view,theme:S.theme}))}catch(e){}};
+const save=()=>{try{localStorage.setItem("wg-prefs",JSON.stringify({lang:S.lang,view:S.view,theme:S.theme,style:S.style}))}catch(e){}};
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const t=(k,v={})=>{let s=(I18N[S.lang][k]??I18N.zh[k]??k);if(typeof s==="string")for(const x in v)s=s.replaceAll(`{${x}}`,v[x]);return s};
 const catName=k=>{const c=CATS.find(c=>c.k===k);return c?c[S.lang]:k};
@@ -194,6 +194,7 @@ function renderStatic(){
   $$(".seg button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.view===S.view));
   // 主题菜单
   $$("#themeMenu [data-theme]").forEach(b=>b.classList.toggle("on",b.dataset.theme===S.theme));
+  $$("#themeMenu [data-style]").forEach(b=>b.classList.toggle("on",b.dataset.style===S.style));
   $("#sysNow").textContent=t("sysNow",{x:matchMedia("(prefers-color-scheme: dark)").matches?t("themeDark"):t("themeLight")});
 }
 
@@ -264,6 +265,13 @@ function renderAll(){renderStatic();if(LIST){renderFeed();renderArchive()}}
 /* =========================================================
    6. 主题
    ========================================================= */
+/* 风格：鲜明（默认）或简约（coss ui 风格，规则在 assets/themes/coss.css，限定在 html.style-coss 下） */
+const STYLE_FONTS="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap";
+function applyStyle(){
+  const on=S.style==="coss";
+  document.documentElement.classList.toggle("style-coss",on);
+  if(on&&!document.querySelector(`link[href="${STYLE_FONTS}"]`)){const l=document.createElement("link");l.rel="stylesheet";l.href=STYLE_FONTS;document.head.appendChild(l)}
+}
 function applyTheme(){
   const dark=S.theme==="dark"||(S.theme==="system"&&matchMedia("(prefers-color-scheme: dark)").matches);
   document.documentElement.classList.toggle("dark",dark);
@@ -289,7 +297,7 @@ function closeAll(){$$(".scrim").forEach(s=>s.classList.remove("show"));$("#them
    8. 事件
    ========================================================= */
 document.addEventListener("click",e=>{
-  const el=e.target.closest("[data-cat],[data-view],[data-lang],[data-theme],[data-open-search],[data-open-login],[data-subscribe],[data-todo],[data-home],[data-fake],[data-close],[data-tab],[data-tabto],[data-scroll],[data-cat-all],[data-goto],#loadMore,.card,#themeBtn");
+  const el=e.target.closest("[data-cat],[data-view],[data-lang],[data-theme],[data-style],[data-open-search],[data-open-login],[data-subscribe],[data-todo],[data-home],[data-fake],[data-close],[data-tab],[data-tabto],[data-scroll],[data-cat-all],[data-goto],#loadMore,.card,#themeBtn");
   if(!e.target.closest(".theme-wrap")) $("#themeMenu").classList.remove("show");
   if(!el) return;
   const d=el.dataset;
@@ -302,6 +310,7 @@ document.addEventListener("click",e=>{
   if(d.view){S.view=d.view;save();renderStatic();renderFeed();return}
   if(d.lang){S.lang=d.lang;save();renderAll();return}
   if(d.theme){S.theme=d.theme;save();applyTheme();renderStatic();return}
+  if(d.style){S.style=d.style;save();applyStyle();renderStatic();return}
   if("openSearch" in d){openSearch();return}
   if("subscribe" in d){toast(t("demo"));return}
   if("todo" in d){toast(t("todo"));return}
@@ -334,4 +343,5 @@ addEventListener("scroll",()=>$("#toTop").classList.toggle("show",scrollY>900),{
 
 /* 启动 */
 applyTheme();
+applyStyle();
 renderAll();

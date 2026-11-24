@@ -436,3 +436,4 @@ body.reading .listing{display:none}
 .disclose a,.about a{color:var(--rose)}
 .about ul.body{font-size:16px;line-height:1.9;color:var(--ink-2);padding-left:20px;margin:0 0 16px}
 .about h2{scroll-margin-top:70px}
+.menu-sep{font-size:11.5px;color:var(--ink-3);padding:8px 10px 4px;border-top:1px solid var(--line);margin-top:4px}
