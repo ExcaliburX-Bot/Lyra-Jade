@@ -1,0 +1,339 @@
+{
+  "slug": "anthropic-ipo-close",
+  "category": "biz",
+  "date": "2026-11-20",
+  "publisher": "Anthropic",
+  "title": "Anthropic closes IPO at $83 a share; IPO plus private placement total about $119.5 billion",
+  "summary": "Anthropic's public listing is now complete: Class A shares are trading on Nasdaq under the symbol ANT. The announcement sets out the offering price, share counts, and proceeds, and reveals that AMD, NVIDIA, and other chip and cloud giants took part in the concurrent private placement. For regular Claude users, this is capital-markets news — it doesn't change the product or how you use it.",
+  "ai_summary": "Anthropic announced on Nov. 20 that it had completed its IPO and a concurrent private placement. The deal involved 1.127 billion Class A common shares at $83 each: the company sold about 1.103 billion shares for about $91.6 billion in gross proceeds, while selling stockholders sold about 23.649 million shares, which don't go to the company. Class A shares began trading on Nasdaq under ANT on Nov. 19. The private placement sold about 313 million Class N shares to AMD, Broadcom, Google, Micron, Microsoft, NVIDIA, and TSMC for about $26.0 billion. Combined gross proceeds from the IPO and private placement came to about $119.5 billion, before underwriting fees. This mainly affects the capital side; the announcement doesn't disclose the post-IPO market cap, use of proceeds, or product plans, and day-to-day use of Claude is unaffected.",
+  "brief": [
+    "Class A shares priced at $83 each, with 1.127 billion shares offered and about 1.103 billion sold by the company.",
+    "Underwriters fully exercised the option to purchase an additional 147 million shares.",
+    "The concurrent private placement sold about 313 million Class N shares for about $26.0 billion.",
+    "The IPO and private placement together raised about $119.5 billion in gross proceeds, before underwriting fees and other expenses."
+  ],
+  "readMinutes": 6,
+  "sections": [
+    {
+      "h": "What happened: Anthropic closes its IPO",
+      "blocks": [
+        {
+          "p": "Anthropic, the company behind Claude, announced on Nov. 20 that it had closed its initial public offering and a concurrent private placement. Class A common stock began trading on the Nasdaq Global Select Market on Nov. 19 under the symbol ANT."
+        },
+        {
+          "p": "This is a closing notice. The substance is how many shares were issued, at what price, who bought them, and how much the company received. It says nothing about products, models, or subscription pricing. For scale: our earlier coverage shows Anthropic raised $65 billion in Series H funding before the IPO at a $965 billion post-money valuation — note that's the previous round's valuation, not this IPO's market cap."
+        }
+      ]
+    },
+    {
+      "h": "How many shares the IPO sold and what Anthropic received",
+      "blocks": [
+        {
+          "p": "The IPO offered 1,127,000,000 Class A common shares at $83.00 per share. Of those, Anthropic sold 1,103,351,354 shares, or about 1.103 billion, and selling stockholders sold 23,648,646 shares, or about 23.649 million."
+        },
+        {
+          "p": "The underwriters also fully exercised the overallotment option — the greenshoe, an extra block of shares reserved at the time of the offering. They bought an additional 147 million shares at the original offering price. A fully used greenshoe typically signals strong demand."
+        },
+        {
+          "p": "On a gross basis, before underwriting discounts, commissions, and other offering expenses, the IPO raised about $93.5 billion, of which about $91.6 billion went to Anthropic. Proceeds from shares sold by selling stockholders don't go to the company."
+        }
+      ]
+    },
+    {
+      "h": "Concurrent private placement: tech giants buy $26 billion of Class N stock",
+      "blocks": [
+        {
+          "p": "Alongside the public offering, Anthropic completed a private placement: it sold 313,253,007 shares of Class N common stock to AMD, Broadcom, Google, Micron, Microsoft, NVIDIA, and TSMC at the same $83.00 per-share price, for about $26.0 billion in total."
+        },
+        {
+          "p": "The buyers are concentrated in chips, cloud computing, and foundry. The announcement says only that these Class N shares weren't registered under the Securities Act of 1933 and were sold as a private placement. It doesn't explain how Class N shares differ from Class A in voting rights, conversion, or dividends."
+        },
+        {
+          "p": "Add the IPO — including shares sold by selling stockholders — and the private placement, and total gross proceeds come to about $119.5 billion, again before underwriting fees and other expenses."
+        }
+      ]
+    },
+    {
+      "h": "The key numbers at a glance",
+      "blocks": [
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "Four key numbers from the IPO and private placement",
+            "subtitle": "Units: dollars and shares; all amounts are gross proceeds before fees",
+            "note": "Data from Anthropic's Nov. 20, 2026 announcement; Class N shares were sold in the concurrent private placement.",
+            "items": [
+              {
+                "value": "83.00",
+                "unit": "$ / share",
+                "label": "Offering price",
+                "note": "Same price for Class A and Class N"
+              },
+              {
+                "value": "11.27",
+                "unit": "100M shares",
+                "label": "Total Class A shares offered",
+                "note": "Includes full exercise of the underwriters' option"
+              },
+              {
+                "value": "3.13",
+                "unit": "100M shares",
+                "label": "Class N shares (private placement)",
+                "note": "Sold to AMD, NVIDIA, and other tech companies"
+              },
+              {
+                "value": "1195",
+                "unit": "$100M",
+                "label": "IPO + private placement total",
+                "note": "Before underwriting fees and other expenses"
+              }
+            ]
+          }
+        },
+        {
+          "fig": {
+            "type": "bars",
+            "title": "Where the money goes: IPO gross proceeds, what Anthropic receives, private placement",
+            "subtitle": "Units: $100M; all amounts are gross proceeds before fees",
+            "legend": [
+              {
+                "tone": "main",
+                "label": "IPO gross proceeds"
+              },
+              {
+                "tone": "good",
+                "label": "Proceeds to Anthropic"
+              },
+              {
+                "tone": "cloud",
+                "label": "Concurrent private placement"
+              }
+            ],
+            "groups": [
+              {
+                "label": "Capital raised",
+                "items": [
+                  {
+                    "label": "IPO gross proceeds",
+                    "sub": "1.127 billion Class A shares, including shares sold by selling stockholders",
+                    "value": 935,
+                    "tone": "main"
+                  },
+                  {
+                    "label": "Proceeds to Anthropic",
+                    "sub": "About 1.103 billion shares sold by Anthropic",
+                    "value": 916,
+                    "tone": "good"
+                  },
+                  {
+                    "label": "Concurrent private placement",
+                    "sub": "About 313 million Class N shares",
+                    "value": 260,
+                    "tone": "cloud"
+                  }
+                ]
+              }
+            ],
+            "note": "\"Proceeds to Anthropic\" is part of IPO gross proceeds and shouldn't be added to the $93.5 billion; the announcement puts IPO gross proceeds at about $93.5 billion, of which about $91.6 billion goes to Anthropic."
+          }
+        }
+      ]
+    },
+    {
+      "h": "Timeline: registration effective, trading begins, closing announced",
+      "blocks": [
+        {
+          "fig": {
+            "type": "timeline",
+            "title": "Three days: registration effective, trading opens, closing announced",
+            "subtitle": "Illustrative; U.S. time. The announcement gives only dates, not specific times.",
+            "axis": {
+              "from": "2026-11-18",
+              "to": "2026-11-21",
+              "ticks": [
+                "2026-11-18",
+                "2026-11-19",
+                "2026-11-20"
+              ],
+              "unit": "day"
+            },
+            "lanes": [
+              {
+                "label": "Listing process",
+                "sub": "Anthropic",
+                "tone": "main",
+                "segments": [
+                  {
+                    "from": "2026-11-18",
+                    "to": "2026-11-19",
+                    "n": 1,
+                    "label": "Registration statement effective"
+                  },
+                  {
+                    "from": "2026-11-19",
+                    "to": "2026-11-20",
+                    "n": 1,
+                    "label": "Class A shares open for trading under ANT"
+                  },
+                  {
+                    "from": "2026-11-20",
+                    "to": "2026-11-21",
+                    "n": 1,
+                    "label": "Closing announced"
+                  }
+                ]
+              }
+            ],
+            "note": "Dates from the announcement: the SEC declared the registration statement effective on Nov. 18; Nasdaq trading began on Nov. 19; and the closing was announced on Nov. 20."
+          }
+        },
+        {
+          "p": "According to the announcement, the SEC declared the registration statement effective on Nov. 18, Class A shares began trading on Nov. 19, and the closing was announced on Nov. 20. Goldman Sachs and Morgan Stanley were the lead book-running managers, with J.P. Morgan, Citigroup, Barclays, Wells Fargo Securities, and several other banks acting as underwriters."
+        }
+      ]
+    },
+    {
+      "h": "What Anthropic hasn't said",
+      "blocks": [
+        {
+          "list": [
+            "Post-IPO market cap: the announcement gives no total shares outstanding, no market cap, and no valuation implied by the IPO.",
+            "Net proceeds after fees: it discloses only gross proceeds, not the net amount after underwriting discounts and commissions.",
+            "How Class N shares differ from Class A: voting rights, convertibility, and dividends aren't specified.",
+            "Use of proceeds: it doesn't say how the roughly $119.5 billion in gross proceeds will be spent.",
+            "Who the selling stockholders were and how much they received: the document refers only to \"certain selling stockholders.\"",
+            "Impact on Claude products, pricing, or compute: the announcement doesn't mention it."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Who it's for",
+      "blocks": [
+        {
+          "p": "Value: this release makes the scale of Anthropic's IPO and private placement clear. It's for readers who want to verify hard facts like the offering price, share counts, and participants, and it's a useful size reference for anyone following capital flows in the AI industry."
+        },
+        {
+          "p": "Cost: it's only a closing notice, with no product, technology, or business updates — and all amounts are gross proceeds before fees."
+        },
+        {
+          "p": "If you're following ANT, focus on the prospectus and future earnings reports rather than this announcement alone. If you're a Claude user, nothing about your experience changes and there's no action to take. If you just want the scale: $83 per share, and about $119.5 billion in combined IPO and private-placement gross proceeds."
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Anthropic announces closing of initial public offering, including full exercise of underwriters' option to purchase additional shares, and closing of concurrent private placement",
+      "publisher": "Anthropic",
+      "date": "2026-11-20",
+      "url": "https://www.anthropic.com/news/ipo-close"
+    },
+    "more": [],
+    "note": "All figures in this article come from Anthropic's official announcement; the three charts are drawn from the announcement's figures, not rough estimates. The Series H funding and post-money valuation come from the title of the \"Related articles\" item on the same page and reflect the pre-IPO context, not this IPO's market cap."
+  },
+  "claims": [
+    {
+      "text": "The IPO offered 1,127,000,000 shares of Class A common stock, or 1.127 billion shares.",
+      "value": "1,127,000,000",
+      "source_url": "https://www.anthropic.com/news/ipo-close",
+      "as_written": "1.127 billion shares",
+      "quote": "an aggregate of 1,127,000,000 shares of its Class A common stock"
+    },
+    {
+      "text": "The offering price was $83.00 per share.",
+      "value": "$83",
+      "source_url": "https://www.anthropic.com/news/ipo-close",
+      "as_written": "$83",
+      "quote": "at a public offering price of $83.00 per share"
+    },
+    {
+      "text": "The underwriters fully exercised their option to purchase an additional 147,000,000 shares, or 147 million shares.",
+      "value": "147,000,000",
+      "source_url": "https://www.anthropic.com/news/ipo-close",
+      "as_written": "147 million shares",
+      "quote": "an additional 147,000,000 shares of Class A common stock"
+    },
+    {
+      "text": "Anthropic itself sold 1,103,351,354 shares, or about 1.103 billion shares.",
+      "value": "1,103,351,354",
+      "source_url": "https://www.anthropic.com/news/ipo-close",
+      "as_written": "About 1.103 billion shares",
+      "quote": "The offering consisted of 1,103,351,354 shares sold by Anthropic"
+    },
+    {
+      "text": "Selling stockholders sold 23,648,646 shares, or about 23.649 million shares.",
+      "value": "23,648,646",
+      "source_url": "https://www.anthropic.com/news/ipo-close",
+      "as_written": "About 23.649 million shares",
+      "quote": "23,648,646 shares sold by certain selling stockholders"
+    },
+    {
+      "text": "IPO gross proceeds were about $93.5 billion, before underwriting discounts, commissions, and other offering expenses.",
+      "value": "$93.5 billion",
+      "source_url": "https://www.anthropic.com/news/ipo-close",
+      "as_written": "About $93.5 billion",
+      "quote": "were approximately $93.5 billion"
+    },
+    {
+      "text": "Of that total, about $91.6 billion went to Anthropic.",
+      "value": "$91.6 billion",
+      "source_url": "https://www.anthropic.com/news/ipo-close",
+      "as_written": "About $91.6 billion",
+      "quote": "of which approximately $91.6 billion was received by Anthropic"
+    },
+    {
+      "text": "Class A common stock began trading on the Nasdaq Global Select Market on November 19, 2026, under the symbol ANT.",
+      "value": "November 19, 2026",
+      "source_url": "https://www.anthropic.com/news/ipo-close",
+      "as_written": "November 19",
+      "quote": "began trading on the Nasdaq Global Select Market on November 19, 2026"
+    },
+    {
+      "text": "The private placement sold 313,253,007 shares of Class N common stock, or about 313 million shares.",
+      "value": "313,253,007",
+      "source_url": "https://www.anthropic.com/news/ipo-close",
+      "as_written": "About 313 million shares",
+      "quote": "an aggregate of 313,253,007 shares of Class N common stock"
+    },
+    {
+      "text": "The private placement had an aggregate purchase price of about $26.0 billion.",
+      "value": "$26.0 billion",
+      "source_url": "https://www.anthropic.com/news/ipo-close",
+      "as_written": "About $26.0 billion",
+      "quote": "for an aggregate purchase price of approximately $26.0 billion"
+    },
+    {
+      "text": "Combined IPO and private-placement gross proceeds were about $119.5 billion, before underwriting discounts, commissions, and other offering expenses.",
+      "value": "$119.5 billion",
+      "source_url": "https://www.anthropic.com/news/ipo-close",
+      "as_written": "About $119.5 billion",
+      "quote": "were approximately $119.5 billion"
+    },
+    {
+      "text": "The registration statement was declared effective by the U.S. Securities and Exchange Commission on November 18, 2026.",
+      "value": "November 18, 2026",
+      "source_url": "https://www.anthropic.com/news/ipo-close",
+      "as_written": "November 18",
+      "quote": "was declared effective by the Securities and Exchange Commission on November 18, 2026"
+    },
+    {
+      "text": "Our earlier coverage shows Anthropic raised $65 billion in Series H funding.",
+      "value": "$65B",
+      "source_url": "https://www.anthropic.com/news/ipo-close",
+      "as_written": "$65 billion",
+      "quote": "Anthropic raises $65B in Series H funding at $965B post-money valuation"
+    },
+    {
+      "text": "That Series H round had a post-money valuation of $965 billion.",
+      "value": "$965B",
+      "source_url": "https://www.anthropic.com/news/ipo-close",
+      "as_written": "$965 billion",
+      "quote": "Anthropic raises $65B in Series H funding at $965B post-money valuation"
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "052640828056b5bc"
+}
