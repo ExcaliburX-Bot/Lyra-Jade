@@ -27,11 +27,16 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: 中文字体（分享图截图要用）
+        run: sudo apt-get install -y -qq fonts-noto-cjk >/dev/null || echo "::warning::中文字体没装上，分享图里的中文可能显示不全"
       - run: node scripts/build.mjs
         env:
+          WG_OG: "1"                                       # 每篇文章单独的分享图
           WG_SITE_URL: ${{ vars.WG_SITE_URL }}
           WG_CF_ANALYTICS: ${{ vars.WG_CF_ANALYTICS }}     # Cloudflare Web Analytics 站点令牌，可不配
           WG_CONTACT_EMAIL: ${{ vars.WG_CONTACT_EMAIL }}   # 关于页和文末显示的勘误邮箱，可不配
+      - name: 分享图（无头 Chrome 截图；失败的用通用图）
+        run: node scripts/og.mjs
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

@@ -98,3 +98,35 @@ export function coverHtml(a) {
   else inner = `<div class="cv-l cv-wide">${kicker}${title}</div>`;
   return { html: inner, layout: c.layout, hue: c.hue, light: c.light };
 }
+
+/* 封面配色（和 site/assets/app.js 里的 cover() 一致）：分享图在构建时用 */
+export function coverColors(hue, light) {
+  return {
+    bg: light ? `linear-gradient(160deg,hsl(${hue} 45% 97%),hsl(${hue} 32% 90%))` : `linear-gradient(150deg,hsl(${hue} 38% 14%),hsl(${(hue + 28) % 360} 42% 7%))`,
+    acc: light ? `hsl(${hue} 70% 38%)` : `hsl(${hue} 85% 68%)`,
+    glow: `hsl(${hue} 80% ${light ? 82 : 38}% / .5)`
+  };
+}
+
+/* 分享图（1200×630）的 HTML：用文章封面放大，底部加站名。scripts/og.mjs 用无头 Chrome 截成 PNG */
+export function ogCardHtml(a, { lang = "zh", css = "../../assets/site.css" } = {}) {
+  const cv = coverHtml(a), c = coverColors(cv.hue, cv.light);
+  const brand = lang === "en" ? "Lyra-Jade · AI Explained" : "玲珑玉 Lyra-Jade · AI 解读";
+  const tag = lang === "en" ? "The best of AI, made clear." : "AI 精华，讲到你懂。";
+  return `<!DOCTYPE html><html lang="${lang === "en" ? "en" : "zh-CN"}" class="dark"><head><meta charset="utf-8"><link rel="stylesheet" href="${css}">
+<style>
+html,body{margin:0;padding:0;width:1200px;height:630px;overflow:hidden;background:#111;display:block}
+body,.cover{font-family:"Noto Sans CJK SC","Noto Sans SC","Source Han Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif}
+.og{position:fixed;left:0;top:0;width:1200px;height:630px;z-index:10}
+.og .cover{width:1200px;height:630px;aspect-ratio:auto;border:0;border-radius:0;font-size:31px;padding:66px 72px 120px;box-sizing:border-box}
+.og .cover.cv .ch{font-size:1.6em;line-height:1.22}
+.og .cover.cv .ch-h{-webkit-line-clamp:3}
+.og .cv-r{flex-basis:38%}
+.og .cbig2 span{font-size:3.6em}
+.og-foot{position:absolute;left:72px;right:72px;bottom:44px;display:flex;align-items:center;justify-content:space-between;font-size:22px;font-weight:600;color:${cv.light ? "rgba(0,0,0,.62)" : "rgba(255,255,255,.72)"}}
+.og-foot b{display:flex;align-items:center;gap:12px}
+.og-foot i{display:grid;place-items:center;width:34px;height:34px;border-radius:9px;background:#128a66;color:#fff;font-style:normal;font-size:20px}
+.og-foot span{font-weight:500;opacity:.8}
+</style></head><body><div class="og"><div class="cover cv cv-${cv.layout}${cv.light ? " light" : ""}" style="--cbg:${c.bg};--cacc:${c.acc};--cglow:${c.glow}">${cv.html}</div>
+<div class="og-foot"><b><i>玉</i>${brand}</b><span>${tag}</span></div></div></body></html>`;
+}

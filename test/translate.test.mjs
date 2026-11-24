@@ -116,3 +116,26 @@ test("翻译：图里写成中文的数值和状态（「数千」「未公布�
   const paths = segs.map(s => s.path.join("."));
   assert.ok(paths.includes("sections.0.blocks.0.fig.items.0.value") && paths.includes("sections.0.blocks.0.fig.items.1.status"), paths.join(" "));
 });
+
+test("分享：文章页有分享按钮、X 链接和二维码；开了 WG_OG 每篇用自己的分享图", async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "lj-og-"));
+  const content = path.join(tmp, "articles"), dist = path.join(tmp, "dist");
+  fs.mkdirSync(content);
+  fs.writeFileSync(path.join(content, "demo.json"), JSON.stringify(zh));
+  execFileSync("node", ["scripts/build.mjs"], { env: { ...process.env, WG_CONTENT: content, WG_CONTENT_EN: path.join(tmp, "none"), WG_DIST: dist, WG_SITE_URL: "https://lyra.example", WG_OG: "1" }, stdio: "pipe" });
+  const page = fs.readFileSync(path.join(dist, "a/demo.html"), "utf8");
+  assert.match(page, /og:image" content="https:\/\/lyra\.example\/og\/demo\.png"/);
+  assert.match(page, /data-share-open/);
+  assert.match(page, /https:\/\/x\.com\/intent\/tweet\?text=Gemini[^"]*&amp;url=https%3A%2F%2Flyra\.example%2Fa%2Fdemo\.html/);
+  assert.match(page, /<svg class="qr"/);
+  assert.ok(fs.existsSync(path.join(dist, "og/_src/demo.html")));
+  assert.match(fs.readFileSync(path.join(dist, "og/_src/demo.html"), "utf8"), /width:1200px;height:630px/);
+  fs.rmSync(tmp, { recursive: true, force: true });
+});
+
+test("二维码：版本随网址长度变化，太长会报错", async () => {
+  const { qrMatrix } = await import("../scripts/lib/qr.mjs");
+  assert.equal(qrMatrix("https://x.co/a").length, 21);
+  assert.equal(qrMatrix("https://excaliburx-bot.github.io/Lyra-Jade/en/a/openai-computer-use-healthcare-agents.html").length, 41);
+  assert.throws(() => qrMatrix("x".repeat(300)), /太长/);
+});

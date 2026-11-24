@@ -9,8 +9,9 @@ import path from "node:path";
 import { CONTENT, CONTENT_EN, DIST, SITE, ROOT } from "./lib/paths.mjs";
 import { readJson } from "./lib/store.mjs";
 import { sha } from "./lib/text.mjs";
-import { coverHtml } from "./lib/cover.mjs";
+import { coverHtml, ogCardHtml } from "./lib/cover.mjs";
 import { sourceHash } from "./lib/translate.mjs";
+import { qrSvg } from "./lib/qr.mjs";
 import { renderArticleBody, esc } from "../site/assets/components.js";
 
 const SITE_NAME = "玲珑玉 Lyra-Jade";
@@ -19,6 +20,8 @@ const SITE_URL = (process.env.WG_SITE_URL || "https://example.com").replace(/\/$
 const CF = (process.env.WG_CF_ANALYTICS || "").trim();
 const ANALYTICS = /^[A-Za-z0-9]{16,64}$/.test(CF) ? `<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"${CF}"}'></script>` : "";
 const CONTACT = (process.env.WG_CONTACT_EMAIL || "").trim();
+/* 每篇单独的分享图：WG_OG=1 时构建写出卡片 HTML（dist/og/_src/），再由 scripts/og.mjs 截成 PNG。没开就都用通用图 */
+const OG = process.env.WG_OG === "1";
 const OGIMAGE = `${SITE_URL}/assets/og.png`;
 const CAT_NAME = { product: "产品发布", research: "研究解读", deep: "深度", biz: "商业动态", howto: "AI 实操", visual: "商业视觉实战", insight: "洞察", other: "其他" };
 const CAT_NAME_EN = { product: "Launches", research: "Research", deep: "Deep dives", biz: "Business", howto: "How-to", visual: "Visual work", insight: "Insights", other: "Other" };
@@ -92,11 +95,27 @@ function hreflang(page) {
     `<link rel="alternate" hreflang="x-default" href="${zh}">`].filter(Boolean).join("\n");
 }
 
-function render(L, { page, depth, title, desc, bodyClass = "", main, data, ogType = "website" }) {
+/* 分享：手机上直接调系统分享面板（里面有微信、X 等）；电脑上展开菜单：分享到 X、复制链接、微信扫码 */
+function shareHtml(L, a, url, where) {
+  const en = L.lang === "en";
+  const T = en ? { btn: "Share", x: "Share on X", copy: "Copy link", wx: "Scan with WeChat", wxNote: "Scan with your phone to open it in WeChat, then share", qr: "QR code for this article" }
+    : { btn: "分享", x: "分享到 X", copy: "复制链接", wx: "微信扫一扫", wxNote: "用手机微信扫码打开，再转发给朋友或朋友圈", qr: "这篇文章的二维码" };
+  const xUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(a.title)}&url=${encodeURIComponent(url)}`;
+  return `<div class="share share-${where}" data-share data-title="${esc(a.title)}" data-url="${esc(url)}" data-text="${esc(a.summary)}">
+      <button class="btn btn-ghost share-btn" data-share-open aria-expanded="false"><svg class="i"><use href="#i-share"/></svg><span>${T.btn}</span></button>
+      <div class="share-menu" role="menu">
+        <a role="menuitem" href="${esc(xUrl)}" target="_blank" rel="noopener"><b class="share-x">𝕏</b><span>${T.x}</span></a>
+        <button role="menuitem" data-share-copy><svg class="i"><use href="#i-link"/></svg><span>${T.copy}</span></button>
+        <div class="share-qr"><div class="share-qr-h"><svg class="i"><use href="#i-qr"/></svg><span>${T.wx}</span></div>${qrSvg(url, { label: T.qr })}<p>${T.wxNote}</p></div>
+      </div>
+    </div>`;
+}
+
+function render(L, { page, depth, title, desc, bodyClass = "", main, data, ogType = "website", ogImage = OGIMAGE }) {
   const base = "../".repeat(depth + (L.dir ? 1 : 0)) || "./";
   const home = "../".repeat(depth) || "./";
   const ui = Object.fromEntries(Object.entries(UI[L.lang]).map(([k, v]) => [`U_${k}`, v]));
-  const vars = { ...ui, ANALYTICS, OGIMAGE, OGTYPE: ogType, HTMLLANG: L.html, LANG: L.lang, BASE: base, HOME: home, TITLE: title, DESC: desc, BODYCLASS: bodyClass,
+  const vars = { ...ui, ANALYTICS, OGIMAGE: ogImage, OGTYPE: ogType, HTMLLANG: L.html, LANG: L.lang, BASE: base, HOME: home, TITLE: title, DESC: desc, BODYCLASS: bodyClass,
     URL: abs(L, page), ALTURL: alt(L, depth, page), ALTLABEL: L.lang === "en" || articlesEn.length ? L.altLabel : "", ALTTITLE: L.altTitle, ALTLANG: L.altLang, HREFLANG: hreflang(page), DATA: safeJson(data) };
   const out = path.join(DIST, L.dir, page);
   fs.mkdirSync(path.dirname(out), { recursive: true });
@@ -135,12 +154,20 @@ function buildLang(L) {
     <a href="../index.html" class="back" data-home><svg class="i"><use href="#i-chev-l"/></svg>${T.back}</a>
     <div class="tags"><span class="tag">${esc(L.cat[a.category] || a.category)}</span>${a.verified ? `<span class="verified"><svg class="i"><use href="#i-check"/></svg>${T.verified}</span>` : `<a class="muted" href="../about.html#ai">${T.ai}</a>`}</div>
     <h1>${esc(a.title)}</h1>
-    <div class="rmeta"><span>${esc(T.pub)}</span>${T.src ? `<span>${esc(T.src)}</span>` : ""}<span>${esc(T.min)}</span><span>${esc(T.from)}</span></div>
+    <div class="rmeta-row"><div class="rmeta"><span>${esc(T.pub)}</span>${T.src ? `<span>${esc(T.src)}</span>` : ""}<span>${esc(T.min)}</span><span>${esc(T.from)}</span></div>${shareHtml(L, a, abs(L, `a/${a.slug}.html`), "top")}</div>
     ${renderArticleBody(a, { lang: L.lang })}
+    <div class="share-end"><p>${en ? "Found this useful? Pass it on." : "觉得有用？转给需要的朋友。"}</p>${shareHtml(L, a, abs(L, `a/${a.slug}.html`), "end")}</div>
     <aside class="disclose"><svg class="i"><use href="#i-info"/></svg><p>${T.disclose}</p></aside>
     ${rel.length ? `<div class="rel"><h3>${T.more}</h3><div class="toc">${rel.map(x => `<a href="${x.slug}.html"><span>${x._day.slice(5)}</span><span>${esc(x.title)}</span><span>${esc(L.cat[x.category] || "")}</span></a>`).join("")}</div></div>` : ""}
   </article>`;
-    render(L, { page: `a/${a.slug}.html`, depth: 1, title: `${esc(a.title)} · ${L.titleTail}`, desc: esc(a.summary), bodyClass: "reading", ogType: "article", main, data });
+    let ogImage = OGIMAGE;
+    if (OG) {
+      const name = `${L.dir.replace("/", "-")}${a.slug}`;
+      fs.mkdirSync(path.join(DIST, "og/_src"), { recursive: true });
+      fs.writeFileSync(path.join(DIST, "og/_src", `${name}.html`), ogCardHtml(a, { lang: L.lang }));
+      ogImage = `${SITE_URL}/og/${name}.png`;
+    }
+    render(L, { page: `a/${a.slug}.html`, depth: 1, title: `${esc(a.title)} · ${L.titleTail}`, desc: esc(a.summary), bodyClass: "reading", ogType: "article", main, data, ogImage });
   }
 
   /* RSS */

@@ -605,3 +605,22 @@ body.reading .listing{display:none}
 /* 中英文切换：还没有英文版时不显示 */
 .top-link.lang-sw{font-weight:600;letter-spacing:.02em}
 .top-link.lang-sw:empty{display:none}
+
+/* ============ 分享 ============ */
+.reader .rmeta-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:24px}
+.reader .rmeta-row .rmeta{margin-bottom:0}
+.share{position:relative}
+.share-btn{gap:6px;height:32px;padding:0 12px;font-size:13px}
+.share-menu{display:none;position:absolute;right:0;top:calc(100% + 8px);z-index:40;width:250px;padding:6px;border-radius:14px;background:var(--raise);border:1px solid var(--line);box-shadow:0 18px 50px rgba(0,0,0,.28)}
+.share.open .share-menu{display:block}
+.share-end .share-menu{top:auto;bottom:calc(100% + 8px)}
+.share-menu>a,.share-menu>button{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border-radius:9px;font:inherit;font-size:14px;color:var(--ink);background:none;border:0;cursor:pointer;text-align:left;text-decoration:none}
+.share-menu>a:hover,.share-menu>button:hover{background:var(--bg-3)}
+.share-x{width:16px;text-align:center;font-size:15px;line-height:1}
+.share-qr{margin-top:4px;padding:10px;border-top:1px solid var(--line);text-align:center}
+.share-qr-h{display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px;font-weight:600;color:var(--ink-2);margin-bottom:8px}
+.share-qr .qr{width:150px;height:150px;border-radius:8px;display:block;margin:0 auto}
+.share-qr p{margin:8px 0 0;font-size:12px;line-height:1.5;color:var(--ink-3)}
+.share-end{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:36px 0 8px;padding:16px 18px;border:1px solid var(--line);border-radius:14px;background:var(--bg-2)}
+.share-end p{margin:0;font-size:14px;color:var(--ink-2)}
+@media (pointer:coarse){.share-menu{display:none!important}}

@@ -304,6 +304,24 @@ function closeAll(){$$(".scrim").forEach(s=>s.classList.remove("show"));$("#them
 /* =========================================================
    8. 事件
    ========================================================= */
+/* 分享：手机（触屏）上用系统分享面板，里面有微信、X 等；电脑上展开菜单（X、复制链接、微信扫码） */
+document.addEventListener("click",e=>{
+  const open=e.target.closest("[data-share-open]"), box=e.target.closest("[data-share]");
+  if(!box) $$(".share.open").forEach(s=>{s.classList.remove("open");s.querySelector("[data-share-open]").setAttribute("aria-expanded","false")});
+  if(open){
+    const d=box.dataset;
+    if(navigator.share&&matchMedia("(pointer:coarse)").matches){navigator.share({title:d.title,text:d.text,url:d.url}).catch(()=>{});return}
+    $$(".share.open").forEach(s=>{if(s!==box)s.classList.remove("open")});
+    const on=box.classList.toggle("open");open.setAttribute("aria-expanded",on);return;
+  }
+  if(e.target.closest("[data-share-copy]")){
+    const d=box.dataset, txt=`${d.title} ${d.url}`;
+    const done=()=>{toast(S.lang==="en"?"Link copied":"链接已复制");box.classList.remove("open")};
+    (navigator.clipboard?.writeText(txt)||Promise.reject()).then(done).catch(()=>{const t=document.createElement("textarea");t.value=txt;document.body.appendChild(t);t.select();try{document.execCommand("copy");done()}catch(_){}t.remove()});
+  }
+});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")$$(".share.open").forEach(s=>s.classList.remove("open"))});
+
 document.addEventListener("click",e=>{
   const el=e.target.closest("[data-cat],[data-view],[data-lang],[data-theme],[data-style],[data-open-search],[data-open-login],[data-subscribe],[data-todo],[data-home],[data-fake],[data-close],[data-tab],[data-tabto],[data-scroll],[data-cat-all],[data-goto],#loadMore,.card,#themeBtn");
   if(!e.target.closest(".theme-wrap")) $("#themeMenu").classList.remove("show");
