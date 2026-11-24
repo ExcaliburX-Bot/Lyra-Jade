@@ -20,6 +20,7 @@ const KEYS = new Set(TOPICS.map(t => t.k));
 
 export function topicsOf(a) {
   if (Array.isArray(a.topics) && a.topics.length) return a.topics.filter(k => KEYS.has(k));
+  if (a.category === "paper") return [];   /* 论文精读按论文讲，不按「谁家发的」归进厂商专题；需要时手动写 topics */
   const hay = `${a.publisher || ""} ${a.title || ""}`;
   return TOPICS.filter(t => t.re.test(hay)).map(t => t.k);
 }

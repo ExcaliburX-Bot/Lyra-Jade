@@ -636,3 +636,70 @@ a.chip{text-decoration:none;color:inherit}
 .side-tp.on .tp-mark{background:var(--rose);color:#fff}
 .tag.tag-tp{text-decoration:none;color:var(--ink-2)}
 .tag.tag-tp:hover{border-color:var(--rose);color:var(--rose)}
+
+/* ============ 论文精读：提示框、公式、自测题、热力图、论文信息卡 ============ */
+.callout{margin:22px 0;padding:14px 18px;border-radius:14px;border:1px solid var(--line);background:var(--bg-2);border-left:3px solid var(--co,var(--ink-3))}
+.callout.co-prereq{--co:#5b8def}.callout.co-intuition{--co:var(--c-hi,#e0a42e)}.callout.co-myth{--co:#e0645a}.callout.co-takeaway{--co:var(--rose)}.callout.co-note{--co:var(--ink-3)}
+.co-h{display:flex;align-items:baseline;gap:10px;margin-bottom:6px}
+.co-k{flex:none;font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--co)}
+.co-h b{font-size:15px}
+.callout p,.callout li{margin:0;font-size:15px;line-height:1.75;color:var(--ink-2)}
+.callout ul{margin:6px 0 0;padding-left:20px}
+.callout p+ul{margin-top:8px}
+.formula{margin:22px 0;padding:18px 20px;border-radius:14px;border:1px solid var(--line);background:var(--raise)}
+.formula .fx{font-size:18px;line-height:1.7;font-weight:500;text-align:center;padding:8px 0 14px;overflow-x:auto;white-space:nowrap;font-variant-numeric:tabular-nums}
+.formula sub,.formula sup,.reader .body sub,.reader .body sup,.callout sub,.callout sup,.quiz sub,.quiz sup{font-size:.68em;line-height:0}
+.formula dl{margin:0;display:grid;gap:8px;border-top:1px dashed var(--line);padding-top:12px}
+.formula dl div{display:grid;grid-template-columns:minmax(70px,auto) 1fr;gap:12px;align-items:baseline}
+.formula dt{font-weight:600;font-size:15px;color:var(--rose);text-align:right;white-space:nowrap}
+.formula dd{margin:0;font-size:14.5px;line-height:1.7;color:var(--ink-2)}
+.formula>p{margin:12px 0 0;font-size:14px;color:var(--ink-3);line-height:1.7}
+.quiz{margin:22px 0;padding:16px 18px;border-radius:14px;border:1px solid var(--line);background:var(--bg-2)}
+.qz-h{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.qz-h span{font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--rose)}
+.qz-h b{font-size:15.5px;line-height:1.6}
+.qz-opts{display:grid;gap:8px}
+.qz-o{display:flex;gap:10px;align-items:flex-start;text-align:left;padding:10px 12px;border-radius:10px;border:1px solid var(--line-2);background:var(--raise);color:var(--ink);font:inherit;font-size:14.5px;line-height:1.6;cursor:pointer}
+.qz-o:hover{border-color:var(--ink-3)}
+.qz-o i{flex:none;width:22px;height:22px;border-radius:6px;display:grid;place-items:center;font-style:normal;font-size:12px;font-weight:700;background:var(--bg-3);color:var(--ink-2)}
+.qz-o.right{border-color:var(--rose);background:color-mix(in srgb,var(--rose) 12%,var(--raise))}
+.qz-o.right i{background:var(--rose);color:#fff}
+.qz-o.wrong{border-color:#e0645a;opacity:.7}
+.qz-why{margin-top:12px;font-size:14.5px;line-height:1.75;color:var(--ink-2)}
+.qz-why .qz-ok,.qz-why.ok .qz-no{display:none}
+.qz-why.ok .qz-ok{display:inline;color:var(--rose)}
+.qz-why .qz-no{color:#e0645a}
+.fheat{border-collapse:separate;border-spacing:3px;margin:0 auto;font-size:13px}
+.fheat th{font-weight:600;color:var(--ink-2);padding:4px 8px;white-space:nowrap}
+.fheat thead th{font-size:12px}
+.fheat tbody th{text-align:right}
+.fheat td{min-width:52px;height:38px;text-align:center;border-radius:6px;background:color-mix(in srgb,var(--c-hi,#e0a42e) calc(var(--a) * 85%),var(--bg-3));font-family:var(--mono);font-size:12px;color:var(--ink)}
+.fheat tr.hr th{color:var(--c-hi,#e0a42e)}
+.fheat tr.hr td{outline:1.5px solid color-mix(in srgb,var(--c-hi,#e0a42e) 70%,transparent)}
+.paper-card{margin:0 0 22px;padding:16px 18px;border-radius:14px;border:1px solid var(--line);background:var(--raise);display:grid;gap:4px}
+.pc-k{font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--rose)}
+.pc-t{font-size:17px;line-height:1.4}
+.pc-m{font-size:13px;color:var(--ink-3)}
+.paper-card a{font-size:13px;font-weight:600;color:var(--rose);text-decoration:none;margin-top:4px}
+.reader p.body code,.reader li code,.callout code,.formula code,.quiz code{font-family:var(--mono);font-size:.88em;padding:1px 5px;border-radius:5px;background:var(--bg-3)}
+
+/* ============ 论文书单 ============ */
+.library{padding-top:28px;padding-bottom:48px}
+.lib-h h2{margin:0 0 6px;font-size:24px}
+.lib-h p{margin:0 0 20px;color:var(--ink-3);font-size:14px}
+.lib-h p b{color:var(--ink)}
+.lib-area{margin-top:22px}
+.lib-area h3{display:flex;align-items:baseline;gap:8px;margin:0 0 10px;font-size:15px}
+.lib-area h3 small{font-family:var(--mono);font-size:11px;color:var(--ink-3);font-weight:500}
+.lib-area ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px}
+.lib-area li>a,.lib-area li>div{display:grid;gap:2px;height:100%;box-sizing:border-box;padding:11px 13px;border-radius:11px;border:1px solid var(--line);background:var(--raise);color:inherit;text-decoration:none}
+.lib-area li b{font-size:14px;line-height:1.4}
+.lib-t{font-size:12px;line-height:1.45;color:var(--ink-3);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.lib-m{font-size:12px;color:var(--ink-3);font-family:var(--mono)}
+.lib-area li em{font-style:normal;font-size:12px;color:var(--ink-3);margin-top:4px}
+.lib-area li.done>a{border-color:color-mix(in srgb,var(--rose) 55%,var(--line));background:color-mix(in srgb,var(--rose) 7%,var(--raise))}
+.lib-area li.done em{color:var(--rose);font-weight:600}
+.lib-area li.done>a:hover{border-color:var(--rose)}
+
+/* 论文精读页不需要栏目筛选条 */
+.listing.section-paper .filters{display:none}

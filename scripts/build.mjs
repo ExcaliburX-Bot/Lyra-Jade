@@ -24,8 +24,10 @@ const CONTACT = (process.env.WG_CONTACT_EMAIL || "").trim();
 /* 每篇单独的分享图：WG_OG=1 时构建写出卡片 HTML（dist/og/_src/），再由 scripts/og.mjs 截成 PNG。没开就都用通用图 */
 const OG = process.env.WG_OG === "1";
 const OGIMAGE = `${SITE_URL}/assets/og.png`;
-const CAT_NAME = { product: "产品发布", research: "研究解读", deep: "深度", biz: "商业动态", howto: "AI 实操", visual: "商业视觉实战", insight: "洞察", other: "其他" };
-const CAT_NAME_EN = { product: "Launches", research: "Research", deep: "Deep dives", biz: "Business", howto: "How-to", visual: "Visual work", insight: "Insights", other: "Other" };
+const CAT_NAME = { product: "产品发布", research: "研究解读", deep: "深度", biz: "商业动态", howto: "AI 实操", visual: "商业视觉实战", insight: "洞察", paper: "论文精读", other: "其他" };
+const CAT_NAME_EN = { product: "Launches", research: "Research", deep: "Deep dives", biz: "Business", howto: "How-to", visual: "Visual work", insight: "Insights", paper: "Paper deep dives", other: "Other" };
+/* 论文书单（content/papers/library.json）：论文精读页下面的待读清单，精读过的链到文章 */
+const LIBRARY = readJson(path.join(ROOT, "content/papers/library.json")) || { areas: [], papers: [] };
 const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const enDate = iso => { const [y, m, d] = String(iso).split("-").map(Number); return `${MON[m - 1]} ${d}, ${y}`; };
 
@@ -142,6 +144,21 @@ function buildLang(L) {
   /* 首页 */
   render(L, { page: "index.html", depth: 0, title: en ? `AI Explained · ${L.titleTail}` : `AI 解读 · ${SITE_NAME}`, desc: L.siteDesc, main: listingTpl, data });
 
+  /* 论文精读页：papers.html，上面是精读过的文章，下面是论文书单 */
+  const done = new Map(list.filter(a => a.category === "paper" && a.paper).map(a => [a.paper.arxiv || a.paper.url, a]));
+  const libItems = LIBRARY.papers.map(p => ({ ...p, art: done.get(p.arxiv) || done.get(p.url) }));
+  const libHtml = `<section class="wrap library" id="library">
+    <div class="lib-h"><h2>${en ? "Reading list" : "论文书单"}</h2><p>${en ? `${libItems.length} papers on our list · <b>${libItems.filter(p => p.art).length}</b> explained so far. We work through them one at a time, each explained in depth.` : `共 ${libItems.length} 篇 · 已精读 <b>${libItems.filter(p => p.art).length}</b> 篇。我们一篇一篇讲透，讲完的会出现在上面。`}</p></div>
+    ${LIBRARY.areas.map(ar => { const items = libItems.filter(p => p.area === ar.k); if (!items.length) return "";
+      items.sort((x, y) => (!!y.art - !!x.art) || (x.year || 0) - (y.year || 0));
+      return `<div class="lib-area"><h3>${esc(en ? ar.en : ar.zh)}<small>${items.length}</small></h3><ul>${items.map(p => {
+        const name = en ? (p.name_en || p.name) : p.name, sub = p.title && p.title !== name ? p.title : "";
+        const meta = [p.org || p.author, p.year].filter(Boolean).join(" · ");
+        return `<li class="${p.art ? "done" : ""}">${p.art ? `<a href="a/${p.art.slug}.html">` : "<div>"}<b>${esc(name)}</b>${sub ? `<span class="lib-t">${esc(sub)}</span>` : ""}<span class="lib-m">${esc(meta)}</span><em>${p.art ? (en ? "Read the deep dive →" : "已精读 →") : (en ? "Coming up" : "待精读")}</em>${p.art ? "</a>" : "</div>"}</li>`; }).join("")}</ul></div>`; }).join("")}
+  </section>`;
+  render(L, { page: "papers.html", depth: 0, title: en ? `Paper deep dives · ${L.titleTail}` : `论文精读 · ${SITE_NAME}`,
+    desc: en ? "The AI papers that matter, explained in depth and in plain language." : "把重要的 AI 论文讲透：有深度，也让普通人看得懂。", main: listingTpl + libHtml, data: { ...data, section: "paper" } });
+
   /* 专题页：t/<专题>.html，和首页同一个列表模板，只显示这个专题的文章 */
   for (const tp of topics) {
     render(L, { page: `t/${tp.k}.html`, depth: 1, title: en ? `${tp.name} · AI Explained · ${L.titleTail}` : `${tp.name} 专题 · ${SITE_NAME}`,
@@ -152,11 +169,11 @@ function buildLang(L) {
   for (const a of list) {
     const rel = list.filter(x => x.slug !== a.slug && x.category === a.category).slice(0, 4);
     const T = en ? {
-      back: "Back to AI Explained", verified: "Checked by an editor", ai: "AI-assisted", pub: `Published ${enDate(a._day)}`, src: a.date !== a._day ? `Source dated ${enDate(a.date)}` : "",
+      back: "Back to AI Explained", verified: "Checked by an editor", ai: "AI-assisted", pub: `Published ${enDate(a._day)}`, src: a.paper ? `Paper: ${[a.paper.venue, a.paper.year].filter((x, i, l) => x && !(i && String(l[0]).includes(String(x)))).join(" · ")}` : a.date !== a._day ? `Source dated ${enDate(a.date)}` : "",
       min: `${minOf(a)} min read`, from: `Source: ${a.publisher}`, more: "Keep reading",
       disclose: `This explainer was written with AI assistance from the primary sources listed above, then translated and adapted into English by AI. Key figures were checked against the original${a.verified ? " and an editor read it through" : ""}. If anything differs, the original source prevails. <a href="../about.html#ai">How we use AI</a>${CONTACT ? ` · Spotted an error? Email <a href="mailto:${esc(CONTACT)}">${esc(CONTACT)}</a>` : ""}`
     } : {
-      back: "返回 AI 解读", verified: "人工已核对", ai: "AI 辅助撰写", pub: `${a._day} 发布`, src: a.date !== a._day ? `原文 ${a.date}` : "",
+      back: "返回 AI 解读", verified: "人工已核对", ai: "AI 辅助撰写", pub: `${a._day} 发布`, src: a.paper ? `论文 ${[a.paper.venue, a.paper.year].filter((x, i, l) => x && !(i && String(l[0]).includes(String(x)))).join(" · ")}` : a.date !== a._day ? `原文 ${a.date}` : "",
       min: `约 ${minOf(a)} 分钟`, from: `来源 ${a.publisher}`, more: "继续读",
       disclose: `本文由 AI 辅助撰写，依据上方列出的一手来源，关键数字已与原文核对${a.verified ? "，并经编辑通读" : ""}。如有出入，请以原文为准。<a href="../about.html#ai">关于我们的内容</a>${CONTACT ? ` · 发现错误请写信到 <a href="mailto:${esc(CONTACT)}">${esc(CONTACT)}</a>` : ""}`
     };
@@ -242,7 +259,7 @@ fs.writeFileSync(path.join(DIST, "404.html"), fill(tpl, { ...Object.fromEntries(
   DATA: safeJson(zh.data) }));
 
 /* sitemap.xml 和 robots.txt */
-const urls = [[`${SITE_URL}/`], [`${SITE_URL}/about.html`], ...articles.map(a => [`${SITE_URL}/a/${a.slug}.html`, a._day]),
+const urls = [[`${SITE_URL}/`], [`${SITE_URL}/about.html`], [`${SITE_URL}/papers.html`], [`${SITE_URL}/en/papers.html`], ...articles.map(a => [`${SITE_URL}/a/${a.slug}.html`, a._day]),
   [`${SITE_URL}/en/`], [`${SITE_URL}/en/about.html`], ...articlesEn.map(a => [`${SITE_URL}/en/a/${a.slug}.html`, a._day]),
   ...TOPIC_KEYS.flatMap(k => [[`${SITE_URL}/t/${k}.html`], [`${SITE_URL}/en/t/${k}.html`]])];
 fs.writeFileSync(path.join(DIST, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8"?>

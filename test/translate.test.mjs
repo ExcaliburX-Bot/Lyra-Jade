@@ -144,3 +144,17 @@ test("翻译：引语卡片的头衔（role）是中文时也要翻", () => {
   const segs = collectSegments({ title: "t", sections: [{ blocks: [{ fig: { type: "quote", text: "Hi.", who: "Greg", role: "OpenAI 总裁", source_url: "https://x" } }] }] });
   assert.ok(segs.some(s => s.path.at(-1) === "role"));
 });
+
+test("翻译：长文分批，每批都带全文和已翻好的部分", async () => {
+  const { batches, translateUser } = await import("../scripts/lib/translate.mjs");
+  const segs = Array.from({ length: 10 }, (_, i) => ({ id: `s${i + 1}`, where: "p", text: "字".repeat(1000) }));
+  const bs = batches(segs, 3000);
+  assert.deepEqual(bs.map(b => b.length), [3, 3, 3, 1]);
+  const u = translateUser({ title: "t" }, segs, "", { only: bs[1], done: { s1: "A" } });
+  assert.match(u, /do NOT translate this part/);
+  assert.match(u, /Already translated[\s\S]*s1 A/);
+  assert.match(u, /\(s4…s6, 3 in total\)/);
+  let calls = 0;
+  const r = await translateArticle(zh, { mock: (stage, ss, user) => { calls++; return Object.fromEntries(ss.map(s => [s.id, `${s.path[0] === "title" ? "Gemini launches" : "en"} ${numbersZh(s.text).join(" ")}`])); } });
+  assert.ok(r.article && calls >= 2);
+});

@@ -49,3 +49,4 @@ Return **only** one JSON object, no commentary, mapping every segment id to its 
 - Every id you were given, exactly once. Don't merge or split segments; each keeps its own role.
 - No Chinese characters and no full-width punctuation anywhere in the output.
 - Plain text inside strings. Keep inline code in backticks as it is, and keep markdown-style `**bold**` if the Chinese has it.
+- Keep math markup exactly as written: subscripts `d_{model}`, superscripts `W^{Q}`, `10000^{2i/d_{model}}`, and symbols like `√dₖ`, `Kᵀ`. Translate only the words around them.

@@ -5,10 +5,10 @@ import { normNum } from "./text.mjs";
 /* 「500,000+」「约 30%」这类：比对时去掉前后的修饰符 */
 const numCore = v => normNum(v).replace(/^(约|超过|逾|近|~|≈|>|＞|\+)+/, "").replace(/(\+|以上|左右|多)+$/, "");
 
-const CATEGORIES = ["product", "research", "deep", "biz", "howto", "visual", "insight", "other"];
+const CATEGORIES = ["product", "research", "deep", "biz", "howto", "visual", "insight", "other", "paper"];
 const HYPE = ["革命性", "炸裂", "颠覆", "史诗级", "遥遥领先", "王炸", "吊打", "震撼发布", "杀疯了", "天花板", "很炫", "碾压", "封神", "秒杀"];
 const TITLE_RANK = /第一|最强|最好|最佳|榜首|冠军|SOTA|No\.?\s?1|#1/i;
-const SCHEMATIC = ["timeline", "route", "steps", "pipeline", "beforeafter", "schematic", "storyboard", "illustration"];
+const SCHEMATIC = ["heatmap", "timeline", "route", "steps", "pipeline", "beforeafter", "schematic", "storyboard", "illustration"];
 
 /* 日期类事实：原文常写「November 20, 2026」或「Today」，模型统一写成 2026-11-20。
    返回 true＝原文里有同一天的其他写法；"relative"＝原文是 Today/Yesterday 且换算后和发布日一致；false＝找不到 */
@@ -47,6 +47,13 @@ export function validateArticle(a, { sourceTexts = {} } = {}) {
   /* 图 */
   let figCount = 0;
   (a.sections || []).forEach((sec, si) => (sec.blocks || []).forEach((b, bi) => {
+    const at = `第 ${si + 1} 节第 ${bi + 1} 块`;
+    /* 论文精读用的块：提示框、公式、自测题 */
+    if (b.callout) need(b.callout.text || b.callout.list?.length, `${at}的提示框没有内容`);
+    if (b.formula) need(b.formula.expr, `${at}的公式缺少 expr`);
+    if (b.quiz) need(Array.isArray(b.quiz.options) && b.quiz.options.length >= 2 && Number.isInteger(b.quiz.answer) && b.quiz.answer >= 0 && b.quiz.answer < b.quiz.options.length && b.quiz.q,
+      `${at}的自测题要有题目、至少 2 个选项，answer 是正确选项的序号（从 0 数）`);
+    if (b.quiz && !b.quiz.why) warnings.push(`${at}的自测题没有写解释（why）`);
     if (!b.fig) return;
     figCount++;
     const f = b.fig, where = `第 ${si + 1} 节第 ${bi + 1} 块的图`;
@@ -75,6 +82,7 @@ export function validateArticle(a, { sourceTexts = {} } = {}) {
     if (tones.some(t => t.endsWith('"def"')) && !/蓝/.test(f.subtitle || "")) warnings.push(`${where}：用了蓝色（def），副标题要说明它代表什么（只用来标默认档）`);
     if (f.type === "columns") (f.items || []).forEach(it => need(typeof it.value === "number" && it.value >= 0, `${where}：${it.label} 的数值要是非负数字`));
     if (f.type === "table") (f.rows || []).forEach((r, i) => need(Array.isArray(r) && r.length === (f.columns || []).length, `${where}：第 ${i + 1} 行的格数和表头对不上`));
+    if (f.type === "heatmap") need((f.values || []).length === (f.rows || []).length && f.values.every(r => Array.isArray(r) && r.length === (f.cols || []).length), `${where}：热力图 values 的行列数要和 rows / cols 对上`);
     if (f.type === "cards") need((f.items || []).length >= 2 && f.items.length <= 6, `${where}：卡片要 2–6 张`);
     if (f.type === "quote") {
       /* 引语必须逐字出自原文：编造或改写的引语直接拦下 */
@@ -89,7 +97,7 @@ export function validateArticle(a, { sourceTexts = {} } = {}) {
     }
   }));
   if (figCount === 0) warnings.push("全文没有图：确认这篇确实不需要配图");
-  if (figCount > 7) warnings.push(`图有 ${figCount} 张，偏多`);
+  if (figCount > (a.category === "paper" ? 14 : 7)) warnings.push(`图有 ${figCount} 张，偏多`);   /* 论文精读篇幅长，图可以多一些 */
 
   /* 事实清单：数字回查原文 */
   (a.claims || []).forEach((c, i) => {
@@ -107,7 +115,13 @@ export function validateArticle(a, { sourceTexts = {} } = {}) {
 
   /* 正文里出现、却不在事实清单里的数字 */
   const claimed = new Set((a.claims || []).flatMap(c => [c.value, c.as_written].filter(Boolean).flatMap(v => [normNum(v), numCore(v)])));
-  const bodyText = [a.ai_summary, a.summary, ...(a.brief || []), ...(a.sections || []).flatMap(s => s.blocks.map(b => b.p || (b.list || []).join(" ")))].filter(Boolean).join(" ");
+  const bodyText = [a.ai_summary, a.summary, ...(a.brief || []), ...(a.sections || []).flatMap(s => s.blocks.map(b => b.p || (b.list || []).join(" ") || [b.callout?.text, ...(b.callout?.list || [])].filter(Boolean).join(" ")))].filter(Boolean).join(" ");
+  /* 论文精读：要有论文信息、至少 2 道自测题 */
+  if (a.category === "paper") {
+    need(a.paper?.title && a.paper?.url, "论文精读要有 paper 字段（至少 title 和 url）");
+    const quizzes = (a.sections || []).flatMap(s => s.blocks || []).filter(b => b.quiz).length;
+    if (quizzes < 2) warnings.push(`论文精读建议至少 2 道自测题，现在 ${quizzes} 道`);
+  }
   const nums = [...new Set((bodyText.match(/\d[\d,.]*\s?(%|GB|TB|美元|亿|万|倍|核|fps|W)/g) || []).map(normNum))];
   const orphan = nums.filter(n => ![...claimed].some(c => c.includes(n) || n.includes(c)));
   if (orphan.length) warnings.push(`正文里这些数字没有列进事实清单：${orphan.slice(0, 12).join("、")}`);

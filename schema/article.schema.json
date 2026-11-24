@@ -30,7 +30,8 @@
         "howto",
         "visual",
         "insight",
-        "other"
+        "other",
+        "paper"
       ]
     },
     "publisher": {
@@ -79,7 +80,7 @@
             "type": "array",
             "items": {
               "type": "object",
-              "description": "三选一：{p: 段落} / {list: [条目]} / {fig: 图的数据}",
+              "description": "五选一：{p: 段落} / {list: [条目]} / {fig: 图的数据} / {callout: 提示框} / {formula: 公式} / {quiz: 自测题}",
               "properties": {
                 "p": {
                   "type": "string"
@@ -116,7 +117,8 @@
                         "quote",
                         "schematic",
                         "storyboard",
-                        "illustration"
+                        "illustration",
+                        "heatmap"
                       ]
                     },
                     "title": {
@@ -133,6 +135,91 @@
                     }
                   },
                   "additionalProperties": true
+                },
+                "callout": {
+                  "type": "object",
+                  "required": [
+                    "kind"
+                  ],
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "prereq",
+                        "intuition",
+                        "note",
+                        "myth",
+                        "takeaway"
+                      ]
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "text": {
+                      "type": "string"
+                    },
+                    "list": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "formula": {
+                  "type": "object",
+                  "required": [
+                    "expr"
+                  ],
+                  "properties": {
+                    "expr": {
+                      "type": "string",
+                      "description": "用 Unicode 写的公式，如 softmax(QKᵀ/√dₖ)·V"
+                    },
+                    "parts": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "sym": {
+                            "type": "string"
+                          },
+                          "desc": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "note": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "quiz": {
+                  "type": "object",
+                  "required": [
+                    "q",
+                    "options",
+                    "answer"
+                  ],
+                  "properties": {
+                    "q": {
+                      "type": "string"
+                    },
+                    "options": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "answer": {
+                      "type": "integer",
+                      "description": "正确选项的序号，从 0 数"
+                    },
+                    "why": {
+                      "type": "string"
+                    }
+                  }
                 }
               }
             }
@@ -281,6 +368,37 @@
           "apple",
           "amazon"
         ]
+      }
+    },
+    "paper": {
+      "type": "object",
+      "description": "论文精读：论文信息",
+      "required": [
+        "title",
+        "url"
+      ],
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "authors": {
+          "type": "string"
+        },
+        "org": {
+          "type": "string"
+        },
+        "venue": {
+          "type": "string"
+        },
+        "year": {
+          "type": "integer"
+        },
+        "arxiv": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        }
       }
     }
   }

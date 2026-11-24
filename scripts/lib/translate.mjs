@@ -125,15 +125,27 @@ export function checkTranslation(segs, map) {
 /* ---------- 调模型 ---------- */
 export function translatorPrompt() { return fs.readFileSync(path.join(PROMPTS, "translator.md"), "utf8"); }
 
-export function translateUser(a, segs, sourceText = "") {
-  const lines = segs.map(s => `${s.id} [${s.where}]\n${s.text}`).join("\n\n");
-  const src = sourceText ? `\n\n## Primary source (English original, for terminology and official names only — do not copy its sentences)\n\n${sourceText.slice(0, 20000)}` : "";
-  return `Article: ${a.title}\nPublisher: ${a.publisher}\nSection: ${a.category}\nSource: ${a.sources?.main?.title || ""} (${a.sources?.main?.url || ""})\n\n## Segments to translate (in reading order)\n\n${lines}${src}\n\nReturn one JSON object mapping every segment id (${segs[0]?.id}…${segs.at(-1)?.id}, ${segs.length} in total) to its English text.`;
+/* 长文分批翻译：每批不超过这么多个中文字符。每一批都带着全文（中文）和前面已经翻好的英文，保证上下文和用词一致 */
+export const BATCH_CHARS = Number(process.env.WG_TRANSLATE_BATCH || 6000);
+export function batches(segs, max = BATCH_CHARS) {
+  const out = [[]]; let n = 0;
+  for (const s of segs) { if (n + s.text.length > max && out.at(-1).length) { out.push([]); n = 0; } out.at(-1).push(s); n += s.text.length; }
+  return out.filter(b => b.length);
 }
 
-export function polishUser(a, segs, map) {
+export function translateUser(a, segs, sourceText = "", { only = segs, done = {} } = {}) {
+  const whole = only.length < segs.length;
+  const lines = (whole ? only : segs).map(s => `${s.id} [${s.where}]\n${s.text}`).join("\n\n");
+  const ctx = whole ? `## The whole article in Chinese, for context (do NOT translate this part)\n\n${segs.map(s => `${s.id} ${s.text}`).join("\n")}\n\n` +
+    (Object.keys(done).length ? `## Already translated (keep the same terms, names and tone)\n\n${Object.entries(done).map(([k, v]) => `${k} ${v}`).join("\n")}\n\n` : "") : "";
+  const src = sourceText ? `\n\n## Primary source (English original, for terminology and official names only — do not copy its sentences)\n\n${sourceText.slice(0, 20000)}` : "";
+  return `Article: ${a.title}\nPublisher: ${a.publisher}\nSection: ${a.category}\nSource: ${a.sources?.main?.title || ""} (${a.sources?.main?.url || ""})\n\n${ctx}## Segments to translate now (in reading order)\n\n${lines}${src}\n\nReturn one JSON object mapping every segment id (${only[0]?.id}…${only.at(-1)?.id}, ${only.length} in total) to its English text.`;
+}
+
+export function polishUser(a, segs, map, { done = {} } = {}) {
   const lines = segs.map(s => `${s.id} [${s.where}]\nZH: ${s.text}\nEN: ${map[s.id]}`).join("\n\n");
-  return `Article: ${a.title}\n\n${lines}\n\nReturn one JSON object mapping every segment id to the final English text (${segs.length} in total). Keep a segment unchanged if it already reads well.`;
+  const ctx = Object.keys(done).length ? `## Earlier parts of the article, already final (keep terms consistent; do not return these)\n\n${Object.entries(done).map(([k, v]) => `${k} ${v}`).join("\n")}\n\n` : "";
+  return `Article: ${a.title}\n\n${ctx}${lines}\n\nReturn one JSON object mapping every segment id above to the final English text (${segs.length} in total). Keep a segment unchanged if it already reads well.`;
 }
 
 export function fixUser(segs, map, problems) {
@@ -178,7 +190,7 @@ export async function translateArticle(a, { sourceText = "", polish = process.en
   const segs = collectSegments(a);
   const call = mock ? async (stage, user) => mock(stage, segs, user) : async (stage, user) => {
     const sys = translatorPrompt();
-    if (stage === "translate") return chat({ system: sys, user: translateUser(a, segs, sourceText), thinking: true });
+    if (stage === "translate") return chat({ system: sys, user, thinking: true });
     if (stage === "polish") return chat({ system: `${sys}\n\n# This pass: native-speaker edit\n\nYou are now the second editor. The draft below was translated from Chinese. Read it as a native English tech reader would and rewrite anything that sounds translated: Chinese word order, stiff nominalizations, filler, calques, inconsistent terms, headline case. Keep every fact, number, name and hedge exactly. Do not add information.`, user, thinking: false });
     return chat({ system: sys, user, thinking: false });
   };
@@ -191,10 +203,17 @@ export async function translateArticle(a, { sourceText = "", polish = process.en
     }
     return problems;
   };
-  let map = await call("translate", translateUser(a, segs, sourceText));
+  const parts = batches(segs);
+  if (parts.length > 1) console.log(`  长文：分 ${parts.length} 批翻译`);
+  let map = {};
+  for (const part of parts) Object.assign(map, await call("translate", translateUser(a, segs, sourceText, parts.length > 1 ? { only: part, done: map } : {})));
   let problems = await fixUp(map, "翻译");
   if (polish && !problems.length) {
-    const polished = { ...map, ...(await call("polish", polishUser(a, segs, map))) };
+    const polished = { ...map };
+    for (const [i, part] of parts.entries()) {
+      const done = Object.fromEntries(parts.slice(0, i).flat().map(s => [s.id, polished[s.id]]));
+      Object.assign(polished, await call("polish", polishUser(a, part, map, { done })));
+    }
     const p2 = await fixUp(polished, "润色");
     if (!p2.length) map = polished; else console.log(`  润色版有 ${p2.length} 处数字对不上，保留第一遍译文`);
   }
