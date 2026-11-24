@@ -1,0 +1,728 @@
+{
+  "slug": "phonic-1-1-speech-to-speech",
+  "date": "2026-11-24",
+  "category": "product",
+  "publisher": "Phonic",
+  "title": "Phonic launches Phonic-1.1 with more natural turn-taking and a 1.8-point index gain",
+  "summary": "Want a voice agent that doesn't interrupt, understands pauses, and stays steady in noisy rooms? Phonic today released Phonic-1.1, pushing turn-taking, intelligence, and natural speech another step forward.",
+  "ai_summary": "Phonic today released Phonic-1.1, a speech-to-speech model, just three weeks after Phonic-1. The company says it ranks first on Artificial Analysis's Speech to Speech Index, up 1.8 points from Phonic-1. Gains focus on turn-taking (DIAL no-turn-taking-problem rate 40.8% to 53.7%), intelligence (τ-Voice 2.0 85.6% to 87.1%), and naturalness (DIAL 4.07 to 4.21). It leads on every benchmark except Cekura turn-taking and Arena Elo. It's aimed at teams building voice customer service, assistants, and voice agents. Pricing and latency aren't disclosed; scores are third-party leaderboard results relayed by the vendor.",
+  "brief": [
+    "Phonic went from Phonic-1 to Phonic-1.1 in three weeks—a fast turnaround.",
+    "Turn-taking is the priority: it waits for people to finish, even through mid-sentence pauses, and handles background noise.",
+    "Intelligence and naturalness also improve: τ-Voice 2.0 reaches 87.1% and DIAL naturalness hits 4.21.",
+    "It's available today through Try now; startup teams can apply for the 144,000-minute Starter Grant."
+  ],
+  "readMinutes": 6,
+  "sections": [
+    {
+      "h": "What it is: a second speech-to-speech model, three weeks after Phonic-1",
+      "blocks": [
+        {
+          "p": "Phonic is a voice AI startup with a team from MIT, Stanford, and CMU. Three weeks ago it released its first speech-to-speech model, Phonic-1; today it follows with Phonic-1.1. These models work directly from speech to speech: you talk, it answers with audio—no separate transcription, text model, and text-to-speech pipeline."
+        },
+        {
+          "p": "Phonic says Phonic-1.1 ranks first on Artificial Analysis's Speech to Speech Index, run by the third-party AI evaluator Artificial Analysis, up 1.8 points from Phonic-1. It also leads on Sierra's τ-Voice, a benchmark for voice agent tasks, and on David AI's DIAL leaderboard, where human raters score live conversations. Here are the key numbers."
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "Phonic-1.1 key scores at a glance",
+            "subtitle": "Scores come from third-party leaderboards as relayed by Phonic; data as of November 23, 2026.",
+            "items": [
+              {
+                "value": 1.8,
+                "unit": "points",
+                "label": "Speech to Speech Index gain",
+                "note": "vs. Phonic-1 (Artificial Analysis)"
+              },
+              {
+                "value": 53.7,
+                "unit": "%",
+                "label": "DIAL no-turn-taking-problem rate",
+                "note": "Higher is better; leads among the models shown"
+              },
+              {
+                "value": 4.21,
+                "unit": "points",
+                "label": "DIAL naturalness",
+                "note": "Scored by human raters; leads among the models shown"
+              },
+              {
+                "value": 87.1,
+                "unit": "%",
+                "label": "τ-Voice 2.0 intelligence score",
+                "note": "Sierra benchmark, run by Artificial Analysis"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "Turn-taking: where voice agents most often give themselves away",
+      "blocks": [
+        {
+          "p": "What makes a voice agent feel off is rarely the wrong answer—it's interrupting or going quiet. Cutting in breaks the speaker's flow; hanging silent too long feels like the call dropped. Phonic-1.1 focuses on when to speak and when to listen: it waits for the speaker to finish, even through mid-thought pauses, and holds up in noisy environments with other voices in the background."
+        },
+        {
+          "p": "DIAL, from David AI, puts human raters into live multi-turn conversations with models and focuses on turn-taking defects. The no-turn-taking-problem rate is better when higher. Phonic-1.1 scores 53.7%, leading the models shown; Phonic-1 is at 40.8%, Grok Voice 3.0 at 38.2%, and Gemini 3.8 just 14.4%. The higher the number, the fewer interruptions and cut-offs occur."
+        },
+        {
+          "fig": {
+            "type": "storyboard",
+            "title": "It waits for you to finish, even if you pause mid-sentence",
+            "subtitle": "Illustrative: amber marks Phonic-1.1's key behavior—not interrupting when it should wait",
+            "panels": [
+              {
+                "glyph": {
+                  "kind": "chat",
+                  "turns": [
+                    {
+                      "role": "user",
+                      "text": "Book me... um...",
+                      "tone": "base"
+                    }
+                  ]
+                },
+                "title": "User starts to speak",
+                "text": "Pauses mid-sentence, hasn't finished"
+              },
+              {
+                "glyph": {
+                  "kind": "chat",
+                  "turns": [
+                    {
+                      "role": "ai",
+                      "text": "(Waits quietly)",
+                      "tone": "hi"
+                    }
+                  ]
+                },
+                "title": "AI doesn't interrupt",
+                "text": "Phonic-1.1 waits for you to finish",
+                "tone": "hi"
+              },
+              {
+                "glyph": {
+                  "kind": "chat",
+                  "turns": [
+                    {
+                      "role": "user",
+                      "text": "...a flight for Friday",
+                      "tone": "base"
+                    }
+                  ]
+                },
+                "title": "User finishes",
+                "text": "Completes the sentence"
+              },
+              {
+                "glyph": {
+                  "kind": "chat",
+                  "turns": [
+                    {
+                      "role": "ai",
+                      "text": "Okay, Friday...",
+                      "tone": "base"
+                    }
+                  ]
+                },
+                "title": "Natural turn-taking",
+                "text": "Speaks only when it's its turn"
+              }
+            ]
+          }
+        },
+        {
+          "p": "On another turn-taking metric, Cekura, Phonic-1.1 scores 79, tied with Gemini 3.8 but behind Grok Voice 3.0's 81 and Eleven Realtime v1 Max's 80. So on turn-taking, it leads DIAL but isn't ahead on Cekura. The two benchmarks measure differently, so the conclusions won't always line up."
+        }
+      ]
+    },
+    {
+      "h": "Intelligence: stronger tool calling and instruction following",
+      "blocks": [
+        {
+          "p": "Many voice agents aren't just for chatting—they need to act while listening: check orders, move meetings, control devices. That requires understanding speech while holding onto enough reasoning and instruction-following ability. Phonic says its models are built for conversations that involve complex tool calling and nuanced instruction following."
+        },
+        {
+          "p": "τ-Voice is Sierra's benchmark for how well voice agents handle real tasks, run here by Artificial Analysis. Phonic-1.1 scores 87.1% on τ-Voice 2.0, up from Phonic-1's 85.6% and clearly above Gemini 3.8's 65.1% and Grok Voice 3.0's 66.9%; GPT-Live-1 sits at 80.4%."
+        },
+        {
+          "p": "Big Bench Audio tests audio-related common sense and reasoning. Phonic-1.1 scores 99.5%, close to a perfect score; Phonic-1 was at 98.9%. That's nearly maxed out, so there isn't much headroom left."
+        }
+      ]
+    },
+    {
+      "h": "Naturalness: sounding less like a machine",
+      "blocks": [
+        {
+          "p": "Naturalness is what makes you want to keep talking. It covers pacing, emotional inflections, and conversationalness. DIAL's human raters gave Phonic-1.1 a naturalness score of 4.21, leading the models shown. Phonic-1 scored 4.07, GPT-Live-1 3.91, Grok Voice 3.0 3.57, and Gemini 3.8 2.81."
+        },
+        {
+          "p": "Note: the 4.21 isn't on the same scale as the 53.7% or 87.1% above, so don't compare those numbers directly. It only compares within the naturalness row."
+        },
+        {
+          "p": "Looking at the three improvement areas in this release, turn-taking is the one Phonic emphasizes most."
+        },
+        {
+          "fig": {
+            "type": "cards",
+            "title": "What changed in this release: turn-taking, intelligence, naturalness",
+            "subtitle": "Amber marks the turn-taking improvements; the other two use the default color.",
+            "items": [
+              {
+                "icon": "chat",
+                "title": "Turn-taking",
+                "desc": "Better at knowing when to speak and when to listen; waits for the speaker to finish and handles background noise",
+                "tags": [
+                  "DIAL no-turn-taking-problem rate 53.7%",
+                  "Cekura 79 points"
+                ],
+                "tone": "hi"
+              },
+              {
+                "icon": "cpu",
+                "title": "Intelligence",
+                "desc": "Stronger complex tool calling and instruction following, built for voice agents",
+                "tags": [
+                  "τ-Voice 2.0 87.1%",
+                  "Big Bench Audio 99.5%"
+                ],
+                "tone": "base"
+              },
+              {
+                "icon": "audio",
+                "title": "Naturalness",
+                "desc": "Better pacing, emotional inflections, and conversationalness",
+                "tags": [
+                  "DIAL naturalness 4.21",
+                  "Previous generation 4.07"
+                ],
+                "tone": "base"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "All seven benchmarks: who leads where?",
+      "blocks": [
+        {
+          "p": "The full picture is in one table: seven benchmarks across the models. Each row only works horizontally—percentages, Elo scores, and a 4-point naturalness scale all use different units."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Complete scores across the seven benchmarks, compared row by row",
+            "subtitle": "Compare only within each row; units differ (%, Elo, 4-point scale)",
+            "note": "Gemini 3.8 = Gemini 3.8 Live (Extended Thinking, high); Grok 3.0 = Grok Voice 3.0; GPT-Live-1 = Astra, medium; Eleven Max = Eleven Realtime v1 Max",
+            "columns": [
+              "Benchmark",
+              "Phonic-1.1",
+              "Phonic-1",
+              "Gemini 3.8",
+              "Grok 3.0",
+              "GPT-Live-1",
+              "Eleven Max"
+            ],
+            "rows": [
+              [
+                "No turn-taking problems DIAL (%)",
+                "53.7",
+                "40.8",
+                "14.4",
+                "38.2",
+                "35.9",
+                "30.0"
+              ],
+              [
+                "Turn-taking score Cekura (points)",
+                "79",
+                "76",
+                "79",
+                "81",
+                "71",
+                "80"
+              ],
+              [
+                "Arena Elo (points)",
+                "1046",
+                "1010",
+                "966",
+                "1059",
+                "1027",
+                "990"
+              ],
+              [
+                "Naturalness DIAL (points)",
+                "4.21",
+                "4.07",
+                "2.81",
+                "3.57",
+                "3.91",
+                "3.45"
+              ],
+              [
+                "τ-Voice 1.0 (%)",
+                "82.8",
+                "79.9",
+                "68.6",
+                "71.6",
+                "74.5",
+                "47.6"
+              ],
+              [
+                "τ-Voice 2.0 (%)",
+                "87.1",
+                "85.6",
+                "65.1",
+                "66.9",
+                "80.4",
+                "57.8"
+              ],
+              [
+                "Big Bench Audio (%)",
+                "99.5",
+                "98.9",
+                "97.7",
+                "98.5",
+                "90.1",
+                "98.8"
+              ]
+            ],
+            "highlight": {
+              "col": 1
+            }
+          }
+        },
+        {
+          "p": "From the table: Phonic-1.1 leads every benchmark except Cekura turn-taking and Arena Elo. Those go to Grok Voice 3.0 at 81 points and 1059 Elo. Arena Elo is an arena score where humans listen blind and pick winners; Phonic-1.1 sits second at 1046. So leading the index doesn't mean winning every row."
+        }
+      ]
+    },
+    {
+      "h": "How to use it, and what it costs",
+      "blocks": [
+        {
+          "p": "Phonic-1.1 is available starting today: the site has Try now and Docs. The announcement doesn't list a per-million-token or per-minute price; check Docs or contact Phonic."
+        },
+        {
+          "callout": {
+            "kind": "note",
+            "title": "Starter Grant for startups",
+            "text": "If you're a startup building voice products, you can apply for the Speech-to-Speech Starter Grant: 144,000 minutes of Phonic usage over 12 months, plus a dedicated Slack channel with direct access to Phonic's research and engineering team."
+          }
+        }
+      ]
+    },
+    {
+      "h": "What Phonic hasn't said",
+      "blocks": [
+        {
+          "list": [
+            "Pricing: no per-minute or per-million-token price is listed.",
+            "Latency: no figure for how long from when the user stops speaking to when the AI responds.",
+            "Supported languages and accent coverage: not stated.",
+            "Model size, training data, and the specific changes: not stated.",
+            "Standard plans beyond the Starter Grant, including concurrency limits: not stated.",
+            "Which other models and configurations appear on the full leaderboard: only these rivals are listed; see Artificial Analysis for the full ranking."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Who it's for",
+      "blocks": [
+        {
+          "p": "The value is clear: it waits better, thinks better, and sounds more natural. Teams building voice customer service, voice assistants, or in-meeting voice agents should benefit directly—especially in scenarios that need complex tool calling and are prone to interruption problems."
+        },
+        {
+          "p": "The tradeoffs and caveats: pricing is unknown; Cekura turn-taking and Arena Elo still trail Grok Voice 3.0; and all scores above come from third-party leaderboards as relayed by Phonic's blog, so verify them in the leaderboards and your own trials before choosing."
+        },
+        {
+          "list": [
+            "If you're building voice agents that call tools, or interruptions are a real pain: it's worth applying for a trial and the Starter Grant.",
+            "If you care most about overall chat preference (Arena Elo): Grok Voice 3.0 still leads there, so compare it side by side.",
+            "If you only care about price: no numbers are given here—check Docs or contact Phonic separately."
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Introducing Phonic-1.1 | Phonic Blog",
+      "publisher": "Phonic",
+      "date": "2026-11-24",
+      "url": "https://phonic.co/blog/phonic-1-1"
+    },
+    "note": "Benchmark data comes from third-party leaderboards (Artificial Analysis, Sierra τ-Voice, David AI DIAL, Cekura) as relayed by Phonic's blog—second-hand vendor-provided scores. The turn-taking storyboard is a conceptual illustration."
+  },
+  "claims": [
+    {
+      "text": "Phonic-1.1 is 1.8 points ahead of Phonic-1 on the Artificial Analysis Speech to Speech Index.",
+      "value": "1.8 points",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "1.8 points",
+      "quote": "improving 1.8 points over Phonic-1"
+    },
+    {
+      "text": "Phonic-1 was released three weeks ago.",
+      "value": "Three weeks ago",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "three weeks ago",
+      "quote": "Three weeks ago, we released Phonic-1."
+    },
+    {
+      "text": "Phonic's comparison table includes seven benchmarks.",
+      "value": "seven",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "seven",
+      "quote": "on the seven benchmarks in the chart"
+    },
+    {
+      "text": "The Speech-to-Speech Starter Grant provides 144,000 minutes of Phonic usage.",
+      "value": "144,000 minutes",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "144,000 minutes",
+      "quote": "Apply to our Speech-to-Speech Starter Grant for 144,000 minutes of Phonic across 12 months"
+    },
+    {
+      "text": "The Starter Grant usage spans 12 months.",
+      "value": "12 months",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "12 months",
+      "quote": "144,000 minutes of Phonic across 12 months"
+    },
+    {
+      "text": "The leaderboard data is dated November 23, 2026.",
+      "value": "November 23, 2026",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "November 23, 2026",
+      "quote": "Source: Artificial Analysis Speech to Speech Index (November 23, 2026)."
+    },
+    {
+      "text": "Phonic-1.1 scores 53.7% on DIAL no turn-taking problems.",
+      "value": "53.7%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "53.7%",
+      "quote": "No turn-taking problems DIAL 53.7% 40.8% 14.4% 38.2% 35.9% 30.0%"
+    },
+    {
+      "text": "Phonic-1 scores 40.8% on DIAL no turn-taking problems.",
+      "value": "40.8%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "40.8%",
+      "quote": "No turn-taking problems DIAL 53.7% 40.8% 14.4% 38.2% 35.9% 30.0%"
+    },
+    {
+      "text": "Gemini 3.8 scores 14.4% on DIAL no turn-taking problems.",
+      "value": "14.4%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "14.4%",
+      "quote": "No turn-taking problems DIAL 53.7% 40.8% 14.4% 38.2% 35.9% 30.0%"
+    },
+    {
+      "text": "Grok 3.0 scores 38.2% on DIAL no turn-taking problems.",
+      "value": "38.2%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "38.2%",
+      "quote": "No turn-taking problems DIAL 53.7% 40.8% 14.4% 38.2% 35.9% 30.0%"
+    },
+    {
+      "text": "GPT-Live-1 scores 35.9% on DIAL no turn-taking problems.",
+      "value": "35.9%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "35.9%",
+      "quote": "No turn-taking problems DIAL 53.7% 40.8% 14.4% 38.2% 35.9% 30.0%"
+    },
+    {
+      "text": "Eleven Max scores 30.0% on DIAL no turn-taking problems.",
+      "value": "30.0%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "30.0%",
+      "quote": "No turn-taking problems DIAL 53.7% 40.8% 14.4% 38.2% 35.9% 30.0%"
+    },
+    {
+      "text": "Phonic-1.1 scores 79 on Cekura turn-taking.",
+      "value": "79",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "79 points",
+      "quote": "Turn-taking score Cekura 79 76 79 81 71 80"
+    },
+    {
+      "text": "Phonic-1 scores 76 on Cekura turn-taking.",
+      "value": "76",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "76 points",
+      "quote": "Turn-taking score Cekura 79 76 79 81 71 80"
+    },
+    {
+      "text": "Gemini 3.8 scores 79 on Cekura turn-taking.",
+      "value": "79",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "79 points",
+      "quote": "Turn-taking score Cekura 79 76 79 81 71 80"
+    },
+    {
+      "text": "Grok 3.0 scores 81 on Cekura turn-taking.",
+      "value": "81",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "81 points",
+      "quote": "Turn-taking score Cekura 79 76 79 81 71 80"
+    },
+    {
+      "text": "GPT-Live-1 scores 71 on Cekura turn-taking.",
+      "value": "71",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "71 points",
+      "quote": "Turn-taking score Cekura 79 76 79 81 71 80"
+    },
+    {
+      "text": "Eleven Max scores 80 on Cekura turn-taking.",
+      "value": "80",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "80 points",
+      "quote": "Turn-taking score Cekura 79 76 79 81 71 80"
+    },
+    {
+      "text": "Phonic-1.1 has an Arena Elo of 1046.",
+      "value": "1046",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "1046",
+      "quote": "Arena Elo Artificial Analysis 1046 1010 966 1059 1027 990"
+    },
+    {
+      "text": "Phonic-1 has an Arena Elo of 1010.",
+      "value": "1010",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "1010",
+      "quote": "Arena Elo Artificial Analysis 1046 1010 966 1059 1027 990"
+    },
+    {
+      "text": "Gemini 3.8 has an Arena Elo of 966.",
+      "value": "966",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "966",
+      "quote": "Arena Elo Artificial Analysis 1046 1010 966 1059 1027 990"
+    },
+    {
+      "text": "Grok 3.0 has an Arena Elo of 1059.",
+      "value": "1059",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "1059",
+      "quote": "Arena Elo Artificial Analysis 1046 1010 966 1059 1027 990"
+    },
+    {
+      "text": "GPT-Live-1 has an Arena Elo of 1027.",
+      "value": "1027",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "1027",
+      "quote": "Arena Elo Artificial Analysis 1046 1010 966 1059 1027 990"
+    },
+    {
+      "text": "Eleven Max has an Arena Elo of 990.",
+      "value": "990",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "990",
+      "quote": "Arena Elo Artificial Analysis 1046 1010 966 1059 1027 990"
+    },
+    {
+      "text": "Phonic-1.1 scores 4.21 on DIAL naturalness.",
+      "value": "4.21",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "4.21",
+      "quote": "Naturalness DIAL 4.21 4.07 2.81 3.57 3.91 3.45"
+    },
+    {
+      "text": "Phonic-1 scores 4.07 on DIAL naturalness.",
+      "value": "4.07",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "4.07",
+      "quote": "Naturalness DIAL 4.21 4.07 2.81 3.57 3.91 3.45"
+    },
+    {
+      "text": "Gemini 3.8 scores 2.81 on DIAL naturalness.",
+      "value": "2.81",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "2.81",
+      "quote": "Naturalness DIAL 4.21 4.07 2.81 3.57 3.91 3.45"
+    },
+    {
+      "text": "Grok 3.0 scores 3.57 on DIAL naturalness.",
+      "value": "3.57",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "3.57",
+      "quote": "Naturalness DIAL 4.21 4.07 2.81 3.57 3.91 3.45"
+    },
+    {
+      "text": "GPT-Live-1 scores 3.91 on DIAL naturalness.",
+      "value": "3.91",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "3.91",
+      "quote": "Naturalness DIAL 4.21 4.07 2.81 3.57 3.91 3.45"
+    },
+    {
+      "text": "Eleven Max scores 3.45 on DIAL naturalness.",
+      "value": "3.45",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "3.45",
+      "quote": "Naturalness DIAL 4.21 4.07 2.81 3.57 3.91 3.45"
+    },
+    {
+      "text": "Phonic-1.1 scores 82.8% on τ-Voice 1.0.",
+      "value": "82.8%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "82.8%",
+      "quote": "Sierra's τ-Voice 1.0 Artificial Analysis 82.8% 79.9% 68.6% 71.6% 74.5% 47.6%"
+    },
+    {
+      "text": "Phonic-1 scores 79.9% on τ-Voice 1.0.",
+      "value": "79.9%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "79.9%",
+      "quote": "Sierra's τ-Voice 1.0 Artificial Analysis 82.8% 79.9% 68.6% 71.6% 74.5% 47.6%"
+    },
+    {
+      "text": "Gemini 3.8 scores 68.6% on τ-Voice 1.0.",
+      "value": "68.6%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "68.6%",
+      "quote": "Sierra's τ-Voice 1.0 Artificial Analysis 82.8% 79.9% 68.6% 71.6% 74.5% 47.6%"
+    },
+    {
+      "text": "Grok 3.0 scores 71.6% on τ-Voice 1.0.",
+      "value": "71.6%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "71.6%",
+      "quote": "Sierra's τ-Voice 1.0 Artificial Analysis 82.8% 79.9% 68.6% 71.6% 74.5% 47.6%"
+    },
+    {
+      "text": "GPT-Live-1 scores 74.5% on τ-Voice 1.0.",
+      "value": "74.5%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "74.5%",
+      "quote": "Sierra's τ-Voice 1.0 Artificial Analysis 82.8% 79.9% 68.6% 71.6% 74.5% 47.6%"
+    },
+    {
+      "text": "Eleven Max scores 47.6% on τ-Voice 1.0.",
+      "value": "47.6%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "47.6%",
+      "quote": "Sierra's τ-Voice 1.0 Artificial Analysis 82.8% 79.9% 68.6% 71.6% 74.5% 47.6%"
+    },
+    {
+      "text": "Phonic-1.1 scores 87.1% on τ-Voice 2.0.",
+      "value": "87.1%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "87.1%",
+      "quote": "Sierra's τ-Voice 2.0 Artificial Analysis 87.1% 85.6% 65.1% 66.9% 80.4% 57.8%"
+    },
+    {
+      "text": "Phonic-1 scores 85.6% on τ-Voice 2.0.",
+      "value": "85.6%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "85.6%",
+      "quote": "Sierra's τ-Voice 2.0 Artificial Analysis 87.1% 85.6% 65.1% 66.9% 80.4% 57.8%"
+    },
+    {
+      "text": "Gemini 3.8 scores 65.1% on τ-Voice 2.0.",
+      "value": "65.1%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "65.1%",
+      "quote": "Sierra's τ-Voice 2.0 Artificial Analysis 87.1% 85.6% 65.1% 66.9% 80.4% 57.8%"
+    },
+    {
+      "text": "Grok 3.0 scores 66.9% on τ-Voice 2.0.",
+      "value": "66.9%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "66.9%",
+      "quote": "Sierra's τ-Voice 2.0 Artificial Analysis 87.1% 85.6% 65.1% 66.9% 80.4% 57.8%"
+    },
+    {
+      "text": "GPT-Live-1 scores 80.4% on τ-Voice 2.0.",
+      "value": "80.4%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "80.4%",
+      "quote": "Sierra's τ-Voice 2.0 Artificial Analysis 87.1% 85.6% 65.1% 66.9% 80.4% 57.8%"
+    },
+    {
+      "text": "Eleven Max scores 57.8% on τ-Voice 2.0.",
+      "value": "57.8%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "57.8%",
+      "quote": "Sierra's τ-Voice 2.0 Artificial Analysis 87.1% 85.6% 65.1% 66.9% 80.4% 57.8%"
+    },
+    {
+      "text": "Phonic-1.1 scores 99.5% on Big Bench Audio.",
+      "value": "99.5%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "99.5%",
+      "quote": "Big Bench Audio Artificial Analysis 99.5% 98.9% 97.7% 98.5% 90.1% 98.8%"
+    },
+    {
+      "text": "Phonic-1 scores 98.9% on Big Bench Audio.",
+      "value": "98.9%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "98.9%",
+      "quote": "Big Bench Audio Artificial Analysis 99.5% 98.9% 97.7% 98.5% 90.1% 98.8%"
+    },
+    {
+      "text": "Gemini 3.8 scores 97.7% on Big Bench Audio.",
+      "value": "97.7%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "97.7%",
+      "quote": "Big Bench Audio Artificial Analysis 99.5% 98.9% 97.7% 98.5% 90.1% 98.8%"
+    },
+    {
+      "text": "Grok 3.0 scores 98.5% on Big Bench Audio.",
+      "value": "98.5%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "98.5%",
+      "quote": "Big Bench Audio Artificial Analysis 99.5% 98.9% 97.7% 98.5% 90.1% 98.8%"
+    },
+    {
+      "text": "GPT-Live-1 scores 90.1% on Big Bench Audio.",
+      "value": "90.1%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "90.1%",
+      "quote": "Big Bench Audio Artificial Analysis 99.5% 98.9% 97.7% 98.5% 90.1% 98.8%"
+    },
+    {
+      "text": "Eleven Max scores 98.8% on Big Bench Audio.",
+      "value": "98.8%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "98.8%",
+      "quote": "Big Bench Audio Artificial Analysis 99.5% 98.9% 97.7% 98.5% 90.1% 98.8%"
+    }
+  ],
+  "cover": {
+    "headline": "Phonic-1.1 voice model launched",
+    "highlight": "More natural turn-taking, index up 1.8 points",
+    "big": {
+      "value": "1.8",
+      "unit": "points",
+      "label": "Index gain over previous generation"
+    },
+    "glyph": {
+      "kind": "chat",
+      "turns": [
+        {
+          "role": "user",
+          "text": "……",
+          "tone": "base"
+        },
+        {
+          "role": "ai",
+          "text": "(Waiting)",
+          "tone": "hi"
+        }
+      ]
+    }
+  },
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "1e2b3c09ec71b24d"
+}
