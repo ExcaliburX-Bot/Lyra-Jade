@@ -40,6 +40,29 @@ export function automergeProblems(pr, article, { categories = CATEGORIES, label 
   return p;
 }
 
+/* 英文版的 PR（translate/ 分支）：只能改 content/en/ 下的译文；译文在翻译时已逐段核对过数字，这里再确认它是英文版、没有残留中文 */
+const CJK = /[\u2E80-\u9FFF\u3000-\u303F\uF900-\uFAFF\uFF00-\uFFEF]/;
+export function translationProblems(pr, docs, { label = LABEL } = {}) {
+  const p = [];
+  if (pr.isCrossRepository) p.push("来自别人 fork 的 PR，不自动合并");
+  if (!pr.headRefName?.startsWith("translate/")) p.push(`分支 ${pr.headRefName} 不是翻译流水线开的 translate/ 分支`);
+  if (!(pr.labels || []).some(l => l.name === label)) p.push(`没有「${label}」标签`);
+  if ((pr.labels || []).some(l => l.name === "需修改")) p.push("带着「需修改」标签");
+  const files = pr.files || [];
+  if (!files.length || files.length > 30) p.push(`改了 ${files.length} 个文件，应为 1–30 篇译文`);
+  for (const f of files) {
+    if (!/^content\/en\/[a-z0-9-]+\.json$/.test(f.path)) { p.push(`改的不是英文版文件：${f.path}`); continue; }
+    const a = docs[f.path];
+    if (!a) { p.push(`读不出 ${f.path}`); continue; }
+    if (a.lang !== "en" || !a.translated_from) p.push(`${f.path} 不是翻译流水线生成的英文版`);
+    const left = [];
+    const walk = (o, k) => { if (typeof o === "string") { if (CJK.test(o) && !["quote", "zh"].includes(k)) left.push(o.slice(0, 30)); } else if (o && typeof o === "object") for (const [kk, v] of Object.entries(o)) walk(v, kk); };
+    walk(a, "");
+    if (left.length) p.push(`${f.path} 还有 ${left.length} 处中文，例如「${left[0]}」`);
+  }
+  return p;
+}
+
 function gh(args) { return execFileSync("gh", args, { encoding: "utf8" }); }
 
 async function main() {
@@ -52,9 +75,14 @@ async function main() {
     const n = args[0];
     if (!/^\d+$/.test(n || "")) throw new Error("要给 PR 编号");
     pr = JSON.parse(gh(["pr", "view", n, "--json", "headRefName,headRefOid,labels,files,author,isCrossRepository"]));
+    const repo = process.env.GITHUB_REPOSITORY;
+    if (pr.headRefName?.startsWith("translate/")) {
+      const docs = {};
+      for (const f of pr.files || []) { try { docs[f.path] = JSON.parse(gh(["api", "-H", "Accept: application/vnd.github.raw", `repos/${repo}/contents/${f.path}?ref=${pr.headRefOid}`])); } catch {} }
+      return report(translationProblems(pr, docs));
+    }
     const f = (pr.files || [])[0];
     if (f && /^content\/articles\/[a-z0-9-]+\.json$/.test(f.path)) {
-      const repo = process.env.GITHUB_REPOSITORY;
       try { article = JSON.parse(gh(["api", "-H", "Accept: application/vnd.github.raw", `repos/${repo}/contents/${f.path}?ref=${pr.headRefOid}`])); }
       catch { article = null; }
       /* 主分支上没有这个文件，才算新增 */
@@ -62,7 +90,10 @@ async function main() {
       catch { pr.fileIsNew = true; }
     }
   }
-  const problems = automergeProblems(pr, article, { sourceTexts: loadSourceTexts(article) });
+  report(automergeProblems(pr, article, { sourceTexts: loadSourceTexts(article) }));
+}
+
+function report(problems) {
   const ok = problems.length === 0;
   const md = `### 自动合并检查：${ok ? "✅ 符合条件" : "⏸ 不自动合并，等人工"}\n\n${ok ? "全部条件满足。" : problems.map(x => `- ${x}`).join("\n")}\n`;
   console.log(md);

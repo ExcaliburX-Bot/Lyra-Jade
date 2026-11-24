@@ -1,14 +1,16 @@
 #!/usr/bin/env node
 /* 第 8 步：把 content/articles 里的文章生成静态网站到 dist/
    首页 index.html、每篇 a/<slug>.html、关于页 about.html、订阅源 rss.xml、sitemap.xml、robots.txt、404.html，
+   英文版在 en/ 下（en/index.html、en/a/<slug>.html、en/about.html、en/rss.xml），文章来自 content/en（scripts/translate.mjs 生成），
    以及给 App 和第三方用的只读内容 API：api/v1/{index,articles,categories}.json、api/v1/articles/<slug>.json */
 import fs from "node:fs";
 import { execFileSync } from "node:child_process";
 import path from "node:path";
-import { CONTENT, DIST, SITE, ROOT } from "./lib/paths.mjs";
+import { CONTENT, CONTENT_EN, DIST, SITE, ROOT } from "./lib/paths.mjs";
 import { readJson } from "./lib/store.mjs";
 import { sha } from "./lib/text.mjs";
 import { coverHtml } from "./lib/cover.mjs";
+import { sourceHash } from "./lib/translate.mjs";
 import { renderArticleBody, esc } from "../site/assets/components.js";
 
 const SITE_NAME = "玲珑玉 Lyra-Jade";
@@ -19,12 +21,26 @@ const ANALYTICS = /^[A-Za-z0-9]{16,64}$/.test(CF) ? `<script defer src="https://
 const CONTACT = (process.env.WG_CONTACT_EMAIL || "").trim();
 const OGIMAGE = `${SITE_URL}/assets/og.png`;
 const CAT_NAME = { product: "产品发布", research: "研究解读", deep: "深度", biz: "商业动态", howto: "AI 实操", visual: "商业视觉实战", insight: "洞察", other: "其他" };
+const CAT_NAME_EN = { product: "Launches", research: "Research", deep: "Deep dives", biz: "Business", howto: "How-to", visual: "Visual work", insight: "Insights", other: "Other" };
+const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const enDate = iso => { const [y, m, d] = String(iso).split("-").map(Number); return `${MON[m - 1]} ${d}, ${y}`; };
+
+/* 页面框架里的固定文案（模板里的 {{U_xxx}}） */
+const UI = {
+  zh: { sections: "栏目", closeSide: "收起侧栏", openSide: "展开侧栏", rss: "RSS 订阅", rssNote: "新解读发布后自动推送到你的阅读器", brandShort: "玲珑玉",
+    search: "搜索", appearance: "外观：深浅色与风格", about: "关于", aboutSite: "关于本站", aiNote: "AI 生成说明", api: "内容 API", toTop: "回到顶部",
+    filter: "按栏目筛选", sort: "排列方式" },
+  en: { sections: "Sections", closeSide: "Collapse sidebar", openSide: "Open sidebar", rss: "RSS feed", rssNote: "New explainers land in your reader as soon as they're published", brandShort: "Lyra-Jade",
+    search: "Search", appearance: "Appearance: theme and style", about: "About", aboutSite: "About", aiNote: "How we use AI", api: "Content API", toTop: "Back to top",
+    filter: "Filter by section", sort: "Sort" }
+};
 
 const tpl = fs.readFileSync(path.join(SITE, "templates/page.html"), "utf8");
-const listing = fs.readFileSync(path.join(SITE, "templates/listing.html"), "utf8");
-const page = v => tpl.replace(/\{\{(\w+)\}\}/g, (m, k) => ({ ANALYTICS, OGIMAGE, OGTYPE: "website", ...v })[k] ?? "");
+const listingTpl = fs.readFileSync(path.join(SITE, "templates/listing.html"), "utf8");
+const fill = (t, v) => t.replace(/\{\{(\w+)\}\}/g, (m, k) => v[k] ?? "");
 const safeJson = x => JSON.stringify(x).replace(/</g, "\\u003c");
 const textLen = a => (a.sections || []).flatMap(s => s.blocks.map(b => b.p || (b.list || []).join(""))).join("").length;
+const wordLen = a => (a.sections || []).flatMap(s => s.blocks.map(b => b.p || (b.list || []).join(" "))).join(" ").split(/\s+/).filter(Boolean).length;
 
 /* 排序按「在本站上线的时间」，不按原文日期：晚几天才写的稿子也排在最前面，原文日期另外显示。
    上线时间取这篇文章文件第一次进入仓库的提交时间（部署时要完整历史：deploy.yml 的 fetch-depth: 0）；取不到就退回原文日期 */
@@ -41,53 +57,119 @@ const articles = fs.existsSync(CONTENT) ? fs.readdirSync(CONTENT).filter(f => f.
   .sort((a, b) => b._pub.localeCompare(a._pub) || b.date.localeCompare(a.date) || a.title.localeCompare(b.title)) : [];
 for (const a of articles) a._day = bjDay(a._pub);
 
-const index = articles.map((a, i) => ({
-  id: a.slug, no: a.no ?? articles.length - i, slug: a.slug, date: a._day, src: a.date, cat: a.category, co: a.publisher, title: a.title, summary: a.summary,
-  min: a.readMinutes || Math.max(3, Math.ceil(textLen(a) / 450)), verified: !!a.verified, pod: null,
-  v: parseInt(sha(a.slug, 4), 16) % 5, h: parseInt(sha(a.slug + "h", 4), 16) % 360,
-  cv: coverHtml(a)   /* 按内容生成的封面（见 lib/cover.mjs） */
-}));
-/* 今日精选：最新上线的一篇（人工核对过的优先，但只在最近两天内找） */
-const featured = (articles.find(a => a.verified && a._day >= bjDay(new Date(Date.now() - 2 * 864e5).toISOString())) || articles[0])?.slug || null;
-const today = new Date().toISOString().slice(0, 10);
+/* 英文版：只收和当前中文稿对得上的译文（中文稿改过、还没重翻的先不显示，免得中英文事实不一致）。
+   上线时间、核对状态、编号跟中文稿走 */
+const articlesEn = articles.map(zh => {
+  const en = readJson(path.join(CONTENT_EN, `${zh.slug}.json`));
+  if (!en || en.translated_from !== sourceHash(zh)) return null;
+  return { ...en, _pub: zh._pub, _day: zh._day, verified: zh.verified, status: zh.status, no: zh.no };
+}).filter(Boolean);
+const hasEn = new Set(articlesEn.map(a => a.slug));
 
+const today = new Date().toISOString().slice(0, 10);
 fs.rmSync(DIST, { recursive: true, force: true });
 fs.mkdirSync(path.join(DIST, "a"), { recursive: true });
 fs.cpSync(path.join(SITE, "assets"), path.join(DIST, "assets"), { recursive: true });
 
-/* 首页 */
-fs.writeFileSync(path.join(DIST, "index.html"), page({
-  TITLE: `AI 解读 · ${SITE_NAME}`, DESC: "每天从一手来源挑出值得讲的 AI 发布，用文字和动态图讲透。", BASE: "./", BODYCLASS: "", URL: `${SITE_URL}/`,
-  MAIN: listing, DATA: safeJson({ articles: index, featured, today })
-}));
-
-/* 文章页 */
-for (const a of articles) {
-  const rel = articles.filter(x => x.slug !== a.slug && x.category === a.category).slice(0, 4);
-  const main = `<article class="reader" id="reader">
-    <a href="../index.html" class="back" data-home><svg class="i"><use href="#i-chev-l"/></svg>返回 AI 解读</a>
-    <div class="tags"><span class="tag">${esc(CAT_NAME[a.category] || a.category)}</span>${a.verified ? `<span class="verified"><svg class="i"><use href="#i-check"/></svg>人工已核对</span>` : `<a class="muted" href="../about.html#ai">AI 辅助撰写</a>`}</div>
-    <h1>${esc(a.title)}</h1>
-    <div class="rmeta"><span>${esc(a._day)} 发布</span>${a.date !== a._day ? `<span>原文 ${esc(a.date)}</span>` : ""}<span>约 ${index.find(x => x.slug === a.slug).min} 分钟</span><span>来源 ${esc(a.publisher)}</span></div>
-    ${renderArticleBody(a)}
-    <aside class="disclose"><svg class="i"><use href="#i-info"/></svg><p>本文由 AI 辅助撰写，依据上方列出的一手来源，关键数字已与原文核对${a.verified ? "，并经编辑通读" : ""}。如有出入，请以原文为准。<a href="../about.html#ai">关于我们的内容</a>${CONTACT ? ` · 发现错误请写信到 <a href="mailto:${esc(CONTACT)}">${esc(CONTACT)}</a>` : ""}</p></aside>
-    ${rel.length ? `<div class="rel"><h3>继续读</h3><div class="toc">${rel.map(x => `<a href="${x.slug}.html"><span>${x.date.slice(5)}</span><span>${esc(x.title)}</span><span>${esc(CAT_NAME[x.category] || "")}</span></a>`).join("")}</div></div>` : ""}
-  </article>`;
-  fs.writeFileSync(path.join(DIST, "a", `${a.slug}.html`), page({
-    TITLE: `${esc(a.title)} · ${SITE_NAME}`, DESC: esc(a.summary), BASE: "../", BODYCLASS: "reading", URL: `${SITE_URL}/a/${a.slug}.html`, OGTYPE: "article",
-    MAIN: main, DATA: safeJson({ articles: index, featured, today })
-  }));
+/* 一种语言一套页面。dir：放在哪个子目录；base：页面到网站根（资源、API）的相对路径由深度决定 */
+const LANGS = {
+  zh: { lang: "zh", html: "zh-CN", dir: "", list: articles, cat: CAT_NAME, siteDesc: "每天从一手来源挑出值得讲的 AI 发布，用文字和动态图讲透。",
+    titleTail: SITE_NAME, home: "AI 解读", altLabel: "EN", altTitle: "English edition", altLang: "en" },
+  en: { lang: "en", html: "en", dir: "en/", list: articlesEn, cat: CAT_NAME_EN, siteDesc: "The AI releases worth understanding, explained from primary sources, every day.",
+    titleTail: "Lyra-Jade", home: "AI Explained", altLabel: "中文", altTitle: "中文版", altLang: "zh-CN" }
+};
+const abs = (L, p) => `${SITE_URL}/${L.dir}${p}`.replace(/\/index\.html$/, "/");
+/* 同一页面在另一种语言里的地址（相对当前页面）；另一边没有这篇时退回那边的首页 */
+function alt(L, depth, page) {
+  const up = "../".repeat(depth);
+  if (L.lang === "zh") return `${up}en/${page && (!page.startsWith("a/") || hasEn.has(page.slice(2, -5))) ? page : "index.html"}`;
+  return `${"../".repeat(depth + 1)}${page || "index.html"}`;
+}
+function hreflang(page) {
+  const zh = `${SITE_URL}/${page}`.replace(/\/index\.html$/, "/");
+  const enOk = !page.startsWith("a/") || hasEn.has(page.slice(2, -5));
+  return [`<link rel="alternate" hreflang="zh-CN" href="${zh}">`, enOk ? `<link rel="alternate" hreflang="en" href="${SITE_URL}/en/${page}">`.replace(/\/index\.html"/, '/"') : "",
+    `<link rel="alternate" hreflang="x-default" href="${zh}">`].filter(Boolean).join("\n");
 }
 
-/* RSS */
-const rss = `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0"><channel><title>${SITE_NAME} · AI 解读</title><link>${SITE_URL}/</link><description>每天把最值得看的 AI 新动态讲清楚</description>
-${articles.slice(0, 30).map(a => `<item><title>${esc(a.title)}</title><link>${SITE_URL}/a/${a.slug}.html</link><guid>${SITE_URL}/a/${a.slug}.html</guid><pubDate>${new Date(a._pub).toUTCString()}</pubDate><description>${esc(a.summary)}</description></item>`).join("\n")}
-</channel></rss>`;
-fs.writeFileSync(path.join(DIST, "rss.xml"), rss);
+function render(L, { page, depth, title, desc, bodyClass = "", main, data, ogType = "website" }) {
+  const base = "../".repeat(depth + (L.dir ? 1 : 0)) || "./";
+  const home = "../".repeat(depth) || "./";
+  const ui = Object.fromEntries(Object.entries(UI[L.lang]).map(([k, v]) => [`U_${k}`, v]));
+  const vars = { ...ui, ANALYTICS, OGIMAGE, OGTYPE: ogType, HTMLLANG: L.html, LANG: L.lang, BASE: base, HOME: home, TITLE: title, DESC: desc, BODYCLASS: bodyClass,
+    URL: abs(L, page), ALTURL: alt(L, depth, page), ALTLABEL: L.lang === "en" || articlesEn.length ? L.altLabel : "", ALTTITLE: L.altTitle, ALTLANG: L.altLang, HREFLANG: hreflang(page), DATA: safeJson(data) };
+  const out = path.join(DIST, L.dir, page);
+  fs.mkdirSync(path.dirname(out), { recursive: true });
+  fs.writeFileSync(out, fill(tpl, { ...vars, MAIN: fill(main, vars) }));
+}
 
-/* 关于页 */
-const about = `<article class="reader about" id="reader">
+function buildLang(L) {
+  const list = L.list, en = L.lang === "en";
+  const index = list.map((a, i) => ({
+    id: a.slug, no: a.no ?? list.length - i, slug: a.slug, date: a._day, src: a.date, cat: a.category, co: a.publisher, title: a.title, summary: a.summary,
+    min: a.readMinutes || (en ? Math.max(3, Math.ceil(wordLen(a) / 230)) : Math.max(3, Math.ceil(textLen(a) / 450))), verified: !!a.verified, pod: null,
+    v: parseInt(sha(a.slug, 4), 16) % 5, h: parseInt(sha(a.slug + "h", 4), 16) % 360,
+    cv: coverHtml(a)   /* 按内容生成的封面（见 lib/cover.mjs） */
+  }));
+  const minOf = a => index.find(x => x.slug === a.slug).min;
+  /* 今日精选：最新上线的一篇（人工核对过的优先，但只在最近两天内找） */
+  const featured = (list.find(a => a.verified && a._day >= bjDay(new Date(Date.now() - 2 * 864e5).toISOString())) || list[0])?.slug || null;
+  const data = { articles: index, featured, today };
+
+  /* 首页 */
+  render(L, { page: "index.html", depth: 0, title: en ? `AI Explained · ${L.titleTail}` : `AI 解读 · ${SITE_NAME}`, desc: L.siteDesc, main: listingTpl, data });
+
+  /* 文章页 */
+  for (const a of list) {
+    const rel = list.filter(x => x.slug !== a.slug && x.category === a.category).slice(0, 4);
+    const T = en ? {
+      back: "Back to AI Explained", verified: "Checked by an editor", ai: "AI-assisted", pub: `Published ${enDate(a._day)}`, src: a.date !== a._day ? `Source dated ${enDate(a.date)}` : "",
+      min: `${minOf(a)} min read`, from: `Source: ${a.publisher}`, more: "Keep reading",
+      disclose: `This explainer was written with AI assistance from the primary sources listed above, then translated and adapted into English by AI. Key figures were checked against the original${a.verified ? " and an editor read it through" : ""}. If anything differs, the original source prevails. <a href="../about.html#ai">How we use AI</a>${CONTACT ? ` · Spotted an error? Email <a href="mailto:${esc(CONTACT)}">${esc(CONTACT)}</a>` : ""}`
+    } : {
+      back: "返回 AI 解读", verified: "人工已核对", ai: "AI 辅助撰写", pub: `${a._day} 发布`, src: a.date !== a._day ? `原文 ${a.date}` : "",
+      min: `约 ${minOf(a)} 分钟`, from: `来源 ${a.publisher}`, more: "继续读",
+      disclose: `本文由 AI 辅助撰写，依据上方列出的一手来源，关键数字已与原文核对${a.verified ? "，并经编辑通读" : ""}。如有出入，请以原文为准。<a href="../about.html#ai">关于我们的内容</a>${CONTACT ? ` · 发现错误请写信到 <a href="mailto:${esc(CONTACT)}">${esc(CONTACT)}</a>` : ""}`
+    };
+    const main = `<article class="reader" id="reader">
+    <a href="../index.html" class="back" data-home><svg class="i"><use href="#i-chev-l"/></svg>${T.back}</a>
+    <div class="tags"><span class="tag">${esc(L.cat[a.category] || a.category)}</span>${a.verified ? `<span class="verified"><svg class="i"><use href="#i-check"/></svg>${T.verified}</span>` : `<a class="muted" href="../about.html#ai">${T.ai}</a>`}</div>
+    <h1>${esc(a.title)}</h1>
+    <div class="rmeta"><span>${esc(T.pub)}</span>${T.src ? `<span>${esc(T.src)}</span>` : ""}<span>${esc(T.min)}</span><span>${esc(T.from)}</span></div>
+    ${renderArticleBody(a, { lang: L.lang })}
+    <aside class="disclose"><svg class="i"><use href="#i-info"/></svg><p>${T.disclose}</p></aside>
+    ${rel.length ? `<div class="rel"><h3>${T.more}</h3><div class="toc">${rel.map(x => `<a href="${x.slug}.html"><span>${x._day.slice(5)}</span><span>${esc(x.title)}</span><span>${esc(L.cat[x.category] || "")}</span></a>`).join("")}</div></div>` : ""}
+  </article>`;
+    render(L, { page: `a/${a.slug}.html`, depth: 1, title: `${esc(a.title)} · ${L.titleTail}`, desc: esc(a.summary), bodyClass: "reading", ogType: "article", main, data });
+  }
+
+  /* RSS */
+  const rss = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"><channel><title>${en ? "Lyra-Jade · AI Explained" : `${SITE_NAME} · AI 解读`}</title><link>${SITE_URL}/${L.dir}</link><description>${en ? "The AI releases worth understanding, explained from primary sources." : "每天把最值得看的 AI 新动态讲清楚"}</description><language>${L.html}</language>
+${list.slice(0, 30).map(a => `<item><title>${esc(a.title)}</title><link>${abs(L, `a/${a.slug}.html`)}</link><guid>${abs(L, `a/${a.slug}.html`)}</guid><pubDate>${new Date(a._pub).toUTCString()}</pubDate><description>${esc(a.summary)}</description></item>`).join("\n")}
+</channel></rss>`;
+  fs.writeFileSync(path.join(DIST, L.dir, "rss.xml"), rss);
+
+  /* 关于页 */
+  const about = en ? `<article class="reader about" id="reader">
+  <a href="index.html" class="back" data-home><svg class="i"><use href="#i-chev-l"/></svg>Back to AI Explained</a>
+  <h1>About Lyra-Jade</h1>
+  <p class="lede">Every day, Lyra-Jade picks the AI releases worth understanding from vendor blogs, papers and official accounts, and takes them apart in words and interactive figures: what happened, why it matters and who it's for.</p>
+  <h2>Primary sources only</h2>
+  <p class="body">Every explainer is built on an official announcement, paper, model card or code repository, linked at the end of the article. We don't rewrite secondhand coverage, chase funding rumors or tell you something is "game-changing".</p>
+  <h2 id="ai">How we use AI</h2>
+  <p class="body">Our explainers are written with AI assistance, and every article says so. Each one is based on the primary sources listed at the end, and its key figures are checked against the original one by one; anything that doesn't match isn't published.</p>
+  <p class="body">Lyra-Jade is edited in Chinese first. The English edition is translated and adapted from the Chinese by AI, with every number checked against the Chinese version before it goes live. Articles an editor has read through are marked "Checked by an editor". If an article and its source disagree, the source prevails.</p>
+  <h2>Labels you'll see</h2>
+  <ul class="body">
+    <li><b>AI-assisted</b>: key figures checked against the original.</li>
+    <li><b>Checked by an editor</b>: an editor has read it against the original.</li>
+    <li><b>Illustrative</b>: the example in the figure shows the structure; it isn't data from the source. Data figures name their source.</li>
+  </ul>
+  <h2>Subscribe</h2>
+  <p class="body">Follow new explainers with <a href="rss.xml">RSS</a>. Prefer Chinese? Read the <a href="../index.html">Chinese edition</a>.</p>
+  ${CONTACT ? `<h2>Contact and corrections</h2><p class="body">Spotted an error or want to work with us? Email <a href="mailto:${esc(CONTACT)}">${esc(CONTACT)}</a>. Confirmed errors are corrected and noted in the article.</p>` : ""}
+</article>` : `<article class="reader about" id="reader">
   <a href="index.html" class="back" data-home><svg class="i"><use href="#i-chev-l"/></svg>返回 AI 解读</a>
   <h1>关于玲珑玉</h1>
   <p class="lede">玲珑玉 Lyra-Jade 每天从厂商官方博客、论文和官方账号里挑出值得讲的 AI 发布，用文字和动态图把它拆开讲透：发生了什么、为什么重要、对谁有用。</p>
@@ -95,7 +177,7 @@ const about = `<article class="reader about" id="reader">
   <p class="body">每篇解读的主材料都是官方公告、论文、模型卡或代码仓库，文末列出原文链接。我们不转述二手报道，不追融资传闻，也不替你下「颠覆」「最强」这类结论。</p>
   <h2 id="ai">内容怎么来</h2>
   <p class="body">我们的解读由 AI 辅助撰写，并在每篇文章上明确标注。每篇都以文末列出的一手原文为依据，文中的关键数字会与原文逐条核对，对不上的不发布。</p>
-  <p class="body">经编辑逐篇读过的文章会标注「人工已核对」。如果文章和原文有出入，请以原文为准。</p>
+  <p class="body">经编辑逐篇读过的文章会标注「人工已核对」。如果文章和原文有出入，请以原文为准。英文版由 AI 从中文版翻译改写，数字逐条与中文版核对后才上线。</p>
   <h2>页面上的标记</h2>
   <ul class="body">
     <li><b>AI 辅助撰写</b>：关键数字已与原文核对。</li>
@@ -106,28 +188,33 @@ const about = `<article class="reader about" id="reader">
   <p class="body">用 <a href="rss.xml">RSS</a> 订阅最新解读。全部文章也以 JSON 形式公开在 <a href="api/v1/articles.json">内容 API</a>，供 App 和工具读取。</p>
   ${CONTACT ? `<h2>联系与勘误</h2><p class="body">发现错误或想合作，请写信到 <a href="mailto:${esc(CONTACT)}">${esc(CONTACT)}</a>。确认的错误会直接改正，并在文末「本站说明」里注明。</p>` : ""}
 </article>`;
-fs.writeFileSync(path.join(DIST, "about.html"), page({
-  TITLE: `关于 · ${SITE_NAME}`, DESC: "玲珑玉是什么、写什么、怎么保证准确。", BASE: "./", BODYCLASS: "reading", URL: `${SITE_URL}/about.html`,
-  MAIN: about, DATA: safeJson({ articles: index, featured, today })
-}));
+  render(L, { page: "about.html", depth: 0, title: en ? "About · Lyra-Jade" : `关于 · ${SITE_NAME}`, desc: en ? "What Lyra-Jade is, what we cover and how we keep it accurate." : "玲珑玉是什么、写什么、怎么保证准确。", bodyClass: "reading", main: about, data });
+  return { index, data };
+}
 
-/* 404 */
-fs.writeFileSync(path.join(DIST, "404.html"), page({
-  TITLE: `找不到这个页面 · ${SITE_NAME}`, DESC: "页面不存在", BASE: `${new URL(SITE_URL + "/").pathname}`, BODYCLASS: "reading", URL: `${SITE_URL}/404.html`,
-  MAIN: `<article class="reader" id="reader"><h1>找不到这个页面</h1><p class="lede">链接可能写错了，或者文章已经改了地址。</p><p class="body"><a href="${new URL(SITE_URL + "/").pathname}index.html" data-home>回到 AI 解读首页</a></p></article>`,
-  DATA: safeJson({ articles: index, featured, today })
-}));
+const zh = buildLang(LANGS.zh);
+buildLang(LANGS.en);
+
+/* 404（GitHub Pages 只认根目录这一个） */
+const root404 = new URL(SITE_URL + "/").pathname;
+fs.writeFileSync(path.join(DIST, "404.html"), fill(tpl, { ...Object.fromEntries(Object.entries(UI.zh).map(([k, v]) => [`U_${k}`, v])), ANALYTICS, OGIMAGE, OGTYPE: "website",
+  HTMLLANG: "zh-CN", LANG: "zh", BASE: root404, HOME: root404, TITLE: `找不到这个页面 · ${SITE_NAME}`, DESC: "页面不存在", BODYCLASS: "reading", URL: `${SITE_URL}/404.html`,
+  ALTURL: `${root404}en/index.html`, ALTLABEL: articlesEn.length ? "EN" : "", ALTTITLE: "English edition", ALTLANG: "en", HREFLANG: "",
+  MAIN: `<article class="reader" id="reader"><h1>找不到这个页面 · Page not found</h1><p class="lede">链接可能写错了，或者文章已经改了地址。The link may be wrong, or the article has moved.</p><p class="body"><a href="${root404}index.html" data-home>回到 AI 解读首页</a> · <a href="${root404}en/index.html">English edition</a></p></article>`,
+  DATA: safeJson(zh.data) }));
 
 /* sitemap.xml 和 robots.txt */
-const urls = [`${SITE_URL}/`, `${SITE_URL}/about.html`, ...articles.map(a => `${SITE_URL}/a/${a.slug}.html`)];
+const urls = [[`${SITE_URL}/`], [`${SITE_URL}/about.html`], ...articles.map(a => [`${SITE_URL}/a/${a.slug}.html`, a._day]),
+  [`${SITE_URL}/en/`], [`${SITE_URL}/en/about.html`], ...articlesEn.map(a => [`${SITE_URL}/en/a/${a.slug}.html`, a._day])];
 fs.writeFileSync(path.join(DIST, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls.map((u, i) => `<url><loc>${u}</loc>${i > 1 ? `<lastmod>${articles[i - 2]._day}</lastmod>` : ""}</url>`).join("\n")}
+${urls.map(([u, d]) => `<url><loc>${u}</loc>${d ? `<lastmod>${d}</lastmod>` : ""}</url>`).join("\n")}
 </urlset>
 `);
 fs.writeFileSync(path.join(DIST, "robots.txt"), `User-agent: *\nAllow: /\nSitemap: ${SITE_URL}/sitemap.xml\n`);
 
 /* 内容 API（只读、静态 JSON）：App 第一版直接读它，不需要服务器。字段变动不兼容时升 v2，v1 保留 */
+const index = zh.index;
 const API = path.join(DIST, "api/v1");
 fs.mkdirSync(path.join(API, "articles"), { recursive: true });
 const pub = a => ({ slug: a.slug, url: `${SITE_URL}/a/${a.slug}.html`, api: `${SITE_URL}/api/v1/articles/${a.slug}.json`, published_at: a._pub, date: a.date,
@@ -144,4 +231,4 @@ fs.writeFileSync(path.join(API, "categories.json"), JSON.stringify({ version: 1,
 fs.writeFileSync(path.join(API, "index.json"), JSON.stringify({ version: 1, generated, site: SITE_NAME, url: SITE_URL,
   endpoints: { articles: `${SITE_URL}/api/v1/articles.json`, article: `${SITE_URL}/api/v1/articles/{slug}.json`, categories: `${SITE_URL}/api/v1/categories.json`, rss: `${SITE_URL}/rss.xml` } }));
 
-console.log(`已生成 ${articles.length} 篇文章 → ${path.relative(process.cwd(), DIST) || DIST}`);
+console.log(`已生成 ${articles.length} 篇文章（英文版 ${articlesEn.length} 篇）→ ${path.relative(process.cwd(), DIST) || DIST}`);

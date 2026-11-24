@@ -32,30 +32,30 @@ const I18N = {
     bodyH1:"发生了什么",bodyH2:"为什么值得关注",bodyH3:"怎么用起来",
     bodyP:"（示例正文）这里是文章正文的占位内容。接入 CMS 或 Markdown 文件后，会显示完整的解读：先用一两段讲清楚事情本身，再拆开关键数字和对比，最后给出普通人能直接上手的做法。",
     srcItems:["官方公告 / 发布博客","论文或技术报告原文","独立评测与第三方数据"]},
-  en:{searchOrAsk:"Search or ask AI",loginSignup:"Log in / Sign up free",syncHint:"Sync bookmarks and progress across devices",navJiedu:"AI Explained",changelog:"Changelog",
-    themeSystem:"System",themeLight:"Light",themeDark:"Dark",themeNote:"Article pages have their own reading themes under Aa.",sysNow:"Currently {x}",
+  en:{searchOrAsk:"Search explainers",loginSignup:"Log in / Sign up free",syncHint:"Sync bookmarks and progress across devices",navJiedu:"AI Explained",changelog:"Changelog",
+    themeSystem:"System",themeLight:"Light",themeDark:"Dark",themeNote:"",styleTitle:"Style",styleVivid:"Vivid",styleVividNote:"Color covers, default",styleCoss:"Minimal",styleCossNote:"Black and white, easy on long reads",sysNow:"Currently {x}",
     login:"Log in",member:"Membership",subscribe:"Subscribe",search:"Search",submit:"Submit",podFeed:"Podcast feed",
     eyebrow:"Your AI scout · Updated daily",h1a:"The best of AI, ",h1b:"made clear.",
-    stats:"Sources checked · No fluff · CN / EN / JA · <b>{a}</b> explainers, <b>{b}</b> hands-on guides",
-    qPh:"Search titles or tags, e.g. \"voice\", \"Agent\"",all:"All",byTime:"By date",byLane:"By section",
-    featured:"Today's pick",readFull:"Read",min:"{n} min",verified:"Verified",
-    countLine:"Latest · <b>{n}</b> articles, newest first",countFiltered:"\"{c}\" · <b>{n}</b> articles",countSearch:"\"{q}\" · <b>{n}</b> results",
-    today:"Today",yesterday:"Yesterday",md:"{mon} {d}",dayMeta:"{md} · {w} · {n} articles",headAbove:", top story above",
+    stats:"Primary sources only · Every number checked against the original · No fluff · <b>{n}</b> explainers",
+    qPh:"Search titles or tags, e.g. \"voice\", \"agent\"",all:"All",byTime:"By date",byLane:"By section",
+    featured:"Today's pick",readFull:"Read",min:"{n} min",verified:"Checked",
+    countLine:"Latest · <b>{n}</b> explainers, newest first",countFiltered:"\"{c}\" · <b>{n}</b> explainers",countSearch:"\"{q}\" · <b>{n}</b> results",
+    today:"Today",yesterday:"Yesterday",md:"{mon} {d}",dayMeta:"{md} · {w} · {n}",headAbove:", top story above",
     weeks:["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
     loadMore:"Load more",noMore:"That's everything",empty:"Nothing found. Try another keyword.",
-    lanePieces:"{n}",seeAll:"See all",archive:"All {n} articles · by month",ym:"{mon} {y}",
+    lanePieces:"{n}",seeAll:"See all",archive:"All {n} explainers · by month",ym:"{mon} {y}",
     pod:"Podcast",
-    grpDaily:"Daily",grpLearn:"Learn & build",grpCoop:"Work with us",
-    nToday:"Today",nMember:"Membership",nBrief:"My brief",nWeekly:"Weekly",nTopics:"Topics",nPodcast:"Podcast",nTut:"Tutorials",nIdeas:"Idea library",nStudio:"Our projects",nAbout:"About",tagMember:"Pro",tagNew:"New",
-    subTitle:"Don't rely on the feed.",subText:"Get the daily digest every evening with all of today's explainers.",subBtn:"Subscribe free",
-    footTag:"We read all of global AI for you every day, then help you put it to work.",footMotto:"Stay curious, keep creating",
+    grpDaily:"Daily",grpLearn:"About",grpCoop:"Developers",nRss:"RSS feed",nHow:"How we use AI",nApi:"Content API",
+    nToday:"Today",nMember:"Membership",nBrief:"My brief",nWeekly:"Weekly",nTopics:"Topics",nPodcast:"Podcast",nTut:"Tutorials",nIdeas:"Idea library",nStudio:"Our projects",nAbout:"About us",tagMember:"Pro",tagNew:"New",
+    subTitle:"Don't leave it to the feed.",subText:"Subscribe with RSS and new explainers land in your reader as soon as they're published.",subBtn:"RSS feed",
+    footTag:"We read the world's AI news every day, then help you put it to work.",footMotto:"Stay curious, keep creating",
     signupFree:"Sign up (free)",google:"Continue with Google",orEmail:"or use email",emailPh:"Your email",pwdPh:"Password",magic:"Email me a login link",noAccount:"No account? Sign up free →",redeem:"Have a code? Redeem membership →",signup:"Sign up",
     demo:"Demo: backend not connected yet",todo:"Demo: this section isn't built yet",
-    searchPh:"Search articles or ask a question…",kNav:"navigate",kOpen:"open",kClose:"close",sArticles:"Articles",sAsk:"Ask AI",
-    askStub:"Once AI is connected, it will answer \"{q}\" from every article on the site, with citations.",recent:"Recently updated",
+    searchPh:"Search titles, companies or sections…",kNav:"navigate",kOpen:"open",kClose:"close",sArticles:"Explainers",sAsk:"Ask AI",
+    askStub:"",recent:"Recently published",
     back:"Back to AI Explained",srcTitle:"Sources checked",related:"Keep reading",
     bodyH1:"What happened",bodyH2:"Why it matters",bodyH3:"How to use it",
-    bodyP:"(Sample body) Placeholder article text. Once a CMS or Markdown files are connected, the full explainer appears here.",
+    bodyP:"",
     srcItems:["Official announcement / blog","Original paper or tech report","Independent benchmarks and third-party data"]},
   ja:{searchOrAsk:"検索、または AI に質問",loginSignup:"ログイン / 無料登録",syncHint:"ブックマークと進捗をデバイス間で同期",navJiedu:"AI 解説",changelog:"更新履歴",
     themeSystem:"システムに従う",themeLight:"ライト",themeDark:"ダーク",themeNote:"記事ページでは右下の Aa から読書テーマを変更できます",sysNow:"現在：{x}",
@@ -102,27 +102,28 @@ const HANDS_ON = new Set(["howto","visual"]); // 计入「实操库」的栏目
 const NAV = [
   {g:"grpDaily"},{t:"navJiedu",i:"book",on:true},{t:"nRss",i:"rss",href:"rss.xml"},
   {g:"grpLearn"},{t:"nAbout",ava:true,href:"about.html"},{t:"nHow",i:"info",href:"about.html#ai"},
-  {g:"grpCoop"},{t:"nApi",i:"code",href:"api/v1/articles.json"}
+  {g:"grpCoop"},{t:"nApi",i:"code",href:"api/v1/articles.json",root:true}
 ];
-const FOOT = { fDaily:[["navJiedu"],["nRss","rss.xml"]], fLearn:[["nAbout","about.html"],["nHow","about.html#ai"]], fCoop:[["nApi","api/v1/articles.json"]] };
+const FOOT = { fDaily:[["navJiedu"],["nRss","rss.xml"]], fLearn:[["nAbout","about.html"],["nHow","about.html#ai"]], fCoop:[["nApi","api/v1/articles.json",true]] };
 
 /* =========================================================
    3. 数据：由 build.mjs 注入 window.SITE_DATA
    ========================================================= */
 const DATA = window.SITE_DATA || {articles:[], today:new Date().toISOString().slice(0,10)};
-const BASE = window.SITE_BASE || "./";
+const BASE = window.SITE_BASE || "./";            /* 到网站根目录：资源、API */
+const HOME = window.SITE_HOME || BASE;             /* 到本语言首页所在目录：首页、文章、关于、RSS */
 SITE.today = DATA.today || SITE.today;
 const ARTICLES = DATA.articles || [];
 const FEATURED = ARTICLES.find(a=>a.slug===DATA.featured) || ARTICLES[0] || null;
 const LIST = !!document.getElementById("feed");          // 列表页才有
-const artUrl = a => `${BASE}a/${a.slug}.html`;
+const artUrl = a => `${HOME}a/${a.slug}.html`;
 
 /* =========================================================
    4. 状态与工具
    ========================================================= */
-const S = { lang:"zh", cat:"all", view:"time", q:"", shown:SITE.pageSize, theme:document.documentElement.dataset.themeDefault||"dark", style:"vivid" };
+const S = { lang:window.SITE_LANG==="en"?"en":"zh", cat:"all", view:"time", q:"", shown:SITE.pageSize, theme:document.documentElement.dataset.themeDefault||"dark", style:"vivid" };
 try{ Object.assign(S, JSON.parse(localStorage.getItem("wg-prefs")||"{}")); S.q=""; S.shown=SITE.pageSize; S.cat="all"; }catch(e){}
-S.lang="zh"; // 目前只有中文内容；英文、日文版做好后再开放切换
+S.lang=window.SITE_LANG==="en"?"en":"zh"; // 语言跟着页面走：中文在根目录，英文在 en/ 下
 const save=()=>{try{localStorage.setItem("wg-prefs",JSON.stringify({lang:S.lang,view:S.view,theme:S.theme,style:S.style}))}catch(e){}};
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const t=(k,v={})=>{let s=(I18N[S.lang][k]??I18N.zh[k]??k);if(typeof s==="string")for(const x in v)s=s.replaceAll(`{${x}}`,v[x]);return s};
@@ -189,10 +190,10 @@ function renderStatic(){
   if(LIST)$("#heroStats").innerHTML=t("stats",{n:ARTICLES.length});
   // 侧栏
   $("#sideNav").innerHTML=NAV.map(n=>n.g?`<div class="side-group">${t(n.g)}</div>`:
-    `<a href="${n.href?BASE+n.href:BASE+"index.html"}" class="${n.on&&LIST?"on":""}" ${n.href?"":"data-home"}>${n.ava?`<span class="ava">玉</span>`:icon(n.i)}<span>${t(n.t)}</span></a>`).join("")+
-    `<div class="sub-card"><strong>${t("subTitle")}</strong><p>${t("subText")}</p><a class="btn btn-light btn-block" href="${BASE}rss.xml">${t("subBtn")}</a></div>`;
+    `<a href="${n.href?(n.root?BASE:HOME)+n.href:HOME+"index.html"}" class="${n.on&&LIST?"on":""}" ${n.href?"":"data-home"}>${n.ava?`<span class="ava">玉</span>`:icon(n.i)}<span>${t(n.t)}</span></a>`).join("")+
+    `<div class="sub-card"><strong>${t("subTitle")}</strong><p>${t("subText")}</p><a class="btn btn-light btn-block" href="${HOME}rss.xml">${t("subBtn")}</a></div>`;
   // 页脚
-  const li=arr=>arr.map(([k,h])=>`<li><a href="${h?BASE+h:BASE+"index.html"}" ${h?"":"data-home"}>${t(k)}</a></li>`).join("");
+  const li=arr=>arr.map(([k,h,root])=>`<li><a href="${h?(root?BASE:HOME)+h:HOME+"index.html"}" ${h?"":"data-home"}>${t(k)}</a></li>`).join("");
   for(const id in FOOT) $("#"+id).innerHTML=li(FOOT[id]);
   // 栏目筛选
   const cnt=k=>ARTICLES.filter(a=>a.cat===k).length;
@@ -324,7 +325,7 @@ document.addEventListener("click",e=>{
   if("close" in d){closeAll();return}
   if(d.goto){document.getElementById(d.goto)?.scrollIntoView({behavior:"smooth",block:"start"});return}
   if(d.scroll){const tr=el.closest(".lane").querySelector(".track");tr.scrollBy({left:tr.clientWidth*.9*(+d.scroll)});return}
-  if("home" in d){if(!LIST){location.href=BASE+"index.html";return}window.scrollTo({top:0,behavior:"smooth"});document.body.classList.remove("side-open");return}
+  if("home" in d){if(!LIST){location.href=HOME+"index.html";return}window.scrollTo({top:0,behavior:"smooth"});document.body.classList.remove("side-open");return}
 });
 document.addEventListener("keydown",e=>{
   if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"){e.preventDefault();openSearch();return}

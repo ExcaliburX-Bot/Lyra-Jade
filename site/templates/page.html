@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN" class="dark">
+<html lang="{{HTMLLANG}}" class="dark">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -19,7 +19,8 @@
 <meta name="twitter:description" content="{{DESC}}">
 <meta name="twitter:image" content="{{OGIMAGE}}">
 <meta name="theme-color" content="#19191c">
-<link rel="alternate" type="application/rss+xml" title="玲珑玉 Lyra-Jade" href="{{BASE}}rss.xml">
+<link rel="alternate" type="application/rss+xml" title="玲珑玉 Lyra-Jade" href="{{HOME}}rss.xml">
+{{HREFLANG}}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -32,16 +33,16 @@
 <body class="{{BODYCLASS}}">
 
 <!-- ============ 侧栏 ============ -->
-<aside class="side" aria-label="栏目">
+<aside class="side" aria-label="{{U_sections}}">
   <div class="side-head">
-    <a class="logo" href="{{BASE}}index.html" data-home><span class="logo-mark">玉</span><span>玲珑玉 <b>Lyra-Jade</b></span></a>
-    <button class="icon-btn" id="closeSide" aria-label="收起侧栏"><svg class="i"><use href="#i-panel"/></svg></button>
+    <a class="logo" href="{{HOME}}index.html" data-home><span class="logo-mark">玉</span><span>玲珑玉 <b>Lyra-Jade</b></span></a>
+    <button class="icon-btn" id="closeSide" aria-label="{{U_closeSide}}"><svg class="i"><use href="#i-panel"/></svg></button>
   </div>
   <button class="side-search" data-open-search><svg class="i"><use href="#i-search"/></svg><span data-t="searchOrAsk"></span><kbd>⌘K</kbd></button>
   <nav class="side-nav" id="sideNav"></nav>
   <div class="side-foot">
-    <a class="btn btn-light btn-block" href="{{BASE}}rss.xml"><svg class="i"><use href="#i-rss"/></svg><span>RSS 订阅</span></a>
-    <p>新解读发布后自动推送到你的阅读器</p>
+    <a class="btn btn-light btn-block" href="{{HOME}}rss.xml"><svg class="i"><use href="#i-rss"/></svg><span>{{U_rss}}</span></a>
+    <p>{{U_rssNote}}</p>
   </div>
 </aside>
 <div class="side-scrim" id="sideScrim"></div>
@@ -49,12 +50,12 @@
 <!-- ============ 顶栏 ============ -->
 <header class="top">
   <div class="crumb">
-    <button class="icon-btn open-side" id="openSide" aria-label="展开侧栏"><svg class="i"><use href="#i-menu"/></svg></button>
-    <a href="{{BASE}}index.html" data-home class="hide-sm">玲珑玉</a><span class="hide-sm">/</span><b data-t="navJiedu"></b>
+    <button class="icon-btn open-side" id="openSide" aria-label="{{U_openSide}}"><svg class="i"><use href="#i-menu"/></svg></button>
+    <a href="{{HOME}}index.html" data-home class="hide-sm">{{U_brandShort}}</a><span class="hide-sm">/</span><b data-t="navJiedu"></b>
   </div>
-  <button class="icon-btn" data-open-search aria-label="搜索"><svg class="i"><use href="#i-search"/></svg></button>
+  <button class="icon-btn" data-open-search aria-label="{{U_search}}"><svg class="i"><use href="#i-search"/></svg></button>
   <div class="theme-wrap">
-    <button class="icon-btn" id="themeBtn" aria-label="外观：深浅色与风格"><svg class="i"><use href="#i-contrast"/></svg></button>
+    <button class="icon-btn" id="themeBtn" aria-label="{{U_appearance}}"><svg class="i"><use href="#i-contrast"/></svg></button>
     <div class="menu" id="themeMenu">
       <button data-theme="system"><svg class="i"><use href="#i-contrast"/></svg><span><span data-t="themeSystem"></span><small id="sysNow"></small></span><i class="dot"></i></button>
       <button data-theme="light"><svg class="i"><use href="#i-sun"/></svg><span data-t="themeLight"></span><i class="dot"></i></button>
@@ -64,32 +65,33 @@
       <button data-style="coss"><svg class="i"><use href="#i-grid"/></svg><span><span data-t="styleCoss"></span><small data-t="styleCossNote"></small></span><i class="dot"></i></button>
     </div>
   </div>
-  <a class="top-link hide-sm" href="{{BASE}}about.html">关于</a>
-  <a class="btn btn-light" href="{{BASE}}rss.xml"><svg class="i"><use href="#i-rss"/></svg><span>RSS 订阅</span></a>
+  <a class="top-link lang-sw" href="{{ALTURL}}" hreflang="{{ALTLANG}}" lang="{{ALTLANG}}" title="{{ALTTITLE}}">{{ALTLABEL}}</a>
+  <a class="top-link hide-sm" href="{{HOME}}about.html">{{U_about}}</a>
+  <a class="btn btn-light" href="{{HOME}}rss.xml"><svg class="i"><use href="#i-rss"/></svg><span>{{U_rss}}</span></a>
 </header>
 
 <main>
 {{MAIN}}
   <footer>
     <div class="wrap foot">
-      <div><a class="logo" href="{{BASE}}index.html" data-home><span class="logo-mark">玉</span><span>玲珑玉 <b>Lyra-Jade</b></span></a><p data-t="footTag"></p></div>
+      <div><a class="logo" href="{{HOME}}index.html" data-home><span class="logo-mark">玉</span><span>玲珑玉 <b>Lyra-Jade</b></span></a><p data-t="footTag"></p></div>
       <div><h5 data-t="grpDaily"></h5><ul id="fDaily"></ul></div>
       <div><h5 data-t="grpLearn"></h5><ul id="fLearn"></ul></div>
       <div><h5 data-t="grpCoop"></h5><ul id="fCoop"></ul></div>
     </div>
     <div class="wrap foot-bar">
       <span>© 2026 玲珑玉 Lyra-Jade · <span data-t="footMotto"></span></span>
-      <nav><a href="{{BASE}}about.html">关于本站</a><a href="{{BASE}}about.html#ai">AI 生成说明</a><a href="#" data-open-search data-t="search"></a><a href="{{BASE}}rss.xml">RSS</a><a href="{{BASE}}api/v1/articles.json">内容 API</a></nav>
+      <nav><a href="{{HOME}}about.html">{{U_aboutSite}}</a><a href="{{HOME}}about.html#ai">{{U_aiNote}}</a><a href="#" data-open-search data-t="search"></a><a href="{{HOME}}rss.xml">RSS</a><a href="{{BASE}}api/v1/articles.json">{{U_api}}</a></nav>
     </div>
   </footer>
 </main>
 
-<button class="totop" id="toTop" aria-label="回到顶部"><svg class="i"><use href="#i-up"/></svg></button>
+<button class="totop" id="toTop" aria-label="{{U_toTop}}"><svg class="i"><use href="#i-up"/></svg></button>
 <div class="toast" id="toast"></div>
 
 <!-- ============ 搜索弹窗 ============ -->
 <div class="scrim" id="searchScrim">
-  <div class="dialog search-dialog" role="dialog" aria-modal="true" aria-label="搜索">
+  <div class="dialog search-dialog" role="dialog" aria-modal="true" aria-label="{{U_search}}">
     <div class="sbar"><svg class="i"><use href="#i-search"/></svg><input id="sq" autocomplete="off" data-ph="searchPh"><kbd>ESC</kbd></div>
     <div class="sres" id="sres"></div>
     <div class="sfoot"><span>↑↓ <span data-t="kNav"></span></span><span>↵ <span data-t="kOpen"></span></span><span>ESC <span data-t="kClose"></span></span></div>
@@ -129,7 +131,7 @@
   <symbol id="i-google" viewBox="0 0 24 24"><path d="M21 12.2c0-.7-.1-1.3-.2-1.9H12v3.6h5a4.3 4.3 0 0 1-1.9 2.8v2.3h3A9 9 0 0 0 21 12.2Z"/><path d="M12 21a8.9 8.9 0 0 0 6.1-2.2l-3-2.3a5.6 5.6 0 0 1-8.3-2.9H3.7v2.4A9 9 0 0 0 12 21Z"/><path d="M6.8 13.6a5.4 5.4 0 0 1 0-3.4V7.8H3.7a9 9 0 0 0 0 8.2Z"/><path d="M12 6.6c1.4 0 2.6.5 3.6 1.4l2.7-2.7A9 9 0 0 0 3.7 7.8l3.1 2.4A5.4 5.4 0 0 1 12 6.6Z"/></symbol>
 </svg>
 
-<script>window.SITE_BASE="{{BASE}}";window.SITE_DATA={{DATA}};</script>
+<script>window.SITE_BASE="{{BASE}}";window.SITE_HOME="{{HOME}}";window.SITE_LANG="{{LANG}}";window.SITE_DATA={{DATA}};</script>
 <script src="{{BASE}}assets/app.js"></script>
 <script type="module">import {initFigures} from "{{BASE}}assets/components.js";initFigures(document);</script>
 </body>

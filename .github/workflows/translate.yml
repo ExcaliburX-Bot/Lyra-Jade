@@ -1,0 +1,62 @@
+# 英文版：中文稿合并进主分支后，自动翻成英文（DeepSeek），开一个 PR；直接上线模式下校验通过就自动合并发布
+# 也可以手动运行：补翻旧稿，或只翻某几篇。不勾「发布」时只把译文打包成附件，方便先看质量
+# 注意：这个工作流没有定时触发，改它不影响定时任务
+name: 翻译
+on:
+  push:
+    branches: [main]
+    paths:
+      - "content/articles/**.json"
+  workflow_dispatch:
+    inputs:
+      slugs:
+        description: 只翻这几篇（slug，逗号分隔；不填就翻所有还没有英文版或中文稿改过的）
+        default: ""
+      max:
+        description: 这次最多翻几篇
+        default: "6"
+      publish:
+        description: 翻完开 PR 上线（不勾就只打包成附件）
+        type: boolean
+        default: true
+permissions:
+  contents: write
+  pull-requests: write
+concurrency:
+  group: translate
+  cancel-in-progress: false
+jobs:
+  translate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/checkout@v4      # 原文存档在 data 分支：翻译时给模型核对官方用词
+        continue-on-error: true
+        with:
+          ref: data
+          path: data
+      - name: 翻译
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          WG_TRANSLATE_MODEL: ${{ vars.WG_TRANSLATE_MODEL }}
+        run: |
+          ARGS=(--max "${{ inputs.max || '6' }}" --out /tmp/new-translations.json)
+          if [ -n "${{ inputs.slugs }}" ]; then ARGS+=(--slug "${{ inputs.slugs }}"); fi
+          node scripts/translate.mjs "${ARGS[@]}"
+      - name: 打包译文（不上线）
+        if: github.event_name == 'workflow_dispatch' && !inputs.publish
+        uses: actions/upload-artifact@v4
+        with:
+          name: english-preview
+          path: content/en/
+          if-no-files-found: ignore
+      - name: 开 PR
+        if: github.event_name == 'push' || inputs.publish
+        env:
+          # 机器人账号的令牌开 PR，才会触发校验和自动合并
+          GH_TOKEN: ${{ secrets.WG_BOT_TOKEN || secrets.GITHUB_TOKEN }}
+        run: bash scripts/open-translation-pr.sh /tmp/new-translations.json

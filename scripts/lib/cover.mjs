@@ -39,12 +39,14 @@ function chartGlyph(a) {
 /* 标题是「A 与 B 合作」→ 一个中心连着合作方 */
 function partnerGlyph(a) {
   const t = String(a.title).split(/[：:]/)[0];
-  if (!t.includes("合作")) return null;
-  const m = t.match(/^(.+?)\s*(?:与|和|携手)\s*(.+)$/);
-  if (!m) return null;
-  m[2] = m[2].replace(/\s*(启动|达成|宣布|开展|战略|合作).*$/, "");
-  if (!m[1].trim() || !m[2].trim()) return null;
-  const [x, y] = [m[1].trim(), m[2].trim()];
+  let x, y;
+  const zh = t.includes("合作") && t.match(/^(.+?)\s*(?:与|和|携手)\s*(.+)$/);
+  if (zh) { x = zh[1]; y = zh[2].replace(/\s*(启动|达成|宣布|开展|战略|合作).*$/, ""); }
+  /* 英文版标题：「X and Y partner / team up …」「X partners with Y …」 */
+  const en = !zh && (t.match(/^(.+?)\s+(?:and|&)\s+(.+?)\s+(?:partner|team up|launch|sign|strike|form|announce|start)\b/i) || t.match(/^(.+?)\s+(?:partners|teams up|signs a deal)\s+with\s+(.+?)(?:\s+to\b|\s+on\b|,|$)/i));
+  if (en) { x = en[1]; y = en[2]; }
+  if (!x || !y || !x.trim() || !y.trim()) return null;
+  [x, y] = [x.trim(), y.trim()];
   const pub = String(a.publisher || "");
   const center = y.includes(pub) || pub.includes(y) ? y : x, other = center === y ? x : y;
   return { kind: "hub", center: { label: center, tone: "hi" }, nodes: [{ label: other, tone: "def" }] };
@@ -55,7 +57,7 @@ function bigNumber(a) {
   if (a.cover?.big?.value != null) return a.cover.big;
   const k = figs(a).find(f => f.type === "kpi" && f.items?.length);
   if (k) { const it = k.items[0]; return { value: it.value, unit: it.unit || "", label: it.label }; }
-  const m = String(a.title).match(/(\d[\d,.]*)\s*(%|倍|万|亿|美元|美分|秒|分钟|B|GB|TB|token)?/);
+  const m = String(a.title).match(/(\d[\d,.]*)\s*(%|倍|万亿|万|亿|美元|美分|秒|分钟|GB|TB|B|x|trillion|billion|million|M|K|tokens?)?/);
   return m ? { value: m[1], unit: m[2] || "", label: "" } : null;
 }
 

@@ -601,3 +601,7 @@ body.reading .listing{display:none}
 .cstack{display:flex;flex-direction:column;gap:.25em;width:100%}
 .cstack .cchip{justify-content:center}
 .cover.cv::after{background:radial-gradient(70% 90% at 100% 0%,var(--cglow),transparent 65%)}
+
+/* 中英文切换：还没有英文版时不显示 */
+.top-link.lang-sw{font-weight:600;letter-spacing:.02em}
+.top-link.lang-sw:empty{display:none}
