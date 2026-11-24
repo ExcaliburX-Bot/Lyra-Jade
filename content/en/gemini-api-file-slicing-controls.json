@@ -303,7 +303,7 @@
             "type": "quote",
             "text": "cutting prompt token spend directly in production harnesses",
             "who": "Google's official blog",
-            "role": "发布说明",
+            "role": "Release notes",
             "source_url": "https://blog.google/innovation-and-ai/technology/developers-tools/file-slicing-controls/"
           }
         }
