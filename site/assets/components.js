@@ -110,9 +110,9 @@ export const FIGS = {
       <div class="fcol-lab"><b>${esc(it.label)}</b>${it.sub ? `<span>${esc(it.sub)}</span>` : ""}${it.calc ? `<em>${esc(it.calc)}</em>` : ""}</div></div>`).join("")}</div>`;
   },
 
-  /* 左右两栏对照：每栏 label、sub、items [{label, tag, state: hi/dim/base}]；footer 一句结论 */
+  /* 左右两栏对照：每栏 label、sub、items [{label, tag, state: hi/def/dim/base}]；footer 一句结论 */
   compare: f => {
-    const col = c => `<div class="fcmp-col"><h5>${esc(c.label)}${c.sub ? `<small>${esc(c.sub)}</small>` : ""}</h5>${c.items.map((it, i) => `<div class="fcmp-it s-${["hi", "dim"].includes(it.state) ? it.state : "base"}" style="--i:${i}"><span>${esc(it.label)}</span>${it.tag ? `<code>${esc(it.tag)}</code>` : ""}</div>`).join("")}</div>`;
+    const col = c => `<div class="fcmp-col"><h5>${esc(c.label)}${c.sub ? `<small>${esc(c.sub)}</small>` : ""}</h5>${c.items.map((it, i) => `<div class="fcmp-it s-${["hi", "def", "dim"].includes(it.state) ? it.state : "base"}" style="--i:${i}"><span>${esc(it.label)}</span>${it.tag ? `<code>${esc(it.tag)}</code>` : ""}</div>`).join("")}</div>`;
     return `<div class="fcmp">${col(f.left)}${f.arrow === false ? "" : `<div class="fcmp-arrow" aria-hidden="true">→</div>`}${col(f.right)}</div>${f.footer ? `<div class="fcmp-foot">${esc(f.footer)}</div>` : ""}`;
   },
 

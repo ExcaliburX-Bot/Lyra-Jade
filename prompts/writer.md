@@ -45,7 +45,7 @@
 ## 先定全篇的视觉规则（写图之前先想好）
 
 1. **一个贯穿全文的视觉比喻。** 找到这篇新闻最核心的那个动作或变化，让几张图都围绕它画。例如讲「只取文件的一部分」，就让每张图都画「整体里框出一块」；讲「从云端搬到本机」，就让每张图都分「本机 / 云端」两边。
-2. **颜色只表达意思，全文统一：** `hi`（琥珀色）= 这次的变化或重点；`def`（蓝色）= 默认档；`base` = 普通；`ref`（灰）= 参照对象；`dim` = 不适用或没有。每张用到颜色的图，subtitle 里用一句话交代，例如「琥珀色是这次新放开的三种」「蓝色是不设时的默认档」。一张图里的 hi 不超过三处，全都 hi 就等于没有重点。
+2. **颜色只表达意思，全文统一：** `hi`（琥珀色）= 这次的变化或重点；`def`（蓝色）= 默认档；`base` = 普通；`ref`（灰）= 参照对象；`dim` = 不适用或没有。每张用到颜色的图，subtitle 里用一句话交代，例如「琥珀色是这次新放开的三种」「蓝色是不设时的默认档」。一张图里的 hi 不超过三处，全都 hi 就等于没有重点。def 只用来标「默认档」，不要拿蓝色当第二种强调色；subtitle 没交代的颜色不要用。
 3. **标题是结论句。** 读者只看标题也知道这张图说明什么，例如「工具交回的内容，和用户直接发的一样全」，而不是「输入类型对比」。
 4. **能验算的数字给算式。** 数字是算出来的（估算费用、token 数、倍数），在条目的 calc 里写算式，例如「3,492 秒 × (258 + 32)」，subtitle 写「示意估算」，算式用到的每个原始数字都要进 claims。
 
@@ -58,7 +58,7 @@
 | 三到六个关键数字 | kpi | items: [{value, unit, label, note}] |
 | 几个选项、档位、型号比同一个数字（价格、token、分数），想让人一眼看出高低 | columns（竖向柱） | items: [{label, sub, value, display, tone, calc}] |
 | 几样东西比价格、跑分、速度，条目多或标签长 | bars（横向条） | legend: [{tone, label}]; groups: [{label, items: [{label, sub, value, display, tone, calc}]}]；没有数值的用 status 写「未公布价格」等 |
-| 变化前后、两种用法、两个对象各有哪些项，哪几项是新的 | compare（两栏对照） | left / right: {label, sub, items: [{label, tag, state: hi/dim/base}]}; footer（一句结论，可选） |
+| 变化前后、两种用法、两个对象各有哪些项，哪几项是新的 | compare（两栏对照） | left / right: {label, sub, items: [{label, tag, state: hi/def/dim/base}]}; footer（一句结论，可选） |
 | 多个文件格式、型号、档位在几个维度上的取值 | table（对照表） | columns: [表头]; rows: [[每格文字]]; highlight: {col: n} 或 {row: n}（从 0 数，用来标默认或重点） |
 | 三到六种用法、场景、能力，每种一两句话 | cards（卡片） | items: [{icon, title, desc, tags: [参数名或关键词], tone}]；icon 只能从 code、video、audio、doc、table、chart、chat、bolt、shield、money、globe、user、image、search、layers、clock、cpu、robot 里选 |
 | 开发者要怎么调用（参数、请求格式） | code（代码块） | lang, code（多行字符串）, highlight: [要高亮的行号，从 1 数]；代码原文里有就逐字用；是你写的示例，subtitle 要写「示意」 |

@@ -58,6 +58,10 @@ export function validateArticle(a, { sourceTexts = {} } = {}) {
     if (f.type === "capacity") (f.items || []).forEach(it => need(typeof it.value === "number" && it.value >= 0 && it.value <= f.max, `${where}：${it.label} 的数值不在 0 到 max 之间`));
     if (f.type === "bars") (f.groups || []).flatMap(g => g.items || []).forEach(it => need(typeof it.value === "number" || it.status, `${where}：${it.label} 既没有数值也没有状态说明`));
     if (f.type === "timeline") (f.lanes || []).flatMap(l => l.segments || []).forEach(s => need(s.from < s.to && s.from >= f.axis.from && s.to <= f.axis.to, `${where}：时间段 ${s.from}–${s.to} 超出坐标轴`));
+    /* 颜色要在副标题里交代：用了琥珀（hi）或蓝（def），副标题就得说它们代表什么 */
+    const tones = JSON.stringify(f).match(/"(tone|state)":"(hi|def)"/g) || [];
+    if (tones.some(t => t.endsWith('"hi"')) && !/琥珀|橙/.test(f.subtitle || "")) warnings.push(`${where}：用了琥珀色（hi），副标题要说明它代表什么`);
+    if (tones.some(t => t.endsWith('"def"')) && !/蓝/.test(f.subtitle || "")) warnings.push(`${where}：用了蓝色（def），副标题要说明它代表什么（只用来标默认档）`);
     if (f.type === "columns") (f.items || []).forEach(it => need(typeof it.value === "number" && it.value >= 0, `${where}：${it.label} 的数值要是非负数字`));
     if (f.type === "table") (f.rows || []).forEach((r, i) => need(Array.isArray(r) && r.length === (f.columns || []).length, `${where}：第 ${i + 1} 行的格数和表头对不上`));
     if (f.type === "cards") need((f.items || []).length >= 2 && f.items.length <= 6, `${where}：卡片要 2–6 张`);
