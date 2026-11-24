@@ -1,0 +1,260 @@
+{
+  "slug": "rl-infrastructure-rocket-microsoft-ai",
+  "date": "2026-11-23",
+  "category": "deep",
+  "publisher": "Microsoft AI",
+  "title": "微软 AI 的自研 RL 框架 Rocket，正在后训练 3 万亿参数的 MAI Base 2",
+  "summary": "如果你好奇大模型是怎么在训练后期一步步变「会思考」的，微软 AI 这次讲的是幕后的训练框架。它叫 Rocket，目前正用来后训练 3 万亿参数的基础模型 MAI Base 2——不是先向别家模型「抄答案」，而是让模型自己在数千步、数周起步的试错中往上爬。",
+  "ai_summary": "微软 AI 发文介绍自研强化学习（RL）框架 Rocket，它正被用来后训练 3 万亿参数的基础模型 MAI Base 2，路线是「从基础模型直接通过 RL 往上爬」，不靠第三方模型蒸馏。这类训练要连续跑数千个训练步骤、持续数周到数月、占用数千块 GPU，因此 Rocket 把三个问题当主要设计约束：采样结果陈旧、采样器与学习器之间的数值不一致，以及长时间运行中的硬件故障与弹性扩缩容。为便于协同，微软同时掌控学习器、Rocket 和基于自维护 SGLang 分支的推理引擎。文章面向关心大模型训练基础设施的工程师与研究者；它讲的是系统设计，没有给出具体跑分、训练成本或完成时间。",
+  "brief": [
+    "Rocket 此前已把 MAI Base 1 后训练成推理模型 MAI Thinking 1，现在扩展去练更大的 MAI Base 2。",
+    "微软强调 MAI Base 2 是在「不蒸馏第三方模型」的情况下通过 RL 往上爬，和 MAI Code 2 是两件独立的事。",
+    "这种长跑要跑数千个训练步骤、数周到数月、用数千块 GPU，所以系统必须能在线扛故障、随时调整配置。",
+    "推理侧用的是微软自己维护的 SGLang 分支；Rocket 靠 Kubernetes 或 Slurm 分节点，组件作为 Ray actor 运行。"
+  ],
+  "readMinutes": 6,
+  "sections": [
+    {
+      "h": "这是什么：微软用自家 Rocket 框架后训练 3 万亿参数的 MAI Base 2",
+      "blocks": [
+        {
+          "p": "强化学习（RL，让模型反复尝试解题、依据奖励调整策略的训练方法）是大模型训练后期常用的一步。微软 AI（MAI）这篇文章讲的是支撑这一步的基础设施：它自研的 RL 框架 Rocket，以及围绕 Rocket 的一整套系统。"
+        },
+        {
+          "p": "文章开头把「长、稳定、数值准确的 RL」定位为 MAI 通往其所谓 Humanist Superintelligence（微软自己的提法）的关键一步。核心思路是：不靠后训练末尾一小段 RL，而是让模型从基础模型阶段就通过 RL 一路往上爬能力。"
+        },
+        {
+          "p": "主角是 MAI Base 2：微软刚公布不久的新基础模型，参数规模 3 万亿。文章说它现在正由 Rocket 后训练，路线是「从基础模型直接通过 RL 往上爬」，不蒸馏第三方模型（蒸馏：让模型先向更强的教师模型学习，起点会高很多）。"
+        },
+        {
+          "p": "背景补一句：Rocket 不是新框架。MAI Thinking 1 的技术报告里，它就是那个把上一代基础模型 MAI Base 1 后训练成推理模型 MAI Thinking 1 的框架；这次是把它升级到 MAI Base 2 需要的更大规模。这项工作与 MAI Code 2 模型相互独立。"
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "这套训练的量级有多大",
+            "subtitle": "微软原文的大致量级描述，非精确数字",
+            "note": "「数千」「数周」等是微软对这类长跑的描述，具体数字未公开；只反映量级，不用于横向比较。",
+            "items": [
+              {
+                "value": "3",
+                "unit": "万亿参数",
+                "label": "MAI Base 2 规模",
+                "note": "新的基础模型"
+              },
+              {
+                "value": "数千",
+                "unit": "个训练步骤",
+                "label": "单次 RL 长跑",
+                "note": "原文 many thousands"
+              },
+              {
+                "value": "数千",
+                "unit": "块 GPU",
+                "label": "占用算力",
+                "note": "原文 thousands of GPUs"
+              },
+              {
+                "value": "数周–数月",
+                "unit": "",
+                "label": "持续时长",
+                "note": "原文 weeks to months"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "为什么「不蒸馏、从头爬」让基础设施变难",
+      "blocks": [
+        {
+          "p": "微软先讲了一个容易被忽略的变量——蒸馏。如果一个模型是从更强的教师模型蒸馏出来的，它进入 RL 时已经离能力天花板很近，RL 就只是一段比较短的精修阶段。这种场景下基础设施的优先级很不一样：跑挂了整体重启就行，采样器与学习器之间的小误差也来不及累积成大问题。"
+        },
+        {
+          "p": "Rocket 是为更难的情况设计的：从基础能力出发，完全靠 RL 自己往上爬，没有蒸馏带来的起跑优势。这种长跑要连续执行数千个训练步骤、持续数周到数月、占用数千块 GPU。微软说，能不依赖其他实验室的模型、自己走到前沿，是 MAI 自给自足（self-sufficiency）的核心。在这个设定下，上面这些挑战从边角情况变成了主要设计约束：硬件故障几乎必然发生、小的数值误差会在数千次更新里累积、最优的数据配比和 GPU 分配会随策略变强而改变。"
+        }
+      ]
+    },
+    {
+      "h": "三个最头疼的工程问题：陈旧、数值、故障",
+      "blocks": [
+        {
+          "p": "微软把 RL 规模变大后的难题归纳成三块。第一是陈旧（staleness）：一次 agent rollout（模型尝试完成一道题的一次执行过程）可能跑几个小时，而学习器在这期间一直更新策略。GRPO（Group Relative Policy Optimization，一种通过比较同一道题多个 rollout 的奖励来算「优势」的算法）会把同一道题的多次尝试互相比对打分，所以只要有一个 rollout 慢或失败，就会拖住整组，训练也就越来越偏离当前策略。"
+        },
+        {
+          "p": "第二是数值一致性。更大的模型、更长的上下文要塞进采样器，往往得用更低精度来存储；而采样器与学习器之间的精度、kernel（底层计算核）、并行方式一旦不一致，就会拖慢学习甚至让训练不稳定。"
+        },
+        {
+          "p": "第三是容错和弹性。数千块 GPU 连续跑数周到数月，硬件故障一定会遇到；同时，最合适的运行时配置和数据配比也会变化。如果每次故障或调整都要重启整个任务，GPU 时间就浪费了。所以系统必须在任务继续跑的同时恢复组件、重新分配资源。"
+        }
+      ]
+    },
+    {
+      "h": "Rocket 的训练循环：一道题是怎么被「练」完的",
+      "blocks": [
+        {
+          "p": "原文的 Figure 1 画的是 Rocket 的异步训练循环。我把它简化成一条主线：控制器先从一个「问题池/课程」里挑出一道题，交给 problem worker；problem worker 再把若干 rollout 请求派给 rollout worker 池。"
+        },
+        {
+          "p": "rollout worker 跑的是 agent 循环（智能体式循环）：模型生成动作，动作在环境（沙箱、外部工具）里执行，拿到观察结果，再继续下一步。每个 rollout 有独立评分（per-rollout grader），分数和引用会回传。采样器（sampler）负责出 token——它在 CPU 上有一个 router，在 GPU 上跑 SGLang 做 prefill 和 decode（生成时的预填充与解码两步）。最后，学习器（learner）在 GPU 池上做策略更新。"
+        },
+        {
+          "fig": {
+            "type": "steps",
+            "title": "一次 rollout 从选题到更新策略的六步",
+            "subtitle": "示意：简化自原文 Figure 1 的异步循环",
+            "note": "完整架构里还有 rollout store（存 token/日志）、恢复检查点、runtime 管理（健康监控与资源分配）等组件，这里为便于理解做了压缩。",
+            "steps": [
+              {
+                "name": "控制器（controller）",
+                "tool": "CPU",
+                "desc": "从问题池/课程里选题，过滤和打包"
+              },
+              {
+                "name": "问题 worker",
+                "tool": "CPU 池",
+                "desc": "派发 rollout 请求，做分组打分"
+              },
+              {
+                "name": "rollout worker",
+                "tool": "CPU 池",
+                "desc": "跑 agent 循环，逐条评分"
+              },
+              {
+                "name": "采样器（sampler）",
+                "tool": "CPU router + GPU SGLang",
+                "desc": "prefill / decode，产出 token 和 logprob"
+              },
+              {
+                "name": "环境（environments）",
+                "tool": "沙箱 / 工具",
+                "desc": "执行动作，返回观察结果"
+              },
+              {
+                "name": "学习器（learner）",
+                "tool": "GPU 池",
+                "desc": "根据优势更新策略，回传权重"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "为什么要把学习器、Rocket、SGLang 三个系统一起造",
+      "blocks": [
+        {
+          "p": "微软强调，RL 需要三个紧密相连的系统：学习器与训练框架（Rocket），以及一个推理引擎——它基于微软自己维护的 SGLang 分支。三个都自己掌控，好处是可以在接口层面一起设计，而不是各自孤立优化。"
+        },
+        {
+          "p": "这并不意味着每层都从零写。Rocket 用 Kubernetes 或 Slurm 来给任务分配节点，组件则以 Ray 的 actor 形式运行。推理侧采用了开源的 SGLang 作为基础，但为适配 MAI 的模型和长时间运行的 agentic（智能体式、模型自主多步行动）RL 工作负载，做了大量修改；微软说后续会另发一篇博客细讲这些 SGLang 改动。"
+        },
+        {
+          "p": "那为什么不用现成的开源框架？文章点了 verl 和 slime 两个名字，说它们在分布式执行、可定制 agent 工作流、异步采样上提供了不错的基础。但微软的「从基础模型长爬」把这类框架推到了它们通常没被测试到的区间，所以还是自己做了 Rocket，把基础设施围绕自家 RL 工作负载和模型来设计。"
+        }
+      ]
+    },
+    {
+      "h": "官方还没说的",
+      "blocks": [
+        {
+          "list": [
+            "没有公布 Rocket 或 MAI Base 2 后训练的具体算力成本、GPU 型号与数量。",
+            "没有给出 MAI Base 2 经 Rocket 后训练后的评测分数或对比对象。",
+            "没有说明「数千个训练步骤」「数千块 GPU」「数周到数月」的精确数字。",
+            "没有公布这套后训练什么时候完成、后训练版模型何时可用。",
+            "没有展开 MAI Code 2 与这套 RL 工作的关系，只说了两者相互独立。",
+            "没有给出 GRPO 的具体超参数（如学习率、批大小等）。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "适合谁",
+      "blocks": [
+        {
+          "p": "这篇文章的价值在于讲清了一套大规模 RL 训练系统的设计思路：为什么长跑式 RL 比「短精修」难，三大挑战分别怎么影响系统设计，以及自研框架和开源框架的取舍。对正在搭 RL 后训练管线、或者想理解大模型训练基础设施的工程师和研究者，最有参考价值的是「三个系统一起造」和「围绕长爬设计容错」这两条思路。"
+        },
+        {
+          "p": "代价是它停留在系统概述层面：没有代码、没有可复现配置、也没有性能数据。想从这里读到 MAI Base 2 的「水平有多高」，会失望——那要等后续的后训练版发布或技术报告。"
+        },
+        {
+          "p": "具体建议：如果你在搭 RL 训练系统，重点看三大挑战和 CPU/GPU 分工；如果你关心模型能力，这篇文章给不了结论，可以等后续 MAI Base 2 后训练版；如果你只是普通用户，这更像是幕后工程细节，不影响日常产品体验。"
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "RL infrastructure at Microsoft AI",
+      "publisher": "Microsoft AI",
+      "date": "2026-11-23",
+      "url": "https://microsoft.ai/news/rl-infrastructure-at-microsoft-ai/"
+    },
+    "more": [],
+    "note": "正文依据微软官方博客原文；原文 Figure 1 为架构示意图，本文的 steps 图为重新简化的表达；「数千」「数周」「数小时」等量级均为微软原文的大致描述，非精确数字。"
+  },
+  "claims": [
+    {
+      "text": "MAI Base 2 是一个 3 万亿参数的基础模型。",
+      "value": "three-trillion-parameter",
+      "source_url": "https://microsoft.ai/news/rl-infrastructure-at-microsoft-ai/",
+      "as_written": "3 万亿参数",
+      "quote": "our new three-trillion-parameter base model, MAI Base 2"
+    },
+    {
+      "text": "这类 RL 长跑要连续执行数千个训练步骤。",
+      "value": "many thousands of training steps",
+      "source_url": "https://microsoft.ai/news/rl-infrastructure-at-microsoft-ai/",
+      "as_written": "数千个训练步骤",
+      "quote": "runs of many thousands of training steps spanning weeks to months on thousands of GPUs"
+    },
+    {
+      "text": "这类 RL 长跑会持续数周到数月。",
+      "value": "weeks to months",
+      "source_url": "https://microsoft.ai/news/rl-infrastructure-at-microsoft-ai/",
+      "as_written": "数周到数月",
+      "quote": "runs of many thousands of training steps spanning weeks to months on thousands of GPUs"
+    },
+    {
+      "text": "这类 RL 长跑要占用数千块 GPU。",
+      "value": "thousands of GPUs",
+      "source_url": "https://microsoft.ai/news/rl-infrastructure-at-microsoft-ai/",
+      "as_written": "数千块 GPU",
+      "quote": "runs of many thousands of training steps spanning weeks to months on thousands of GPUs"
+    },
+    {
+      "text": "微软 AI 同时开发并运维三个紧密相连的系统：学习器与训练框架 Rocket，以及基于自维护 SGLang 分支的推理引擎。",
+      "value": "three",
+      "source_url": "https://microsoft.ai/news/rl-infrastructure-at-microsoft-ai/",
+      "as_written": "三个",
+      "quote": "MAI develops and operates three tightly connected systems necessary for RL"
+    },
+    {
+      "text": "微软说，小的数值误差会在数千次更新里累积。",
+      "value": "thousands of updates",
+      "source_url": "https://microsoft.ai/news/rl-infrastructure-at-microsoft-ai/",
+      "as_written": "数千次更新",
+      "quote": "small numerical mismatches accumulate over thousands of updates"
+    },
+    {
+      "text": "一次 agent rollout 可能跑几个小时，而学习器期间一直在更新策略。",
+      "value": "hours",
+      "source_url": "https://microsoft.ai/news/rl-infrastructure-at-microsoft-ai/",
+      "as_written": "数小时",
+      "quote": "Agentic rollouts can take hours"
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "origin": "auto",
+    "candidate": "af86ecc858",
+    "tier": "official",
+    "via": null,
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "generated_at": "2026-11-24T01:58:30.899Z"
+  }
+}
