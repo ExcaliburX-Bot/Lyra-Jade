@@ -1,0 +1,321 @@
+{
+  "slug": "chatgpt-for-sales",
+  "date": "2026-11-17",
+  "category": "product",
+  "publisher": "OpenAI",
+  "title": "OpenAI launches ChatGPT for Sales with 30+ partner plugins; a customer reports about 65% less manual work",
+  "summary": "Salespeople spend each day shuttling information between CRMs, call notes, and proposal tools. OpenAI's new ChatGPT for Sales uses more than 30 partner plugins to connect those tools into ChatGPT, so prospecting, call prep, and follow-up all happen in a single conversation.",
+  "ai_summary": "OpenAI released ChatGPT for Sales on November 17, 2026, aimed at sales teams. Its core is the Sales plugin plus more than 30 new or upgraded partner plugins. It connects CRMs such as Salesforce and HubSpot and call tools such as Gong and Otter.ai into ChatGPT, so salespeople can research accounts, prep for meetings, write follow-ups, and update the CRM in one conversation. Customer NeoBid estimates about 65% less manual work for these activities; the always-on dot agent can keep tracking deals and proactively surface risk alerts. Limits: plugin availability depends on plan, region, and workspace settings; no pricing is given; it is primarily aimed at ChatGPT Business and Enterprise admins.",
+  "brief": [
+    "ChatGPT for Sales is made up of OpenAI's own Sales plugin plus more than 30 new or upgraded partner plugins.",
+    "Partner plugins cover CRMs (Salesforce, HubSpot, etc.), call notes (Gong, Otter.ai, etc.), prospecting (Apollo, Clay, Outreach, etc.), and quotes and contracts (Docusign, PandaDoc, etc.).",
+    "NeoBid estimates that using HubSpot plus ChatGPT for Sales for work such as customer research cuts manual work by about 65%.",
+    "ChatGPT Business and Enterprise admins can enable it for their team in the Admin Console."
+  ],
+  "readMinutes": 6,
+  "sections": [
+    {
+      "h": "What is ChatGPT for Sales?",
+      "blocks": [
+        {
+          "p": "OpenAI released ChatGPT for Sales on November 17, 2026. It is not a standalone app but a sales experience built into ChatGPT, made up of two parts: an OpenAI-built Sales plugin and more than 30 new or upgraded partner plugins."
+        },
+        {
+          "p": "OpenAI positions it as a way to bring together information scattered across teammates, prospecting tools, customer calls, and the CRM in one conversation. The questions sellers wrestle with most — which accounts are worth pursuing, what a buyer still needs, which deal is stuck — often have answers spread across those places. ChatGPT for Sales aims to pull that information in so sellers spend less time shuttling between tools."
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "Key numbers for ChatGPT for Sales",
+            "subtitle": "Units: count, %; date is the official release date",
+            "note": "30+ and the release date come from OpenAI's official announcement; 65% is a single customer's self-reported estimate",
+            "items": [
+              {
+                "value": "30+",
+                "unit": "count",
+                "label": "New or upgraded partner plugins",
+                "note": "OpenAI official number"
+              },
+              {
+                "value": "65",
+                "unit": "%",
+                "label": "NeoBid-estimated reduction in manual work",
+                "note": "Customer self-report, approximate, and only reflects its own scenario"
+              },
+              {
+                "value": "November 17, 2026",
+                "unit": "",
+                "label": "Release date",
+                "note": "OpenAI official announcement"
+              }
+            ]
+          }
+        },
+        {
+          "p": "For individual salespeople, the most direct change is that a lot of the copy-paste work that used to happen across several apps can now happen end to end in ChatGPT, from prospecting to post-call follow-up."
+        }
+      ]
+    },
+    {
+      "h": "What can OpenAI's own Sales plugin do?",
+      "blocks": [
+        {
+          "p": "The Sales plugin gives sellers a set of ready-to-use workflows covering three common jobs: deciding which accounts to pursue, preparing for a call, and drafting follow-up. OpenAI's reasoning is that sales teams work efficiently only when everyone has a shared understanding of the customer — and that understanding comes from pulling together the CRM, calls, and research."
+        },
+        {
+          "p": "So the plugin is not a single feature but an entry point: it connects your sales process to ChatGPT, letting you prospect, look up context, prep for meetings, and write follow-ups in one conversation. At each step, it can call the partner plugins you have selected to fetch data and take action."
+        },
+        {
+          "p": "For example, before a call you can ask ChatGPT to pull account history, past conversations, and buyer priorities into a brief, then turn that brief into a customer-specific pitch in the same conversation."
+        }
+      ]
+    },
+    {
+      "h": "How are the 30+ partner plugins organized?",
+      "blocks": [
+        {
+          "p": "These plugins are not just thrown together. OpenAI groups them by sales stage, and you only need to install the ones that fit your process. Here is a map, then what each group does."
+        },
+        {
+          "fig": {
+            "type": "route",
+            "title": "Partner plugins grouped by sales stage",
+            "subtitle": "Illustrative: organized from OpenAI's article, not an exhaustive list of all plugins",
+            "note": "Plugin names come from OpenAI's article; actual availability varies by plan, region, and workspace settings",
+            "root": {
+              "label": "ChatGPT for Sales",
+              "sub": "All tools in one conversation"
+            },
+            "branches": [
+              {
+                "tone": "local",
+                "label": "Content and training",
+                "items": [
+                  "Confluence, Guru, Seismic",
+                  "ChatGPT Voice for pitch practice",
+                  "ChatGPT Slides, Gamma, Figma, Canva for proposals",
+                  "ChatGPT Sites for demos / ROI calculators"
+                ]
+              },
+              {
+                "tone": "local",
+                "label": "Account management and deal progression",
+                "items": [
+                  "Salesforce, HubSpot",
+                  "Close CRM, monday CRM"
+                ]
+              },
+              {
+                "tone": "local",
+                "label": "Prospecting and outreach",
+                "items": [
+                  "Apollo, Clay, Common Room",
+                  "Outreach, Salesloft"
+                ]
+              },
+              {
+                "tone": "local",
+                "label": "Calls into action",
+                "items": [
+                  "Meetings, Gong",
+                  "Otter.ai, Granola"
+                ]
+              },
+              {
+                "tone": "local",
+                "label": "Tracking performance and risk",
+                "items": [
+                  "Backstory",
+                  "Data plugin, Hex"
+                ]
+              },
+              {
+                "tone": "local",
+                "label": "Quotes and contracts",
+                "items": [
+                  "Docusign, Ironclad",
+                  "PandaDoc, ServiceNow CPQ"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "p": "Content and training — get the team up to speed on products and processes, rehearse pitches, and build proposals. Connect knowledge bases such as Confluence, Guru, and Seismic; use ChatGPT Voice to practice handling objections; use ChatGPT Slides, Gamma, Figma, or Canva to build presentations; or use ChatGPT Sites to create interactive demos and ROI calculators."
+        },
+        {
+          "p": "Account management and deal progression — bring customer context from the CRM into ChatGPT to prepare for calls, review commitments, and plan next steps. Works with Salesforce, HubSpot, Close CRM, and monday CRM."
+        },
+        {
+          "p": "Finding and engaging buyers — combine account signals from Apollo, Clay, and Common Room with ChatGPT's web research to understand changes at an account and find reasons to reach out, then plan outreach with Outreach or Salesloft."
+        },
+        {
+          "p": "Turn calls into action — use call notes from Meetings, Gong, Otter.ai, and Granola to capture buyer priorities, record agreed next steps, and draft follow-ups."
+        },
+        {
+          "p": "Tracking performance and deal risk — use signals from Backstory to find deals that need attention, and use ChatGPT's Data plugin or Hex to analyze pipeline changes and decide where to focus next."
+        },
+        {
+          "p": "Quotes and contracts — when a buyer is ready to move forward, use Docusign, Ironclad, PandaDoc, and ServiceNow CPQ to prepare quotes and agreements."
+        }
+      ]
+    },
+    {
+      "h": "What is dot, and why is it worth a closer look?",
+      "blocks": [
+        {
+          "p": "dot is an always-on agent in ChatGPT — an assistant that does not wait for you to send it a message and can work on its own schedule. In ChatGPT for Sales, your dot can use the same partner plugins and customer context as the Sales plugin to prepare meeting briefs, track deal updates, and proactively bring relevant changes and proposed next steps to you for review."
+        },
+        {
+          "p": "This closes the timing gap in follow-up: salespeople often only think to check a deal between meetings, and dot can keep watch for you. The article points to Rox as an example: you can ask dot to check a deal every morning, flag changes that need attention, and prepare a meeting brief or follow-up sequence for your review."
+        },
+        {
+          "p": "Keep in mind that dot is an automation assistant working in the background: it handles preparation and reminders, and a human still needs to review the final decisions and actions."
+        }
+      ]
+    },
+    {
+      "h": "How a seller's day flows through ChatGPT",
+      "blocks": [
+        {
+          "p": "OpenAI offers several cross-tool workflows that, strung together, form a basic sales pipeline."
+        },
+        {
+          "fig": {
+            "type": "steps",
+            "title": "A sales pipeline from prospecting to follow-up",
+            "subtitle": "Illustrative: stages from OpenAI's article, tool combinations are examples",
+            "note": "Stages are organized from OpenAI's article; specific tool combinations are examples, not fixed pairings.",
+            "steps": [
+              {
+                "name": "Build account list",
+                "tool": "CRM + ZoomInfo / Clay",
+                "desc": "Generate a prioritized account list from CRM data and external research"
+              },
+              {
+                "name": "Pre-call prep",
+                "tool": "Sales plugin + call notes",
+                "desc": "Pull together account history, previous calls, and buyer priorities into a brief and tailored proposal"
+              },
+              {
+                "name": "Post-call follow-up",
+                "tool": "Gong / Otter.ai + CRM",
+                "desc": "Draft follow-up, record agreed next steps, and optionally write back to the CRM"
+              },
+              {
+                "name": "Watch for risk",
+                "tool": "Backstory / Rox dot",
+                "desc": "Check deals every morning, flag changes, and prepare a meeting brief or follow-up sequence"
+              }
+            ]
+          }
+        },
+        {
+          "p": "Start by building the list: from CRM information and research from ZoomInfo and Clay, have ChatGPT generate a prioritized account list, ask why each account fits and what information is missing, then refine the list around team priorities."
+        },
+        {
+          "p": "Pre-call prep: have ChatGPT produce a brief that brings together account history, past calls, and buyer priorities. See what still needs an answer, then turn that preparation into a customer-specific pitch with Gamma or Canva."
+        },
+        {
+          "p": "Post-call follow-through: have ChatGPT draft the follow-up, capture agreed next steps, and prepare updates to the customer record, then refine it in the conversation. With connected tools like Attio, you can save the next step directly to the CRM."
+        },
+        {
+          "p": "Watch for risk: ask ChatGPT where a deal is stuck, using CRM history and customer conversations. With Rox, you can also have dot check the deal each morning, flag changes, and prepare a brief."
+        }
+      ]
+    },
+    {
+      "h": "What results does it actually deliver?",
+      "blocks": [
+        {
+          "p": "OpenAI includes several customer quotes in the article. The only one with a quantified number is NeoBid, a company that helps clients optimize energy procurement. NeoBid says it uses HubSpot plus ChatGPT for Sales to research real estate prospects, enrich CRM data, prioritize opportunities, and prepare personalized outreach, and estimates this reduces manual effort for those activities by about 65%."
+        },
+        {
+          "p": "That is NeoBid's own estimate, an approximation, and it covers only what the company calls these activities; it cannot be applied directly to other teams. Treat it as a directional reference, not a universal promise."
+        },
+        {
+          "p": "Other customers focus more on changes in how they work: Sculpted's founder says building a play in Clay used to mean clicking through menu after menu and learning the tool before you could start, but now anyone can use ChatGPT for Sales and Clay to get it done. Pallet's CEO says Rox gives them an earlier view of deal risk. The Michael J. Fox Foundation says the Salesforce plugin helps relationship builders understand prospective donors faster."
+        }
+      ]
+    },
+    {
+      "h": "How do you enable it, and how much does it cost?",
+      "blocks": [
+        {
+          "p": "The setup path is clear: ChatGPT Business and Enterprise admins open the Admin Console, select their workspace, then select Plugins, and make the Sales plugin and relevant partner plugins available for members to install — or install them by default for the team. Members complete any required account connections when prompted."
+        },
+        {
+          "p": "But the article gives no pricing at all. On who can use what, there is only a general note: the availability of partner plugins and features \"varies by plan, region, and workspace settings.\" In other words, a plugin you see in the documentation may not be installable on your account."
+        },
+        {
+          "p": "If you are not on a Business or Enterprise plan, or you are not an admin, the article does not say whether or how individual users can use it."
+        }
+      ]
+    },
+    {
+      "h": "What OpenAI hasn't said",
+      "blocks": [
+        {
+          "list": [
+            "No pricing or subscription tier information.",
+            "No plugin-by-plugin breakdown of which plans or regions get which plugins.",
+            "No mention of which additional plugins will be added beyond the 30+ or when they will ship.",
+            "No direct comparison of results against traditional sales tools or competitors; the roughly 65% figure is NeoBid's self-reported estimate alone.",
+            "No details on data permissions, retention, or compliance: after CRM data is processed by ChatGPT, who can see it and for how long."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Who is it for?",
+      "blocks": [
+        {
+          "p": "The value is clear: if your sales team already uses a CRM and several sales tools and spends hours moving information between tools, writing follow-ups, and researching accounts, ChatGPT for Sales can consolidate that work into one conversation, with less switching and less re-entering."
+        },
+        {
+          "p": "The trade-offs are also worth noting: it is a team feature for ChatGPT Business and Enterprise and requires an admin to enable it. Which plugins you can install depends on your plan, region, and workspace settings. Connecting CRM and call data means giving customer information to ChatGPT and third-party plugins, so you need to assess permission and data boundaries yourself."
+        },
+        {
+          "p": "If you are already on ChatGPT Business or Enterprise and make heavy use of Salesforce, HubSpot, Gong, or similar tools, it is worth trying first. Start with one or two workflows, such as pre-call briefs or post-call follow-up. If you need a clear price or care about data compliance details, this article does not answer those questions; you will need to wait for OpenAI or a reseller to provide them."
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Introducing ChatGPT for Sales",
+      "publisher": "OpenAI",
+      "date": "2026-11-17",
+      "url": "https://openai.com/index/introducing-chatgpt-for-sales"
+    },
+    "more": [],
+    "note": "This article uses a single source: OpenAI's official announcement. The plugin categories and sales stages in the figures are organized from the article and are illustrative; the roughly 65% figure is customer NeoBid's self-reported estimate."
+  },
+  "claims": [
+    {
+      "text": "OpenAI released ChatGPT for Sales on November 17, 2026",
+      "value": "November 17, 2026",
+      "source_url": "https://openai.com/index/introducing-chatgpt-for-sales",
+      "as_written": "November 17, 2026",
+      "quote": "OpenAI November 17, 2026"
+    },
+    {
+      "text": "ChatGPT for Sales includes more than 30 new or upgraded partner plugins",
+      "value": "more than 30",
+      "source_url": "https://openai.com/index/introducing-chatgpt-for-sales",
+      "as_written": "30+",
+      "quote": "It includes our new Sales plugin with dedicated skills for sellers, and more than 30 new and enhanced partner plugins in ChatGPT"
+    },
+    {
+      "text": "NeoBid estimates that using HubSpot plus ChatGPT for Sales for activities such as customer research reduces manual work by about 65%",
+      "value": "around 65%",
+      "source_url": "https://openai.com/index/introducing-chatgpt-for-sales",
+      "as_written": "about 65%",
+      "quote": "We estimate this reduces manual effort for these activities by around 65%"
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "f5884a39bf47d839"
+}

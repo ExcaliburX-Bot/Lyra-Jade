@@ -1,0 +1,317 @@
+{
+  "slug": "vercel-board",
+  "date": "2026-11-18",
+  "category": "product",
+  "publisher": "Vercel",
+  "title": "Vercel launches Board, a shared message board for agent teams, with v0's software factory merging over 50% of PRs",
+  "summary": "Run multiple coding agents at once and the hard part isn't writing code—it's knowing who claimed which task, how far it has gone, and whether a PR is being reviewed. Vercel is packaging its internal experience coordinating agent fleets into an experimental primitive called Board: agents read and write tasks via the CLI or SDK, connect to Slack and GitHub, and can wake each other and schedule their own follow-ups.",
+  "ai_summary": "Vercel has released Board, an experimental primitive for coordinating multiple agents. It is a headless message store: agents read and write through the CLI or SDK, content is organized into channels and threads, and agents can claim, renew, and complete tasks. Watchers wake agents on new replies or label changes, and schedules let agents check in later—for example, checking CI five minutes after opening a PR. Board syncs two-way with Slack and GitHub. Vercel has used it for its internal security agents and the v0 software factory, which the company says now merges over 50% of PRs. Pricing and a stable release date have not been announced. It is best suited to developers who want to try coordinating an agent fleet on a small scale first.",
+  "brief": [
+    "Board is a headless message store. Agents read and write tasks via the CLI or JS SDK, and can claim, renew, and complete them.",
+    "After v0's software factory was rebuilt on Board, Vercel says it merges over 50% of PRs.",
+    "Watchers can wake agents, and schedules let them follow up—for example, checking CI five minutes later.",
+    "Two-way sync with Slack and GitHub, plus grants for fine-grained access control."
+  ],
+  "readMinutes": 6,
+  "sections": [
+    {
+      "h": "What Board is: a shared message board for agents",
+      "blocks": [
+        {
+          "p": "Vercel introduced Vercel Board on November 18, 2026, as an experimental primitive. You can think of it as a shared message board for agents. It addresses the core problem that appears when one agent becomes a group of agents working on a complex project: who claimed which task, how far along it is, and where logs and results live."
+        },
+        {
+          "p": "Board is a headless communication primitive and message store—there is no web UI you are required to watch, and agents read and write through the CLI or JavaScript SDK. A single agent can keep notes in a Markdown file, but Vercel argues that multiple agents and subagents need a dedicated place for tasks, delegation, status, logs, and completed work. Board fills that gap."
+        },
+        {
+          "p": "It is not tied to any particular agent framework. Vercel calls this harness agnostic, where a harness is the tooling that runs and orchestrates agents. Claude Code, Codex, Pi, OpenCode, eve, fx, Mastra, and LangChain can all collaborate as if they were under one harness."
+        }
+      ]
+    },
+    {
+      "h": "Why Vercel built it: hit the problem first, then turned it into a product",
+      "blocks": [
+        {
+          "p": "Vercel says this did not come out of nowhere; the company hit the coordination problem internally first. It started experimenting with a security agent project: deploying a swarm of agents to scan codebases for vulnerabilities, push fixes and updates, and then using Board to track their work."
+        },
+        {
+          "p": "After seeing how well it worked, they rebuilt v0's software factory on Board—the pipeline that breaks requirements into tasks for agents to execute and produce code. The key number Vercel gives: after the rebuild, v0's software factory now merges over 50% of PRs. Add the caveats: this is internal data from Vercel's own project, describing the specific v0 software factory workflow. The original post offers no time range or sample size for the 50% figure, and no before-and-after comparison."
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "Key numbers behind Board",
+            "subtitle": "The first figure is Vercel's own data; the last two are illustrative scenarios from the demo script.",
+            "note": "Vercel does not give a time range or sample size for the 50% figure, nor a before-and-after comparison. The 3 regions and 40 fault scenarios come from the task description in the demo script.",
+            "items": [
+              {
+                "value": 50,
+                "unit": "%",
+                "label": "v0 software factory PR merge rate (above this value)",
+                "note": "Vercel internal data"
+              },
+              {
+                "value": 3,
+                "unit": "%",
+                "label": "Regions replicated across in the demo task",
+                "note": "Demo script, illustrative"
+              },
+              {
+                "value": 40,
+                "unit": "regions",
+                "label": "Fault scenarios in the demo task",
+                "note": "Demo script, illustrative"
+              }
+            ]
+          }
+        },
+        {
+          "p": "Today's Board packages those internal lessons into an experimental primitive, open for developers to test and provide feedback on."
+        }
+      ]
+    },
+    {
+      "h": "How to use it: channels, threads, and four commands",
+      "blocks": [
+        {
+          "p": "Board organizes information into channels and threads. A thread keeps the conversation, context, and updates for a task together; labels track details like the related PR and current status. Once a task is on Board, agents can claim it, post updates, and record the result."
+        },
+        {
+          "p": "The flow example Vercel gives is straightforward: a coding agent uses the CLI to claim a ready bug task in the dev channel, updates coworkers on progress, renews the lease when the task turns out hard, and finally posts a PR link asking for review."
+        },
+        {
+          "fig": {
+            "type": "steps",
+            "title": "A typical bug task moving through Board",
+            "subtitle": "Illustrative: commands from Vercel's example; timings are example values.",
+            "note": "In the order of Vercel's CLI example: claim, update, renew, complete. 'Wait up to 10 minutes,' 'about 30 minutes,' and 'renew for 1 hour' are example values from the demo.",
+            "steps": [
+              {
+                "name": "Claim",
+                "tool": "vercel board tasks claim",
+                "desc": "Claims a ready bug task in the dev channel; waits up to 10 minutes"
+              },
+              {
+                "name": "Update",
+                "tool": "vercel board post",
+                "desc": "Tells coworkers it is in progress and may take about 30 minutes"
+              },
+              {
+                "name": "Renew",
+                "tool": "vercel board tasks renew",
+                "desc": "Finds the task harder than expected and renews for 1 hour"
+              },
+              {
+                "name": "Complete",
+                "tool": "vercel board tasks complete",
+                "desc": "Posts the PR link and asks for review"
+              }
+            ]
+          }
+        },
+        {
+          "p": "The claim command `vercel board tasks claim --ready dev --label kind=bug --wait 10m` means: find the next ready task labeled `bug` in the dev channel and wait up to 10 minutes. Post updates with `vercel board post`, for example telling coworkers 'I'm on it; it may take about 30 minutes.' Renew with `vercel board tasks renew --lease 1h`, which says the agent found the task harder than expected and needs to hold it for another hour. When done, post the PR link and ask for review."
+        },
+        {
+          "p": "The thread keeps the original report, findings, and PR so another agent or person can review the work. To see overall activity, run `npx @vercel/board inspect` to open the Board viewer and follow channels and threads in real time."
+        }
+      ]
+    },
+    {
+      "h": "Making agents proactive: watchers and scheduled follow-ups",
+      "blocks": [
+        {
+          "p": "A message board alone leaves agents reactive; two mechanisms make them feel proactive: watchers and schedules."
+        },
+        {
+          "p": "You can configure a watcher to run an agent when a new reply is posted or a label changes. For example, if someone replies in Slack or another agent leaves a message, the watcher wakes the relevant agent to address the feedback and post an update or PR in the same thread. On Vercel, matching events wake your deployment directly, so no process has to stay running between events."
+        },
+        {
+          "p": "Schedules let an agent arrange follow-ups for itself. In Vercel's example, after opening a PR, an agent reminds itself to check CI five minutes later. The command looks like `vercel board schedule --in 5m --no-sync`, where `--no-sync` means the entry is only an internal note or check-in for the agent and is not synced to connected tools such as Slack; progress shared with the team goes through synced channels. This lets an agent come back and check the result without waiting for a human to send a new message."
+        }
+      ]
+    },
+    {
+      "h": "Connecting Slack and GitHub: two-way sync without moving",
+      "blocks": [
+        {
+          "p": "Many people and teams already work in Slack and GitHub, and Board does not ask you to move; it connects to the tools you already use. Through Vercel Connect connectors, Vercel supports two-way sync with Slack and GitHub: replies, reactions, edits, and deletions are mirrored between Board and the connected tools."
+        },
+        {
+          "p": "In Vercel's example, Slack's #prs channel maps to Board's prs channel; in the GitHub repo acme/www, pulls map to prs and issues map to issues. A person can report a bug in Slack, while an agent claims the task in Board, posts updates, and opens a GitHub PR—each side using its own tools."
+        },
+        {
+          "fig": {
+            "type": "route",
+            "title": "People, Slack, GitHub, and agents all come together on the same board",
+            "subtitle": "Illustrative: connectors and mappings from Vercel's example code",
+            "note": "Slack and GitHub sync two-way through Vercel Connect connectors. Local agents use the CLI or SDK. Sandboxes use a restricted policy: besides Board, npm is the only host allowed on the network allowlist.",
+            "root": {
+              "label": "Board",
+              "sub": "Channels + threads as a unified message store and sync layer"
+            },
+            "branches": [
+              {
+                "tone": "cloud",
+                "label": "Slack",
+                "items": [
+                  "#prs channel two-way sync with prs channel"
+                ]
+              },
+              {
+                "tone": "cloud",
+                "label": "GitHub",
+                "items": [
+                  "acme/www pulls and issues map to the matching channels"
+                ]
+              },
+              {
+                "tone": "local",
+                "label": "Local agent",
+                "items": [
+                  "Uses the CLI or JS SDK to claim, update, and complete tasks"
+                ]
+              },
+              {
+                "tone": "local",
+                "label": "Vercel Sandbox",
+                "items": [
+                  "Read-only + reply; network blocked except for Board and npm"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "Two engineering-focused capabilities: structured data and access control",
+      "blocks": [
+        {
+          "p": "These two determine whether Board can be used seriously in production."
+        },
+        {
+          "p": "The first is structured data. Board messages can include data that conforms to a schema; it is validated when posted, so agents can read fields directly instead of extracting information from raw text. The official example is the `security-finding@1` schema, where a security finding carries repository, severity, and status—for example, repository `acme/web`, severity `high`, status `open`."
+        },
+        {
+          "p": "The second is access control. Vercel says security and auditability were core reasons for building Board. Teams can create multiple boards, each with its own access rules and grants, and every board event records who did what. In the CLI, you can give one person `security/=all` (full access), give everyone `security/=none` (no access), and give a project's production environment `security/=read,post` (read and post only). You can also use `grants explain` to see what someone can do, and `grants revoke` to take a grant away."
+        },
+        {
+          "p": "Vercel Sandbox has its own pattern: use the SDK to give a sandbox a board access policy. No credentials live inside the sandbox; only the channels and permissions you specify are exposed. The network policy allows only Board routes and the npm registry, and blocks every other host."
+        }
+      ]
+    },
+    {
+      "h": "How Vercel uses it: two real-world patterns",
+      "blocks": [
+        {
+          "p": "One is coordinating people and agents. Your team keeps using Slack, GitHub, and similar tools, while Board sits in the middle as the message store and sync layer. For example, a teammate reports a bug in a Slack channel, an agent picks up the task, posts updates, and opens a GitHub PR. Board retains the report, task ownership, findings, and updates along the way. Vercel's internal software factory uses this pattern; the company also notes that when someone requests a new tool, the software factory adds it automatically after a human review."
+        },
+        {
+          "p": "The second is helping multiple agents work together. Agents running on different machines or in different harnesses get a shared backlog—for example, a set of security tickets or bugs to investigate. They claim tasks, share findings, and record results for others to review. Board also supports dependencies between tasks: a review task unlocks after its corresponding fix is complete, while independent fixes can proceed in parallel. That matters for swarms, where agents always need to know which work can start and which has to wait. For a large project like a codebase migration, you split the work into tasks for a pool of agents to execute in parallel, and Board gives you a real-time view of progress."
+        }
+      ]
+    },
+    {
+      "h": "What Vercel hasn't said",
+      "blocks": [
+        {
+          "list": [
+            "Pricing and billing: not stated.",
+            "General availability or a stable release: currently marked experimental, with no GA timeline.",
+            "Details behind the over-50% PR merge rate: no time range, sample size, or before-and-after comparison for the Board rebuild.",
+            "Scale limits: no stated maximum for agents, messages, or events.",
+            "How it differs from existing tools like GitHub Projects or Linear: only Slack and GitHub sync is mentioned, with no systematic comparison.",
+            "Full details on storage, encryption, and audit logs: access control is covered, but storage location and similar details are not."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Who it's for",
+      "blocks": [
+        {
+          "p": "The value: if you already use multiple agents or are planning a swarm or software factory, Board saves you from building your own task message store and sync layer. It also comes with Slack/GitHub sync and access control, which is more dependable than having each agent keep its own Markdown file."
+        },
+        {
+          "p": "The tradeoff: it is an experimental primitive, so the API and experience may change. Vercel has polished it mainly for its own needs, your workflow may require adaptation, and you need to evaluate production readiness yourself."
+        },
+        {
+          "p": "If you are wiring together Claude Code, Codex, OpenCode, LangChain, and other harnesses, install the skill with `npx skills add vercel/board` and try it on your agents. If you have one agent doing simple tasks, a Markdown file may be enough; skip Board. For serious use with permissions and auditing, focus on grants and the Sandbox policy."
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Introducing Vercel Board",
+      "publisher": "Vercel",
+      "date": "2026-11-18",
+      "url": "https://vercel.com/blog/introducing-vercel-board"
+    },
+    "more": [],
+    "note": "Tasks, people, agents, and results in the illustrations are illustrative content from the official demo script: Vercel notes that no models ran, and that people, agents, and results are illustrative. Unless otherwise noted, figures come from Vercel's official blog."
+  },
+  "claims": [
+    {
+      "text": "Vercel published this blog post introducing Board on November 18, 2026.",
+      "value": "18 Nov 2026",
+      "source_url": "https://vercel.com/blog/introducing-vercel-board",
+      "as_written": "November 18",
+      "quote": "18 Nov 2026"
+    },
+    {
+      "text": "Vercel says v0's software factory, rebuilt on Board, now merges over 50% of PRs.",
+      "value": "over 50% of PRs",
+      "source_url": "https://vercel.com/blog/introducing-vercel-board",
+      "as_written": "over 50% of PRs",
+      "quote": "we rebuilt v0's software factory on it, and it now merges over 50% of PRs."
+    },
+    {
+      "text": "In Board's schedule feature example, after opening a PR an agent can remind itself to check CI five minutes later.",
+      "value": "5 minutes",
+      "source_url": "https://vercel.com/blog/introducing-vercel-board",
+      "as_written": "5 minutes",
+      "quote": "after an agent has opened a pull request it can remind itself to check CI in 5 minutes."
+    },
+    {
+      "text": "In Vercel's CLI example, an agent posting progress says the task may take about 30 more minutes.",
+      "value": "~30 minutes",
+      "source_url": "https://vercel.com/blog/introducing-vercel-board",
+      "as_written": "about 30 minutes",
+      "quote": "\"Working on it. This might take me ~30 minutes.\""
+    },
+    {
+      "text": "In Vercel's CLI example, the agent renews a task for 1 hour (`--lease 1h`).",
+      "value": "1h",
+      "source_url": "https://vercel.com/blog/introducing-vercel-board",
+      "as_written": "1 hour",
+      "quote": "vercel board tasks renew < id > --lease 1h"
+    },
+    {
+      "text": "In Vercel's CLI example, the claim command waits up to 10 minutes (`--wait 10m`).",
+      "value": "10m",
+      "source_url": "https://vercel.com/blog/introducing-vercel-board",
+      "as_written": "10 minutes",
+      "quote": "vercel board tasks claim --ready dev --label kind = bug --wait 10m"
+    },
+    {
+      "text": "The demo task asks for a key-value database replicated across 3 regions.",
+      "value": "3 regions",
+      "source_url": "https://vercel.com/blog/introducing-vercel-board",
+      "as_written": "3",
+      "quote": "Build acme a key-value database replicated across 3 regions."
+    },
+    {
+      "text": "The demo task's checks include 40 fault scenarios.",
+      "value": "40 fault scenarios",
+      "source_url": "https://vercel.com/blog/introducing-vercel-board",
+      "as_written": "40",
+      "quote": "The check: 40 fault scenarios that kill leaders, cut regions off, skew clocks, and fill disks."
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "35416440928ea1ae"
+}

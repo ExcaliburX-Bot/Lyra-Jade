@@ -1,0 +1,318 @@
+{
+  "slug": "langchain-knowledge-factory",
+  "date": "2026-11-21",
+  "category": "insight",
+  "publisher": "Harrison Chase (LangChain)",
+  "title": "LangChain proposes a “knowledge factory” framework: AI agents that truly know how your company works",
+  "summary": "When AI agents stall on writing content, building reports, or running outreach, the problem usually isn't the model—it's that they don't know your company's rules, where the data lives, or how work gets done. LangChain founder Harrison Chase calls the system for collecting, organizing, and maintaining that knowledge—and feeding it to agents—a “knowledge factory,” and explains how he runs one internally.",
+  "ai_summary": "AI doesn't get adopted inside companies not because models aren't good enough or context windows aren't big enough, but because company knowledge hasn't been captured: how things get done, how the business works, and where data lives are often only in veterans' heads or scattered across documents. LangChain founder Harrison Chase calls the system that collects, organizes, continuously maintains, and hands this knowledge to agents a “knowledge factory.” Knowledge should be split into skills, domain knowledge, and data access guidance. Don't maintain it manually: agents flag gaps while working, and a dedicated “curator agent” updates the knowledge in the background. He says this already runs inside LangChain's GTM and content studio agents, LangSmith Engine will maintain a knowledge factory for every agent, and they are working with a few customers on their internal and external agents. The biggest limitation is that there is no standard storage format yet; it's still early.",
+  "brief": [
+    "Core take: the AI adoption gap isn't better models or more context—it's that company knowledge hasn't been captured.",
+    "Knowledge falls into three buckets: skills (how to do things), domain knowledge (how the business works), and data access guidance (where data lives and how to query it).",
+    "The loop: agents flag gaps as they work; a dedicated “curator agent” updates the knowledge in the background, making the next run better.",
+    "Already running on LangChain's internal GTM and content studio agents, plus LangSmith Engine (one knowledge factory per agent); piloting with a few customers. Storage formats aren't standardized yet."
+  ],
+  "readMinutes": 6,
+  "sections": [
+    {
+      "h": "What is a knowledge factory?",
+      "blocks": [
+        {
+          "p": "This essay comes from Harrison Chase, founder of LangChain, the framework many people use to build AI agents—programs that carry out multi-step tasks on their own. He isn't talking about a model or a tool here, but a company-level method: how to make AI agents actually understand your business."
+        },
+        {
+          "p": "He calls this method a “knowledge factory.” The word “factory” doesn't mean a production line that churns out knowledge. It's a system that continuously collects, organizes, and maintains company knowledge, then hands that knowledge to agents as context. The goal isn't to finish organizing every document before you start. It's to let the work itself reveal what knowledge is missing, fill the gap, and make the next run better."
+        }
+      ]
+    },
+    {
+      "h": "Why “more context” won't fix it",
+      "blocks": [
+        {
+          "p": "To understand the framework, separate “context” from “knowledge.” Context is all the information an agent has at hand while doing a task. Knowledge is reusable understanding: what a metric means, which data source to trust, how to handle a given situation. Sometimes it's written down; often it isn't."
+        },
+        {
+          "p": "His argument: knowledge is a form of context, but it shouldn't be the only form. Raw data you already maintain reliably can go to agents directly—there's no reason to keep a duplicate in a knowledge base. The knowledge factory's job is to turn scattered documents and employee experience into context that can be reused again and again."
+        },
+        {
+          "fig": {
+            "type": "route",
+            "title": "Knowledge is just one part of the context an agent gets",
+            "subtitle": "Illustrative: adapted from the “Context vs knowledge” section of the original.",
+            "note": "Knowledge becomes part of context, but not all of it; don't copy raw data into the knowledge base.",
+            "root": {
+              "label": "The context an agent gets when doing a task",
+              "sub": "Context"
+            },
+            "branches": [
+              {
+                "tone": "local",
+                "label": "Knowledge",
+                "items": [
+                  "Skills: processes for how to do things",
+                  "Domain knowledge: how the business operates",
+                  "Data access guidance: where data lives and how to query it"
+                ],
+                "note": "Collected, organized, and maintained by the knowledge factory"
+              },
+              {
+                "tone": "cloud",
+                "label": "Underlying data",
+                "items": [
+                  "Revenue figures, e.g., stored in BigQuery or Salesforce"
+                ],
+                "note": "Already maintained reliably; give directly to agents—no separate copy needed"
+              },
+              {
+                "tone": "cloud",
+                "label": "Other context you already maintain reliably",
+                "items": [
+                  "Information that can already be reliably ingested and stored"
+                ],
+                "note": "Provided directly"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "Why now: from software factory to knowledge factory",
+      "blocks": [
+        {
+          "p": "The author says the term “software factory” has heated up over the past year and a half. The logic: don't have your best engineers write business code directly. Have them build a system—a factory—that lets everyone in the company produce software more efficiently, and leave the actual software to agents."
+        },
+        {
+          "p": "He argues that general knowledge work is heading down the same path. Agents can already make presentations, publish videos, and run outreach, and you should use them as much as possible. The problem is that these tasks require exactly the knowledge that is unwritten, scattered, and hard to articulate. So resources should go to two things: building up that knowledge, and—more importantly—building a factory that collects, organizes, and maintains it."
+        }
+      ]
+    },
+    {
+      "h": "The pieces of knowledge",
+      "blocks": [
+        {
+          "p": "The author splits the knowledge you need to maintain into a few buckets, and suggests treating each one differently:"
+        },
+        {
+          "list": [
+            "Skills: the processes, instructions, and scripts for getting things done—in other words, completing a task the way your company does it. This kind of knowledge often was never written down and gets passed between coworkers by word of mouth; the author's advice is to write it down as much as possible.",
+            "Domain knowledge: definitions, policies, and facts about products, customers, competitors, and the organization. It doesn't expire often, but it's usually incomplete—or wrong—because there's simply too much of it.",
+            "Data access guidance: which data sources are available, where data lives, and how to query it. This assumes you already have a solid data foundation (the original cites Snowflake and Databricks). If the data already has a single, complete, real-time source of truth, don't store another copy. What you really maintain is the guidance on where and how to query it."
+          ]
+        },
+        {
+          "fig": {
+            "type": "route",
+            "title": "The pieces of company knowledge",
+            "subtitle": "Illustrative: adapted from the “The pieces of knowledge” section of the original.",
+            "note": "The author's premise: first have a unified data foundation, then maintain guidance on where and how to query it.",
+            "root": {
+              "label": "Company knowledge",
+              "sub": "A few types, all needing continuous maintenance"
+            },
+            "branches": [
+              {
+                "tone": "local",
+                "label": "Skills",
+                "items": [
+                  "Processes, instructions, and scripts for getting work done",
+                  "Complete tasks the way the company does them",
+                  "Often passed by word of mouth; write it down as much as possible"
+                ]
+              },
+              {
+                "tone": "local",
+                "label": "Domain knowledge",
+                "items": [
+                  "Facts about products, customers, competitors, and the organization",
+                  "Definitions and policies",
+                  "Doesn't expire often, but often incomplete or wrong"
+                ]
+              },
+              {
+                "tone": "local",
+                "label": "Data access guidance",
+                "items": [
+                  "Which sources are available, where data lives, how to query it",
+                  "Premise: a solid data foundation already exists (Snowflake, Databricks, etc.)",
+                  "When data is already unique and current, don't keep another copy"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "How the factory runs: the pieces",
+      "blocks": [
+        {
+          "p": "All of this knowledge is useful, but don't maintain it by hand—the author says that's an enormously tedious chore. You need a system. The components he lists, roughly:"
+        },
+        {
+          "list": [
+            "Give agents a way to flag gaps. When an agent can't find information while working, or finds that information is wrong, it reports the issue—at minimum what's wrong, and ideally the correct fix. This is one of the most effective ways to discover knowledge gaps.",
+            "A curator agent: the agent that actually updates, organizes, and maintains knowledge. Why not let the working agents fix things themselves? The author says they're good at flagging problems, but correcting them properly requires understanding the underlying knowledge and other data sources. If you let agents with competing goals edit the knowledge base, it becomes messy and full of contradictions. Instead, a curator agent runs in the background on some cadence, can access original sources like Notion and Slack, can see the agents' traces, and can see the issues they report.",
+            "Knowledge storage: the author considers this the least important and least settled part. It can live as skills in GitHub, as single files in Notion, in OKF format in LangSmith Context Hub, or as a knowledge graph in Neo4j; the curator agent needs to learn to work with these formats. The industry has converged on skills for “procedural memory,” but the more “semantic memory” side has no standard yet. So don't lock the format down too hard at this stage."
+          ]
+        },
+        {
+          "fig": {
+            "type": "steps",
+            "title": "The knowledge factory loop: work exposes gaps, background closes them",
+            "subtitle": "Illustrative: adapted from the original steps.",
+            "note": "The core idea: don't rely on manual upkeep—agents flag, the curator agent updates.",
+            "steps": [
+              {
+                "name": "Agent flags a gap",
+                "tool": "Built-in agent reporting tool",
+                "desc": "Agent can't find information or finds wrong information; at minimum reports the issue, ideally suggests a fix."
+              },
+              {
+                "name": "Curator agent updates in the background",
+                "tool": "Curator agent",
+                "desc": "Runs on a cadence; reads original sources in Notion/Slack, agent traces, and reported flags."
+              },
+              {
+                "name": "Writes to the knowledge store",
+                "tool": "GitHub / Notion / Context Hub / Neo4j",
+                "desc": "Procedural memory uses skill formats; semantic memory has no standard format yet."
+              },
+              {
+                "name": "Next task gets more accurate knowledge",
+                "tool": "Agent",
+                "desc": "Newly added knowledge becomes context for future work; it gets more accurate the more it's used."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "A revenue report example: how the loop works",
+      "blocks": [
+        {
+          "p": "The author walks through a revenue report example to tie the loop together. To write the report, an agent starts with base context: raw revenue numbers in BigQuery and Salesforce. The knowledge includes how to build the report in LangChain's style (a skill, stored in GitHub), how ARR is calculated (long-term knowledge, stored in the company wiki), and how to access the raw BigQuery/Salesforce data (also a skill, stored in Context Hub)."
+        },
+        {
+          "p": "While running, the agent notices a BigQuery column was renamed. It finds the correct new column on the fly and uses the reporting tool to flag the issue and suggest the new column name. After the report is done, a finance lead works with the agent to adjust the formatting and asks that all future LangChain documents use the new header. That night, the curator agent sees the flag and the trace of this collaboration, then updates the relevant skills: use the new column for pulling data, and use the new header for drafting."
+        },
+        {
+          "p": "The point of this example: don't try to document everything up front. Let the work expose gaps, then patch those gaps back into the system."
+        },
+        {
+          "fig": {
+            "type": "steps",
+            "title": "Revenue report example: one loop, end to end",
+            "subtitle": "Illustrative: based on the original end-to-end example.",
+            "note": "By day, the agent collaborates with the finance lead; at night, the curator agent updates everything.",
+            "steps": [
+              {
+                "name": "Agent prepares the revenue report",
+                "tool": "Agent + BigQuery/Salesforce",
+                "desc": "Pulls raw revenue figures and drafts the report using the LangChain report format stored in its skills."
+              },
+              {
+                "name": "Finds a renamed column, solves it on the spot, and reports it",
+                "tool": "Reporting tool",
+                "desc": "A BigQuery column was renamed; the agent finds the right column on the fly and flags a suggested new column name."
+              },
+              {
+                "name": "Finance lead adjusts formatting",
+                "tool": "Human + agent",
+                "desc": "Asks that all future documents use a new header."
+              },
+              {
+                "name": "That night, curator agent updates everything",
+                "tool": "Curator agent",
+                "desc": "Sees the flag and the collaboration trace, then updates skills: pull data with the new column, draft with the new header."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "What LangChain hasn't said",
+      "blocks": [
+        {
+          "p": "Here are the questions readers most want answered, but the original doesn't cover:"
+        },
+        {
+          "list": [
+            "Pricing: whether it's paid and how billing works—the original doesn't say, only that you can contact the LangChain team.",
+            "Which “few customers”: their identities, size, and industry—the original doesn't say.",
+            "Curator agent cadence: the original gives one example of “that night” and otherwise says “on some cadence”; it doesn't say how often it runs.",
+            "Quantified results: time saved, error-rate reduction, cost changes—the original gives no numbers.",
+            "Storage format standard: the author says the format for “semantic memory” is still undecided; whether OKF becomes a standard is also unanswered.",
+            "Whether you can build it yourself: whether the system is open source and how non-LangChain users would use it—the original doesn't say."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Who it's for",
+      "blocks": [
+        {
+          "p": "The value is straightforward: the author's argument is that making AI genuinely useful inside a company doesn't require a better model or just more context—it requires better knowledge. Fill the gaps and the next run gets better."
+        },
+        {
+          "p": "If you're already using AI agents to build presentations, publish videos, or run outreach, follow the author's advice: pick a workflow that repeats often, see where the agent gets stuck, and patch that one link. He also says a sound data strategy (the original cites Snowflake and Databricks) is the foundation for useful agents."
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "How to build a knowledge factory",
+      "publisher": "Harrison Chase (LangChain)",
+      "date": "2026-11-21",
+      "url": "https://www.langchain.com/blog/knowledge-factory"
+    },
+    "note": "Main source is the LangChain blog post from Nov. 21, 2026; the X post was the launch entry from the same day. This is a concept piece with almost no hard numbers; the only figure in the body text is “a year and a half.” The two step diagrams (knowledge factory loop, revenue report example) and two maps (context vs knowledge, pieces of company knowledge) were adapted from the original text and are illustrative, not data calculations; the revenue report example comes from the original.",
+    "more": [
+      {
+        "label": "Harrison Chase's X post",
+        "url": "https://x.com/hwchase17/status/2124181216719151585"
+      }
+    ]
+  },
+  "claims": [
+    {
+      "text": "The author says the concept of “software factory” has clearly heated up in the past year and a half.",
+      "value": "year and a half",
+      "source_url": "https://www.langchain.com/blog/knowledge-factory",
+      "as_written": "a year and a half",
+      "quote": "The idea of software factories has risen sharply over the past year and a half."
+    }
+  ],
+  "status": "published",
+  "verified": true,
+  "cover": {
+    "headline": "LangChain proposes a “knowledge factory”",
+    "highlight": "Teach AI agents how your company works",
+    "glyph": {
+      "kind": "flow",
+      "nodes": [
+        {
+          "label": "Collect",
+          "tone": "base"
+        },
+        {
+          "label": "Organize",
+          "tone": "base"
+        },
+        {
+          "label": "Maintain",
+          "tone": "base"
+        },
+        {
+          "label": "Feed to agents",
+          "tone": "hi"
+        }
+      ]
+    }
+  },
+  "lang": "en",
+  "translated_from": "ada20586550d1d94"
+}

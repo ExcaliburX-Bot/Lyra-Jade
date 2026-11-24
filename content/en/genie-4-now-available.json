@@ -1,0 +1,235 @@
+{
+  "slug": "genie-4-now-available",
+  "date": "2026-11-18",
+  "category": "product",
+  "publisher": "Google DeepMind",
+  "title": "Google launches Genie 4: edit worlds as you explore with a prompt, native audio, live today for Ultra subscribers",
+  "summary": "Want to explore a generated world in your browser, change the weather or drop in a character with a single prompt, and hear audio that shifts with the scene? Google DeepMind has upgraded Project Genie to Genie 4, and Google AI Ultra subscribers can try it starting November 18, 2026.",
+  "ai_summary": "On November 18, 2026, Google DeepMind rolled out a new Project Genie to Google AI Ultra subscribers, built around the Genie 4 world model. You can explore a generated world in your browser while using natural language to change the weather, add characters, and—for the first time—hear native audio that shifts with the scene. Genie 3 gets upgrades too: each generation can be explored for up to 3 minutes, up from 60 seconds, and 360-degree panorama images can seed new worlds. A new Project Genie agent can build complex environments through conversation. It's aimed at creators who want to turn ideas into playable worlds quickly, but both models remain frontier research, and Google is still working through camera latency, audio and scene consistency. Google AI Pro users need to join a waitlist.",
+  "brief": [
+    "Genie 4 lets you edit in real time while exploring: change the weather, add characters, or redirect the action with text, and hear native audio that adapts to the scene for the first time.",
+    "Genie 3 now supports up to 3 minutes per generation, up from 60 seconds, and can chain multiple worlds into longer journeys.",
+    "The new Project Genie agent builds environments through natural-language conversation and adds an atmospheric score.",
+    "You can publish worlds to the community gallery for others to explore and remix; all generated video and audio carries a SynthID watermark."
+  ],
+  "readMinutes": 6,
+  "sections": [
+    {
+      "h": "What is Genie 4?",
+      "blocks": [
+        {
+          "p": "Project Genie is an experimental research prototype Google introduced earlier this year for generating and exploring interactive digital worlds. On November 18, 2026, Google DeepMind turned it into a new experience for Google AI Ultra subscribers, led by the new Genie 4 model and joined by an updated Genie 3, the Project Genie agent, and a community gallery."
+        },
+        {
+          "p": "Put simply, a world model understands and generates an explorable environment rather than just outputting an image. Project Genie combines Google's world models with Gemini models, so you can generate, step inside, and reshape these worlds directly in your browser."
+        }
+      ]
+    },
+    {
+      "h": "What's new in Genie 4: edit while you explore, now with sound",
+      "blocks": [
+        {
+          "p": "With earlier Project Genie, the flow was generate a world, then explore it. Genie 4 flips that to explore and edit: while navigating your world, you can type a new prompt and change the environment in real time—swap the weather, drop in a character, or redirect the action."
+        },
+        {
+          "p": "Just as importantly, there's sound. Genie 4 is the first to pair the visuals with real-time native audio that changes with the scene, from ambient soundscapes to character dialogue. Google stresses that this is a first: earlier world generation was mostly visual."
+        },
+        {
+          "p": "Google calls Genie 4 its most realistic and interactive world model yet. To be clear, that's Google's own positioning, not a conclusion from independent testing."
+        }
+      ]
+    },
+    {
+      "h": "What changed in Genie 3: longer runs, panoramas, and chaining",
+      "blocks": [
+        {
+          "p": "Genie 4 handles the highest-fidelity visuals, physics, and native audio, while Genie 3 remains available in the model picker for anyone who wants longer runs or panorama-seeded spaces."
+        },
+        {
+          "list": [
+            "Each generation can be explored for up to 3 minutes, up from 60 seconds.",
+            "Link multiple worlds together into longer journeys.",
+            "Seed a new world from a single 360-degree panorama image.",
+            "Change the environment dynamically with natural-language prompts while you explore."
+          ]
+        },
+        {
+          "p": "Google's demo ties these together: a continuous flight across forests, underwater ruins, and icy seas, with the scene shifting mid-flight and even a dragon summoned on command to ride."
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "Key numbers in the Genie 3 update",
+            "subtitle": "Units: minutes, seconds, degrees, as labeled per item",
+            "note": "Source: Google DeepMind official blog",
+            "items": [
+              {
+                "value": 3,
+                "unit": "minutes",
+                "label": "Longest exploration per generation",
+                "note": "Up from 60 seconds"
+              },
+              {
+                "value": 60,
+                "unit": "seconds",
+                "label": "Previous per-generation limit",
+                "note": "Duration before this update"
+              },
+              {
+                "value": 360,
+                "unit": "360° panorama",
+                "label": "Can seed a world",
+                "note": "Generate a new world from a 360-degree panorama"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "Project Genie agent: build worlds by talking",
+      "blocks": [
+        {
+          "p": "Before, generating a world depended on a single text or image prompt. The new Project Genie agent lowers the barrier further: describe your idea in natural language, and it orchestrates Google's suite of multimodal models to create the world's initial visuals, define its style, and add an original score that fits the mood."
+        },
+        {
+          "p": "While exploring, you can also bring Gemini models into the session. They watch what's happening on screen, surface context-aware suggestions, or automatically trigger in-world events as your journey unfolds."
+        },
+        {
+          "p": "Multimodal models here are models that can process text, images, and other inputs and outputs. Examples Google showed include turning a hillside cafe into a glass pavilion in the desert, and summoning an alien spaceship while walking in space."
+        },
+        {
+          "fig": {
+            "type": "steps",
+            "title": "From a prompt to a shareable world",
+            "subtitle": "Workflow based on Google's description, illustrative",
+            "note": "Sequence based on the official blog; step names describe the function, not official UI copy.",
+            "steps": [
+              {
+                "name": "Describe your idea",
+                "tool": "Natural language",
+                "desc": "Tell the Project Genie agent what kind of world you want"
+              },
+              {
+                "name": "Generate the initial world",
+                "tool": "Project Genie agent + multimodal models",
+                "desc": "Produces the visual style and atmospheric score"
+              },
+              {
+                "name": "Edit as you explore",
+                "tool": "Genie 4 / Genie 3",
+                "desc": "Change weather, add characters, and add native audio in real time"
+              },
+              {
+                "name": "Publish to gallery",
+                "tool": "Community gallery",
+                "desc": "Others can explore and remix"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "Community gallery: what to play and how to share",
+      "blocks": [
+        {
+          "p": "The gallery mixes curator-picked worlds with community work. Google's examples include \"Living Memory,\" which turns personal photos into explorable spaces; \"Dino Field Guide,\" which builds prehistoric habitats from 360-degree panoramas; and \"Rock Paper Scissors,\" which puts Gemini in as a real-time referee for a game made from desktop objects."
+        },
+        {
+          "p": "There are also collaborations with creators: \"Villa Giallo,\" made with creative technologist Will aka BLVCKL!GHT, turns a gothic manor into a room-by-room mystery; \"The Life of Ants,\" made with filmmaker Anand Gandhi, uses Genie 4's photorealism to let you navigate an ant colony from an ant's perspective."
+        },
+        {
+          "p": "You can do more than play—you can remix. Use the Project Genie agent to remix an existing world, tweak its underlying structure, soundtrack, or rules, then publish it to the community gallery for others to keep exploring and remixing."
+        }
+      ]
+    },
+    {
+      "h": "Safety and known limitations",
+      "blocks": [
+        {
+          "p": "Google says all video and audio generated in Project Genie carries a SynthID watermark, and all model inputs and outputs go through safety screenings. SynthID is Google's watermarking technology for marking AI-generated content."
+        },
+        {
+          "p": "Google also acknowledges that Genie 3 and Genie 4 are still world models in frontier research. The challenges it's working through include camera latency, intricate physical interactions, real-time audio precision, and long-term scene consistency—whether objects in a scene stay stable over time. For a closer look at model limitations, see Google's Genie 4 model research overview."
+        }
+      ]
+    },
+    {
+      "h": "What Google hasn't said",
+      "blocks": [
+        {
+          "list": [
+            "Pricing: Google only names Google AI Ultra and Pro tiers; it doesn't list specific costs.",
+            "Which regions or accounts count as \"eligible\" Ultra subscribers isn't specified.",
+            "When Google AI Pro users will move off the waitlist isn't stated.",
+            "Genie 4's own session length, resolution, and frame rate aren't listed; Google only gives the 3-minute limit for Genie 3.",
+            "Details on \"Genie 4 on the Gemini API,\" mentioned the same day, are not covered here."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Who it's for",
+      "blocks": [
+        {
+          "p": "The biggest shift in this update is moving from generating a world once to continuously reshaping it—and then sharing and remixing it. That's likely to appeal to creators who want to turn ideas into playable spaces quickly, as well as people doing early concept design or educational demos."
+        },
+        {
+          "p": "The trade-offs: it currently requires a Google AI Ultra subscription, the models are still research prototypes with the known limitations above, and Pro users still face a waitlist."
+        },
+        {
+          "list": [
+            "If you're a Google AI Ultra subscriber: you can try it now on the Project Genie website.",
+            "If you're a Google AI Pro user: join the waitlist on the same page.",
+            "If you want a stable production tool: treat this as a research preview for now, not something to rush into formal projects."
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Genie 4 is now available",
+      "publisher": "Google DeepMind",
+      "date": "2026-11-18",
+      "url": "https://deepmind.google/blog/genie-4-is-now-available/"
+    },
+    "more": [],
+    "note": "All figures in the article and graphics come from the Google DeepMind official blog, \"Genie 4 is now available.\" The two graphics are editorial reconstructions or illustrations based on official content, not official Google charts."
+  },
+  "claims": [
+    {
+      "text": "Genie 4 began rolling out to eligible Google AI Ultra subscribers on November 18, 2026.",
+      "value": "Nov 18, 2026",
+      "source_url": "https://deepmind.google/blog/genie-4-is-now-available/",
+      "as_written": "November 18",
+      "quote": "Nov 18, 2026"
+    },
+    {
+      "text": "Genie 3 generations can be explored for up to 3 minutes each.",
+      "value": "3 minutes",
+      "source_url": "https://deepmind.google/blog/genie-4-is-now-available/",
+      "as_written": "3 minutes",
+      "quote": "Explore for up to 3 minutes per generation (up from 60 seconds)"
+    },
+    {
+      "text": "Previously, Genie 3 had a 60-second per-generation limit.",
+      "value": "60 seconds",
+      "source_url": "https://deepmind.google/blog/genie-4-is-now-available/",
+      "as_written": "60 seconds",
+      "quote": "Explore for up to 3 minutes per generation (up from 60 seconds)"
+    },
+    {
+      "text": "Genie 3 supports 360-degree panorama images as world starting points.",
+      "value": "360-degree",
+      "source_url": "https://deepmind.google/blog/genie-4-is-now-available/",
+      "as_written": "360 degrees",
+      "quote": "Seed new worlds from 360-degree panorama images."
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "85aa44c75649c14d"
+}
