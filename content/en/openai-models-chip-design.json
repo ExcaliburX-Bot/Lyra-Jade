@@ -1,0 +1,376 @@
+{
+  "slug": "openai-models-chip-design",
+  "date": "2026-11-18",
+  "category": "product",
+  "publisher": "OpenAI",
+  "title": "OpenAI models edit chip circuits: 13% area cut on Jalapeño, up to 14% gain on AMD's flagship GPU",
+  "summary": "If you thought AI was only good at writing code and copy, OpenAI has another path to show: models directly editing chip circuits. Key blocks in its own Jalapeño inference chip shed 13% of their area, and a collaboration with AMD delivered gains of up to 14% on a flagship GPU.",
+  "ai_summary": "On November 18, OpenAI published research showing that its models can now directly edit chip circuits — cutting area on its first custom inference chip, Jalapeño, and working with AMD to optimize next-generation flagship GPU and CPU designs. The key numbers: Jalapeño's vector unit standard-cell area fell about 13% and matrix unit area about 10%; AMD's flagship GPU IP improved by up to 14% against heavily optimized baselines; and roughly a year of progress was compressed into under five months. The evaluation used two open-source 32-bit RISC-V cores. At a budget of about 112,000 tokens per run, GPT-6.2 Astra posted the highest average score. This matters for chip design teams and anyone tracking AI capability. The big caveat: the results are self-reported by OpenAI and have not been independently reproduced.",
+  "brief": [
+    "On Jalapeño, model-driven changes cut standard-cell area by about 13% in the vector unit and about 10% in the matrix unit, and were verified during silicon bring-up.",
+    "With AMD: flagship GPU IP improved by up to 14% over heavily optimized baselines; roughly a year of progress was completed in under five months, and some changes are already in a design sent for manufacturing.",
+    "At about 112,000 tokens per run, GPT-6.2 Astra had the highest average score on both open-source RISC-V cores. When designing cores from a specification, it scored about 0.7 on PicoRV32 and about 0.75 on Ibex.",
+    "Next up: OpenAI is working with Synopsys to train GPT-Synopsys to use EDA tools the way expert chip designers do."
+  ],
+  "readMinutes": 6,
+  "sections": [
+    {
+      "h": "What this is: OpenAI models edit chip circuits directly",
+      "blocks": [
+        {
+          "p": "On November 18, OpenAI published a paper titled \"Advancing chip design with OpenAI models.\" The models in question are large GPT-series models, and their role here is to revise circuit designs for engineers, not to design chips end-to-end themselves."
+        },
+        {
+          "p": "Some background: in August, OpenAI said its engineers had used frontier models to accelerate development of Jalapeño, its first custom inference chip. Now it is sharing the details — exactly what the models changed, what the AMD collaboration achieved, and how two open-source RISC-V cores are used as a benchmark to measure progress from one model generation to the next."
+        },
+        {
+          "p": "First, a chip-industry term: PPA stands for power, performance, and area. Optimizing a chip design means making the chip faster, more power-efficient, and smaller. All the gains and reductions below come down to those three things."
+        }
+      ]
+    },
+    {
+      "h": "How Jalapeño saved area",
+      "blocks": [
+        {
+          "p": "OpenAI began using GPT-o3 mini to help design Jalapeño in early 2025. The model wasn't exactly new, but it could already find nontrivial PPA improvements."
+        },
+        {
+          "p": "The improvements center on two compute blocks. The vector unit manages and executes parallel workloads; its area savings came from the floating-point adders, multipliers, conversion functions, reduction logic, and special-function unit. The models tried alternative logic implementations and redistributed computations across pipeline stages, which allowed hardware to be shared and intermediate storage reduced."
+        },
+        {
+          "p": "The matrix unit is an arithmetic block; its improvements came from the floating-point adders, multipliers, and low-precision dot-product circuits. Two individual changes stand out: a multiplier redesign cut cell area used in synthesis by about 15% while reducing latency from two clock cycles to one; an adder redesign also cut cell area by about 15% while keeping the two-cycle latency."
+        },
+        {
+          "p": "Across the design, OpenAI estimates these changes reduced standard-cell area by about 13% in the vector unit and about 10% in the matrix unit. The optimizations were confirmed during Jalapeño's silicon bring-up."
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "Jalapeño: area-saving changes found by the model",
+            "subtitle": "Cell / standard-cell area change, vendor estimate, %",
+            "note": "Vector and matrix units are block-level estimates; multiplier and adder are individual redesigns. All figures are self-reported by OpenAI and have not been independently reproduced.",
+            "items": [
+              {
+                "value": "13",
+                "unit": "%",
+                "label": "Vector unit standard-cell area reduction",
+                "note": "Block-level estimate"
+              },
+              {
+                "value": "10",
+                "unit": "%",
+                "label": "Matrix unit standard-cell area reduction",
+                "note": "Block-level estimate"
+              },
+              {
+                "value": "15",
+                "unit": "%",
+                "label": "Multiplier redesign cell area reduction",
+                "note": "Latency cut from two cycles to one"
+              },
+              {
+                "value": "15",
+                "unit": "%",
+                "label": "Adder redesign cell area reduction",
+                "note": "Two-cycle latency retained"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "The AMD collaboration: what 14% means",
+      "blocks": [
+        {
+          "p": "The AMD work is the more telling test, because it applied the approach to a third party's already heavily optimized flagship product. OpenAI says that on AMD's flagship GPU IP, the model delivered up to 14% PPA improvement over \"heavily optimized baselines.\" Note that 14% is the ceiling, and the comparison is not against rough first drafts but against baselines that were already well tuned."
+        },
+        {
+          "p": "The method was to rewrite the code that describes chip circuits — SystemVerilog RTL, a hardware description language engineers use to specify how each module behaves. OpenAI says the model reasons about RTL at the level of an expert microarchitect and can rewrite circuits that perform computation, control, and data movement."
+        },
+        {
+          "p": "On speed, OpenAI says this amounts to squeezing roughly a year of progress into under five months, a result it calls unprecedented at the frontier of chip design. AMD has already put some of these changes into a recent design sent for manufacturing, and added others to its production design files for future versions."
+        },
+        {
+          "p": "Beyond the GPU, AMD also verified single-digit percentage PPA gains across key blocks of its next-generation flagship CPU, again using designs written by OpenAI models. After each rewrite, the model used Synopsys tools to verify that behavior was unchanged and to evaluate power, performance, and area trade-offs."
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "The AMD collaboration: flagship GPU and CPU gains",
+            "subtitle": "Gains over heavily optimized baselines; single-digit figure noted in text",
+            "note": "GPU figure is an upper bound (up to); AMD cites only \"single-digit percentage\" for CPU without a specific number; time shown is for completing roughly a year of progress.",
+            "items": [
+              {
+                "value": "14",
+                "unit": "%",
+                "label": "Flagship GPU IP gain over heavily optimized baseline",
+                "note": "Up to"
+              },
+              {
+                "value": "Single-digit",
+                "unit": "%",
+                "label": "Next-gen flagship CPU key-block PPA gain",
+                "note": "Specific value not given"
+              },
+              {
+                "value": "5",
+                "unit": "months",
+                "label": "Time to complete roughly a year of progress",
+                "note": "Under 5 months"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "How much did the models improve? Two open-source RISC-V cores as the benchmark",
+      "blocks": [
+        {
+          "p": "Jalapeño and AMD are both production designs, which makes it hard to measure progress from one model generation to the next in a controlled way. So OpenAI set up two open-source cores as a standard test: PicoRV32 and Ibex. Both are 32-bit RISC-V processor cores for embedded, microcontroller-class workloads. PicoRV32 is more compact and aimed at FPGAs, while Ibex serves as the embedded processor in the OpenTitan security chip."
+        },
+        {
+          "p": "The task was simple: increase throughput — the number of instructions executed per second. The scoring method deserves attention, because it determines how the numbers should be read. After a model revised a design, OpenAI checked the outputs in simulation. Designs that failed a check, or used more than 16 times the original core's area, scored zero. Passing designs were then measured on workloads the models had never seen, using instructions per clock cycle. OpenAI took the geometric mean, multiplied it by the maximum clock frequency estimated with the open-source Yosys tool, and arrived at an estimate of instructions per second. For each core, the best throughput observed under the same constraints was set to 1.0. The chart scores are averages across runs, including the zero scores."
+        },
+        {
+          "p": "The result: at a comparable budget of about 112,000 tokens per run, GPT-6.2 Astra posted the highest average score on both cores, and GPT-6.1 Sol outscored GPT-5.6 Sol. On the existing PicoRV32 core, GPT-6.2 Astra's score at around 112,000 tokens was roughly double GPT-6 Astra's. On Ibex, GPT-6.2 Astra's average score kept climbing as the budget increased."
+        }
+      ]
+    },
+    {
+      "h": "From a specification: even higher scores",
+      "blocks": [
+        {
+          "p": "The second task was closer to designing from scratch: models got only written requirements and a template, then had to decide how data would flow through the core and how to split work into stages. Correctness checks, memory and cache settings, and throughput targets matched the previous task."
+        },
+        {
+          "p": "The result is striking: at about 112,000 tokens per run, all five models scored higher when designing a core from written requirements than when improving an existing design — on both PicoRV32 and Ibex. GPT-6.2 Astra's improvement was larger on Ibex than on PicoRV32."
+        },
+        {
+          "p": "Specific scores: starting from the PicoRV32 spec, GPT-6.2 Astra averaged about 0.7 near 112,000 tokens, and scored higher at the next two budget levels. Starting from the Ibex spec, it averaged about 0.75 near the same budget, and its curve stayed above the others throughout. The full evaluation included 9,881 scored runs."
+        },
+        {
+          "p": "OpenAI also flagged the limits: when starting from written requirements, models could leave out features present in the original cores, such as performance counters and additional instructions. Those features add little to throughput on the test workloads, which may explain part of the scoring advantage. Requiring them, tightening the area limit, and checking timing after physical synthesis would make the test more representative of real production design."
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "RISC-V benchmark: average score when designing from a spec",
+            "subtitle": "Best throughput scored 1.0, around 112,000 tokens per run",
+            "note": "Higher scores mean better throughput. Both cores are open-source 32-bit RISC-V cores.",
+            "items": [
+              {
+                "value": "0.7",
+                "unit": "Score",
+                "label": "PicoRV32: GPT-6.2 Astra average score"
+              },
+              {
+                "value": "0.75",
+                "unit": "Score",
+                "label": "Ibex: GPT-6.2 Astra average score"
+              },
+              {
+                "value": "9,881",
+                "unit": "Runs",
+                "label": "Scored runs"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "What OpenAI hasn't said",
+      "blocks": [
+        {
+          "list": [
+            "Cost: the announcement doesn't say how much the AMD design work or Synopsys EDA tool licenses cost.",
+            "Jalapeño's absolute specs: only area reduction percentages are given, with no raw numbers for absolute area, frequency, or power.",
+            "The fifth of the five benchmarked models isn't named; the source identifies only GPT-5.6 Sol, GPT-6 Astra, GPT-6.1 Sol, and GPT-6.2 Astra.",
+            "The per-model score curves at different token budgets are described in text only; no data points are published.",
+            "There is no direct comparison against human expert designs.",
+            "The announcement doesn't specify which AMD changes went to manufacturing or which product version they're in; it just says \"some.\""
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Who it's for",
+      "blocks": [
+        {
+          "p": "The value: for chip design teams, the most direct takeaway is a repeatable path — have models rewrite RTL, verify behavior is unchanged with EDA tools, and still find PPA gains from single digits to 14% on heavily optimized designs. For people tracking AI, it shows the capability frontier moving beyond writing code to editing hardware circuits."
+        },
+        {
+          "p": "The cost: all of these numbers are self-reported by OpenAI and have not been independently reproduced; the RISC-V scoring method is also OpenAI's own. Applying it to your own project still requires expert review and silicon validation. A model's edits are not ready to ship as-is."
+        },
+        {
+          "p": "If you work in front-end design or architecture, start small: pick one or two blocks, have a model rewrite the RTL, and use your existing verification flow to see whether the area savings or area-for-speed trade-offs reproduce. If you're an investor or product manager, watch AMD's post-manufacturing results and how quickly the Synopsys work moves into production. If you just want the AI headline, remember two scores: when designing from a spec, GPT-6.2 Astra scored about 0.7 on PicoRV32 and about 0.75 on Ibex — both higher than when improving an existing design."
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Advancing chip design with OpenAI models",
+      "publisher": "OpenAI",
+      "date": "2026-11-18",
+      "url": "https://openai.com/index/advancing-chip-design-with-our-models"
+    },
+    "more": [],
+    "note": "Charts are drawn from OpenAI's published data; \"single-digit percentage\" is shown as text because the source gives no specific number. All figures are self-reported by OpenAI and have not been independently reproduced."
+  },
+  "claims": [
+    {
+      "text": "OpenAI estimates that model-proposed changes reduced standard-cell area in the Jalapeño vector unit by about 13%.",
+      "value": "13%",
+      "source_url": "https://openai.com/index/advancing-chip-design-with-our-models",
+      "as_written": "about 13%",
+      "quote": "reduced standard-cell area by about 13% in the vector unit"
+    },
+    {
+      "text": "OpenAI estimates that model-proposed changes reduced standard-cell area in the Jalapeño matrix unit by about 10%.",
+      "value": "10%",
+      "source_url": "https://openai.com/index/advancing-chip-design-with-our-models",
+      "as_written": "about 10%",
+      "quote": "and 10% in the matrix unit"
+    },
+    {
+      "text": "A multiplier redesign in the matrix unit cut cell area used in synthesis by about 15%.",
+      "value": "15%",
+      "source_url": "https://openai.com/index/advancing-chip-design-with-our-models",
+      "as_written": "about 15%",
+      "quote": "One multiplier redesign used about 15% less cell area in synthesis"
+    },
+    {
+      "text": "The multiplier redesign cut latency from two clock cycles to one.",
+      "value": "two clock cycles to one",
+      "source_url": "https://openai.com/index/advancing-chip-design-with-our-models",
+      "as_written": "from two clock cycles to one",
+      "quote": "while reducing latency from two clock cycles to one"
+    },
+    {
+      "text": "An adder redesign in the matrix unit cut cell area by about 15% while keeping two-cycle latency.",
+      "value": "15%",
+      "source_url": "https://openai.com/index/advancing-chip-design-with-our-models",
+      "as_written": "about 15%",
+      "quote": "A separate adder redesign reduced cell area by about 15% while retaining its two-cycle latency"
+    },
+    {
+      "text": "In the AMD collaboration, flagship GPU IP improved by up to 14% over heavily optimized baselines.",
+      "value": "14%",
+      "source_url": "https://openai.com/index/advancing-chip-design-with-our-models",
+      "as_written": "up to 14%",
+      "quote": "seen up to 14% improvement relative to heavily optimized baselines on the flagship GPU IP"
+    },
+    {
+      "text": "OpenAI says this progress amounts to roughly a year of work completed in under five months.",
+      "value": "less than 5 months",
+      "source_url": "https://openai.com/index/advancing-chip-design-with-our-models",
+      "as_written": "under 5 months",
+      "quote": "roughly a year of progress achieved in less than 5 months"
+    },
+    {
+      "text": "OpenAI says the progress is equivalent to about a year.",
+      "value": "a year of progress",
+      "source_url": "https://openai.com/index/advancing-chip-design-with-our-models",
+      "as_written": "about a year of progress",
+      "quote": "This represents roughly a year of progress achieved in less than 5 months"
+    },
+    {
+      "text": "AMD verified single-digit percentage PPA gains on key blocks of its next-generation flagship CPU.",
+      "value": "single-digit percentage",
+      "source_url": "https://openai.com/index/advancing-chip-design-with-our-models",
+      "as_written": "single-digit percentage",
+      "quote": "AMD also verified single-digit percentage gains in PPA across key blocks"
+    },
+    {
+      "text": "The benchmark used two open-source 32-bit RISC-V cores.",
+      "value": "32-bit",
+      "source_url": "https://openai.com/index/advancing-chip-design-with-our-models",
+      "as_written": "32-bit",
+      "quote": "two open-source 32-bit RISC-V cores"
+    },
+    {
+      "text": "Designs using more than 16 times the original core area scored zero.",
+      "value": "16 times",
+      "source_url": "https://openai.com/index/advancing-chip-design-with-our-models",
+      "as_written": "16 times",
+      "quote": "used more than 16 times the original core's area"
+    },
+    {
+      "text": "The best throughput observed under the same constraints was scored 1.0.",
+      "value": "1.0",
+      "source_url": "https://openai.com/index/advancing-chip-design-with-our-models",
+      "as_written": "1.0",
+      "quote": "we assigned the best throughput we observed under the same constraints a score of 1.0"
+    },
+    {
+      "text": "At a comparable budget of about 112,000 tokens per run, GPT-6.2 Astra had the highest average score on both cores.",
+      "value": "112,000",
+      "source_url": "https://openai.com/index/advancing-chip-design-with-our-models",
+      "as_written": "about 112,000",
+      "quote": "a comparable budget of about 112,000 tokens per run"
+    },
+    {
+      "text": "On PicoRV32 at about 112,000 tokens, GPT-6.2 Astra's score was about twice GPT-6 Astra's.",
+      "value": "about twice",
+      "source_url": "https://openai.com/index/advancing-chip-design-with-our-models",
+      "as_written": "about twice",
+      "quote": "its score is about twice GPT‑6 Astra’s"
+    },
+    {
+      "text": "Designing from the PicoRV32 spec, GPT-6.2 Astra averaged 0.7 near 112,000 tokens.",
+      "value": "0.7",
+      "source_url": "https://openai.com/index/advancing-chip-design-with-our-models",
+      "as_written": "0.7",
+      "quote": "GPT‑6.2 Astra passes a mean score of 0.7 near 112,000 tokens"
+    },
+    {
+      "text": "Designing from the Ibex spec, GPT-6.2 Astra averaged about 0.75 near 112,000 tokens.",
+      "value": "0.75",
+      "source_url": "https://openai.com/index/advancing-chip-design-with-our-models",
+      "as_written": "about 0.75",
+      "quote": "GPT‑6.2 Astra averages about 0.75 near 112,000 tokens"
+    },
+    {
+      "text": "The evaluation included 9,881 scored runs.",
+      "value": "9,881",
+      "source_url": "https://openai.com/index/advancing-chip-design-with-our-models",
+      "as_written": "9,881",
+      "quote": "The full evaluation included 9,881 scored runs"
+    },
+    {
+      "text": "OpenAI began using GPT-o3 mini to help design Jalapeño in early 2025.",
+      "value": "early 2025",
+      "source_url": "https://openai.com/index/advancing-chip-design-with-our-models",
+      "as_written": "early 2025",
+      "quote": "We started using GPT‑o3 mini to help design Jalapeño in early 2025"
+    },
+    {
+      "text": "The research was published on November 18, 2026.",
+      "value": "November 18, 2026",
+      "source_url": "https://openai.com/index/advancing-chip-design-with-our-models",
+      "as_written": "November 18, 2026",
+      "quote": "November 18, 2026"
+    },
+    {
+      "text": "In August, OpenAI shared progress on using the models to accelerate Jalapeño development.",
+      "value": "August",
+      "source_url": "https://openai.com/index/advancing-chip-design-with-our-models",
+      "as_written": "August",
+      "quote": "In August, we shared how OpenAI engineers used our frontier models"
+    },
+    {
+      "text": "At about 112,000 tokens per run, all five models scored higher when designing a core from written requirements than when improving the existing design.",
+      "value": "five",
+      "source_url": "https://openai.com/index/advancing-chip-design-with-our-models",
+      "as_written": "five models",
+      "quote": "all five models scored higher"
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "41a68b2b9277b98b"
+}

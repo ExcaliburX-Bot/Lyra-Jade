@@ -1,0 +1,253 @@
+{
+  "slug": "rl-infrastructure-rocket-microsoft-ai",
+  "date": "2026-11-23",
+  "category": "deep",
+  "publisher": "Microsoft AI",
+  "title": "Microsoft AI's in-house RL framework Rocket is post-training the 3-trillion-parameter MAI Base 2.",
+  "summary": "If you've ever wondered how large models gradually learn to \"think\" late in training, Microsoft AI is pulling back the curtain on the system behind it: Rocket. It is now post-training the 3-trillion-parameter base model MAI Base 2 — not by copying answers from other models, but by letting the model work its way up through thousands of steps and weeks of trial and error.",
+  "ai_summary": "Microsoft AI has published a look at Rocket, its in-house reinforcement learning (RL) framework, which is now post-training the 3-trillion-parameter base model MAI Base 2 by climbing from the base model directly through RL, without distilling from third-party models. These runs execute thousands of training steps, last weeks to months, and occupy thousands of GPUs, so Rocket treats three issues as the main design constraints: stale samples, numerical mismatch between sampler and learner, and hardware failures plus elastic scaling during long runs. To make the pieces work together, Microsoft owns the learner, Rocket, and an inference engine built on its own maintained SGLang fork. The post is aimed at engineers and researchers who care about LLM training infrastructure; it focuses on system design and gives no benchmarks, training cost, or completion timeline.",
+  "brief": [
+    "Rocket previously post-trained MAI Base 1 into the reasoning model MAI Thinking 1; it has now scaled up to post-train the larger MAI Base 2.",
+    "Microsoft stresses that MAI Base 2 is climbing through RL without distilling from third-party models, and that this work is separate from MAI Code 2.",
+    "These long runs span thousands of training steps, weeks to months, and thousands of GPUs, so the system must survive hardware failures and reallocate resources while running.",
+    "Inference runs on Microsoft's own maintained SGLang fork; Rocket allocates nodes through Kubernetes or Slurm, and its components run as Ray actors."
+  ],
+  "readMinutes": 6,
+  "sections": [
+    {
+      "h": "What it is: Microsoft is post-training the 3-trillion-parameter MAI Base 2 with its in-house Rocket framework.",
+      "blocks": [
+        {
+          "p": "Reinforcement learning (RL) — where a model repeatedly tries to solve problems and adjusts its policy based on rewards — is a common late stage in large-model training. Microsoft AI (MAI) uses this post to describe the infrastructure behind that stage: its in-house RL framework Rocket and the system built around it."
+        },
+        {
+          "p": "The post opens by positioning \"long, stable, and numerically accurate RL\" as essential to MAI's path toward what Microsoft calls Humanist Superintelligence. The core idea: rather than a short RL phase at the end of post-training, have the model climb its capabilities from the base-model stage through RL itself."
+        },
+        {
+          "p": "The focus is MAI Base 2: Microsoft's newly announced base model with 3 trillion parameters. The post says it is now being post-trained by Rocket, climbing from the base model directly through RL, without distillation from third-party models. (Distillation means having a model learn from a stronger teacher model first, which gives it a much higher starting point.)"
+        },
+        {
+          "p": "For context: Rocket is not new. The MAI Thinking 1 technical report identified it as the framework that post-trained the previous base model MAI Base 1 into the reasoning model MAI Thinking 1. Now it has been scaled up for the larger MAI Base 2. This work is separate from the MAI Code 2 models."
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "How big is this training run?",
+            "subtitle": "Microsoft's rough order-of-magnitude descriptions, not exact figures",
+            "note": "\"Thousands,\" \"weeks,\" and similar terms are Microsoft's own descriptions of these long runs; exact figures aren't public. They indicate scale only, not a basis for comparisons.",
+            "items": [
+              {
+                "value": "3",
+                "unit": "trillion parameters",
+                "label": "MAI Base 2 scale",
+                "note": "new base model"
+              },
+              {
+                "value": "Thousands",
+                "unit": "training steps",
+                "label": "one RL long run",
+                "note": "Original: \"many thousands\""
+              },
+              {
+                "value": "Thousands",
+                "unit": "GPUs",
+                "label": "compute used",
+                "note": "Original: \"thousands of GPUs\""
+              },
+              {
+                "value": "Weeks to months",
+                "unit": "",
+                "label": "duration",
+                "note": "Original: \"weeks to months\""
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "Why climbing without distillation makes infrastructure harder",
+      "blocks": [
+        {
+          "p": "Microsoft starts with an easy-to-overlook variable: distillation. If a model is distilled from a stronger teacher, it enters RL already close to its capability ceiling, so RL becomes a relatively short refinement phase. In that regime, infrastructure priorities are very different. A failed run can simply be restarted, and small mismatches between sampler and learner don't have enough time to compound into serious problems."
+        },
+        {
+          "p": "Rocket is designed for the harder case: starting from base capabilities and climbing entirely through RL, with no head start from distillation. These runs execute thousands of training steps, last weeks to months, and use thousands of GPUs. Microsoft says reaching the frontier without depending on other labs' models is central to MAI's self-sufficiency. Under that setup, the challenges above shift from edge cases to core design constraints: hardware failures are almost certain, small numerical errors accumulate over thousands of updates, and the optimal data mix and GPU allocation change as the policy improves."
+        }
+      ]
+    },
+    {
+      "h": "Three hard engineering problems: staleness, numerical consistency, and failure",
+      "blocks": [
+        {
+          "p": "Microsoft groups the problems of scaling RL into three buckets. The first is staleness: a single agent rollout (one execution attempt at a problem) can run for hours while the learner keeps updating the policy. GRPO (Group Relative Policy Optimization), which computes advantages by comparing rewards across multiple rollouts for the same problem, scores attempts from the same problem against each other. So if one rollout is slow or fails, it holds back its entire group, and training drifts further off-policy."
+        },
+        {
+          "p": "The second is numerical consistency. Fitting larger models and longer contexts into the sampler usually requires lower-precision storage. If precision, kernels, or parallelization differ between sampler and learner, learning can slow and training can become unstable."
+        },
+        {
+          "p": "The third is fault tolerance and elasticity. When thousands of GPUs run continuously for weeks to months, hardware failures are inevitable; the best runtime configuration and data mix also change over time. If every failure or adjustment meant restarting the whole job, GPU time would be wasted. So the system must recover components and reallocate resources while the job keeps running."
+        }
+      ]
+    },
+    {
+      "h": "Rocket's training loop: how one problem gets worked through",
+      "blocks": [
+        {
+          "p": "Figure 1 in the original post shows Rocket's asynchronous training loop. Simplified to one main path: the controller picks a problem from a problem pool or curriculum and sends it to a problem worker; the problem worker then dispatches a set of rollout requests to the rollout worker pool."
+        },
+        {
+          "p": "The rollout worker runs an agent loop: the model generates actions, the actions are executed in environments (sandboxes, external tools), observations come back, and the loop continues. Each rollout gets an independent score from a per-rollout grader, and the scores and references are sent back. The sampler produces tokens: it has a router on CPU and runs SGLang on GPU for prefill and decode. Finally, the learner updates the policy on a GPU pool."
+        },
+        {
+          "fig": {
+            "type": "steps",
+            "title": "Six steps from choosing a problem to updating the policy",
+            "subtitle": "Illustrative: simplified from Figure 1 in the original post",
+            "note": "The full architecture also includes a rollout store (for tokens/logs), recovery checkpoints, and runtime management (health monitoring and resource allocation); these are compressed here for clarity.",
+            "steps": [
+              {
+                "name": "Controller",
+                "tool": "CPU",
+                "desc": "Picks problems from the pool/curriculum, filters and packs them"
+              },
+              {
+                "name": "Problem worker",
+                "tool": "CPU pool",
+                "desc": "Dispatches rollout requests and handles group grading"
+              },
+              {
+                "name": "rollout worker",
+                "tool": "CPU pool",
+                "desc": "Runs the agent loop and scores each rollout"
+              },
+              {
+                "name": "Sampler",
+                "tool": "CPU router + GPU SGLang",
+                "desc": "Prefill/decode; outputs tokens and logprobs"
+              },
+              {
+                "name": "Environments",
+                "tool": "Sandbox/tools",
+                "desc": "Executes actions and returns observations"
+              },
+              {
+                "name": "Learner",
+                "tool": "GPU pool",
+                "desc": "Updates the policy from advantages and sends weights back"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "Why build the learner, Rocket, and SGLang together",
+      "blocks": [
+        {
+          "p": "Microsoft stresses that RL requires three tightly connected systems: the learner, the Rocket training framework, and an inference engine based on Microsoft's own maintained fork of SGLang. Owning all three lets Microsoft co-design their interfaces instead of optimizing each component in isolation."
+        },
+        {
+          "p": "That doesn't mean every layer is written from scratch. Rocket uses Kubernetes or Slurm to allocate nodes to a job, and its components run as Ray actors. The inference side uses open-source SGLang as its foundation but has heavily adapted it for MAI's models and long-running agentic RL workloads; Microsoft says a later blog post will detail those SGLang changes."
+        },
+        {
+          "p": "Why not use an existing open-source framework? The post names verl and slime, saying they provide a solid foundation in distributed execution, customizable agent workflows, and asynchronous sampling. But Microsoft's long climbs from a base model push those frameworks outside the regime where they're usually exercised, so Microsoft built Rocket to design its infrastructure around its own RL workloads and MAI models."
+        }
+      ]
+    },
+    {
+      "h": "What Microsoft hasn't said",
+      "blocks": [
+        {
+          "list": [
+            "It hasn't disclosed the compute cost, GPU models, or GPU count for Rocket or MAI Base 2 post-training.",
+            "It hasn't given benchmark scores or comparison targets for MAI Base 2 after Rocket post-training.",
+            "It hasn't specified exact figures behind \"thousands of training steps,\" \"thousands of GPUs,\" or \"weeks to months.\"",
+            "It hasn't said when this post-training run will finish or when the post-trained model will be available.",
+            "It hasn't elaborated on MAI Code 2's relationship to this RL work, only that they're separate.",
+            "It hasn't provided specific GRPO hyperparameters such as learning rate or batch size."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Who it's for",
+      "blocks": [
+        {
+          "p": "The post's value is its clear explanation of the design thinking behind a large-scale RL training system: why long-run RL is harder than a short refinement phase, how the three main challenges shape the system design, and the tradeoffs between building your own framework and using open-source ones. For engineers and researchers building RL post-training pipelines or trying to understand LLM training infrastructure, the most useful takeaways are \"build the three systems together\" and \"design fault tolerance around long climbs.\""
+        },
+        {
+          "p": "The tradeoff is that it stays at the system-overview level: no code, no reproducible configuration, and no performance data. Anyone hoping to learn how good MAI Base 2 is will be disappointed; that will have to wait for a future post-trained release or technical report."
+        },
+        {
+          "p": "Practical guidance: if you're building an RL training system, focus on the three challenges and the CPU/GPU division of labor. If you care about model capability, this post won't give you an answer — wait for the future post-trained MAI Base 2 release. If you're a regular user, this is mostly behind-the-scenes engineering and doesn't change your day-to-day product experience."
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "RL infrastructure at Microsoft AI",
+      "publisher": "Microsoft AI",
+      "date": "2026-11-23",
+      "url": "https://microsoft.ai/news/rl-infrastructure-at-microsoft-ai/"
+    },
+    "more": [],
+    "note": "Based on Microsoft's official blog post. Figure 1 in the original is an architecture diagram; this article's steps figure is a simplified redrawing. Terms such as \"thousands,\" \"weeks,\" and \"hours\" are approximate descriptions from Microsoft's post, not exact figures."
+  },
+  "claims": [
+    {
+      "text": "MAI Base 2 is a base model with 3 trillion parameters.",
+      "value": "three-trillion-parameter",
+      "source_url": "https://microsoft.ai/news/rl-infrastructure-at-microsoft-ai/",
+      "as_written": "3 trillion parameters",
+      "quote": "our new three-trillion-parameter base model, MAI Base 2"
+    },
+    {
+      "text": "These long RL runs execute thousands of training steps.",
+      "value": "many thousands of training steps",
+      "source_url": "https://microsoft.ai/news/rl-infrastructure-at-microsoft-ai/",
+      "as_written": "thousands of training steps",
+      "quote": "runs of many thousands of training steps spanning weeks to months on thousands of GPUs"
+    },
+    {
+      "text": "These long RL runs last weeks to months.",
+      "value": "weeks to months",
+      "source_url": "https://microsoft.ai/news/rl-infrastructure-at-microsoft-ai/",
+      "as_written": "weeks to months",
+      "quote": "runs of many thousands of training steps spanning weeks to months on thousands of GPUs"
+    },
+    {
+      "text": "These long RL runs use thousands of GPUs.",
+      "value": "thousands of GPUs",
+      "source_url": "https://microsoft.ai/news/rl-infrastructure-at-microsoft-ai/",
+      "as_written": "thousands of GPUs",
+      "quote": "runs of many thousands of training steps spanning weeks to months on thousands of GPUs"
+    },
+    {
+      "text": "Microsoft AI develops and operates three tightly connected systems: the learner, the Rocket training framework, and an inference engine based on its own maintained SGLang fork.",
+      "value": "three",
+      "source_url": "https://microsoft.ai/news/rl-infrastructure-at-microsoft-ai/",
+      "as_written": "three",
+      "quote": "MAI develops and operates three tightly connected systems necessary for RL"
+    },
+    {
+      "text": "Microsoft says small numerical errors accumulate over thousands of updates.",
+      "value": "thousands of updates",
+      "source_url": "https://microsoft.ai/news/rl-infrastructure-at-microsoft-ai/",
+      "as_written": "thousands of updates",
+      "quote": "small numerical mismatches accumulate over thousands of updates"
+    },
+    {
+      "text": "A single agent rollout can run for several hours while the learner keeps updating the policy.",
+      "value": "hours",
+      "source_url": "https://microsoft.ai/news/rl-infrastructure-at-microsoft-ai/",
+      "as_written": "several hours",
+      "quote": "Agentic rollouts can take hours"
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "f3d5a55a26b37435"
+}
