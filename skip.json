@@ -4,5 +4,41 @@
     "reason": "主材料是 X 帖子，读取失败：xAI X 搜索 返回 403：{\"code\":\"permission-denied\",\"error\":\"Your team 615e02b5-01ff-42e0-867c-40565fbe0765 has either used all available credits or reached its monthly spending limit. To continue making API requests, please purchase more credits or raise your spending limit.\"}，自动跳过",
     "title": "LangChain 公开「知识工厂」搭法：Agent 干活时标出缺的知识，后台 Agent 定期补进知识库",
     "at": "2026-11-23T07:41:44.490Z"
+  },
+  {
+    "id": "f8a4e02f42",
+    "reason": "官方页面是一场讲座视频，没有发布新产品、功能或可核对的新事实，属于活动/观点",
+    "title": "Connected intelligence for in-house legal",
+    "at": "2026-11-24T01:47:40.550Z"
+  },
+  {
+    "id": "680b35173b",
+    "reason": "客户案例（Richpanel 使用 OpenAI 模型的成功故事）",
+    "title": "Richpanel helps companies automate 50% of support in 30 days",
+    "at": "2026-11-24T01:47:40.589Z"
+  },
+  {
+    "id": "753ba0c3b3",
+    "reason": "主材料是个人账号 @memuringo7544 的 Muse 用法汇总帖，不是官方或一手发布",
+    "title": "Muse 连上手机和电脑的 9 个用法：轻点手机背面自动送截图、经 Codex 操作 Windows 电脑、一起看 iPhone 屏幕教你设置",
+    "at": "2026-11-24T01:47:40.623Z"
+  },
+  {
+    "id": "f278ad7220",
+    "reason": "官方帮助中心索引，没有标注发布时间的新品发布；Muse 已于 2026-09-08 发布，帮助页不宜当新闻来写",
+    "title": "Meta 官方 Muse 指南：付款前一定先问你，订阅分每月 20 和 100 美元两档，删掉的聊天它可能还记得",
+    "at": "2026-11-24T01:47:40.655Z"
+  },
+  {
+    "id": "87d7014c15",
+    "reason": "2026-11-15 发布，已超过 72 小时，且是粒子物理客座文章，对读者选择和成本影响有限",
+    "title": "A step toward defining the Standard Model on a lattice",
+    "at": "2026-11-24T01:47:40.688Z"
+  },
+  {
+    "id": "5bf4951adb",
+    "reason": "2026-11-13 发布，已超过 72 小时，时效已过",
+    "title": "Introducing ChatGPT Wallet",
+    "at": "2026-11-24T01:47:40.725Z"
   }
 ]
