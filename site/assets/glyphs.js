@@ -117,7 +117,8 @@ export const GLYPHS = {
       b += `<path d="M${cx} ${cy}L${x} ${y}" class="g-ln g-thin"/>`; });
     ns.forEach((s, i) => { const a = -Math.PI / 2 + i * 2 * Math.PI / ns.length, x = cx + Math.cos(a) * R * 1.45, y = cy + Math.sin(a) * R;
       const pw = Math.min(96, Math.max(44, gW(gCut(s.label, 9)) + 16)); b += `<rect x="${x - pw / 2}" y="${y - 11}" width="${pw}" height="22" rx="11" class="${gTone(s.tone)}"/>` + gTxt(x, y + 4, gCut(s.label, 9)); });
-    b += `<circle cx="${cx}" cy="${cy}" r="26" class="${gTone(g.center?.tone || "hi")}"/>` + gTxt(cx, cy + 4, gCut(g.center?.label, 6), "g-tx-b");
+    const cl = gCut(g.center?.label, 12), cr = Math.max(26, gW(cl) / 2 + 9);
+    b += `<circle cx="${cx}" cy="${cy}" r="${cr}" class="${gTone(g.center?.tone || "hi")}"/>` + gTxt(cx, cy + 4, cl, "g-tx-b");
     return gSvg(W, H, b, `${g.center?.label || "中心"} 连着 ${ns.length} 个节点`);
   },
 
@@ -191,9 +192,10 @@ export const GLYPHS = {
 
   /* 勾选矩阵（谁有哪些权限、哪个型号支持哪些功能）：{rows:[...], cols:[...], cells:[[0/1/2]]}，1 = 有，2 = 重点，0 = 没有 */
   matrix: g => {
-    const R = (g.rows || []).slice(0, 7), C = (g.cols || []).slice(0, 6), L = 70, cw = 34, rh = 20, W = L + C.length * cw + 8, H = 24 + R.length * rh + 4;
-    let b = C.map((c, j) => gTxt(L + j * cw + cw / 2, 14, gCut(c, 4))).join("");
-    R.forEach((r, i) => { const y = 22 + i * rh; b += gTxt(L - 6, y + 13, gCut(r, 7), "g-tx", "end");
+    const R = (g.rows || []).slice(0, 7).map(r => gCut(r, 10)), C = (g.cols || []).slice(0, 6).map(c => gCut(c, 10)), rh = 20;
+    const L = Math.max(40, ...R.map(gW)) + 12, cw = Math.max(34, ...C.map(gW)) + 10, W = L + C.length * cw + 8, H = 24 + R.length * rh + 4;
+    let b = C.map((c, j) => gTxt(L + j * cw + cw / 2, 14, c)).join("");
+    R.forEach((r, i) => { const y = 22 + i * rh; b += gTxt(L - 6, y + 13, r, "g-tx", "end");
       C.forEach((c, j) => { const v = g.cells?.[i]?.[j] ?? 0, x = L + j * cw + cw / 2;
         b += v ? `<circle cx="${x}" cy="${y + 9}" r="7" class="${v === 2 ? "g-hi" : "g-def"}"/><path d="M${x - 3} ${y + 9}l2 2 4-4" class="g-ck"/>` : `<circle cx="${x}" cy="${y + 9}" r="7" class="g-dim"/>`; }); });
     return gSvg(W, H, b, "功能或权限矩阵");
