@@ -1,0 +1,9 @@
+URL: https://x.com/inworld/status/2125292918697050196
+FETCHED: 2026-11-24T23:43:00.308Z
+NOTE: X 帖子原文（含作者自己的整串），由 Grok Bot 在 X 上读取
+
+Vamos! Our new Spanish voices have arrived, each with its own regional flair. 
+
+When you’re building for the Spanish-speaking world, a familiar accent can go a long way. Give your app a voice that feels closer to home for the people using it.
+
+Try them out in the TTS Playground at https://t.co/4sPcISwHsf

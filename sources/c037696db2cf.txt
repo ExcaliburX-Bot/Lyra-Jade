@@ -1,0 +1,5 @@
+URL: https://x.com/AravSrinivas/status/2125364190802227680
+FETCHED: 2026-11-24T23:43:00.359Z
+NOTE: X 帖子原文（含作者自己的整串），由 Grok Bot 在 X 上读取
+
+Perplexity is turning into a work operating system. Slide decks you create in Perplexity Computer now have a native viewer that allows you to edit in place. Supports both PowerPoint and Google Slides. https://t.co/5ZGDm1VR4G
