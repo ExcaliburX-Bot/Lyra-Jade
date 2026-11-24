@@ -1,0 +1,422 @@
+{
+  "slug": "openai-cisco-shirudo",
+  "date": "2026-11-23",
+  "category": "product",
+  "publisher": "OpenAI",
+  "title": "OpenAI 与思科开源 Shirudo：补丁没打完、服务不重启，先挡 Java4Shell 攻击",
+  "summary": "一个漏洞被发现后，正式补丁可能要几天到几周才能上线，这期间运行中的服务最容易出事。OpenAI 与思科把 Shirudo 开源，用 eBPF 盾牌先挡攻击、放行正常请求，让服务不用停。",
+  "ai_summary": "OpenAI 与思科开源了 Shirudo，一个在补丁上线前先给 Linux 系统加临时防护的运行时。补丁从测试到部署要几天到几周，这期间运行中的服务最容易被攻击。Shirudo 用 eBPF 给运行中的服务挂一块「盾牌」，只拦漏洞操作、放行正常请求，不用重启。受控测试中，Codex 生成的盾牌拦下 Java4Shell 攻击，Elasticsearch 没有中断。项目按 BSD 2-Clause 开源，BPF 程序是 BSD 与 GPL 双许可。目前还在共建测试阶段，官方未公布发布时间、性能开销和发行版支持范围。",
+  "brief": [
+    "盾牌靠 eBPF 直接挂到运行中的服务上，不重启就能拦漏洞行为。",
+    "盾牌上线前要过密码学签名、eBPF 校验器和内核安全控制，另有 TPM 留下加载记录。",
+    "官方目标是让「测试过的盾牌」和漏洞披露一起发布，方便运维边修边护。",
+    "上手入口：虚拟机快速开始、Isovalent 自助实验，以及 12 月 15 日的线上深潜。"
+  ],
+  "readMinutes": 7,
+  "sections": [
+    {
+      "h": "Shirudo 是什么：补丁没打完之前，先给 Linux 服务挂一块盾牌",
+      "blocks": [
+        {
+          "p": "2026 年 11 月 23 日，OpenAI 和思科一起开源了 Shirudo，一个面向 Linux 系统的运行时（runtime，即服务跑起来之后负责执行防护的那层程序）。它解决的问题很具体：补丁从写好到部署要时间，而这段时间里正在对外提供服务的机器，可能已经被攻击。Shirudo 让安全团队先用一段临时「盾牌」护住运行中的系统，等服务不停机的同时慢慢修。"
+        },
+        {
+          "p": "名字来自日语「盾」（shield）。官方把它定位成补丁窗口期的临时防护，不是正式补丁的替代品——正式补丁还是要打，Shirudo 只负责把「等补丁」这段最危险的时间补上。"
+        }
+      ]
+    },
+    {
+      "h": "为什么不能等补丁：慢是常态，粗暴封堵又会把服务弄下线",
+      "blocks": [
+        {
+          "p": "一个补丁从测试到部署可能要几天到几周：要确认修法正确、做回归测试、安排变更窗口，很多生产系统还不能随便重启。这段时间，服务照常对外提供服务，攻击者也可能已经在利用漏洞。"
+        },
+        {
+          "p": "但也不能简单把「可疑操作」整个封掉，因为漏洞利用和正常请求可能依赖同一个 Linux 底层操作——攻击者借它打进来，正常业务也靠它干活。全堵等于把服务一起关掉。"
+        },
+        {
+          "p": "Shirudo 的设计目标，就是在这个两难里找第三条路：只堵暴露漏洞的那部分行为，放行正常请求。"
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "同一段补丁窗口期：旧办法等，Shirudo 先挂盾牌",
+            "subtitle": "琥珀色是 Shirudo 的新做法；灰色是它要避开的麻烦",
+            "left": {
+              "label": "传统做法：等正式补丁",
+              "sub": "测试和部署要几天到几周",
+              "items": [
+                {
+                  "label": "补丁测试、部署",
+                  "tag": "几天到几周",
+                  "state": "base"
+                },
+                {
+                  "label": "期间服务暴露在漏洞下",
+                  "tag": "风险窗口",
+                  "state": "dim"
+                },
+                {
+                  "label": "封掉整个底层操作",
+                  "tag": "服务会下线",
+                  "state": "dim"
+                }
+              ]
+            },
+            "right": {
+              "label": "Shirudo：临时盾牌",
+              "sub": "补丁到位前先护住运行中的服务",
+              "items": [
+                {
+                  "label": "eBPF 盾牌即挂即用",
+                  "tag": "不用重启",
+                  "state": "hi"
+                },
+                {
+                  "label": "只拦漏洞行为",
+                  "tag": "正常请求放行",
+                  "state": "hi"
+                },
+                {
+                  "label": "运维审批后才上线",
+                  "tag": "人说了算",
+                  "state": "hi"
+                }
+              ]
+            },
+            "footer": "Shirudo 用可撤销的临时盾牌补上窗口期，而不是停服务。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "它怎么工作：eBPF 先观察，盾牌试过、批准过才上线",
+      "blocks": [
+        {
+          "p": "Shirudo 靠的是 eBPF——一种 Linux 技术，允许小程序在操作系统内部的特定位置运行。这样它能在系统不重启的情况下观察可疑活动，并把针对性防护挂到运行中的服务上。"
+        },
+        {
+          "p": "流程大致是：安全团队先测试一块盾牌能不能挡住暴露漏洞的行为、同时放行正常请求；确认没问题后由运维批准；盾牌在服务继续运行的情况下部署。上线前还能先以观察模式看它对应用的影响，再决定是否强制执行。"
+        },
+        {
+          "p": "官方举了 Java4Shell 漏洞（一个 Java 相关的安全漏洞）的例子：团队用 OpenAI 的 Codex 生成一块盾牌，给 Java 的 Base64 解码器加一道输入检查，直接挂到运行中的 Elasticsearch 进程上。有人尝试利用漏洞时，盾牌认出恶意输入并拒绝，攻击被挡住，Elasticsearch 全程没有重启。"
+        },
+        {
+          "fig": {
+            "type": "storyboard",
+            "title": "Java4Shell 受控测试：攻击被挡下，服务没停",
+            "subtitle": "示意图：琥珀色是盾牌加入的输入检查；盾牌由 Codex 生成",
+            "panels": [
+              {
+                "glyph": {
+                  "kind": "chat",
+                  "turns": [
+                    {
+                      "role": "user",
+                      "text": "恶意 Base64 输入",
+                      "tone": "hi"
+                    }
+                  ]
+                },
+                "title": "攻击请求到达",
+                "text": "带恶意输入打向运行中的 Elasticsearch",
+                "tone": "base"
+              },
+              {
+                "glyph": {
+                  "kind": "window",
+                  "title": "Elasticsearch",
+                  "items": [
+                    {
+                      "label": "Base64 输入检查",
+                      "tone": "hi"
+                    }
+                  ]
+                },
+                "title": "盾牌做输入检查",
+                "text": "Codex 生成的盾牌给 Java Base64 解码器加了检查",
+                "tone": "hi"
+              },
+              {
+                "glyph": {
+                  "kind": "flow",
+                  "nodes": [
+                    {
+                      "label": "恶意输入",
+                      "tone": "hi"
+                    },
+                    {
+                      "label": "被拒",
+                      "tone": "dim"
+                    }
+                  ]
+                },
+                "title": "恶意输入被拒绝",
+                "text": "盾牌拦下恶意输入，攻击被挡住",
+                "tone": "base"
+              },
+              {
+                "glyph": {
+                  "kind": "flow",
+                  "nodes": [
+                    {
+                      "label": "正常请求",
+                      "tone": "base"
+                    },
+                    {
+                      "label": "放行",
+                      "tone": "base"
+                    }
+                  ]
+                },
+                "title": "服务继续跑",
+                "text": "Elasticsearch 没重启，正常请求照常处理",
+                "tone": "base"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "四项核心能力，分别解决什么问题",
+      "blocks": [
+        {
+          "p": "官方围绕四项核心能力设计 Shirudo，可以看作四层相互配合的保障。"
+        },
+        {
+          "p": "实时防护（Live protection）：eBPF 盾牌挡住漏洞代码路径，不用重启系统；上线前还能监控盾牌对应用的影响。机器速度的防御（Defense at machine speed）：给 AI 代理一套可编程控制，去调查漏洞、生成针对性盾牌、拿真实攻击和真实负载验证——但最终部署什么，由安全团队决定。"
+        },
+        {
+          "p": "可信部署（Trusted deployment）：盾牌加载前要经过密码学签名和验证；Linux 的 eBPF 校验器按安全规则检查程序，内核安全控制限制未授权改动。硬件背书验证（Hardware-backed verification）：用 TPM（可信平台模块）留下盾牌加载、移除的可验证记录，运维据此核对系统是否达到安全要求。"
+        },
+        {
+          "fig": {
+            "type": "cards",
+            "title": "四条主线：四项核心能力各管一段",
+            "subtitle": "示意图：琥珀色标记盾牌真正派上用场的关键点",
+            "items": [
+              {
+                "glyph": {
+                  "kind": "window",
+                  "title": "运行中的服务",
+                  "items": [
+                    {
+                      "label": "漏洞路径",
+                      "tone": "hi"
+                    }
+                  ]
+                },
+                "title": "实时防护",
+                "desc": "eBPF 盾牌挡住漏洞代码路径，不用重启；上线前先看它对应用的影响。",
+                "tags": [
+                  "eBPF",
+                  "不重启"
+                ],
+                "tone": "hi"
+              },
+              {
+                "glyph": {
+                  "kind": "hub",
+                  "center": {
+                    "label": "AI 代理",
+                    "tone": "hi"
+                  },
+                  "nodes": [
+                    {
+                      "label": "查漏洞",
+                      "tone": "base"
+                    },
+                    {
+                      "label": "生成盾牌",
+                      "tone": "base"
+                    },
+                    {
+                      "label": "验证效果",
+                      "tone": "base"
+                    }
+                  ]
+                },
+                "title": "机器速度的防御",
+                "desc": "给 AI 代理可编程控制，调查漏洞、生成盾牌、拿真实负载验证；部署权在安全团队。",
+                "tags": [
+                  "Codex",
+                  "可编程控制"
+                ],
+                "tone": "base"
+              },
+              {
+                "glyph": {
+                  "kind": "stack",
+                  "layers": [
+                    {
+                      "label": "密码学签名",
+                      "tone": "base"
+                    },
+                    {
+                      "label": "eBPF 校验器",
+                      "tone": "base"
+                    },
+                    {
+                      "label": "内核安全控制",
+                      "tone": "base"
+                    }
+                  ]
+                },
+                "title": "可信部署",
+                "desc": "盾牌加载前先签名验证，eBPF 校验器按安全规则检查，内核控制限制未授权改动。",
+                "tags": [
+                  "签名验证",
+                  "内核"
+                ],
+                "tone": "base"
+              },
+              {
+                "glyph": {
+                  "kind": "ring",
+                  "value": 100,
+                  "max": 100,
+                  "label": "TPM 记录",
+                  "display": "可验证"
+                },
+                "title": "硬件背书验证",
+                "desc": "用 TPM 留下盾牌加载、移除的可验证记录，运维据此核对系统是否达标。",
+                "tags": [
+                  "TPM",
+                  "审计"
+                ],
+                "tone": "base"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "开源、许可证，以及怎么上手",
+      "blocks": [
+        {
+          "p": "Shirudo 完全开源，代码在 GitHub，文档公开，欢迎开发者、安全研究员和基础设施运维一起读代码、测防护、提改进。许可证是 BSD 2-Clause；其中 BPF 程序按 BSD 和 GPL 双许可证发布。"
+        },
+        {
+          "p": "官方的目标是：把测试过的盾牌跟漏洞披露一起发布，让运维在准备正式补丁的同时，能评估和部署临时防护。这样一家团队找到更好的护法，别家不用从头再来。"
+        },
+        {
+          "p": "想上手，官方给了几个入口：虚拟机快速开始文档（完成签名、加载、验证一块测试防护）、Isovalent 的自助实验，以及 12 月 15 日的线上技术深潜（需要注册）。"
+        },
+        {
+          "fig": {
+            "type": "quote",
+            "title": "官方：发现漏洞不等于明天就能修完，所以要边修边护",
+            "text": "We're giving defenders better models and tools to find and fix vulnerabilities faster, but finding a bug today doesn't mean you can patch every system tomorrow.",
+            "zh": "我们给防守方更好的模型和工具，让他们更快地发现并修复漏洞；但今天找到一个漏洞，不等于明天就能把每套系统都补上。",
+            "who": "Greg Brockman",
+            "role": "OpenAI 总裁兼联合创始人",
+            "source_url": "https://openai.com/index/introducing-shirudo"
+          }
+        }
+      ]
+    },
+    {
+      "h": "官方还没说的",
+      "blocks": [
+        {
+          "list": [
+            "价格：项目开源，但官方没写以后是否提供托管或商业支持、是否收费。",
+            "正式发布时间：目前是开源代码加测试邀请，没有 1.0 或正式可用（GA）日期。",
+            "性能开销：eBPF 盾牌对吞吐、延迟的影响，原文没有给数据。",
+            "支持范围：没有列出支持的 Linux 发行版、内核版本或应用清单。",
+            "Java4Shell 测试细节：只说是受控测试，环境、样本量、误报率都没写。",
+            "与思科现有安全产品怎么整合：没有说明。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "适合谁",
+      "blocks": [
+        {
+          "p": "价值很清楚：把补丁窗口期从「裸奔」变成「有临时防护」，服务不用停，而且部署权始终在运维手里。"
+        },
+        {
+          "p": "代价也要说：目前是早期开源项目，需要自己读代码、自己测；要真正用好，最好懂一点 Linux 和 eBPF；盾牌效果取决于它写得准不准——拦少了挡不住，拦多了会误伤正常业务。"
+        },
+        {
+          "p": "如果你负责不能随便重启的生产服务，或做安全运维、基础设施工程，可以先用虚拟机快速开始试一遍。如果你是安全研究员或 eBPF 开发者，这个项目很适合参与共建。如果你想要开箱即用的商业产品，可能还需要等官方给出更成熟的版本和支持。"
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "OpenAI and Cisco introduce Shirudo",
+      "publisher": "OpenAI",
+      "date": "2026-11-23",
+      "url": "https://openai.com/index/introducing-shirudo"
+    },
+    "more": [],
+    "note": "正文与配图均整理自 OpenAI 官方发布；对比图、故事板和示意图为便于理解所绘，Java4Shell 受控测试的环境细节原文未提供。"
+  },
+  "claims": [
+    {
+      "text": "OpenAI 与思科在 2026 年 11 月 23 日发布并开源 Shirudo。",
+      "value": "November 23, 2026",
+      "source_url": "https://openai.com/index/introducing-shirudo",
+      "as_written": "2026 年 11 月 23 日",
+      "quote": "OpenAI November 23, 2026"
+    },
+    {
+      "text": "补丁从测试到部署可能要几天到几周。",
+      "value": "days or weeks",
+      "source_url": "https://openai.com/index/introducing-shirudo",
+      "as_written": "几天到几周",
+      "quote": "Testing and deploying a patch can still take days or weeks."
+    },
+    {
+      "text": "Shirudo 围绕四项核心能力设计。",
+      "value": "four",
+      "source_url": "https://openai.com/index/introducing-shirudo",
+      "as_written": "四项",
+      "quote": "OpenAI and Cisco are designing Shirudo around four core capabilities"
+    },
+    {
+      "text": "12 月 15 日有一场 Shirudo 线上技术深潜，需要注册。",
+      "value": "December 15",
+      "source_url": "https://openai.com/index/introducing-shirudo",
+      "as_written": "12 月 15 日",
+      "quote": "Register for the December 15 webinar"
+    }
+  ],
+  "cover": {
+    "headline": "OpenAI 开源 Shirudo",
+    "highlight": "补丁未上，先用盾牌护住 Linux",
+    "glyph": {
+      "kind": "hub",
+      "center": {
+        "label": "盾牌",
+        "tone": "hi"
+      },
+      "nodes": [
+        {
+          "label": "漏洞行为",
+          "tone": "dim"
+        },
+        {
+          "label": "正常请求",
+          "tone": "base"
+        }
+      ]
+    }
+  },
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "origin": "auto",
+    "candidate": "1d0c151fef",
+    "tier": "official",
+    "via": null,
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "generated_at": "2026-11-24T10:03:31.933Z"
+  }
+}
