@@ -1,0 +1,369 @@
+{
+  "slug": "microsoft-ignite-seven-models-price-performance",
+  "date": "2026-11-17",
+  "category": "product",
+  "publisher": "Microsoft AI",
+  "title": "Microsoft launches 7 new models: code at 5% of rivals' price and 98% of the quality",
+  "summary": "If you work with code, image, voice, or medical transcription, the seven models Microsoft just announced at Ignite 2026 share one core pitch: get close to—or better than—top-tier performance for less money.",
+  "ai_summary": "At Ignite 2026, Microsoft announced seven new models and the Maia 200 accelerator, all built around price-performance. For coding, MAI Code 2 reaches 98% of GPT-6.1 Sol's code quality at about 40% of the price, and 96% of Opus 5.5's performance at just 5% of the price. MAI Realtime 1 starts at $0.01 per audio minute; MAI Image 2.7 ranks #1 on the Artificial Analysis image editing leaderboard and costs one-fifth of GPT Image 2.6 Sunburst (max). In healthcare, Microsoft's transcription service now handles 10 million patient encounters per month with error rates halved. Most of these figures are Microsoft-reported and lack independent verification, so you should test them yourself.",
+  "brief": [
+    "MAI Code 2 reaches 98% of GPT-6.1 Sol's code quality at about 40% of the price, and 96% of Opus 5.5's performance at just 5% of the price.",
+    "MAI Code 2 Flash is priced at about 65% of GPT-6 Luna and 20% of Haiku 5.5, with \"comparable\" performance.",
+    "MAI Realtime 1 starts at $0.01 per audio minute; MAI Image 2.7 ranks #1 on the Artificial Analysis image editing leaderboard.",
+    "Decision 1.1 is 50x faster and 79x cheaper than GPT-6.1 Sol; Maia 200 delivers 1.7x more tokens per watt."
+  ],
+  "readMinutes": 6,
+  "sections": [
+    {
+      "h": "What this is: a concentrated price-performance launch from Microsoft",
+      "blocks": [
+        {
+          "p": "Microsoft used Ignite 2026 to release a batch of new models. Its framing up front: token spend is exploding, and developers don't just want the most capable model—they also want a price that lets them run agents 24/7 for real engineering work. (Agents are AI programs that complete tasks autonomously.)"
+        },
+        {
+          "p": "The release has two parts: seven models plus a hardware accelerator, Maia 200. The models span code, image, real-time voice, cybersecurity, decision-making, and transcription—all built around the same pitch: for a small fraction of a rival's price, you get quality that matches or beats it."
+        },
+        {
+          "list": [
+            "MAI Cyber 2 Flash: cybersecurity, with per-task cost under 2% of GPT-6 Astra.",
+            "MAI Code 2 / MAI Code 2 Flash: code generation.",
+            "MAI Image 2.7: image editing, #1 on Artificial Analysis.",
+            "MAI Realtime 1: real-time voice, starting at $0.01 per audio minute.",
+            "MAI Transcribe 2 (shipping as Dragon Copilot Transcribe): transcription.",
+            "Decision 1.1: decision model."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Code models: priced at 5% to 65% of rivals",
+      "blocks": [
+        {
+          "p": "Coding is one of the most frequent and token-hungry workloads for agents, and it's also where price sensitivity shows up most clearly. Microsoft is positioning two code models against different rivals: the flagship MAI Code 2 and the lighter MAI Code 2 Flash."
+        },
+        {
+          "p": "According to Microsoft, MAI Code 2 reaches 98% of GPT-6.1 Sol's code quality at about 40% of the price. Against Opus 5.5, it delivers 96% of the performance for just 5% of the price. If you currently spend mostly on Opus 5.5, those numbers mean the same budget buys a lot more code generation."
+        },
+        {
+          "p": "MAI Code 2 Flash is positioned as the lightweight option. Microsoft describes its performance only as \"comparable\" to rivals: about 65% of GPT-6 Luna's price and about 20% of Haiku 5.5's. \"Comparable\" does not mean \"better,\" and Microsoft gives no specific scores."
+        },
+        {
+          "fig": {
+            "type": "bars",
+            "title": "Code models: price as a share of each rival",
+            "subtitle": "Unit: % — the value is the model's price as a share of the rival model's price; lower is cheaper.",
+            "note": "Source: Microsoft Ignite 2026 announcement. Performance and quality figures are Microsoft's own; specific benchmarks were not disclosed.",
+            "legend": [
+              {
+                "tone": "main",
+                "label": "Microsoft MAI code models' price share"
+              }
+            ],
+            "groups": [
+              {
+                "label": "MAI Code 2",
+                "items": [
+                  {
+                    "label": "vs GPT-6.1 Sol",
+                    "sub": "98% of the quality",
+                    "value": 40,
+                    "tone": "main"
+                  },
+                  {
+                    "label": "vs Opus 5.5",
+                    "sub": "96% of the performance",
+                    "value": 5,
+                    "tone": "main"
+                  }
+                ]
+              },
+              {
+                "label": "MAI Code 2 Flash",
+                "items": [
+                  {
+                    "label": "vs GPT-6 Luna",
+                    "sub": "Performance: \"comparable\"",
+                    "value": 65,
+                    "tone": "main"
+                  },
+                  {
+                    "label": "vs Haiku 5.5",
+                    "sub": "Performance: \"comparable\"",
+                    "value": 20,
+                    "tone": "main"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "Image and voice: one tops the leaderboard, one starts at $0.01",
+      "blocks": [
+        {
+          "p": "On the image side, MAI Image 2.7 ranks #1 on the Artificial Analysis image editing leaderboard (Artificial Analysis is an AI model evaluation and ranking organization). Microsoft says it beats GPT Image 2.6 Sunburst (max) at one-fifth of the price."
+        },
+        {
+          "p": "For real-time voice, Microsoft says MAI Realtime 1 outperforms GPT-Realtime 2.1, with pricing starting at $0.01 per audio minute. Keep in mind that this is a starting price: real bills usually vary with usage tiers and concurrency."
+        }
+      ]
+    },
+    {
+      "h": "Medical transcription and decision-making: one is already in production, one is fast and cheap",
+      "blocks": [
+        {
+          "p": "Dragon Copilot Transcribe is a medical transcription product built on MAI Transcribe 2. Microsoft calls it \"the world's fastest and most accurate multilingual transcription model\"—that's the vendor's own claim. It already handles 10 million patient encounters a month, with multilingual error rates halved."
+        },
+        {
+          "p": "Decision 1.1 is Microsoft's latest decision model. Microsoft says it is 50x faster and 79x cheaper than GPT-6.1 Sol. Those multiples generally refer to a relative comparison per decision task; the announcement doesn't specify the task type or measurement setup, so treat them as directional."
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "Quality and efficiency: four key comparisons",
+            "subtitle": "Microsoft-reported figures; % means the share of the rival model achieved, x means relative multiple.",
+            "note": "98% and 96% refer to MAI Code 2's code quality/performance; 50x and 79x refer to Decision 1.1's speed/cost.",
+            "items": [
+              {
+                "value": 98,
+                "unit": "%",
+                "label": "MAI Code 2 code quality vs GPT-6.1 Sol"
+              },
+              {
+                "value": 96,
+                "unit": "%",
+                "label": "MAI Code 2 performance vs Opus 5.5"
+              },
+              {
+                "value": 50,
+                "unit": "x",
+                "label": "Decision 1.1 speed vs GPT-6.1 Sol"
+              },
+              {
+                "value": 79,
+                "unit": "x",
+                "label": "Decision 1.1 relative cost vs GPT-6.1 Sol"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "Hardware: Maia 200 is already running Microsoft's largest models in production",
+      "blocks": [
+        {
+          "p": "Maia 200 is Microsoft's second-generation AI accelerator—essentially its in-house AI chip—and is now in production running Microsoft's largest models. Microsoft's efficiency number: 1.7x more tokens per watt."
+        },
+        {
+          "p": "That is an efficiency metric, not an absolute speed metric. It matters most for teams watching electricity and per-compute costs, but the announcement doesn't list chip specs, memory, bandwidth, or other details."
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "Other key numbers: voice, healthcare, cybersecurity, hardware",
+            "subtitle": "Units shown per item; all from Microsoft's announcement.",
+            "note": "Realtime 1 is the starting price; patient encounters are deployed volume; Cyber 2 Flash is under 2%; Maia 200 is an efficiency figure.",
+            "items": [
+              {
+                "value": 0.01,
+                "unit": "$/audio minute",
+                "label": "MAI Realtime 1 starting price"
+              },
+              {
+                "value": 10,
+                "unit": "million/month",
+                "label": "Dragon Copilot Transcribe monthly patient encounters"
+              },
+              {
+                "value": 2,
+                "unit": "% (under)",
+                "label": "MAI Cyber 2 Flash per-task cost vs GPT-6 Astra"
+              },
+              {
+                "value": 1.7,
+                "unit": "x",
+                "label": "Maia 200 tokens per watt gain"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "How to read the pricing: only one model has an absolute price",
+      "blocks": [
+        {
+          "p": "MAI Realtime 1 is the only model in this release with an absolute price: starting at $0.01 per audio minute. Everything else is expressed as a percentage of a competitor's price—Code 2 at about 40% of GPT-6.1 Sol and 5% of Opus 5.5, Image 2.7 at one-fifth of GPT Image 2.6 Sunburst (max)."
+        },
+        {
+          "p": "The upside is easy apples-to-apples comparison. The downside: if you don't know the competitor's own unit price, you can't work out MAI's actual dollar pricing. The announcement gives neither those competitor prices nor a public price sheet for the MAI models."
+        }
+      ]
+    },
+    {
+      "h": "What Microsoft hasn't said",
+      "blocks": [
+        {
+          "list": [
+            "No dollar prices for the individual models, except MAI Realtime 1's $0.01 per audio minute starting price.",
+            "Availability dates, regions, and which Azure or Copilot product lines these models will enter are not specified.",
+            "The specific benchmarks, context lengths, and test methodology behind \"98%,\" \"96%,\" and \"comparable\" haven't been published.",
+            "Who ran the CyberGym-E2E evaluation and what sample size was used isn't disclosed.",
+            "Maia 200's chip specs, memory, bandwidth, and how it will be offered externally haven't been announced.",
+            "Apart from the Artificial Analysis image editing leaderboard, none of the results have independent third-party verification."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Who it's for: cost-conscious teams should start with small pilots",
+      "blocks": [
+        {
+          "p": "The value is straightforward: if your app relies mostly on code agents, real-time voice, transcription, or decision tasks and you consume a lot of tokens, these relative prices mean the same budget can handle more work. In particular, Code 2 at 5% of Opus 5.5's price and Realtime 1 starting at $0.01 per audio minute are attractive for cost-sensitive workloads."
+        },
+        {
+          "p": "The trade-offs count too: these comparisons are largely Microsoft's own numbers, and \"98%,\" \"96%,\" and \"comparable\" all rest on undisclosed benchmarks. They don't automatically mean a switch will be just as good, and you'll need to assess toolchain and migration costs yourself."
+        },
+        {
+          "list": [
+            "If you mainly run code agents and care about cost, test MAI Code 2 / Flash on your own benchmarks before deciding.",
+            "If you build voice support or real-time calling, MAI Realtime 1's low starting price makes it worth testing a sample to measure latency and quality.",
+            "If you work in healthcare or transcription, Dragon Copilot Transcribe already handles 10 million encounters a month, so focus on how it performs on multilingual and medical terminology.",
+            "If you're comparing chip efficiency, Maia 200 only gives a 1.7x tokens-per-watt figure and lacks specs, so hold off on conclusions."
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Seven new world-class models at scalable price-performance",
+      "publisher": "Microsoft AI",
+      "date": "2026-11-17",
+      "url": "https://microsoft.ai/news/microsoft-ignite-2026/"
+    },
+    "more": [],
+    "note": "All figures in this article come from Microsoft's Ignite 2026 announcement. The three charts are data visualizations, not schematics. Relative prices, performance, speed, and efficiency comparisons are Microsoft-reported and have not been independently verified; each is flagged in the text."
+  },
+  "claims": [
+    {
+      "text": "Microsoft announced seven models in this release, plus the Maia 200 accelerator.",
+      "value": "seven",
+      "source_url": "https://microsoft.ai/news/microsoft-ignite-2026/",
+      "as_written": "7 models",
+      "quote": "a family of seven new world class models at a truly exceptional price-performance"
+    },
+    {
+      "text": "On the CyberGym-E2E benchmark, MAI Cyber 2 Flash costs under 2% of GPT-6 Astra per task and beats its quality, according to Microsoft.",
+      "value": "less than 2%",
+      "source_url": "https://microsoft.ai/news/microsoft-ignite-2026/",
+      "as_written": "under 2%",
+      "quote": "MAI Cyber 2 Flash beats GPT-6 Astra's quality at less than 2% of the cost per task on the CyberGym-E2E benchmark."
+    },
+    {
+      "text": "MAI Code 2 reaches 98% of GPT-6.1 Sol's code quality.",
+      "value": "98%",
+      "source_url": "https://microsoft.ai/news/microsoft-ignite-2026/",
+      "as_written": "98%",
+      "quote": "MAI Code 2 reaches 98% of the coding quality of GPT-6.1 Sol at about 40% of the price."
+    },
+    {
+      "text": "MAI Code 2 costs about 40% of GPT-6.1 Sol.",
+      "value": "40%",
+      "source_url": "https://microsoft.ai/news/microsoft-ignite-2026/",
+      "as_written": "about 40%",
+      "quote": "MAI Code 2 reaches 98% of the coding quality of GPT-6.1 Sol at about 40% of the price."
+    },
+    {
+      "text": "MAI Code 2 reaches 96% of Opus 5.5's performance.",
+      "value": "96%",
+      "source_url": "https://microsoft.ai/news/microsoft-ignite-2026/",
+      "as_written": "96%",
+      "quote": "And against Opus 5.5, it reaches 96% performance for just 5% of the price."
+    },
+    {
+      "text": "MAI Code 2 costs just 5% of Opus 5.5.",
+      "value": "5%",
+      "source_url": "https://microsoft.ai/news/microsoft-ignite-2026/",
+      "as_written": "5%",
+      "quote": "And against Opus 5.5, it reaches 96% performance for just 5% of the price."
+    },
+    {
+      "text": "MAI Code 2 Flash costs about 65% of GPT-6 Luna.",
+      "value": "65%",
+      "source_url": "https://microsoft.ai/news/microsoft-ignite-2026/",
+      "as_written": "about 65%",
+      "quote": "MAI Code 2 Flash shows comparable performance GPT-6 Luna at 65% of the price, and Haiku 5.5 at 20% of the price."
+    },
+    {
+      "text": "MAI Code 2 Flash costs about 20% of Haiku 5.5.",
+      "value": "20%",
+      "source_url": "https://microsoft.ai/news/microsoft-ignite-2026/",
+      "as_written": "about 20%",
+      "quote": "MAI Code 2 Flash shows comparable performance GPT-6 Luna at 65% of the price, and Haiku 5.5 at 20% of the price."
+    },
+    {
+      "text": "MAI Image 2.7 ranks #1 on the Artificial Analysis image editing leaderboard.",
+      "value": "#1",
+      "source_url": "https://microsoft.ai/news/microsoft-ignite-2026/",
+      "as_written": "#1",
+      "quote": "MAI Image 2.7 is #1 on Artificial Analysis image editing, outperforming GPT Image 2.6 Sunburst (max) at just one-fifth of the price."
+    },
+    {
+      "text": "MAI Image 2.7 costs about one-fifth of GPT Image 2.6 Sunburst (max).",
+      "value": "one-fifth",
+      "source_url": "https://microsoft.ai/news/microsoft-ignite-2026/",
+      "as_written": "one-fifth",
+      "quote": "MAI Image 2.7 is #1 on Artificial Analysis image editing, outperforming GPT Image 2.6 Sunburst (max) at just one-fifth of the price."
+    },
+    {
+      "text": "MAI Realtime 1 starts at $0.01 per audio minute.",
+      "value": "$0.01",
+      "source_url": "https://microsoft.ai/news/microsoft-ignite-2026/",
+      "as_written": "$0.01",
+      "quote": "MAI Realtime 1 outperforms GPT-Realtime 2.1 and starts at just $0.01 per audio minute."
+    },
+    {
+      "text": "Dragon Copilot Transcribe handles 10 million patient encounters per month.",
+      "value": "10 million",
+      "source_url": "https://microsoft.ai/news/microsoft-ignite-2026/",
+      "as_written": "10 million",
+      "quote": "already powers 10 million patient encounters a month with multilingual error rates halved"
+    },
+    {
+      "text": "Dragon Copilot Transcribe has cut multilingual error rates in half.",
+      "value": "halved",
+      "source_url": "https://microsoft.ai/news/microsoft-ignite-2026/",
+      "as_written": "halved",
+      "quote": "already powers 10 million patient encounters a month with multilingual error rates halved"
+    },
+    {
+      "text": "Decision 1.1 is 50x faster than GPT-6.1 Sol.",
+      "value": "50x",
+      "source_url": "https://microsoft.ai/news/microsoft-ignite-2026/",
+      "as_written": "50x",
+      "quote": "Decision 1.1 is the latest decision model from Microsoft, 50x faster and 79x cheaper than GPT-6.1 Sol."
+    },
+    {
+      "text": "Decision 1.1 is 79x cheaper than GPT-6.1 Sol.",
+      "value": "79x",
+      "source_url": "https://microsoft.ai/news/microsoft-ignite-2026/",
+      "as_written": "79x",
+      "quote": "Decision 1.1 is the latest decision model from Microsoft, 50x faster and 79x cheaper than GPT-6.1 Sol."
+    },
+    {
+      "text": "Maia 200 delivers 1.7x more tokens per watt.",
+      "value": "1.7x",
+      "source_url": "https://microsoft.ai/news/microsoft-ignite-2026/",
+      "as_written": "1.7x",
+      "quote": "achieving 1.7x more tokens per watt"
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "ab965ce452862f65"
+}

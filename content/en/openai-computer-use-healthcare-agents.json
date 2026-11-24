@@ -1,0 +1,369 @@
+{
+  "slug": "openai-computer-use-healthcare-agents",
+  "category": "product",
+  "date": "2026-11-16",
+  "publisher": "OpenAI",
+  "title": "OpenAI launches healthcare computer-use agents: 99% rated safe, Luna at 8.5 cents per task",
+  "summary": "Doctors no longer have to shuttle information between medical records and insurance portals by hand: OpenAI's computer-use agents can click, type, and move across systems to handle prior authorizations and referrals. The announcement shares safety and cost data and opens access to organizations, developers, and U.S. clinicians.",
+  "ai_summary": "On November 16, 2026, OpenAI announced computer-use agents for healthcare teams: they can click, type, and switch between applications to handle repetitive workflows such as prior authorizations and referrals. Key numbers: 99% of 325 EHR inbox tasks were rated safe; physicians chose \"very helpful\" or \"extremely helpful\" in 93% of 646 assessments. On administrative tasks, GPT-6 Astra earned 94.3% of available rubric points on Stanford's HealthAdminBench and GPT-6 Luna earned 91.8%, but Luna costs only 8.5 cents per task—98% less—with both evaluated at maximum reasoning effort. CVS Health, Cigna Healthcare, and others are in production or piloting. The caveats: these are evaluation and benchmark results, not real clinical outcomes, and the original post does not give full pricing or broader controlled comparisons.",
+  "brief": [
+    "A clinical safety evaluation covered 325 EHR inbox tasks, with 99% rated safe; physicians rated 93% of 646 assessments as very or extremely helpful.",
+    "Benchmarks point to Luna as the cheaper option: it scored only slightly below Astra on HealthAdminBench but costs 8.5 cents per task—98% less.",
+    "At CVS Health, one agent cleared a months-long document-sending backlog over a weekend, and another handles the system steps for tens of thousands of consults per day.",
+    "Available today through the OpenAI API, ChatGPT for Healthcare, and ChatGPT for Clinicians; U.S. clinicians can sign up free."
+  ],
+  "readMinutes": 7,
+  "sections": [
+    {
+      "h": "What this is: AI that clicks buttons and fills in forms in existing software",
+      "blocks": [
+        {
+          "p": "Healthcare information tends to be scattered: patient records live in one system, insurer portals in another, and referrals, prior authorizations, and discharge arrangements still depend on people moving data back and forth by hand. The computer-use agents OpenAI is announcing let AI click, type, and switch between applications the way a person would, completing these multi-step workflows for the team."
+        },
+        {
+          "p": "The emphasis is on working inside the software teams already use rather than bolting on a new system. OpenAI says the capabilities are available today through the OpenAI API, ChatGPT for Healthcare, and ChatGPT for Clinicians; organizations can also configure approval workflows, control what agents can access, and keep audit logs."
+        },
+        {
+          "p": "OpenAI also announced collaborations with Abridge, Ambience, Cigna Healthcare, CVS Health, and others covering prior authorization, referrals, discharge planning, and outreach between visits."
+        }
+      ]
+    },
+    {
+      "h": "A full example: from a lower back pain message to MRI authorization",
+      "blocks": [
+        {
+          "p": "OpenAI used synthetic patient data—not a real patient—to demonstrate the full flow: a patient messages their doctor about lower back pain, and the agent reviews visit notes, physical therapy records, and prior imaging in the electronic health record system (EHR, the system doctors use for charting, ordering tests, and exchanging messages)."
+        },
+        {
+          "p": "It then drafts three items and leaves them for the doctor to review: an MRI order, an encounter note, and a reply to the patient. Using the same records, it prepares a prior authorization request in the insurer's portal—the approval needed before an MRI or similar test—and hands it to an authorization specialist for review."
+        },
+        {
+          "fig": {
+            "type": "steps",
+            "title": "From patient message to MRI authorization: one complete multi-step workflow",
+            "subtitle": "Illustrative: OpenAI's demo flow using synthetic patient data",
+            "note": "Step order follows OpenAI's description; this is a synthetic-data demo, not a real patient.",
+            "steps": [
+              {
+                "name": "Patient sends a message",
+                "tool": "Patient message portal",
+                "desc": "Patient tells the doctor they have lower back pain"
+              },
+              {
+                "name": "Reviews records",
+                "tool": "EHR",
+                "desc": "Agent reviews visit notes, physical therapy records, and prior imaging"
+              },
+              {
+                "name": "Drafts for review",
+                "tool": "EHR",
+                "desc": "Drafts an MRI order, encounter note, and patient reply, left for clinician review"
+              },
+              {
+                "name": "Prepares prior authorization",
+                "tool": "Insurer portal",
+                "desc": "Uses the same records to prepare a prior authorization request for an authorization specialist to review"
+              },
+              {
+                "name": "Specialist review",
+                "tool": "Human review",
+                "desc": "Authorization specialist reviews before submission"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "Safety and helpfulness: 99% rated safe, but these are evaluator judgments",
+      "blocks": [
+        {
+          "p": "Safety is the most sensitive part of healthcare. OpenAI evaluated GPT-6 Astra on common tasks in doctors' inboxes. The tasks were designed with physician input and required the model to understand a patient's longitudinal history and to operate complex interfaces; reviewers looked not just at what the model did but also at the notes, orders, and patient messages it produced, judging whether the work was helpful and clinically safe in the context of the task."
+        },
+        {
+          "p": "\"Clinically safe\" means whether inaccuracies, omissions, or actions in the model's work could plausibly lead to patient harm. Of 325 evaluated tasks, 99% were rated safe. On helpfulness, physicians scored on a five-point scale and chose \"very helpful\" or \"extremely helpful\" in 93% of 646 assessments."
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "Safety and helpfulness: evaluator ratings, not real clinical outcomes",
+            "subtitle": "Evaluator/physician ratings (percentages and counts)",
+            "note": "Data are OpenAI's self-reported evaluations: 99% refers to 325 tasks, 93% to 646 assessments. Both are ratings, not real clinical outcomes.",
+            "items": [
+              {
+                "value": 99,
+                "unit": "%",
+                "label": "325 tasks rated safe",
+                "note": "Clinical safety assessment of EHR inbox tasks"
+              },
+              {
+                "value": 325,
+                "unit": "tasks",
+                "label": "Total tasks evaluated",
+                "note": "Covers common physician inbox tasks"
+              },
+              {
+                "value": 93,
+                "unit": "%",
+                "label": "Physicians rated very or extremely helpful",
+                "note": "On a five-point scale, across 646 assessments"
+              },
+              {
+                "value": 646,
+                "unit": "assessments",
+                "label": "Physician assessments",
+                "note": "Same 646 assessments behind the 93%"
+              }
+            ]
+          }
+        },
+        {
+          "p": "To be clear, these two figures are evaluator and physician ratings, not clinical outcomes after real deployment. Their value is that they provide a measurable, repeatable yardstick."
+        }
+      ]
+    },
+    {
+      "h": "Admin benchmark: Luna costs 98% less with only a small score gap",
+      "blocks": [
+        {
+          "p": "OpenAI also tested administrative tasks, including prior authorizations, appeals, and medical equipment orders. The benchmark is HealthAdminBench, an independent test created by Stanford researchers that measures performance on common administrative workflows."
+        },
+        {
+          "p": "Results: GPT-6 Astra earned 94.3% of available rubric points, and GPT-6 Luna earned 91.8%. But Luna costs only 8.5 cents per task—98% less than Astra. Both models were evaluated at maximum reasoning effort, meaning they used more compute to think, which is typically slower and more expensive."
+        },
+        {
+          "fig": {
+            "type": "bars",
+            "title": "Admin benchmark: Luna is far cheaper with only a small score gap",
+            "subtitle": "HealthAdminBench score (percent of available rubric points)",
+            "note": "Both were evaluated at maximum reasoning effort; Luna costs 8.5 cents per task, 98% less than Astra. Astra's absolute cost was not disclosed.",
+            "legend": [
+              {
+                "tone": "main",
+                "label": "GPT-6 Astra"
+              },
+              {
+                "tone": "ref",
+                "label": "GPT-6 Luna"
+              }
+            ],
+            "groups": [
+              {
+                "label": "HealthAdminBench score",
+                "items": [
+                  {
+                    "label": "GPT-6 Astra",
+                    "value": 94.3,
+                    "tone": "main"
+                  },
+                  {
+                    "label": "GPT-6 Luna",
+                    "value": 91.8,
+                    "tone": "ref"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "p": "For organizations running high-volume repetitive workflows every day, the choice isn't necessarily the most expensive model: the score gap is small, but the cost gap is large. Note that 94.3% and 91.8% are rubric-point scores, not real task success rates, and they can't be generalized to every administrative setting."
+        }
+      ]
+    },
+    {
+      "h": "What partners are doing: from clearing backlogs to managing referrals",
+      "blocks": [
+        {
+          "p": "OpenAI says the partners serve hundreds of health systems and provide care to hundreds of millions of patients. Here are the specifics disclosed so far:"
+        },
+        {
+          "list": [
+            "CVS Health: uses computer use to automate steps across multiple clinical systems—sending documents, processing referrals, supporting specialist consults—many of which APIs (which let two software systems exchange data directly) don't cover. In one production workflow, an agent cleared a months-long document-sending backlog over a weekend. Another handles the system steps for tens of thousands of consults per day. CVS added validation checks and human oversight, verifying work with screenshots and action records, and has open-sourced its Agent Kit, built on the OpenAI Agents SDK.",
+            "Cigna Healthcare: case managers previously had to navigate more than 10 separate clinical and administrative systems to piece information together. Computer use now pulls the relevant information together in seconds, freeing up time that used to go to searching. Cigna says it went from concept to deployment in under eight weeks.",
+            "Abridge: developing computer-use agents for inpatient settings. A clinician can ask Abridge Assistant to help resolve a patient's discharge barriers; the agent can handle medication access and home-health coordination at the same time, then bring the clinician back in when clinical judgment is needed.",
+            "Ambience: focused on making computer use governable. In its demo, the agent uses evidence from the patient's chart to prepare a prior authorization on an insurer's website, stops and asks the doctor when the record is ambiguous, and waits for approval before submitting. Organizations can define which actions it can take, pause it at any time, and receive step-by-step audit logs.",
+            "Assort: closes the referral loop. Assort could already attach a referral to the patient's chart through Athena's API, but the final step still had to be done by hand in the EHR interface. With Codex's computer use, the agent now selects the referring provider, enters the referral details, and marks it \"visit scheduled\" directly in Athena—so the referral drops off the staff follow-up list."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Data security, approvals, and how to access it (pricing)",
+      "blocks": [
+        {
+          "p": "Because computer-use agents can enter EHRs and insurer portals, permissions and audit trails matter more than raw capability. ChatGPT for Healthcare provides role-based access controls and audit logs; organizations can add review and approval steps and restrict which applications and records agents can access. OpenAI says organization data is not used to train its foundation models."
+        },
+        {
+          "p": "For HIPAA-compliant workflows involving protected health information—HIPAA is the U.S. law protecting the privacy and security of patient health information—organizations need to use eligible services covered by an OpenAI Business Associate Agreement (BAA) and configure the required security and retention settings."
+        },
+        {
+          "p": "How to access: healthcare organizations can contact the sales team; existing customers can ask their workspace administrator to enable computer use in ChatGPT Work and Codex; U.S. clinicians can sign up free for ChatGPT for Clinicians starting today; developers can build with the OpenAI API and follow the computer-use guide."
+        },
+        {
+          "p": "On pricing, the original post gives only one concrete figure: Luna costs 8.5 cents per administrative task, 98% less than Astra. Astra's absolute cost and full API pricing are not disclosed, so 8.5 cents should be read as Luna's cost reference on the administrative benchmark."
+        }
+      ]
+    },
+    {
+      "h": "What OpenAI hasn't said",
+      "blocks": [
+        {
+          "list": [
+            "Full pricing: API fees and Astra's per-task cost are not given, only Luna's 8.5 cents.",
+            "Details behind the 99% safety and 93% helpfulness ratings: how many evaluators or physicians and how tasks were sampled are not spelled out.",
+            "These are evaluation and benchmark scores, not real clinical outcomes such as authorization approval rates or whether patient waiting times actually fell.",
+            "For Cigna, exactly how many systems sit behind \"more than 10\" and how much time was saved after aggregation: the original post only says \"seconds\" and \"under eight weeks.\"",
+            "Partner pilot scale, rollout timing, and covered regions are not uniformly described."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Who it's for",
+      "blocks": [
+        {
+          "p": "The value is straightforward: save time spent moving information, filling forms, and chasing workflows across systems so teams can focus on patients. The trade-off is equally clear: in healthcare you can't just set it loose; you need evaluation, human review, audit logs, and HIPAA-compliant configuration."
+        },
+        {
+          "p": "If you run operations or IT at a healthcare organization, the most realistic starting point is to pilot one or two high-frequency, low-risk administrative workflows—such as prior authorization or referral closure—rather than jumping straight to clinical decisions. If you're a developer, start with the OpenAI API and computer-use guide for small-scale validation. If you're a U.S. clinician, you can sign up free for ChatGPT for Clinicians to try it, but treat the output as a draft and review it yourself."
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Advancing computer-use agents for healthcare teams",
+      "publisher": "OpenAI",
+      "date": "2026-11-16",
+      "url": "https://openai.com/index/advancing-computer-use-for-healthcare-teams"
+    },
+    "more": [],
+    "note": "The MRI authorization flow shown in the graphic is an example OpenAI created using synthetic patient data; task names and steps are illustrative. Safety, helpfulness, and benchmark figures come from OpenAI's self-reported evaluations and the Stanford HealthAdminBench benchmark methodology."
+  },
+  "claims": [
+    {
+      "text": "OpenAI announced computer-use agents for healthcare on November 16, 2026.",
+      "value": "November 16, 2026",
+      "source_url": "https://openai.com/index/advancing-computer-use-for-healthcare-teams",
+      "as_written": "November 16, 2026",
+      "quote": "November 16, 2026"
+    },
+    {
+      "text": "Of 325 evaluated tasks, 99% were rated safe.",
+      "value": "99%",
+      "source_url": "https://openai.com/index/advancing-computer-use-for-healthcare-teams",
+      "as_written": "99%",
+      "quote": "Overall, 99% of 325 reviewed tasks were rated safe."
+    },
+    {
+      "text": "The clinical safety evaluation covered 325 tasks.",
+      "value": "325",
+      "source_url": "https://openai.com/index/advancing-computer-use-for-healthcare-teams",
+      "as_written": "325 tasks",
+      "quote": "Overall, 99% of 325 reviewed tasks were rated safe."
+    },
+    {
+      "text": "Physicians rated helpfulness on a five-point scale; 93% of 646 assessments were \"very helpful\" or \"extremely helpful.\"",
+      "value": "93%",
+      "source_url": "https://openai.com/index/advancing-computer-use-for-healthcare-teams",
+      "as_written": "93%",
+      "quote": "Physicians rated helpfulness on a five-point scale, selecting “very helpful” or “extremely helpful” in 93% of 646 assessments."
+    },
+    {
+      "text": "The physician helpfulness evaluation covered 646 assessments.",
+      "value": "646",
+      "source_url": "https://openai.com/index/advancing-computer-use-for-healthcare-teams",
+      "as_written": "646 assessments",
+      "quote": "Physicians rated helpfulness on a five-point scale, selecting “very helpful” or “extremely helpful” in 93% of 646 assessments."
+    },
+    {
+      "text": "Physicians rated on a five-point scale.",
+      "value": "five-point",
+      "source_url": "https://openai.com/index/advancing-computer-use-for-healthcare-teams",
+      "as_written": "five-point scale",
+      "quote": "Physicians rated helpfulness on a five-point scale, selecting “very helpful” or “extremely helpful” in 93% of 646 assessments."
+    },
+    {
+      "text": "On HealthAdminBench, GPT-6 Astra earned 94.3% of available rubric points.",
+      "value": "94.3%",
+      "source_url": "https://openai.com/index/advancing-computer-use-for-healthcare-teams",
+      "as_written": "94.3%",
+      "quote": "GPT-6 Astra earned 94.3% of available rubric points, while GPT-6 Luna earned 91.8%, despite costing 98% less at 8.5 cents per task."
+    },
+    {
+      "text": "On HealthAdminBench, GPT-6 Luna earned 91.8% of available rubric points.",
+      "value": "91.8%",
+      "source_url": "https://openai.com/index/advancing-computer-use-for-healthcare-teams",
+      "as_written": "91.8%",
+      "quote": "GPT-6 Astra earned 94.3% of available rubric points, while GPT-6 Luna earned 91.8%, despite costing 98% less at 8.5 cents per task."
+    },
+    {
+      "text": "GPT-6 Luna costs 8.5 cents per task.",
+      "value": "8.5 cents",
+      "source_url": "https://openai.com/index/advancing-computer-use-for-healthcare-teams",
+      "as_written": "8.5 cents",
+      "quote": "GPT-6 Astra earned 94.3% of available rubric points, while GPT-6 Luna earned 91.8%, despite costing 98% less at 8.5 cents per task."
+    },
+    {
+      "text": "GPT-6 Luna is 98% cheaper than Astra.",
+      "value": "98%",
+      "source_url": "https://openai.com/index/advancing-computer-use-for-healthcare-teams",
+      "as_written": "98% cheaper",
+      "quote": "GPT-6 Astra earned 94.3% of available rubric points, while GPT-6 Luna earned 91.8%, despite costing 98% less at 8.5 cents per task."
+    },
+    {
+      "text": "Cigna case managers previously had to navigate more than 10 separate clinical and administrative systems.",
+      "value": "10",
+      "source_url": "https://openai.com/index/advancing-computer-use-for-healthcare-teams",
+      "as_written": "more than 10",
+      "quote": "Previously, Cigna Healthcare case managers had to navigate more than 10 separate clinical and administrative systems to gather this context."
+    },
+    {
+      "text": "Cigna went from concept to deployment in under eight weeks.",
+      "value": "eight weeks",
+      "source_url": "https://openai.com/index/advancing-computer-use-for-healthcare-teams",
+      "as_written": "under 8 weeks",
+      "quote": "Moving from concept to deployment in under eight weeks"
+    },
+    {
+      "text": "Computer use can pull relevant Cigna information together in seconds.",
+      "value": "seconds",
+      "source_url": "https://openai.com/index/advancing-computer-use-for-healthcare-teams",
+      "as_written": "seconds",
+      "quote": "Computer use can now help navigate these systems and bring relevant information together in seconds"
+    },
+    {
+      "text": "In one CVS production workflow, an agent cleared a months-long document-sending backlog over a weekend.",
+      "value": "a weekend",
+      "source_url": "https://openai.com/index/advancing-computer-use-for-healthcare-teams",
+      "as_written": "one weekend",
+      "quote": "In one production workflow, an agent cleared a months-long document-sending backlog over a weekend."
+    },
+    {
+      "text": "Another CVS agent handles the system steps for tens of thousands of consults per day.",
+      "value": "tens of thousands",
+      "source_url": "https://openai.com/index/advancing-computer-use-for-healthcare-teams",
+      "as_written": "tens of thousands per day",
+      "quote": "Another handles the system steps for tens of thousands of consults each day"
+    },
+    {
+      "text": "Partners serve hundreds of health systems.",
+      "value": "hundreds",
+      "source_url": "https://openai.com/index/advancing-computer-use-for-healthcare-teams",
+      "as_written": "hundreds",
+      "quote": "Our partners build software used in hundreds of health systems, coordinate care for members globally, and deliver care to hundreds of millions of patients."
+    },
+    {
+      "text": "Partners provide care to hundreds of millions of patients.",
+      "value": "hundreds of millions",
+      "source_url": "https://openai.com/index/advancing-computer-use-for-healthcare-teams",
+      "as_written": "hundreds of millions",
+      "quote": "Our partners build software used in hundreds of health systems, coordinate care for members globally, and deliver care to hundreds of millions of patients."
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "2bd0fa542b899b6a"
+}

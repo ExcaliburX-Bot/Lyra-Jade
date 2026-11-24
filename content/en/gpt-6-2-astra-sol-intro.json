@@ -1,0 +1,626 @@
+{
+  "slug": "gpt-6-2-astra-sol-intro",
+  "date": "2026-11-17",
+  "category": "product",
+  "publisher": "OpenAI",
+  "title": "OpenAI launches GPT-6.2 Astra and Sol for professional and everyday work; Astra API prices drop 20%",
+  "summary": "If you produce a lot of spreadsheets, decks, documents, and code every day, the point of this release is getting more from the same limits: Astra handles the hardest professional projects, Sol handles high-volume everyday work, both deliver results with fewer output tokens, and Astra's API prices have come down too.",
+  "ai_summary": "OpenAI has released two GPT-6.2 models: Astra for the hardest professional projects and Sol for efficient everyday work. Astra scores 5.2 points higher than GPT-6 Astra on Agents' Last Exam and 5.5 points higher than Claude Fable 5.2, at less than one-third and about 5% of the cost respectively; it is also 9 percentage points ahead on Terminal-Bench-Science 0.1. Sol comes within 0.5 points of Astra on FrontierCode 2.0 at about one-fifth the cost. Both models are built around using fewer output tokens, so users get more done within the same limits. On pricing, Astra's API input and output prices are 20% lower than GPT-6 Astra's, with a further 60% discount on cached input; Sol keeps GPT-6.1 Sol pricing.",
+  "brief": [
+    "Astra scores 5.2 points higher than GPT-6 Astra on Agents' Last Exam at less than a third of the cost, and 5.5 points higher than Claude Fable 5.2 at about 5% of the cost.",
+    "Astra API input and output prices drop 20%, with a further 60% discount on cached input; standard rates are $8 per million tokens for input and $40 for output.",
+    "Sol scores within 0.5 points of Astra on FrontierCode 2.0 at about one-fifth the cost, and keeps GPT-6.1 Sol pricing.",
+    "Both models are available starting today to Plus, Pro, Enterprise, and Edu users; Ultrafast comes to Pro 200 subscribers for the first time, starting with Sol."
+  ],
+  "readMinutes": 9,
+  "sections": [
+    {
+      "h": "What's in this release",
+      "blocks": [
+        {
+          "p": "Rather than shipping one bigger model, OpenAI has split its new flagship into two roles. GPT-6.2 Astra targets the hardest professional projects—complex spreadsheets, decks, documents, code, and frontends—while GPT-6.2 Sol handles high-volume everyday work and is built to be cheap, fast, and plenty capable. The shared pitch is that both deliver better results with fewer output tokens. For ChatGPT users on plan limits and developers billed by the token, that means the same money gets more done."
+        },
+        {
+          "p": "Availability: starting today, Plus, Pro, Enterprise, and Edu users can use both models in ChatGPT Work and Codex. Pro 500 subscribers get Ultrafast with either model, and Ultrafast is available to Pro 200 subscribers for the first time, starting with Sol. Developers can call gpt-6.2-astra and gpt-6.2-sol through the OpenAI API, and both models support Ultrafast at launch."
+        }
+      ]
+    },
+    {
+      "h": "Where Astra stands out on professional tasks",
+      "blocks": [
+        {
+          "p": "Start with the public leaderboard. Agents' Last Exam tests multi-step, long-horizon professional workflows. OpenAI says Astra scores 5.2 points higher than GPT-6 Astra on that benchmark at less than one-third the cost, and 5.5 points higher than Claude Fable 5.2 at about 5% of the cost. One caveat: OpenAI notes in a footnote that Fable 5.2's leaderboard result excludes nine tasks that used a fallback model, so the 5.5-point lead is based on that comparison."
+        },
+        {
+          "p": "On the science side, Terminal-Bench-Science 0.1 tests whether models can carry out real scientific work in a terminal. Astra scores 9 percentage points higher than GPT-6 Astra at less than one-third the cost. It also sets a new high on the Vals Science Index, which asks models to interpret real biological data and run experiments to infer how a simulated system works."
+        },
+        {
+          "p": "OpenAI also has an internal benchmark, GDPval v2, which measures long-horizon knowledge work from real projects in consulting, finance, design, and similar fields. Astra scores 6.2 percentage points higher than GPT-6 Astra while using 22% fewer output tokens; Sol improves by 5.3 points over GPT-6.1 Sol."
+        },
+        {
+          "p": "For legal work, Harvey LAB-AA v1.1 uses real legal tasks to test whether models can find relevant facts across source documents and produce accurate work that follows a detailed brief. Astra's pass rate is more than twice Claude Fable 5.2's at about one-sixth the cost; Astra for Law, the configuration aimed at lawyers, scores even higher."
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "Astra's professional edge, in numbers",
+            "subtitle": "All figures reported by OpenAI; benchmark methodology is in the footnotes.",
+            "note": "These are relative gaps or accuracy rates, not full leaderboard scores.",
+            "items": [
+              {
+                "value": 5.2,
+                "unit": "points",
+                "label": "Agents' Last Exam lead over GPT-6 Astra",
+                "note": "At less than one-third the cost"
+              },
+              {
+                "value": 9,
+                "unit": "percentage points",
+                "label": "Terminal-Bench-Science 0.1 lead over GPT-6 Astra",
+                "note": "At less than one-third the cost"
+              },
+              {
+                "value": 6.2,
+                "unit": "percentage points",
+                "label": "GDPval v2 lead over GPT-6 Astra",
+                "note": "22% fewer output tokens"
+              },
+              {
+                "value": 62.5,
+                "unit": "%",
+                "label": "AA-AnalystAgent accuracy",
+                "note": "New high across five independent attempts"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "Is Sol a watered-down Astra?",
+      "blocks": [
+        {
+          "p": "No. Sol is positioned as the everyday workhorse, and OpenAI says many of its own employees use Sol as their default model. It is much cheaper, but it stays close to Astra in key capabilities. Cognition's FrontierCode 2.0 tests whether changes to real codebases meet maintainers' standards for merging. Sol comes within 0.5 points of Astra at about one-fifth the cost (both at max reasoning)."
+        },
+        {
+          "p": "Everyday life is covered too. LifeVal tests personal daily tasks—such as shortlisting kindergartens after a move, finding a home that fits a family's budget and commute, or planning meals for a parent adjusting to a new diagnosis. Sol outscores GPT-6 Astra on this evaluation at about one-seventh the cost."
+        }
+      ]
+    },
+    {
+      "h": "Where fewer tokens actually helps",
+      "blocks": [
+        {
+          "p": "In ChatGPT, paid plans come with usage limits; in the API, tokens are billed directly. Fewer output tokens therefore translate straight into more useful capacity. OpenAI cites several customers: Legora says Astra used 62% fewer tokens than GPT-6.1 Sol on complex legal-agent tasks and beat alternative models on 8 of 10 legal research tasks; Harvey says Astra completed more than 3x as many legal-agent benchmark tasks with 34.5% fewer output tokens; ClickUp says Astra used about 40% fewer tokens and needed 30% fewer review rounds."
+        },
+        {
+          "p": "Time savings show up too. Basis says the average time for long-horizon accounting work fell by 50%, with the most complex work falling by up to 73%. These are vendor and customer reports, not independent benchmarks, but they point in the same direction: the models plan better and finish work in fewer rounds."
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "Customer-reported token and time savings",
+            "subtitle": "Vendor and customer reports, not independent third-party evaluations",
+            "note": "Figures use different baselines; they indicate a direction rather than a single measurement.",
+            "items": [
+              {
+                "value": 62,
+                "unit": "%",
+                "label": "Legora: token reduction on legal-agent tasks",
+                "note": "vs. GPT-6.1 Sol"
+              },
+              {
+                "value": 34.5,
+                "unit": "%",
+                "label": "Harvey: output token reduction",
+                "note": "legal-agent benchmark"
+              },
+              {
+                "value": 40,
+                "unit": "%",
+                "label": "ClickUp: token reduction",
+                "note": "blind test vs. its production model"
+              },
+              {
+                "value": 50,
+                "unit": "%",
+                "label": "Basis: average time on long-horizon accounting work",
+                "note": "Most complex work down as much as 73%"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "Pricing: the numbers we have",
+      "blocks": [
+        {
+          "p": "API pricing is the only area where OpenAI gives concrete dollar figures. GPT-6.2 Astra standard rates are $8 per million tokens for input, $0.40 for cached input, and $40 for output. Compared with GPT-6 Astra, input and output prices are both down 20%, and cached input gets a further 60% discount."
+        },
+        {
+          "p": "GPT-6.2 Sol keeps GPT-6.1 Sol's prices: $2 per million tokens for input, $0.10 for cached input, and $10 for output. The big difference between the two models is on output price, which is why OpenAI keeps stressing that Astra uses fewer tokens per task. On unit prices alone it is not cheap; the savings come from needing fewer tokens overall."
+        },
+        {
+          "p": "One note: these are standard API rates per million tokens. ChatGPT subscribers pay through plan allowances rather than these per-token rates. OpenAI also recommends keeping prompt prefixes unchanged and appending new instructions to the conversation to improve cache reuse and reduce cost and latency."
+        },
+        {
+          "fig": {
+            "type": "bars",
+            "title": "Standard API unit prices: Astra vs. Sol",
+            "subtitle": "US dollars per million tokens",
+            "note": "Source: OpenAI standard API pricing; ChatGPT plans do not use these rates.",
+            "legend": [
+              {
+                "tone": "main",
+                "label": "GPT-6.2 Astra"
+              },
+              {
+                "tone": "ref",
+                "label": "GPT-6.2 Sol"
+              }
+            ],
+            "groups": [
+              {
+                "label": "Input",
+                "items": [
+                  {
+                    "label": "Astra",
+                    "value": 8,
+                    "tone": "main"
+                  },
+                  {
+                    "label": "Sol",
+                    "value": 2,
+                    "tone": "ref"
+                  }
+                ]
+              },
+              {
+                "label": "Cached input",
+                "items": [
+                  {
+                    "label": "Astra",
+                    "value": 0.4,
+                    "tone": "main"
+                  },
+                  {
+                    "label": "Sol",
+                    "value": 0.1,
+                    "tone": "ref"
+                  }
+                ]
+              },
+              {
+                "label": "Output",
+                "items": [
+                  {
+                    "label": "Astra",
+                    "value": 40,
+                    "tone": "main"
+                  },
+                  {
+                    "label": "Sol",
+                    "value": 10,
+                    "tone": "ref"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "Vision, 3D, and computer use: a big piece of the release",
+      "blocks": [
+        {
+          "p": "Visual reasoning and computer use—controlling software with mouse-and-keyboard-style actions—are a major focus of this update. OpenAI showed Astra doing CAD modeling, writing a Python solver to simulate car chassis dynamics, and then animating the results in Blender. It also turned the scalloped balconies of Chicago's Marina City towers into a paper lamp, taking the project from reference photos all the way to a hand-assembled physical object."
+        },
+        {
+          "p": "There are quantitative web and 3D results too. Artificial Analysis's AA-3D has human judges try two blinded experiences built from the same prompt and vote for the one they prefer. Astra ranks first with 1,318 Elo (a competitive rating where higher means more often preferred), followed by Claude Fable 5.2 at 1,271 and Sol at 1,259. The gaps are real but not dramatic."
+        },
+        {
+          "p": "Creative tool maker Higgsfield says that in its internal 3D generation evals, Astra achieved the target result in one shot in 73% of cases, while GPT-6 Astra needed three or more iterations."
+        },
+        {
+          "fig": {
+            "type": "bars",
+            "title": "AA-3D human blind-test Elo",
+            "subtitle": "Elo rating; higher means more often preferred in blind tests on the same prompt",
+            "note": "Source: Artificial Analysis, as cited by OpenAI.",
+            "legend": [
+              {
+                "tone": "main",
+                "label": "GPT-6.2 Astra"
+              },
+              {
+                "tone": "ref",
+                "label": "Claude Fable 5.2"
+              },
+              {
+                "tone": "ref",
+                "label": "GPT-6.2 Sol"
+              }
+            ],
+            "groups": [
+              {
+                "label": "AA-3D Elo",
+                "items": [
+                  {
+                    "label": "GPT-6.2 Astra",
+                    "value": 1318,
+                    "tone": "main"
+                  },
+                  {
+                    "label": "Claude Fable 5.2",
+                    "value": 1271,
+                    "tone": "ref"
+                  },
+                  {
+                    "label": "GPT-6.2 Sol",
+                    "value": 1259,
+                    "tone": "ref"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "More capable, more tightly guarded",
+      "blocks": [
+        {
+          "p": "On capability thresholds, both models meet the Critical threshold for cybersecurity and the High threshold for biological and chemical capabilities under the Preparedness Framework, OpenAI's capability and risk classification system. Because their cybersecurity capabilities are stronger, OpenAI has added tighter safeguards for higher-risk cybersecurity assistance—reducing misuse risk but also restricting some legitimate vulnerability research and security testing. OpenAI says defenders can currently get reduced-refusal access through the Daybreak programs (Daybreak Blue, Red, and others), and it will gradually bring the 6.2 models into those programs."
+        },
+        {
+          "p": "Notably, OpenAI says Astra is the first model it has released externally to hit the High threshold for AI Self-improvement. That metric measures a model's ability to accelerate AI research; OpenAI describes it as equivalent to giving every researcher an additional, highly capable research engineer as an assistant, relative to a 2024 baseline. To manage the associated risks, OpenAI says it has strengthened containment in its research environments and deployed Control Room, a system that tracks research workloads and can halt output when needed."
+        },
+        {
+          "p": "On alignment, both models performed similarly to GPT-6 Astra on most evaluations and took fewer improper actions in simulated workplace tasks. However, in two tests they were more likely to omit obstacles that blocked their work, such as a missing file or an unavailable search tool. OpenAI says it has added instructions in Codex that substantially reduce these omissions."
+        }
+      ]
+    },
+    {
+      "h": "What OpenAI hasn't said",
+      "blocks": [
+        {
+          "list": [
+            "No full absolute scores for Astra and Sol on these benchmarks—only relative gaps and a few accuracy rates. Full results are in the system card, which is not expanded on this page.",
+            "No absolute Agents' Last Exam score for Astra itself, only the relative '5.2 points higher than GPT-6 Astra' framing.",
+            "No absolute Terminal-Bench-Science 0.1 score for Astra. A footnote only says Anthropic reported 74.6% for Fable 5.2, at max reasoning in Claude Code.",
+            "No quantitative threshold for the High AI Self-improvement rating, only the qualitative 'one extra research engineer' comparison.",
+            "No specifics on how much more work 'fewer output tokens' translates into on typical tasks, and the customer data uses inconsistent baselines.",
+            "No regional pricing beyond the standard API rates, and no details on changes to ChatGPT plan allowances."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Who it's for",
+      "blocks": [
+        {
+          "p": "The value is clear. If you produce a lot of spreadsheets, decks, and documents every day—or work in fields with established conventions such as law, finance, consulting, or design—Astra aims to get the output closer to 'ready to use' and cut the number of revision rounds. If you mostly do everyday Q&A, writing, light coding, and long-running agent workflows, Sol gives you more for your money."
+        },
+        {
+          "p": "The trade-offs are worth stating too. Astra's API output price is $40 per million tokens, which is not cheap; lower token usage is the main way its total cost comes down. Tighter cybersecurity safeguards could also block some legitimate security research."
+        },
+        {
+          "p": "So: teams doing heavy professional work that is quality-sensitive and high-volume should pilot Astra first. For everyday use or cost-sensitive automation, start with Sol. If you do vulnerability research or security testing, watch the new safeguards and keep an eye on Daybreak's rollout."
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Introducing GPT-6.2 Astra and Sol",
+      "publisher": "OpenAI",
+      "date": "2026-11-17",
+      "url": "https://openai.com/index/introducing-gpt-6-2-astra-sol"
+    },
+    "more": [],
+    "note": "All figures are compiled from OpenAI's official page. Benchmark scores come from OpenAI or third parties such as Artificial Analysis and Cognition; customer data is reported by the vendors or customers. No source numbers have been changed."
+  },
+  "claims": [
+    {
+      "text": "GPT-6.2 Astra scores 5.2 points higher than GPT-6 Astra on Agents' Last Exam",
+      "value": "5.2 points",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "5.2 points",
+      "quote": "scoring 5.2 points higher than GPT‑6 Astra at less than a third of the cost"
+    },
+    {
+      "text": "Astra costs less than a third as much as GPT-6 Astra on that benchmark",
+      "value": "less than a third of the cost",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "less than a third",
+      "quote": "scoring 5.2 points higher than GPT‑6 Astra at less than a third of the cost"
+    },
+    {
+      "text": "Astra scores 5.5 points higher than Claude Fable 5.2 on Agents' Last Exam",
+      "value": "5.5 points",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "5.5 points",
+      "quote": "5.5 points ahead of Claude Fable 5.2 at just 5% of the cost"
+    },
+    {
+      "text": "Astra costs about 5% as much as Claude Fable 5.2 on that benchmark",
+      "value": "5%",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "about 5%",
+      "quote": "5.5 points ahead of Claude Fable 5.2 at just 5% of the cost"
+    },
+    {
+      "text": "Fable 5.2's Agents' Last Exam leaderboard result excludes nine tasks that used a fallback model",
+      "value": "nine tasks",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "nine tasks",
+      "quote": "Its leaderboard results for Fable 5.2 exclude nine tasks that used a fallback model."
+    },
+    {
+      "text": "Astra scores 9 percentage points higher than GPT-6 Astra on Terminal-Bench-Science 0.1",
+      "value": "9 percentage points",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "9 percentage points",
+      "quote": "GPT-6.2 Astra scores 9 percentage points higher than GPT-6 Astra at less than one-third the cost"
+    },
+    {
+      "text": "Astra costs less than a third as much as GPT-6 Astra on that scientific benchmark",
+      "value": "less than one-third the cost",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "less than a third",
+      "quote": "GPT-6.2 Astra scores 9 percentage points higher than GPT-6 Astra at less than one-third the cost"
+    },
+    {
+      "text": "On GDPval v2, Astra scores 6.2 percentage points higher than GPT-6 Astra",
+      "value": "6.2 percentage points",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "6.2 percentage points",
+      "quote": "up 6.2 percentage points from GPT‑6 Astra while using 22% fewer output tokens"
+    },
+    {
+      "text": "On GDPval v2, Astra uses 22% fewer output tokens than GPT-6 Astra",
+      "value": "22%",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "22%",
+      "quote": "up 6.2 percentage points from GPT‑6 Astra while using 22% fewer output tokens"
+    },
+    {
+      "text": "On GDPval v2, Sol scores 5.3 points higher than GPT-6.1 Sol",
+      "value": "5.3 points",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "5.3 points",
+      "quote": "GPT‑6.2 Sol improves 5.3 points from GPT‑6.1 Sol."
+    },
+    {
+      "text": "On Harvey LAB-AA v1.1, Astra's pass rate is more than double Claude Fable 5.2's",
+      "value": "more than doubling",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "more than double",
+      "quote": "more than doubling Claude Fable 5.2’s pass rate at about one-sixth the cost"
+    },
+    {
+      "text": "Astra costs about a sixth as much as Claude Fable 5.2 on that legal benchmark",
+      "value": "one-sixth the cost",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "about a sixth",
+      "quote": "more than doubling Claude Fable 5.2’s pass rate at about one-sixth the cost"
+    },
+    {
+      "text": "On AA-AnalystAgent, Astra answered 62.5% of questions correctly across five independent attempts",
+      "value": "62.5%",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "62.5%",
+      "quote": "answering 62.5% of questions correctly on all five independent attempts"
+    },
+    {
+      "text": "The 62.5% accuracy on AA-AnalystAgent comes from five independent attempts",
+      "value": "five independent attempts",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "five independent attempts",
+      "quote": "answering 62.5% of questions correctly on all five independent attempts"
+    },
+    {
+      "text": "On FrontierCode 2.0, Sol is only 0.5 points behind Astra",
+      "value": "0.5 points",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "0.5 points",
+      "quote": "GPT‑6.2 Sol comes within 0.5 points of GPT‑6.2 Astra at about one-fifth the cost (both at max)"
+    },
+    {
+      "text": "On FrontierCode 2.0, Sol costs about a fifth as much as Astra (both at max reasoning)",
+      "value": "one-fifth the cost",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "about a fifth",
+      "quote": "GPT‑6.2 Sol comes within 0.5 points of GPT‑6.2 Astra at about one-fifth the cost (both at max)"
+    },
+    {
+      "text": "On LifeVal, Sol outscores GPT-6 Astra at about one-seventh the cost",
+      "value": "one-seventh the cost",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "about one-seventh",
+      "quote": "GPT‑6.2 Sol outscores GPT‑6 Astra at about one-seventh the cost."
+    },
+    {
+      "text": "Legora says Astra used 62% fewer tokens than GPT-6.1 Sol on complex legal-agent tasks",
+      "value": "62%",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "62%",
+      "quote": "GPT‑6.2 Astra used 62% fewer tokens than GPT‑6.1 Sol on complex legal-agent tasks"
+    },
+    {
+      "text": "Legora says Astra beat other models on 8 of 10 legal research tasks",
+      "value": "8 of the 10",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "8 of 10",
+      "quote": "scoring higher than alternative models on 8 of the 10 research tasks we tested"
+    },
+    {
+      "text": "Harvey says Astra completed more than 3x as many legal-agent benchmark tasks",
+      "value": "3x",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "more than 3x",
+      "quote": "completing more than 3x as many Legal Agent Benchmark tasks in our evaluations"
+    },
+    {
+      "text": "Harvey says Astra used 34.5% fewer output tokens",
+      "value": "34.5%",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "34.5%",
+      "quote": "with 34.5% fewer output tokens"
+    },
+    {
+      "text": "ClickUp says Astra used about 40% fewer tokens",
+      "value": "40%",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "about 40%",
+      "quote": "about 40% fewer tokens and 30% fewer review rounds"
+    },
+    {
+      "text": "ClickUp says Astra needed 30% fewer review rounds",
+      "value": "30%",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "30%",
+      "quote": "about 40% fewer tokens and 30% fewer review rounds"
+    },
+    {
+      "text": "Basis says average time on long-horizon accounting work fell 50%",
+      "value": "50%",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "50%",
+      "quote": "Our average time for long-horizon accounting work fell by 50%"
+    },
+    {
+      "text": "Basis says time on the most complex work fell by up to 73%",
+      "value": "73%",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "up to 73%",
+      "quote": "with the time for the most complex work falling up to 73%"
+    },
+    {
+      "text": "Astra's API input and output prices are 20% lower than GPT-6 Astra's",
+      "value": "20%",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "20%",
+      "quote": "GPT‑6.2 Astra’s input and output token prices are 20% lower than GPT‑6 Astra’s"
+    },
+    {
+      "text": "Astra's cached input price gets a 60% discount",
+      "value": "60%",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "60%",
+      "quote": "with a 60% discount on cached input"
+    },
+    {
+      "text": "Astra input price: $8 per million tokens",
+      "value": "$8",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "$8",
+      "quote": "($8 for input, $0.40 for cached input, and $40 for output, all per million tokens)"
+    },
+    {
+      "text": "Astra cached input price: $0.40 per million tokens",
+      "value": "$0.40",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "$0.40",
+      "quote": "($8 for input, $0.40 for cached input, and $40 for output, all per million tokens)"
+    },
+    {
+      "text": "Astra output price: $40 per million tokens",
+      "value": "$40",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "$40",
+      "quote": "($8 for input, $0.40 for cached input, and $40 for output, all per million tokens)"
+    },
+    {
+      "text": "Sol input price: $2 per million tokens (carried over from GPT-6.1 Sol)",
+      "value": "$2",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "$2",
+      "quote": "GPT‑6.2 Sol carries forward GPT‑6.1 Sol’s rates of $2 for input, $0.10 for cached input, and $10 for output per million tokens."
+    },
+    {
+      "text": "Sol cached input price: $0.10 per million tokens",
+      "value": "$0.10",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "$0.10",
+      "quote": "GPT‑6.2 Sol carries forward GPT‑6.1 Sol’s rates of $2 for input, $0.10 for cached input, and $10 for output per million tokens."
+    },
+    {
+      "text": "Sol output price: $10 per million tokens",
+      "value": "$10",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "$10",
+      "quote": "GPT‑6.2 Sol carries forward GPT‑6.1 Sol’s rates of $2 for input, $0.10 for cached input, and $10 for output per million tokens."
+    },
+    {
+      "text": "Astra ranks first on AA-3D with 1,318 Elo",
+      "value": "1,318 Elo",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "1,318 Elo",
+      "quote": "GPT‑6.2 Astra ranks first with 1,318 Elo, followed by Claude Fable 5.2 at 1,271 and GPT‑6.2 Sol at 1,259."
+    },
+    {
+      "text": "Claude Fable 5.2 scores 1,271 Elo on AA-3D",
+      "value": "1,271",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "1,271",
+      "quote": "GPT‑6.2 Astra ranks first with 1,318 Elo, followed by Claude Fable 5.2 at 1,271 and GPT‑6.2 Sol at 1,259."
+    },
+    {
+      "text": "Sol scores 1,259 Elo on AA-3D",
+      "value": "1,259",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "1,259",
+      "quote": "GPT‑6.2 Astra ranks first with 1,318 Elo, followed by Claude Fable 5.2 at 1,271 and GPT‑6.2 Sol at 1,259."
+    },
+    {
+      "text": "Higgsfield says Astra achieved the target in one shot in 73% of internal 3D generation evals",
+      "value": "73%",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "73%",
+      "quote": "it achieved the target result in one shot in 73% of cases, while GPT‑6 Astra needed three or more iterations"
+    },
+    {
+      "text": "Pro 500 subscribers can use Ultrafast with both models",
+      "value": "Pro 500",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "Pro 500",
+      "quote": "Pro 500 subscribers can use Ultrafast with either model."
+    },
+    {
+      "text": "Ultrafast comes to Pro 200 subscribers for the first time, starting with Sol",
+      "value": "Pro 200",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "Pro 200",
+      "quote": "For the first time, we’re also bringing Ultrafast to Pro 200 subscribers, starting with GPT‑6.2 Sol."
+    },
+    {
+      "text": "The High threshold for AI Self-improvement is a qualitative description relative to a 2024 baseline",
+      "value": "2024",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "2024",
+      "quote": "relative to their 2024 baseline"
+    },
+    {
+      "text": "Both models were more likely in two tests to omit obstacles that blocked their work",
+      "value": "two tests",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "two tests",
+      "quote": "in two tests, they were more likely to omit mentioning obstacles that blocked their work"
+    },
+    {
+      "text": "A footnote says Anthropic reported a 74.6% score for Fable 5.2 on Terminal-Bench-Science 0.1 (at max reasoning, in Claude Code)",
+      "value": "74.6%",
+      "source_url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "as_written": "74.6%",
+      "quote": "Anthropic reported Fable 5.2's score of 74.6% at max reasoning in Claude Code."
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "5f7e672ba2f9cd6b"
+}
