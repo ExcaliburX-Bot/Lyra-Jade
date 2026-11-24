@@ -1,0 +1,242 @@
+{
+  "slug": "kings-trust-openai-1m-ai-skills-partnership",
+  "date": "2026-11-16",
+  "category": "biz",
+  "publisher": "OpenAI",
+  "title": "The King’s Trust and OpenAI launch £1 million partnership to help 25,000 young people learn AI",
+  "summary": "The UK youth charity The King’s Trust and OpenAI have announced a partnership: OpenAI is donating £1 million to help young people who are long-term out of education or work learn AI skills and earn recognized qualifications, with a goal of reaching up to 25,000 people over the next 18 months.",
+  "ai_summary": "OpenAI and the UK youth charity The King’s Trust have announced a £1 million partnership to help young people who are long-term out of education or work build AI skills. The program aims to reach up to 25,000 young people over the next 18 months, focusing on NEETs (not in education, employment or training). According to the Open University Business Barometer 2026, 68% of surveyed 16–24-year-old NEETs said they would be willing to train or upskill. The effort includes OpenAI funding and AI expertise, and builds on The King’s Trust’s upcoming nationally recognized AI qualifications. The biggest caveat: 25,000 is a ceiling target, not an achieved result, and the announcement does not specify course content, how to sign up, or the launch date.",
+  "brief": [
+    "OpenAI is donating £1 million to The King’s Trust, along with AI expertise support.",
+    "The goal is to help up to 25,000 NEET young people build AI skills over the next 18 months.",
+    "A survey found that 68% of surveyed 16–24-year-old NEETs would be willing to train or upskill.",
+    "This initiative is part of The King’s Trust’s upcoming nationally recognized AI qualifications."
+  ],
+  "readMinutes": 4,
+  "sections": [
+    {
+      "h": "What this is",
+      "blocks": [
+        {
+          "p": "This is a philanthropic partnership announcement. The King’s Trust, a UK youth charity that helps young people move into education, training and employment, and OpenAI have jointly announced an effort to help young people who are out of education, employment or training learn AI skills. The three core numbers are: OpenAI is donating £1 million; the target is to reach up to 25,000 young people; and the timeframe is the next 18 months."
+        }
+      ]
+    },
+    {
+      "h": "What does £1 million actually buy?",
+      "blocks": [
+        {
+          "p": "The announcement describes OpenAI’s contribution as a “£1 million donation” to the youth charity. Note that it is a donation, not a commercial investment or a paid course. OpenAI’s wording adds another element: beyond the money, it is also contributing “AI expertise,” which can be read as technical support or help with course content."
+        },
+        {
+          "p": "But the announcement does not break down how the money will be spent—how much goes to course development, staffing, or equipment is not specified. A more accurate reading is that this is seed funding meant to leverage The King’s Trust’s own upcoming AI qualification program."
+        }
+      ]
+    },
+    {
+      "h": "How to read the 25,000 and 18-month figures",
+      "blocks": [
+        {
+          "p": "The official wording is “up to 25,000 young people over the next 18 months.” The “up to” is the key point: it is an upper target, not a number already achieved, and not a minimum commitment. Eighteen months is the planned period; the announcement gives no start or end dates."
+        },
+        {
+          "p": "In scale, it looks more like a training program running across multiple parts of the UK over about a year and a half than a one-off event. For the public, these numbers signal that it is free, aimed at marginalized groups, and has meaningful reach—but how many people actually take part and complete the program remains to be seen until later disclosures."
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "Key numbers from the partnership",
+            "subtitle": "Funding, target reach, timeframe and survey context (all official figures)",
+            "note": "25,000 is the official “up to” target; 68% is the share of respondents in the 2026 Open University survey.",
+            "items": [
+              {
+                "value": "1",
+                "unit": "£ million",
+                "label": "OpenAI donation",
+                "note": "Also includes AI expertise support"
+              },
+              {
+                "value": "25,000",
+                "unit": "people",
+                "label": "Target young people",
+                "note": "Official wording: “up to”"
+              },
+              {
+                "value": "18",
+                "unit": "months",
+                "label": "Program timeframe",
+                "note": "Start and end dates not announced"
+              },
+              {
+                "value": "68",
+                "unit": "%",
+                "label": "NEET respondents willing to train",
+                "note": "16–24, 2026 survey"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "Why prioritize NEET young people?",
+      "blocks": [
+        {
+          "p": "NEET stands for “Not in Education, Employment or Training”: young people who are not in school, work, or any kind of training. They are the group most likely to miss entry points to new skills, and the least likely to find opportunities through their own channels."
+        },
+        {
+          "p": "The announcement offers one demand-side data point: the Open University’s Business Barometer 2026 found that 68% of surveyed 16–24-year-old NEETs said they would be willing to train or upskill to improve their job prospects. Note that this is a share of survey respondents, not a precise statistic for the whole NEET population—but it suggests the group has a real appetite to learn and lacks opportunity and access."
+        },
+        {
+          "p": "The announcement also points to the other side: these young people have a “gap in experience” with AI. The partnership is designed to address both the desire to learn and the lack of opportunity to learn."
+        }
+      ]
+    },
+    {
+      "h": "What will young people actually learn?",
+      "blocks": [
+        {
+          "p": "The announcement doesn’t provide a curriculum. What it does confirm is three phrases: “practical AI skills,” “recognized qualifications,” and “practical experience.” In other words, this isn’t a general awareness talk—it’s hands-on skills plus formal qualifications, with some practical components."
+        },
+        {
+          "p": "The qualifications deserve a separate mention: The King’s Trust is developing a suite of “nationally recognized AI qualifications” that will launch in the coming months, and this partnership is part of that work. OpenAI, for its part, points to OpenAI Academy, which provides free learning resources for students, job-seekers and other learners; this partnership builds on that as well."
+        },
+        {
+          "fig": {
+            "type": "steps",
+            "title": "How the program is meant to work",
+            "subtitle": "Illustrative: specific courses and timing have not been announced",
+            "note": "Based on the announcement: OpenAI provides funding and expertise, The King’s Trust develops qualification courses, and young people learn before moving toward education or employment.",
+            "steps": [
+              {
+                "name": "Inputs",
+                "tool": "OpenAI",
+                "desc": "£1 million donation plus AI expertise"
+              },
+              {
+                "name": "Course development",
+                "tool": "The King's Trust",
+                "desc": "Launch nationally recognized AI qualifications"
+              },
+              {
+                "name": "Learning",
+                "tool": "Young people (NEETs prioritized)",
+                "desc": "Practical AI skills + practical experience"
+              },
+              {
+                "name": "Destination",
+                "tool": "Education / employment",
+                "desc": "Move into education or employment"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "Why The King’s Trust, and why its 50th year?",
+      "blocks": [
+        {
+          "p": "The announcement gives the institutional background: The King’s Trust is marking its 50th year and has supported more than 1.3 million young people over the past 50 years. That context explains the partnership’s value: the charity already has channels for reaching young people and experience in employment support, so AI skills can be layered onto existing programs rather than building a new network from scratch."
+        },
+        {
+          "p": "Alan Milburn, associated with the independent Young People and Work review, also weighed in: “AI will bring disruption as well as opportunity, so it is vital that young people get a fair share of the opportunity and don’t bear the cost of the disruption.” The comment highlights the social context for this kind of partnership."
+        }
+      ]
+    },
+    {
+      "h": "What The King’s Trust and OpenAI haven’t said",
+      "blocks": [
+        {
+          "list": [
+            "How the £1 million will be spent, in detail",
+            "The specific start and end dates and the regions covered over the 18 months",
+            "How to sign up and the eligibility criteria for the 25,000 places",
+            "The name, issuing body and launch date of the nationally recognized AI qualifications",
+            "Course content, hours and whether it costs money",
+            "How the program’s impact will be measured (completion rates, employment rates, etc.)"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Who it's for",
+      "blocks": [
+        {
+          "p": "The value is clear: if you’re a NEET young person in the UK, this could be a chance to learn AI skills for free, earn formal qualifications and get exposure to employers. If you’re an employer or education provider, this is a case study in how AI skills can reach marginalized groups."
+        },
+        {
+          "p": "The trade-offs and limits are also worth stating: right now there are only goals and directions—no sign-up route, curriculum or qualification details. And 25,000 is an “up to” target, not a guarantee."
+        },
+        {
+          "p": "So: if you’re 16–24, in the UK, and currently out of education and employment, watch for the qualification courses and sign-up details The King’s Trust publishes next. If you’re outside the UK, the main value is as a model of nonprofit AI training—funding, an existing charity’s reach, nationally recognized qualifications, aimed at people with the fewest opportunities."
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "The King's Trust and OpenAI launch £1m partnership",
+      "publisher": "OpenAI",
+      "date": "2026-11-16",
+      "url": "https://openai.com/index/the-kings-trust-and-openai"
+    },
+    "more": [],
+    "note": "This article is based solely on OpenAI’s official announcement. The 68% figure is secondhand survey data cited by OpenAI (Open University Business Barometer 2026). Both charts are summaries or illustrations: the KPI chart aggregates official figures, and the path chart is a schematic based on the announcement."
+  },
+  "claims": [
+    {
+      "text": "OpenAI is donating £1 million to The King’s Trust to support this youth AI skills work.",
+      "value": "£1m",
+      "source_url": "https://openai.com/index/the-kings-trust-and-openai",
+      "as_written": "£1 million",
+      "quote": "OpenAI is making a £1m donation to the youth charity to support this work."
+    },
+    {
+      "text": "The program aims to support up to 25,000 young people over the next 18 months.",
+      "value": "25,000",
+      "source_url": "https://openai.com/index/the-kings-trust-and-openai",
+      "as_written": "25,000 people",
+      "quote": "The program aims to support up to 25,000 young people over the next 18 months"
+    },
+    {
+      "text": "The program timeframe is the next 18 months.",
+      "value": "18 months",
+      "source_url": "https://openai.com/index/the-kings-trust-and-openai",
+      "as_written": "18 months",
+      "quote": "support up to 25,000 young people over the next 18 months"
+    },
+    {
+      "text": "The Open University Business Barometer 2026 found that 68% of surveyed NEET young people would be willing to train or upskill.",
+      "value": "68%",
+      "source_url": "https://openai.com/index/the-kings-trust-and-openai",
+      "as_written": "68%",
+      "quote": "68% of 16–24-year-olds surveyed who were not in education, employment or training would be willing to train or upskill to improve their job prospects."
+    },
+    {
+      "text": "The survey covered respondents aged 16–24.",
+      "value": "16–24-year-olds",
+      "source_url": "https://openai.com/index/the-kings-trust-and-openai",
+      "as_written": "Ages 16–24",
+      "quote": "68% of 16–24-year-olds surveyed who were not in education, employment or training would be willing to train or upskill to improve their job prospects."
+    },
+    {
+      "text": "The King’s Trust has a 50-year history.",
+      "value": "50-year",
+      "source_url": "https://openai.com/index/the-kings-trust-and-openai",
+      "as_written": "50 years",
+      "quote": "Building on a 50-year legacy of supporting more than 1.3 million young people"
+    },
+    {
+      "text": "The King’s Trust has supported more than 1.3 million young people over the past 50 years.",
+      "value": "1.3 million",
+      "source_url": "https://openai.com/index/the-kings-trust-and-openai",
+      "as_written": "1.3 million",
+      "quote": "Building on a 50-year legacy of supporting more than 1.3 million young people"
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "688a851f26286e4e"
+}

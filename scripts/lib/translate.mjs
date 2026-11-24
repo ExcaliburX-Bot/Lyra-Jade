@@ -12,8 +12,8 @@ export const TRANSLATE_MODEL = process.env.WG_TRANSLATE_MODEL || "deepseek-v4-pr
 
 const CJK = /[⺀-鿿　-〿豈-﫿＀-￯]/;
 /* 这些字段不翻：标识、链接、日期、颜色、图型名、原文引语（本来就是原文的语言）、代码。
-   value、status 不在这里：数值本身不是字符串，不会被拆出来；写成中文的（「数千」「未公布价格」）要翻 */
-const SKIP = new Set(["slug", "category", "date", "url", "source_url", "quote", "tone", "type", "kind", "role", "state",
+   value、status、role 不在这里：只有写成中文的才会被拆出来（「数千」「未公布价格」、引语卡片的头衔「OpenAI 总裁」），这些要翻 */
+const SKIP = new Set(["slug", "category", "date", "url", "source_url", "quote", "tone", "type", "kind",
   "lang", "translated_from", "pipeline", "code", "lines", "max", "min", "from", "to", "select", "id", "icon", "zh"]);
 
 /* 片段的位置说明，给模型当上下文用 */

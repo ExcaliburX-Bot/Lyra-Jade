@@ -72,6 +72,7 @@ npm run dev         # 构建并在 http://localhost:4321 预览
 - **X 监测名单**：`sources/x-accounts.json`，每组最多 20 个账号；KOL 两组默认关着。Actions 里的「X 监测」走 xAI API、按帖子数收费，2026-11-22 起因额度用完已停用（在 Actions 里点 Enable 可恢复）。现在由 Grok Bot 用订阅自带的 X 访问来看（`bot/skills/x-watch.md`），读到的帖子用 `node scripts/bot.mjs x-add` 进素材库并存档原文，写稿时不再调用 xAI API。
 - **换写稿模型**：默认 Grok。改用 DeepSeek：加 `DEEPSEEK_API_KEY`，把变量 `WG_PROVIDER` 设为 `deepseek`；想先试一篇，手动运行「写稿」时在 provider 里选 deepseek 即可。定时写稿已避开 DeepSeek 的工作日高峰（UTC 01–04、06–10 点），按半价计费。
 - **英文版**：中文稿合并进主分支后，「翻译」工作流自动用 DeepSeek 翻成英文（先整篇翻译改写，再由「母语编辑」润色；每个数字都和中文版核对，对不上的让模型修，修不好就不发这篇的英文版），开 PR，直接上线模式下自动合并。英文页面在网站的 `en/` 下，右上角「EN / 中文」切换。翻译规则在 `prompts/translator.md`。补翻旧稿：Actions → 翻译 → Run workflow（max 填篇数）；只想先看效果就不勾「发布」，译文只推到 `preview/en-*` 分支。中文稿改过后，旧译文先下线，下一次翻译自动重翻。
+- **分享**：每篇文章标题下和文末有「分享」按钮。手机上直接弹出系统分享面板（微信、X 等都在里面）；电脑上展开菜单：分享到 X、复制链接、微信扫一扫（二维码在构建时生成，`scripts/lib/qr.mjs`）。每篇还有自己的分享图（1200×630，用文章封面放大），发布时由 `scripts/og.mjs` 用无头 Chrome 截图生成，放在 `og/` 下；X、Telegram 等贴链接时会显示这张图。微信里的链接卡片要等域名备案、接入公众号分享接口后才能稳定显示。
 - **导出单页**：`npm run build && node scripts/export.mjs <slug> 文件名.html`，把一篇文章导出成一个独立的 HTML 文件（样式、脚本、动态图都内嵌），双击就能打开，适合发给别人看。
 - **调写作规则**：`prompts/writer.md`。**改页面样式**：`site/assets/site.css`，图形组件在 `site/assets/components.js`。
 
