@@ -39,6 +39,16 @@ jobs:
         with:
           ref: data
           path: data
+      - name: 等上一批译文合并（避免同一篇翻两次、两个 PR 互相冲突）
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for i in $(seq 1 20); do
+            N=$(gh api "repos/${{ github.repository }}/pulls?state=open&per_page=100" --jq '[.[] | select(.head.ref | startswith("translate/")) | select(any(.labels[]; .name == "auto-publish"))] | length')
+            [ "$N" = "0" ] && break
+            echo "还有 $N 个译文 PR 在等自动合并，15 秒后再看"; sleep 15
+          done
+          git pull -q origin main
       - name: 翻译
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
