@@ -22,6 +22,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # 要完整提交历史：文章按「第一次进入仓库的时间」排序
       - uses: actions/setup-node@v4
         with:
           node-version: 22

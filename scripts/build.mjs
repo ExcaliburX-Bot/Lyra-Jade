@@ -3,8 +3,9 @@
    首页 index.html、每篇 a/<slug>.html、关于页 about.html、订阅源 rss.xml、sitemap.xml、robots.txt、404.html，
    以及给 App 和第三方用的只读内容 API：api/v1/{index,articles,categories}.json、api/v1/articles/<slug>.json */
 import fs from "node:fs";
+import { execFileSync } from "node:child_process";
 import path from "node:path";
-import { CONTENT, DIST, SITE } from "./lib/paths.mjs";
+import { CONTENT, DIST, SITE, ROOT } from "./lib/paths.mjs";
 import { readJson } from "./lib/store.mjs";
 import { sha } from "./lib/text.mjs";
 import { renderArticleBody, esc } from "../site/assets/components.js";
@@ -24,16 +25,28 @@ const page = v => tpl.replace(/\{\{(\w+)\}\}/g, (m, k) => ({ ANALYTICS, OGIMAGE,
 const safeJson = x => JSON.stringify(x).replace(/</g, "\\u003c");
 const textLen = a => (a.sections || []).flatMap(s => s.blocks.map(b => b.p || (b.list || []).join(""))).join("").length;
 
+/* 排序按「在本站上线的时间」，不按原文日期：晚几天才写的稿子也排在最前面，原文日期另外显示。
+   上线时间取这篇文章文件第一次进入仓库的提交时间（部署时要完整历史：deploy.yml 的 fetch-depth: 0）；取不到就退回原文日期 */
+const firstCommit = file => {
+  try {
+    const out = execFileSync("git", ["log", "--diff-filter=A", "--format=%cI", "--", file], { cwd: ROOT, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim().split("\n").filter(Boolean);
+    return out.length ? out[out.length - 1] : null;
+  } catch { return null; }
+};
+const bjDay = iso => new Date(iso).toLocaleDateString("sv-SE", { timeZone: "Asia/Shanghai" });
 const articles = fs.existsSync(CONTENT) ? fs.readdirSync(CONTENT).filter(f => f.endsWith(".json"))
-  .map(f => readJson(path.join(CONTENT, f))).filter(a => a && a.status === "published")
-  .sort((a, b) => b.date.localeCompare(a.date) || a.title.localeCompare(b.title)) : [];
+  .map(f => { const a = readJson(path.join(CONTENT, f)); if (a) a._pub = firstCommit(path.join(CONTENT, f)) || `${a.date}T00:00:00+08:00`; return a; })
+  .filter(a => a && a.status === "published")
+  .sort((a, b) => b._pub.localeCompare(a._pub) || b.date.localeCompare(a.date) || a.title.localeCompare(b.title)) : [];
+for (const a of articles) a._day = bjDay(a._pub);
 
 const index = articles.map((a, i) => ({
-  id: a.slug, no: a.no ?? articles.length - i, slug: a.slug, date: a.date, cat: a.category, co: a.publisher, title: a.title, summary: a.summary,
+  id: a.slug, no: a.no ?? articles.length - i, slug: a.slug, date: a._day, src: a.date, cat: a.category, co: a.publisher, title: a.title, summary: a.summary,
   min: a.readMinutes || Math.max(3, Math.ceil(textLen(a) / 450)), verified: !!a.verified, pod: null,
   v: parseInt(sha(a.slug, 4), 16) % 5, h: parseInt(sha(a.slug + "h", 4), 16) % 360
 }));
-const featured = (articles.find(a => a.verified) || articles[0])?.slug || null;
+/* 今日精选：最新上线的一篇（人工核对过的优先，但只在最近两天内找） */
+const featured = (articles.find(a => a.verified && a._day >= bjDay(new Date(Date.now() - 2 * 864e5).toISOString())) || articles[0])?.slug || null;
 const today = new Date().toISOString().slice(0, 10);
 
 fs.rmSync(DIST, { recursive: true, force: true });
@@ -53,7 +66,7 @@ for (const a of articles) {
     <a href="../index.html" class="back" data-home><svg class="i"><use href="#i-chev-l"/></svg>返回 AI 解读</a>
     <div class="tags"><span class="tag">${esc(CAT_NAME[a.category] || a.category)}</span>${a.verified ? `<span class="verified"><svg class="i"><use href="#i-check"/></svg>人工已核对</span>` : `<a class="muted" href="../about.html#ai">AI 辅助撰写</a>`}</div>
     <h1>${esc(a.title)}</h1>
-    <div class="rmeta"><span>${esc(a.date)}</span><span>约 ${index.find(x => x.slug === a.slug).min} 分钟</span><span>来源 ${esc(a.publisher)}</span></div>
+    <div class="rmeta"><span>${esc(a._day)} 发布</span>${a.date !== a._day ? `<span>原文 ${esc(a.date)}</span>` : ""}<span>约 ${index.find(x => x.slug === a.slug).min} 分钟</span><span>来源 ${esc(a.publisher)}</span></div>
     ${renderArticleBody(a)}
     <aside class="disclose"><svg class="i"><use href="#i-info"/></svg><p>本文由 AI 辅助撰写，依据上方列出的一手来源，关键数字已与原文核对${a.verified ? "，并经编辑通读" : ""}。如有出入，请以原文为准。<a href="../about.html#ai">关于我们的内容</a>${CONTACT ? ` · 发现错误请写信到 <a href="mailto:${esc(CONTACT)}">${esc(CONTACT)}</a>` : ""}</p></aside>
     ${rel.length ? `<div class="rel"><h3>继续读</h3><div class="toc">${rel.map(x => `<a href="${x.slug}.html"><span>${x.date.slice(5)}</span><span>${esc(x.title)}</span><span>${esc(CAT_NAME[x.category] || "")}</span></a>`).join("")}</div></div>` : ""}
@@ -67,7 +80,7 @@ for (const a of articles) {
 /* RSS */
 const rss = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0"><channel><title>${SITE_NAME} · AI 解读</title><link>${SITE_URL}/</link><description>每天把最值得看的 AI 新动态讲清楚</description>
-${articles.slice(0, 30).map(a => `<item><title>${esc(a.title)}</title><link>${SITE_URL}/a/${a.slug}.html</link><guid>${SITE_URL}/a/${a.slug}.html</guid><pubDate>${new Date(a.date + "T08:00:00Z").toUTCString()}</pubDate><description>${esc(a.summary)}</description></item>`).join("\n")}
+${articles.slice(0, 30).map(a => `<item><title>${esc(a.title)}</title><link>${SITE_URL}/a/${a.slug}.html</link><guid>${SITE_URL}/a/${a.slug}.html</guid><pubDate>${new Date(a._pub).toUTCString()}</pubDate><description>${esc(a.summary)}</description></item>`).join("\n")}
 </channel></rss>`;
 fs.writeFileSync(path.join(DIST, "rss.xml"), rss);
 
@@ -107,7 +120,7 @@ fs.writeFileSync(path.join(DIST, "404.html"), page({
 const urls = [`${SITE_URL}/`, `${SITE_URL}/about.html`, ...articles.map(a => `${SITE_URL}/a/${a.slug}.html`)];
 fs.writeFileSync(path.join(DIST, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls.map((u, i) => `<url><loc>${u}</loc>${i > 1 ? `<lastmod>${articles[i - 2].date}</lastmod>` : ""}</url>`).join("\n")}
+${urls.map((u, i) => `<url><loc>${u}</loc>${i > 1 ? `<lastmod>${articles[i - 2]._day}</lastmod>` : ""}</url>`).join("\n")}
 </urlset>
 `);
 fs.writeFileSync(path.join(DIST, "robots.txt"), `User-agent: *\nAllow: /\nSitemap: ${SITE_URL}/sitemap.xml\n`);
@@ -115,12 +128,12 @@ fs.writeFileSync(path.join(DIST, "robots.txt"), `User-agent: *\nAllow: /\nSitema
 /* 内容 API（只读、静态 JSON）：App 第一版直接读它，不需要服务器。字段变动不兼容时升 v2，v1 保留 */
 const API = path.join(DIST, "api/v1");
 fs.mkdirSync(path.join(API, "articles"), { recursive: true });
-const pub = a => ({ slug: a.slug, url: `${SITE_URL}/a/${a.slug}.html`, api: `${SITE_URL}/api/v1/articles/${a.slug}.json`, date: a.date,
+const pub = a => ({ slug: a.slug, url: `${SITE_URL}/a/${a.slug}.html`, api: `${SITE_URL}/api/v1/articles/${a.slug}.json`, published_at: a._pub, date: a.date,
   category: a.category, category_name: CAT_NAME[a.category] || a.category, publisher: a.publisher, title: a.title, summary: a.summary,
   ai_summary: a.ai_summary || null, brief: a.brief || [], verified: !!a.verified, read_minutes: index.find(x => x.slug === a.slug).min,
   source: a.sources?.main?.url || null });
 /* 对外不暴露流水线内部信息（候选、模型、生成时间等） */
-const strip = a => { const { pipeline, status, ...rest } = a; return { ...pub(a), ...rest }; };
+const strip = a => { const { pipeline, status, _pub, _day, ...rest } = a; return { ...pub(a), ...rest }; };
 const generated = new Date().toISOString();
 fs.writeFileSync(path.join(API, "articles.json"), JSON.stringify({ version: 1, generated, count: articles.length, articles: articles.map(pub) }));
 for (const a of articles) fs.writeFileSync(path.join(API, "articles", `${a.slug}.json`), JSON.stringify({ version: 1, generated, article: strip(a) }));

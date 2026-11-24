@@ -56,7 +56,12 @@ node -e '
   fi
   # 点名请人审核：GitHub 一定会发邮件和手机推送。默认是仓库主人，可用变量 WG_REVIEWER 改成别人（逗号分隔）
   REVIEWER="${WG_REVIEWER:-${GITHUB_REPOSITORY_OWNER:-}}"
-  if [ -n "$REVIEWER" ]; then
+  # 直接上线模式下，校验通过的稿子几秒后就自动合并，不再点名请你审核（否则通知里全是已经上线的稿子）。
+  # 读不到仓库变量时照旧请人审核，宁可多通知
+  MODE=$(gh api "repos/$REPO/actions/variables/WG_AUTOMERGE" --jq .value 2>/dev/null || true)
+  if [ "$ERRORS" -eq 0 ] && [ "$MODE" = "direct" ]; then
+    echo "直接上线模式，校验通过：不请人审核"
+  elif [ -n "$REVIEWER" ]; then
     ARGS=(); IFS=',' read -ra RS <<< "$REVIEWER"; for r in "${RS[@]}"; do ARGS+=(-f "reviewers[]=${r// /}"); done
     gh api "repos/$REPO/pulls/$NUM/requested_reviewers" "${ARGS[@]}" >/dev/null || echo "::warning::没能请 $REVIEWER 审核（不影响稿子）"
   fi
