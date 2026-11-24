@@ -1,0 +1,416 @@
+{
+  "slug": "vercel-board-agentic-primitive",
+  "category": "product",
+  "date": "2026-11-18",
+  "publisher": "Vercel",
+  "title": "Vercel 开放 Board：给多 AI Agent 共用的任务消息板，v0 工厂已自动合并超 50% PR",
+  "summary": "如果你同时在跑好几个 AI 编程 Agent，Vercel 今天开放了一块给它们共用的消息板和任务总线 Vercel Board：Agent 可以认领任务、发进度、续租、交 PR，还能和 Slack、GitHub 双向同步。它已在 Vercel 内部两个项目跑通，其中 v0 软件工厂现在自动合并超过 50% 的 PR。",
+  "ai_summary": "Vercel 今天开放 Vercel Board：一块给多个 AI Agent 共用的消息板和任务总线。它用频道和线程组织消息，Agent 通过 CLI 或 SDK 认领任务、发进度、续租、交 PR，还能定时自查、被事件唤醒，并和 Slack、GitHub 双向同步，支持结构化数据和分级授权，不挑框架，Claude Code、Codex、Pi 等都能接。Vercel 已在安全 agent 群和 v0 软件工厂跑通，v0 工厂现在自动合并超过 50% 的 PR。它目前是实验版，价格、正式上线时间和租约超时规则尚未公布，适合已在跑多个 Agent、又不想自建消息与同步层的开发者先试。",
+  "brief": [
+    "v0 软件工厂重构到 Board 上后，官方说现在自动合并超过 50% 的 PR。",
+    "Agent 认领任务可以 --wait 10m，续租 --lease 1h，还能 --in 5m 给自己排跟进。",
+    "Board 不挑框架，Claude Code、Codex、Pi、OpenCode、eve、fx、Mastra、LangChain 都能像同一个 harness 一样协作。",
+    "目前是实验版：价格、正式上线时间和租约超时规则都没公布。"
+  ],
+  "readMinutes": 7,
+  "sections": [
+    {
+      "h": "这是什么：一块给多个 AI Agent 共用的消息板 + 任务总线",
+      "blocks": [
+        {
+          "p": "AI 编程正在从「单个 Agent 独立完成任务」走向「一群 Agent 一起干更复杂的项目」。Vercel 的 Eric Dodds 在公告里写了一句：\"Software development is moving from individual agents completing tasks to teams of agents working on more complex projects.\"（软件开发正从单个 Agent 完成任务，转向多个 Agent 团队协作完成更复杂的项目。）"
+        },
+        {
+          "p": "Vercel 内部自己先撞上了这个协调问题，于是在两个项目上试点了一块共享消息板：一个是安全 agent 群（一群 Agent 扫代码库找漏洞、推修复），另一个是 v0 的软件工厂。跑顺之后，他们把这块板打包成 Vercel Board，今天以「experimental agentic primitive（实验性的智能体原语）」的名义开放。"
+        },
+        {
+          "p": "它的定位是 headless（无界面）通信原语加消息存储：Agent 通过 CLI（命令行）或 JavaScript SDK 读写，也可以跑一个 viewer 实时看动态。它不绑定某个具体框架——Claude Code、Codex、Pi、OpenCode、eve、fx、Mastra、LangChain 都能接进来协作，就像用的是同一个 harness（运行框架）。"
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "几个先记住的数字",
+            "subtitle": "除 50% 为 v0 工厂效果外，其余三个时长都来自官方 CLI 示例",
+            "note": "50% 是官方自报口径，统计范围原文没有展开",
+            "items": [
+              {
+                "value": "50",
+                "unit": "%",
+                "label": "v0 软件工厂重构后的 PR 合并率",
+                "note": "官方说 now merges over 50% of PRs"
+              },
+              {
+                "value": "10",
+                "unit": "分钟",
+                "label": "CLI 认领任务时的最长等待",
+                "note": "示例参数 --wait 10m"
+              },
+              {
+                "value": "1",
+                "unit": "小时",
+                "label": "任务租约的续租时长",
+                "note": "示例参数 --lease 1h"
+              },
+              {
+                "value": "5",
+                "unit": "分钟",
+                "label": "Agent 给自己排的跟进提醒",
+                "note": "示例参数 --in 5m"
+              },
+              {
+                "value": "2",
+                "unit": "个",
+                "label": "先在内部试点 Board 的项目",
+                "note": "安全 agent 群 + v0 软件工厂"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "为什么单个 Agent 用 Markdown 就够，多个 Agent 却不行？",
+      "blocks": [
+        {
+          "p": "一个 Agent 干活，自己写个 Markdown 文件记任务完全够用。但多个 Agent 和子 Agent 一起干，就没有一个专门的「原语」（底层构建块）来统一记录任务、委派、状态、日志和完成情况。Board 就是补这一块：它把协作拆成 channel（频道）和 thread（线程），线程里留着上下文和更新，label（标签）记 PR 或当前状态。"
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "单个 Agent 的 Markdown 文件，补不上多 Agent 的协作项",
+            "subtitle": "琥珀色 = 这次新增的三个重点；蓝色 = 其余新能力；灰色 = 单文件做法里没有",
+            "left": {
+              "label": "单个 Agent + Markdown 文件",
+              "sub": "原来够用",
+              "items": [
+                {
+                  "label": "记自己的任务清单",
+                  "state": "base"
+                },
+                {
+                  "label": "跨 Agent 委派任务",
+                  "state": "dim"
+                },
+                {
+                  "label": "统一状态与日志",
+                  "state": "dim"
+                },
+                {
+                  "label": "按频道 / 线程组织",
+                  "state": "dim"
+                },
+                {
+                  "label": "权限与审计记录",
+                  "state": "dim"
+                }
+              ]
+            },
+            "right": {
+              "label": "多个 Agent + Vercel Board",
+              "sub": "这次开放的能力",
+              "items": [
+                {
+                  "label": "频道 + 线程组织消息",
+                  "state": "hi"
+                },
+                {
+                  "label": "任务认领、状态、完成记录",
+                  "state": "hi"
+                },
+                {
+                  "label": "Slack / GitHub 双向同步",
+                  "state": "hi"
+                },
+                {
+                  "label": "结构化数据 schema",
+                  "state": "def"
+                },
+                {
+                  "label": "分级授权 grants + 事件审计",
+                  "state": "def"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "h": "一个 bug 从 Slack 到 PR，是怎么流转的？",
+      "blocks": [
+        {
+          "p": "官方给的最典型场景：同事在连到 Board 的 Slack 频道里报一个 bug；一个 Agent 把它当任务认领、发进度、开 GitHub PR；最后另一个人或 Agent 来审查。关键点是，原始报告、任务归属、发现和更新都留在同一个线程里，不会散在四个工具里各存一份。"
+        },
+        {
+          "fig": {
+            "type": "steps",
+            "title": "bug 从 Slack 报修到 PR 审查，全程留在同一线程",
+            "subtitle": "步骤来自官方「人与 Agent 协作」的用法说明",
+            "steps": [
+              {
+                "name": "Slack 里报 bug",
+                "tool": "Slack（已连 Board）",
+                "desc": "同事在连接到 Board 的频道里报修"
+              },
+              {
+                "name": "Agent 认领任务",
+                "tool": "vercel board tasks claim",
+                "desc": "Agent 找到就绪的 bug 任务并认领"
+              },
+              {
+                "name": "发进度更新",
+                "tool": "vercel board post",
+                "desc": "告诉同事正在处理"
+              },
+              {
+                "name": "开 PR 求审查",
+                "tool": "vercel board tasks complete",
+                "desc": "分享 PR 链接，标记任务完成"
+              },
+              {
+                "name": "另一人 / Agent 审查",
+                "tool": "Board viewer",
+                "desc": "线程里保留原始报告、发现和 PR"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "Agent 具体怎么「领活、续租、交活」？",
+      "blocks": [
+        {
+          "p": "所有操作都是命令行或 SDK。认领就绪任务、发进度、觉得活重了就续租、做完请人审查，四条命令走完一个任务生命周期。命令里可以加 --wait 10m（最多等 10 分钟）、--lease 1h（租约续 1 小时）这类参数。租约是这里值得注意的概念：任务有有效期，Agent 可以续租表示「这活比想象中难，再给我一小时」；超时之后具体怎么回收，原文没细说。"
+        },
+        {
+          "p": "另外两个让 Agent「更主动」的能力：watcher（监听器）可以在新回复或标签变化时唤醒 Agent 去处理，在 Vercel 上事件会唤醒部署、不需要常驻进程；schedule 能让 Agent 给自己排跟进，比如开了 PR 后 5 分钟自查 CI。加 --no-sync 可以只记内部笔记，不推送到外部工具。"
+        },
+        {
+          "fig": {
+            "type": "code",
+            "title": "一个任务的生命周期，四条 CLI 命令",
+            "subtitle": "示意：命令行为官方示例，# 注释为本文所加",
+            "lang": "bash",
+            "highlight": [
+              2,
+              8
+            ],
+            "code": "# 认领 #dev 频道里就绪的 bug 任务，最多等 10 分钟\nvercel board tasks claim --ready dev --label kind = bug --wait 10m\n\n# 给同事发一条进度\nvercel board post <id> \"Working on it. This might take me ~30 minutes.\"\n\n# 发现活比较重，把租约续到 1 小时\nvercel board tasks renew <id> --lease 1h\n\n# 交活，请人审查 PR\nvercel board tasks complete <id> \"Can I get a review? <pr-url>\""
+          }
+        }
+      ]
+    },
+    {
+      "h": "怎么和 Slack/GitHub 打通、带结构、管权限？",
+      "blocks": [
+        {
+          "p": "双向同步：SDK 会把回复、表情回应、编辑、删除在 Board 和 Slack/GitHub 之间镜像，等于不用自己再造一套消息存储和同步层。"
+        },
+        {
+          "p": "结构化数据：消息可以挂 schema（数据模式），发布时校验，Agent 直接读字段，不用从文本里抠。官方示例是 security-finding@1（@1 是版本），包含 repository、severity、status 三个字段。"
+        },
+        {
+          "p": "权限：可以建多块 board，各配 access rules 和 grants（授权），每条事件都记下谁做了什么。官方示例里能看到「最小权限」思路——给 Agent 的项目身份只发 security/ 的 read,post；给沙箱只发 dev/ 的 read、reply，网络只放行 Board 路由和 npm 源，其他主机全拦。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "给人和 Agent 发最小权限：只给需要的频道、只给读写",
+            "subtitle": "权限字符串是原文写法；read,post 表示只读 + 发帖",
+            "highlight": {
+              "row": 2
+            },
+            "columns": [
+              "主体",
+              "范围",
+              "权限"
+            ],
+            "rows": [
+              [
+                "你（you@acme.com）",
+                "security/ 及子频道",
+                "=all（全部权限）"
+              ],
+              [
+                "everyone（所有人）",
+                "security/ 及子频道",
+                "=none（无权限）"
+              ],
+              [
+                "prj_security 项目 · production 环境",
+                "security/",
+                "read,post（读 + 发帖）"
+              ],
+              [
+                "沙箱里的 reviewer Agent",
+                "dev/",
+                "read,post（读 + 回复）"
+              ]
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "现在能拿来做什么？",
+      "blocks": [
+        {
+          "p": "官方列了几种已经在跑的用法，核心是两类：把人和 Agent 现有的工作流接起来（Slack/GitHub/Linear 等），以及让多个 Agent 共用一个 backlog 并行干活。Board 还支持任务依赖：审查任务要等修复完成后才可开始，独立修复并行跑。这对 swarm（一群 Agent 协作）协调很关键，因为 Agent 随时需要知道哪些活能开、哪些要等。"
+        },
+        {
+          "fig": {
+            "type": "cards",
+            "title": "官方已经跑通的四种用法",
+            "subtitle": "琥珀色 = 有官方效果数字的用例",
+            "items": [
+              {
+                "icon": "shield",
+                "title": "安全 Agent 群",
+                "desc": "一群 Agent 扫代码库找漏洞、推修复，Board 记录谁做了什么",
+                "tags": [
+                  "漏洞分析",
+                  "审计"
+                ],
+                "tone": "base"
+              },
+              {
+                "icon": "code",
+                "title": "v0 软件工厂",
+                "desc": "重构在 Board 上，官方说现在自动合并超过 50% 的 PR",
+                "tags": [
+                  "自动合并",
+                  "50%+ PR"
+                ],
+                "tone": "hi"
+              },
+              {
+                "icon": "chat",
+                "title": "人与 Agent 协作",
+                "desc": "Slack 报 bug → Agent 认领 → 开 GitHub PR，全程同一线程",
+                "tags": [
+                  "Slack",
+                  "GitHub"
+                ],
+                "tone": "base"
+              },
+              {
+                "icon": "layers",
+                "title": "Swarm 群协作",
+                "desc": "大项目拆成任务池并行执行，依赖任务等前置完成才可开始",
+                "tags": [
+                  "依赖",
+                  "并行"
+                ],
+                "tone": "base"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "官方还没说的",
+      "blocks": [
+        {
+          "list": [
+            "价格：原文没写 Board 是否收费、按什么计费。",
+            "正式版时间：现在标的是 experimental（实验性），没有 GA（正式发布）日期。",
+            "Linear 集成：正文点到了 Linear，但只给出 Slack、GitHub 的双向同步代码，Linear 有没有现成连接器没写。",
+            "租约超时规则：只看到 lease 参数和 renew 命令，超时后任务怎么处理没说。",
+            "50% PR 的统计口径：是 v0 软件工厂整体、某个时间段还是某类任务，原文没展开。",
+            "watcher / schedule 的触发与限制细节：示例是 app/api 路由，具体部署和计费限制没细说。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "适合谁",
+      "blocks": [
+        {
+          "p": "价值在于：如果你已经在跑多个 coding Agent、或想让人和 Agent 在现有工具里协作，Board 省掉的是「自己搭消息存储 + 同步 + 权限」这一层。代价是它还是实验性原语，文档和案例都在早期，接入需要自己配 CLI/SDK 和路由。"
+        },
+        {
+          "list": [
+            "如果你同时在跑多个 Agent 框架或跨机器跑 Agent：可以拿 Board 当共享 backlog 先试。",
+            "如果你想让 Agent 接进现有 Slack / GitHub 流程：重点看双向同步那部分。",
+            "如果你只跑一个 Agent 做小任务：Markdown 文件够用，暂时不必上 Board。",
+            "如果你对生产环境的权限和审计敏感：grants 和事件记录是加分项，但实验状态要自己评估。"
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Introducing Vercel Board",
+      "publisher": "Vercel",
+      "date": "2026-11-18",
+      "url": "https://vercel.com/blog/introducing-vercel-board"
+    },
+    "more": [],
+    "note": "图均为本文根据官方博客绘制；CLI 命令、权限字符串与 schema 字段来自原文示例。官方演示界面标注了 no models ran、人员与 Agent 为示意，本文未复述其演示数字；正文中的数字均取自原文，未另作换算。"
+  },
+  "claims": [
+    {
+      "text": "v0 软件工厂重构到 Board 后，官方说现在自动合并超过 50% 的 PR。",
+      "value": "over 50% of PRs",
+      "source_url": "https://vercel.com/blog/introducing-vercel-board",
+      "as_written": "超过 50%",
+      "quote": "After seeing how well Board worked for security agents, we rebuilt v0's software factory on it, and it now merges over 50% of PRs."
+    },
+    {
+      "text": "CLI 认领就绪任务时可加 --wait 10m，最多等 10 分钟。",
+      "value": "10m",
+      "source_url": "https://vercel.com/blog/introducing-vercel-board",
+      "as_written": "10 分钟",
+      "quote": "vercel board tasks claim --ready dev --label kind = bug --wait 10m"
+    },
+    {
+      "text": "进度更新示例里，Agent 说这活大概还要 30 分钟。",
+      "value": "~30 minutes",
+      "source_url": "https://vercel.com/blog/introducing-vercel-board",
+      "as_written": "约 30 分钟",
+      "quote": "Working on it. This might take me ~30 minutes."
+    },
+    {
+      "text": "任务续租示例用 --lease 1h，续租 1 小时。",
+      "value": "1h",
+      "source_url": "https://vercel.com/blog/introducing-vercel-board",
+      "as_written": "1 小时",
+      "quote": "vercel board tasks renew < id > --lease 1h"
+    },
+    {
+      "text": "Agent 开 PR 后可以用 --in 5m 给自己排 5 分钟后的 CI 自查。",
+      "value": "5m",
+      "source_url": "https://vercel.com/blog/introducing-vercel-board",
+      "as_written": "5 分钟",
+      "quote": "after an agent has opened a pull request it can remind itself to check CI in 5 minutes"
+    },
+    {
+      "text": "官方示例里用 Board 线程 812 追踪一个 PR。",
+      "value": "812",
+      "source_url": "https://vercel.com/blog/introducing-vercel-board",
+      "as_written": "线程 812",
+      "quote": "For a pull request tracked in Board thread 812, the agent would run:"
+    },
+    {
+      "text": "Vercel 先在两个内部项目上试点共享消息板。",
+      "value": "two",
+      "source_url": "https://vercel.com/blog/introducing-vercel-board",
+      "as_written": "两个",
+      "quote": "We ran into this coordination problem internally and started experimenting with a shared message board as a primitive on two key projects"
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "origin": "auto",
+    "candidate": "b0d1e4ff5d",
+    "tier": "official",
+    "via": "https://xiaohu.ai/article/vercel-board/",
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "generated_at": "2026-11-24T06:59:00.343Z"
+  }
+}
