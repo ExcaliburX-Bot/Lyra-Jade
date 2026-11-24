@@ -12,6 +12,7 @@ import { sha } from "./lib/text.mjs";
 import { coverHtml, ogCardHtml } from "./lib/cover.mjs";
 import { sourceHash } from "./lib/translate.mjs";
 import { qrSvg } from "./lib/qr.mjs";
+import { topicsOf, topicList } from "./lib/topics.mjs";
 import { renderArticleBody, esc } from "../site/assets/components.js";
 
 const SITE_NAME = "玲珑玉 Lyra-Jade";
@@ -32,10 +33,10 @@ const enDate = iso => { const [y, m, d] = String(iso).split("-").map(Number); re
 const UI = {
   zh: { sections: "栏目", closeSide: "收起侧栏", openSide: "展开侧栏", rss: "RSS 订阅", rssNote: "新解读发布后自动推送到你的阅读器", brandShort: "玲珑玉",
     search: "搜索", appearance: "外观：深浅色与风格", about: "关于", aboutSite: "关于本站", aiNote: "AI 生成说明", api: "内容 API", toTop: "回到顶部",
-    filter: "按栏目筛选", sort: "排列方式" },
+    filter: "按栏目筛选", sort: "排列方式", topics: "专题" },
   en: { sections: "Sections", closeSide: "Collapse sidebar", openSide: "Open sidebar", rss: "RSS feed", rssNote: "New explainers land in your reader as soon as they're published", brandShort: "Lyra-Jade",
     search: "Search", appearance: "Appearance: theme and style", about: "About", aboutSite: "About", aiNote: "How we use AI", api: "Content API", toTop: "Back to top",
-    filter: "Filter by section", sort: "Sort" }
+    filter: "Filter by section", sort: "Sort", topics: "Topics" }
 };
 
 const tpl = fs.readFileSync(path.join(SITE, "templates/page.html"), "utf8");
@@ -58,14 +59,14 @@ const articles = fs.existsSync(CONTENT) ? fs.readdirSync(CONTENT).filter(f => f.
   .map(f => { const a = readJson(path.join(CONTENT, f)); if (a) a._pub = firstCommit(path.join(CONTENT, f)) || `${a.date}T00:00:00+08:00`; return a; })
   .filter(a => a && a.status === "published")
   .sort((a, b) => b._pub.localeCompare(a._pub) || b.date.localeCompare(a.date) || a.title.localeCompare(b.title)) : [];
-for (const a of articles) a._day = bjDay(a._pub);
+for (const a of articles) { a._day = bjDay(a._pub); a._topics = topicsOf(a); }
 
 /* 英文版：只收和当前中文稿对得上的译文（中文稿改过、还没重翻的先不显示，免得中英文事实不一致）。
    上线时间、核对状态、编号跟中文稿走 */
 const articlesEn = articles.map(zh => {
   const en = readJson(path.join(CONTENT_EN, `${zh.slug}.json`));
   if (!en || en.translated_from !== sourceHash(zh)) return null;
-  return { ...en, _pub: zh._pub, _day: zh._day, verified: zh.verified, status: zh.status, no: zh.no };
+  return { ...en, _pub: zh._pub, _day: zh._day, _topics: zh._topics, verified: zh.verified, status: zh.status, no: zh.no };
 }).filter(Boolean);
 const hasEn = new Set(articlesEn.map(a => a.slug));
 
@@ -128,15 +129,24 @@ function buildLang(L) {
     id: a.slug, no: a.no ?? list.length - i, slug: a.slug, date: a._day, src: a.date, cat: a.category, co: a.publisher, title: a.title, summary: a.summary,
     min: a.readMinutes || (en ? Math.max(3, Math.ceil(wordLen(a) / 230)) : Math.max(3, Math.ceil(textLen(a) / 450))), verified: !!a.verified, pod: null,
     v: parseInt(sha(a.slug, 4), 16) % 5, h: parseInt(sha(a.slug + "h", 4), 16) % 360,
-    cv: coverHtml(a)   /* 按内容生成的封面（见 lib/cover.mjs） */
+    cv: coverHtml(a),  /* 按内容生成的封面（见 lib/cover.mjs） */
+    tp: a._topics      /* 专题（见 lib/topics.mjs） */
   }));
   const minOf = a => index.find(x => x.slug === a.slug).min;
   /* 今日精选：最新上线的一篇（人工核对过的优先，但只在最近两天内找） */
   const featured = (list.find(a => a.verified && a._day >= bjDay(new Date(Date.now() - 2 * 864e5).toISOString())) || list[0])?.slug || null;
-  const data = { articles: index, featured, today };
+  /* 专题：两种语言用同一组（按中文版定），英文的篇数按英文版算 */
+  const topics = topicList(list, L.lang, { keys: TOPIC_KEYS });
+  const data = { articles: index, featured, today, topics };
 
   /* 首页 */
   render(L, { page: "index.html", depth: 0, title: en ? `AI Explained · ${L.titleTail}` : `AI 解读 · ${SITE_NAME}`, desc: L.siteDesc, main: listingTpl, data });
+
+  /* 专题页：t/<专题>.html，和首页同一个列表模板，只显示这个专题的文章 */
+  for (const tp of topics) {
+    render(L, { page: `t/${tp.k}.html`, depth: 1, title: en ? `${tp.name} · AI Explained · ${L.titleTail}` : `${tp.name} 专题 · ${SITE_NAME}`,
+      desc: en ? `Every Lyra-Jade explainer about ${tp.name} (${tp.sub}), from primary sources.` : `玲珑玉关于 ${tp.name}（${tp.sub}）的全部解读，只用一手来源。`, main: listingTpl, data: { ...data, topic: tp.k } });
+  }
 
   /* 文章页 */
   for (const a of list) {
@@ -152,7 +162,7 @@ function buildLang(L) {
     };
     const main = `<article class="reader" id="reader">
     <a href="../index.html" class="back" data-home><svg class="i"><use href="#i-chev-l"/></svg>${T.back}</a>
-    <div class="tags"><span class="tag">${esc(L.cat[a.category] || a.category)}</span>${a.verified ? `<span class="verified"><svg class="i"><use href="#i-check"/></svg>${T.verified}</span>` : `<a class="muted" href="../about.html#ai">${T.ai}</a>`}</div>
+    <div class="tags"><span class="tag">${esc(L.cat[a.category] || a.category)}</span>${a._topics.map(k => `<a class="tag tag-tp" href="../t/${k}.html">${esc(topics.find(t => t.k === k)?.name || k)}</a>`).join("")}${a.verified ? `<span class="verified"><svg class="i"><use href="#i-check"/></svg>${T.verified}</span>` : `<a class="muted" href="../about.html#ai">${T.ai}</a>`}</div>
     <h1>${esc(a.title)}</h1>
     <div class="rmeta-row"><div class="rmeta"><span>${esc(T.pub)}</span>${T.src ? `<span>${esc(T.src)}</span>` : ""}<span>${esc(T.min)}</span><span>${esc(T.from)}</span></div>${shareHtml(L, a, abs(L, `a/${a.slug}.html`), "top")}</div>
     ${renderArticleBody(a, { lang: L.lang })}
@@ -216,9 +226,10 @@ ${list.slice(0, 30).map(a => `<item><title>${esc(a.title)}</title><link>${abs(L,
   ${CONTACT ? `<h2>联系与勘误</h2><p class="body">发现错误或想合作，请写信到 <a href="mailto:${esc(CONTACT)}">${esc(CONTACT)}</a>。确认的错误会直接改正，并在文末「本站说明」里注明。</p>` : ""}
 </article>`;
   render(L, { page: "about.html", depth: 0, title: en ? "About · Lyra-Jade" : `关于 · ${SITE_NAME}`, desc: en ? "What Lyra-Jade is, what we cover and how we keep it accurate." : "玲珑玉是什么、写什么、怎么保证准确。", bodyClass: "reading", main: about, data });
-  return { index, data };
+  return { index, data, topics };
 }
 
+const TOPIC_KEYS = topicList(articles, "zh").map(t => t.k);
 const zh = buildLang(LANGS.zh);
 buildLang(LANGS.en);
 
@@ -232,7 +243,8 @@ fs.writeFileSync(path.join(DIST, "404.html"), fill(tpl, { ...Object.fromEntries(
 
 /* sitemap.xml 和 robots.txt */
 const urls = [[`${SITE_URL}/`], [`${SITE_URL}/about.html`], ...articles.map(a => [`${SITE_URL}/a/${a.slug}.html`, a._day]),
-  [`${SITE_URL}/en/`], [`${SITE_URL}/en/about.html`], ...articlesEn.map(a => [`${SITE_URL}/en/a/${a.slug}.html`, a._day])];
+  [`${SITE_URL}/en/`], [`${SITE_URL}/en/about.html`], ...articlesEn.map(a => [`${SITE_URL}/en/a/${a.slug}.html`, a._day]),
+  ...TOPIC_KEYS.flatMap(k => [[`${SITE_URL}/t/${k}.html`], [`${SITE_URL}/en/t/${k}.html`]])];
 fs.writeFileSync(path.join(DIST, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls.map(([u, d]) => `<url><loc>${u}</loc>${d ? `<lastmod>${d}</lastmod>` : ""}</url>`).join("\n")}
@@ -247,9 +259,9 @@ fs.mkdirSync(path.join(API, "articles"), { recursive: true });
 const pub = a => ({ slug: a.slug, url: `${SITE_URL}/a/${a.slug}.html`, api: `${SITE_URL}/api/v1/articles/${a.slug}.json`, published_at: a._pub, date: a.date,
   category: a.category, category_name: CAT_NAME[a.category] || a.category, publisher: a.publisher, title: a.title, summary: a.summary,
   ai_summary: a.ai_summary || null, brief: a.brief || [], verified: !!a.verified, read_minutes: index.find(x => x.slug === a.slug).min,
-  source: a.sources?.main?.url || null });
+  source: a.sources?.main?.url || null, topics: a._topics || [] });
 /* 对外不暴露流水线内部信息（候选、模型、生成时间等） */
-const strip = a => { const { pipeline, status, _pub, _day, ...rest } = a; return { ...pub(a), ...rest }; };
+const strip = a => { const { pipeline, status, _pub, _day, _topics, ...rest } = a; return { ...pub(a), ...rest }; };
 const generated = new Date().toISOString();
 fs.writeFileSync(path.join(API, "articles.json"), JSON.stringify({ version: 1, generated, count: articles.length, articles: articles.map(pub) }));
 for (const a of articles) fs.writeFileSync(path.join(API, "articles", `${a.slug}.json`), JSON.stringify({ version: 1, generated, article: strip(a) }));

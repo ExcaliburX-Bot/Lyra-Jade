@@ -261,6 +261,27 @@
         }
       },
       "additionalProperties": false
+    },
+    "topics": {
+      "type": "array",
+      "description": "可选：专题（厂商 / 模型家族）。不填时按发布方和标题自动判断。",
+      "items": {
+        "type": "string",
+        "enum": [
+          "claude",
+          "openai",
+          "gemini",
+          "grok",
+          "microsoft",
+          "meta",
+          "nvidia",
+          "deepseek",
+          "qwen",
+          "mistral",
+          "apple",
+          "amazon"
+        ]
+      }
     }
   }
 }

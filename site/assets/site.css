@@ -624,3 +624,15 @@ body.reading .listing{display:none}
 .share-end{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:36px 0 8px;padding:16px 18px;border:1px solid var(--line);border-radius:14px;background:var(--bg-2)}
 .share-end p{margin:0;font-size:14px;color:var(--ink-2)}
 @media (pointer:coarse){.share-menu{display:none!important}}
+
+/* ============ 专题 ============ */
+.topics-bar{display:flex;align-items:center;gap:12px;padding-bottom:14px}
+.topics-h{flex:none;font-size:12px;font-weight:600;color:var(--ink-3);letter-spacing:.04em}
+.topics-bar .chips{flex:1;min-width:0}
+a.chip{text-decoration:none;color:inherit}
+.side-tp{display:flex;align-items:center}
+.side-tp small{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+.tp-mark{width:18px;height:18px;border-radius:5px;display:grid;place-items:center;font-size:10.5px;font-weight:700;background:var(--bg-3);color:var(--ink-2);flex:none}
+.side-tp.on .tp-mark{background:var(--rose);color:#fff}
+.tag.tag-tp{text-decoration:none;color:var(--ink-2)}
+.tag.tag-tp:hover{border-color:var(--rose);color:var(--rose)}

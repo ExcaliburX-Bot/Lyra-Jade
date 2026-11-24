@@ -20,6 +20,7 @@ const I18N = {
     loadMore:"加载更多",noMore:"已经到底了",empty:"没有找到相关解读，换个关键词试试",
     lanePieces:"{n} 篇",seeAll:"看全部",archive:"全部 {n} 篇目录 · 按月份",ym:"{y} 年 {m} 月",
     pod:"播客",
+    topicsLabel:"专题",topicEyebrow:"专题 · 按厂商看",topicH1b:"专题",topicStats:"{sub} · 共 <b>{n}</b> 篇解读，按发布时间排",countTopic:"「{c}」专题 · 共 <b>{n}</b> 篇",topicEmpty:"这个专题还没有解读，有新发布会第一时间补上。",
     grpDaily:"每天更新",grpLearn:"关于",grpCoop:"开发者",nRss:"RSS 订阅",nHow:"AI 生成说明",nApi:"内容 API",
     nToday:"今天",nMember:"会员计划",nBrief:"我的日报",nWeekly:"周报",nTopics:"专题",nPodcast:"播客",nTut:"教程与课程",nIdeas:"灵感库",nStudio:"我们出品",nAbout:"关于我们",tagMember:"会员",tagNew:"新",
     subTitle:"别靠刷到。",subText:"用 RSS 订阅，新解读一发布就送到你的阅读器。",subBtn:"RSS 订阅",
@@ -45,6 +46,7 @@ const I18N = {
     loadMore:"Load more",noMore:"That's everything",empty:"Nothing found. Try another keyword.",
     lanePieces:"{n}",seeAll:"See all",archive:"All {n} explainers · by month",ym:"{mon} {y}",
     pod:"Podcast",
+    topicsLabel:"Topics",topicEyebrow:"Topic · by company",topicH1b:"explained",topicStats:"{sub} · <b>{n}</b> explainers, newest first",countTopic:"{c} · <b>{n}</b> explainers",topicEmpty:"No explainers on this topic yet. We'll cover the next release as soon as it lands.",
     grpDaily:"Daily",grpLearn:"About",grpCoop:"Developers",nRss:"RSS feed",nHow:"How we use AI",nApi:"Content API",
     nToday:"Today",nMember:"Membership",nBrief:"My brief",nWeekly:"Weekly",nTopics:"Topics",nPodcast:"Podcast",nTut:"Tutorials",nIdeas:"Idea library",nStudio:"Our projects",nAbout:"About us",tagMember:"Pro",tagNew:"New",
     subTitle:"Don't leave it to the feed.",subText:"Subscribe with RSS and new explainers land in your reader as soon as they're published.",subBtn:"RSS feed",
@@ -114,7 +116,10 @@ const BASE = window.SITE_BASE || "./";            /* 到网站根目录：资源
 const HOME = window.SITE_HOME || BASE;             /* 到本语言首页所在目录：首页、文章、关于、RSS */
 SITE.today = DATA.today || SITE.today;
 const ARTICLES = DATA.articles || [];
-const FEATURED = ARTICLES.find(a=>a.slug===DATA.featured) || ARTICLES[0] || null;
+const TOPICS = DATA.topics || [];                    /* 专题（Claude、OpenAI、Gemini、Grok……），见 scripts/lib/topics.mjs */
+const TOPIC = TOPICS.find(t=>t.k===DATA.topic) || null; /* 在专题页上：只看这个专题 */
+const POOL = TOPIC ? ARTICLES.filter(a=>(a.tp||[]).includes(TOPIC.k)) : ARTICLES;
+const FEATURED = TOPIC ? null : (ARTICLES.find(a=>a.slug===DATA.featured) || ARTICLES[0] || null);
 const LIST = !!document.getElementById("feed");          // 列表页才有
 const artUrl = a => `${HOME}a/${a.slug}.html`;
 
@@ -178,7 +183,7 @@ function card(a){
    ========================================================= */
 function filtered(){
   const q=S.q.trim().toLowerCase();
-  return ARTICLES.filter(a=>(S.cat==="all"||a.cat===S.cat)&&(!q||a.title.toLowerCase().includes(q)||catName(a.cat).toLowerCase().includes(q)||a.co.toLowerCase().includes(q)));
+  return POOL.filter(a=>(S.cat==="all"||a.cat===S.cat)&&(!q||a.title.toLowerCase().includes(q)||catName(a.cat).toLowerCase().includes(q)||a.co.toLowerCase().includes(q)));
 }
 
 function renderStatic(){
@@ -187,16 +192,22 @@ function renderStatic(){
   $$("[data-ph]").forEach(el=>el.placeholder=t(el.dataset.ph));
   if(LIST)$("#q").placeholder=t("qPh");
   $$(".lang button").forEach(b=>b.classList.toggle("on",b.dataset.lang===S.lang));
-  if(LIST)$("#heroStats").innerHTML=t("stats",{n:ARTICLES.length});
+  if(LIST)$("#heroStats").innerHTML=TOPIC?t("topicStats",{sub:esc(TOPIC.sub),n:POOL.length}):t("stats",{n:ARTICLES.length});
+  if(LIST&&TOPIC){$("[data-t=eyebrow]").textContent=t("topicEyebrow");$("[data-t=h1a]").textContent=TOPIC.name+" ";$("[data-t=h1b]").textContent=t("topicH1b")}
+  // 专题条：链接到各专题页（专题页有自己的网址，方便分享和收藏）
+  if(LIST)$("#topicBar").innerHTML=`<span class="topics-h">${t("topicsLabel")}</span><div class="chips">`+
+    `<a class="chip" href="${HOME}index.html" aria-pressed="${!TOPIC}">${t("all")}</a>`+
+    TOPICS.map(x=>`<a class="chip" href="${HOME}t/${x.k}.html" aria-pressed="${TOPIC?.k===x.k}">${esc(x.name)}<span>${x.n}</span></a>`).join("")+`</div>`;
   // 侧栏
   $("#sideNav").innerHTML=NAV.map(n=>n.g?`<div class="side-group">${t(n.g)}</div>`:
-    `<a href="${n.href?(n.root?BASE:HOME)+n.href:HOME+"index.html"}" class="${n.on&&LIST?"on":""}" ${n.href?"":"data-home"}>${n.ava?`<span class="ava">玉</span>`:icon(n.i)}<span>${t(n.t)}</span></a>`).join("")+
+    `<a href="${n.href?(n.root?BASE:HOME)+n.href:HOME+"index.html"}" class="${n.on&&LIST&&!TOPIC?"on":""}" ${n.href?"":"data-home"}>${n.ava?`<span class="ava">玉</span>`:icon(n.i)}<span>${t(n.t)}</span></a>`+
+    (n.t==="nRss"&&TOPICS.length?`<div class="side-group">${t("topicsLabel")}</div>`+TOPICS.map(x=>`<a href="${HOME}t/${x.k}.html" class="side-tp ${TOPIC?.k===x.k?"on":""}"><span class="tp-mark">${esc(x.name.slice(0,1))}</span><span>${esc(x.name)}</span><small>${x.n||""}</small></a>`).join(""):"")).join("")+
     `<div class="sub-card"><strong>${t("subTitle")}</strong><p>${t("subText")}</p><a class="btn btn-light btn-block" href="${HOME}rss.xml">${t("subBtn")}</a></div>`;
   // 页脚
   const li=arr=>arr.map(([k,h,root])=>`<li><a href="${h?(root?BASE:HOME)+h:HOME+"index.html"}" ${h?"":"data-home"}>${t(k)}</a></li>`).join("");
   for(const id in FOOT) $("#"+id).innerHTML=li(FOOT[id]);
   // 栏目筛选
-  const cnt=k=>ARTICLES.filter(a=>a.cat===k).length;
+  const cnt=k=>POOL.filter(a=>a.cat===k).length;
   if(LIST)$("#chips").innerHTML=`<button class="chip" data-cat="all" aria-pressed="${S.cat==="all"}">${t("all")}</button>`+
     CATS.filter(c=>cnt(c.k)>0).map(c=>`<button class="chip" data-cat="${c.k}" aria-pressed="${S.cat===c.k}">${c[S.lang]}<span>${cnt(c.k)}</span></button>`).join("");
   $$(".seg button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.view===S.view));
@@ -221,8 +232,8 @@ function renderFeatured(){
 }
 
 function renderTime(list){
-  const head = S.q?t("countSearch",{q:esc(S.q),n:list.length}):S.cat!=="all"?t("countFiltered",{c:catName(S.cat),n:list.length}):t("countLine",{n:list.length});
-  if(!list.length) return `<p class="count-line">${head}</p><div class="empty">${t("empty")}</div>`;
+  const head = S.q?t("countSearch",{q:esc(S.q),n:list.length}):S.cat!=="all"?t("countFiltered",{c:catName(S.cat),n:list.length}):TOPIC?t("countTopic",{c:esc(TOPIC.name),n:list.length}):t("countLine",{n:list.length});
+  if(!list.length) return `<p class="count-line">${head}</p><div class="empty">${TOPIC&&!S.q&&S.cat==="all"?t("topicEmpty"):t("empty")}</div>`;
   const vis=list.slice(0,S.shown).filter(a=>!(FEATURED&&S.cat==="all"&&!S.q&&a.id===FEATURED.id));
   const groups=[];vis.forEach(a=>{const g=groups.at(-1);g&&g.date===a.date?g.items.push(a):groups.push({date:a.date,items:[a]})});
   const total=d=>list.filter(a=>a.date===d).length;
@@ -252,9 +263,9 @@ function renderLanes(list){
 }
 
 function renderArchive(){
-  $("#archTitle").textContent=t("archive",{n:ARTICLES.length});
+  $("#archTitle").textContent=t("archive",{n:POOL.length});
   if(!$("#archive").open){$("#archBody").innerHTML="";return}
-  const months={};ARTICLES.forEach(a=>{(months[a.date.slice(0,7)]??=[]).push(a)});
+  const months={};POOL.forEach(a=>{(months[a.date.slice(0,7)]??=[]).push(a)});
   $("#archBody").innerHTML=Object.entries(months).map(([ym,items])=>{
     const[y,m]=ym.split("-").map(Number);
     return `<div class="month"><h4>${S.lang==="en"?t("ym",{mon:MON_EN[m-1],y}):t("ym",{y,m})}<small>${t("lanePieces",{n:items.length})}</small></h4>
