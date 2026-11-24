@@ -1,8 +1,35 @@
 [
   {
-    "slug": "rl-infrastructure-rocket-microsoft-ai",
-    "title": "微软 AI 的自研 RL 框架 Rocket，正在后训练 3 万亿参数的 MAI Base 2",
-    "file": "content/articles/rl-infrastructure-rocket-microsoft-ai.json",
+    "slug": "openai-cisco-shirudo",
+    "title": "OpenAI 与思科开源 Shirudo：补丁没打完、服务不重启，先挡 Java4Shell 攻击",
+    "file": "content/articles/openai-cisco-shirudo.json",
+    "errors": 0,
+    "warnings": 0,
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro"
+  },
+  {
+    "slug": "claude-ship-beta-launch",
+    "title": "Claude Ship 上线：PR 审查、修复、合并交给 Claude，企业可领 1 万美元额度",
+    "file": "content/articles/claude-ship-beta-launch.json",
+    "errors": 0,
+    "warnings": 1,
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro"
+  },
+  {
+    "slug": "gemini-api-file-slicing-controls",
+    "title": "Gemini API 上线文件切片：只读需要的页面和片段，按实际读取计费",
+    "file": "content/articles/gemini-api-file-slicing-controls.json",
+    "errors": 0,
+    "warnings": 0,
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro"
+  },
+  {
+    "slug": "gemini-4-agents-quantum-algorithms",
+    "title": "Gemini 4 智能体团队改进量子算法：聚变模拟成本降 11.8 倍",
+    "file": "content/articles/gemini-4-agents-quantum-algorithms.json",
     "errors": 0,
     "warnings": 1,
     "provider": "deepseek",
