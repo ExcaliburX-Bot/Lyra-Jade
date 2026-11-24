@@ -1,0 +1,436 @@
+{
+  "slug": "claude-ship-beta-launch",
+  "category": "product",
+  "publisher": "Anthropic",
+  "date": "2026-11-23",
+  "title": "Claude Ship 上线：PR 审查、修复、合并交给 Claude，企业可领 1 万美元额度",
+  "summary": "开完 PR 之后，审查、修 CI、决定能不能合并，现在可以交给 Claude Ship 自动跑。开发者在 Claude Code 里用 /ship 一条命令发起，管理员按仓库设定规则；符合条件的企业可领至少 1 万美元额度。",
+  "ai_summary": "Claude Ship 上线：在 Code Review 之外新增 PR Steward 和 Claude Approvals 两个 beta 智能体，把 PR 的审查到合并串成流水线。开发者用 /ship 一条命令推代码、开 PR、审查并修问题；管理员按仓库设审查级别、时机、花费上限，用策略文件决定哪些能自动批。内部数据：Claude Code 团队合并 PR 从 6 月到 9 月翻倍多，回滚比例降超 40%。限 GitHub 的 Claude Team / Enterprise，按 token 计费；符合条件企业可领至少 1 万美元、30 天内用完。不支持零数据保留、HIPAA、客户管理密钥。",
+  "brief": [
+    "Claude Ship 由已正式可用的 Code Review，加上两个新 beta 智能体 PR Steward、Claude Approvals 组成。",
+    "符合条件的企业可领至少 1 万美元额度，领取后 30 天内用完，需在 2027 年 1 月 15 日前领取。",
+    "只在 GitHub 上的 Claude Team / Enterprise 仓库可用，按 token 计费；不支持 ZDR、HIPAA、CMEK 组织。",
+    "开发者今天起就能在 Claude Code 和桌面应用里跑 /ship。"
+  ],
+  "readMinutes": 7,
+  "sections": [
+    {
+      "h": "这是什么：把 PR 之后的活儿也交给 Claude",
+      "blocks": [
+        {
+          "p": "开过拉取请求（PR）的人都很熟悉那个循环：你已经去做下一件事了，评审意见回来，只好停下来、翻回旧代码、推一个修复、再等评审重跑，最后还要找人点头批准。"
+        },
+        {
+          "p": "这套流程有它的道理——大多数团队希望每个改动都有人过目，当代码是人一行行写的时候，这跟得上节奏。但现在很多开发者用智能体写代码：在 Claude Code 团队，代码大部分是 Claude 写的，他们希望 PR 之后的每一步也能跑得一样快。"
+        },
+        {
+          "p": "于是有了 Claude Ship，今天开始 beta 可用。它能审 PR、修问题，并按团队自己设定的策略决定什么可以合并。官方目标一句话：代码写多快，就发多快。"
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "先记四个数：额度、期限、以及内部收益",
+            "subtitle": "额度为「至少」1 万美元；增速是 Claude Code 团队内部数据（2026 年 6–9 月）",
+            "items": [
+              {
+                "value": 10000,
+                "unit": "美元",
+                "label": "企业可领额度",
+                "note": "至少 $10,000"
+              },
+              {
+                "value": 30,
+                "unit": "天",
+                "label": "额度使用期限",
+                "note": "领取后 30 天内"
+              },
+              {
+                "value": 2,
+                "unit": "倍以上",
+                "label": "内部合并 PR 增长",
+                "note": "6–9 月，翻了一倍多"
+              },
+              {
+                "value": 40,
+                "unit": "% 以上",
+                "label": "回滚比例下降",
+                "note": "Claude Code 团队内部"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "三个组件各管一段",
+      "blocks": [
+        {
+          "p": "先说清楚：Claude Ship 不是一个单独的新模型，而是把三块接成流水线——其中 Code Review 此前已经正式可用（GA），PR Steward 和 Claude Approvals 是这次新上的两个 beta 智能体。"
+        },
+        {
+          "fig": {
+            "type": "steps",
+            "title": "一个 PR 进流水线后，走三步到合并决定",
+            "subtitle": "示意：按 Claude Ship 三个组件的先后顺序",
+            "steps": [
+              {
+                "name": "Code Review 审",
+                "tool": "Code Review（已 GA）",
+                "desc": "多角度深入审查代码库，先找问题、再反向验证，按三档深度出发现"
+              },
+              {
+                "name": "PR Steward 修",
+                "tool": "PR Steward（beta）",
+                "desc": "处理失败的 CI、合并冲突和评审意见；每次推送后留言改了啥、怎么撤销，但不会批准或合并"
+              },
+              {
+                "name": "Claude Approvals 批",
+                "tool": "Claude Approvals（beta）",
+                "desc": "按仓库里的策略文件决定：常规改动自己批，敏感场景要人工签字"
+              }
+            ]
+          }
+        },
+        {
+          "p": "Code Review 负责「审」：对 PR 做深入审查，从多个角度对照代码库看。它会收集发现、再反向验证（先找问题、再反过来挑自己的毛病）、分类，然后贴到 PR 上。每个仓库可选 Quick、Standard、Deep 三档深度。"
+        },
+        {
+          "p": "内部效果：在 Claude Code 团队，Claude 的审查只是更宽流程里的一层，但从 6 月到 9 月，合并的 PR 翻了一倍多，被回滚的比例下降超过 40%。"
+        },
+        {
+          "p": "PR Steward 负责「修」：让 PR 保持绿灯，但设计上不会批准或合并。它处理失败的 CI（持续集成）检查、合并冲突，以及来自 Code Review、其他评审工具或同事的反馈。每次推送后，它会留言说明改了什么、怎么撤销；开发者可以 @claude 下指令，或 @claude stop 让它停手。"
+        },
+        {
+          "p": "Claude Approvals 负责「批」：按团队写在仓库里的策略文件执行批准。策略允许的话，常规改动它可以自己批；某些场景可以要求更深的人工签字。官方把它形容为「更聪明的 CODEOWNERS 文件」（GitHub 里指定谁负责哪块代码的文件）。它做决定时能看多种信号，包括 Code Review 的发现，或团队用自然语言写的自定义分类器。官方建议多数客户先开 observe-only（只观察、不生效）模式建立信心，再让分支保护强制要它的绿灯。"
+        }
+      ]
+    },
+    {
+      "h": "开发者怎么用：/ship 一条命令",
+      "blocks": [
+        {
+          "p": "开发者现在可以在 Claude Code 里用新的 /ship 命令，在自己的 PR 上试 Claude Ship。"
+        },
+        {
+          "p": "改动准备好之后跑 /ship：Claude 推代码、开 PR、审查改动，并针对反馈和失败的检查继续修，帮 PR 往能合并的方向走。"
+        },
+        {
+          "p": "最后能不能合并，仍取决于开发者本人的权限和仓库的分支规则——它没有绕开人的权限体系。"
+        },
+        {
+          "p": "/ship 从今天起在 Claude Code 和桌面应用里滚动推出。"
+        }
+      ]
+    },
+    {
+      "h": "管理员怎么设：按仓库定规则",
+      "blocks": [
+        {
+          "p": "为整个仓库开启 Claude Ship，它会在团队所有 PR 上自动跑，按管理员设定的策略执行，开发者不必手动敲 /ship。"
+        },
+        {
+          "p": "管理员逐仓库开 Code Review 和 PR Steward；Claude Approvals 在连接的仓库默认分支上有了策略文件后开始工作，管理员也可以随时关掉。"
+        },
+        {
+          "p": "每个仓库有自己的设置：审查级别（Quick / Standard / Deep）、什么时候跑审查、花费上限。它和已有的分支保护、必需检查兼容，团队不用换掉现有工具。"
+        },
+        {
+          "fig": {
+            "type": "schematic",
+            "title": "每个仓库有三个可调的旋钮",
+            "subtitle": "示意：琥珀色是触发审查的那一步；额度 70% 为示意值，原文未给具体数字",
+            "items": [
+              {
+                "glyph": {
+                  "kind": "window",
+                  "title": "审查级别",
+                  "items": [
+                    {
+                      "label": "Quick",
+                      "tone": "base"
+                    },
+                    {
+                      "label": "Standard",
+                      "tone": "base"
+                    },
+                    {
+                      "label": "Deep",
+                      "tone": "base"
+                    }
+                  ]
+                },
+                "title": "审查深度",
+                "sub": "每个仓库三选一",
+                "rows": [
+                  {
+                    "k": "三档",
+                    "v": "Quick / Standard / Deep"
+                  }
+                ]
+              },
+              {
+                "glyph": {
+                  "kind": "flow",
+                  "nodes": [
+                    {
+                      "label": "PR 打开",
+                      "tone": "hi"
+                    },
+                    {
+                      "label": "触发审查",
+                      "tone": "base"
+                    }
+                  ]
+                },
+                "title": "审查时机",
+                "sub": "选什么时候跑",
+                "rows": [
+                  {
+                    "k": "时机",
+                    "v": "按 PR 触发 / 定时"
+                  }
+                ]
+              },
+              {
+                "glyph": {
+                  "kind": "ring",
+                  "value": 70,
+                  "max": 100,
+                  "label": "额度",
+                  "display": "示意 70%"
+                },
+                "title": "花费上限",
+                "sub": "月度封顶，防超支",
+                "rows": [
+                  {
+                    "k": "上限",
+                    "v": "月度 spend limit"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "p": "节奏由团队自己定：可以先只开一个仓库、选一档级别、定月度花费上限，让批准策略在 observe 模式下跑到足够信任为止。"
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "开发者一条命令，管理员一套规则",
+            "subtitle": "琥珀色是两种方式的启动动作",
+            "left": {
+              "label": "开发者：/ship 自己发起",
+              "sub": "在 Claude Code / 桌面应用里",
+              "items": [
+                {
+                  "label": "跑 /ship 一条命令",
+                  "tag": "发起",
+                  "state": "hi"
+                },
+                {
+                  "label": "Claude 推代码、开 PR、审查、改问题",
+                  "state": "base"
+                },
+                {
+                  "label": "能否合并看本人权限和分支规则",
+                  "state": "base"
+                }
+              ]
+            },
+            "right": {
+              "label": "管理员：按仓库开启",
+              "sub": "面向整个团队",
+              "items": [
+                {
+                  "label": "为仓库开 Code Review 和 PR Steward",
+                  "tag": "开启",
+                  "state": "hi"
+                },
+                {
+                  "label": "策略文件进默认分支，Claude Approvals 生效",
+                  "state": "base"
+                },
+                {
+                  "label": "先 observe 模式观察，再设分支保护",
+                  "state": "base"
+                }
+              ]
+            },
+            "footer": "同一条流水线，只是入口和掌控方式不同"
+          }
+        }
+      ]
+    },
+    {
+      "h": "费用：按 token 计费，额度要 30 天内用完",
+      "blocks": [
+        {
+          "p": "Claude Ship 按 token 计费，开启后会增加组织成本，多少取决于：覆盖的 PR 数量和大小、审查级别、审查频率、PR Steward 干了多少活。"
+        },
+        {
+          "p": "管理员可以给 Code Review 和 PR Steward 设花费上限。Claude Approvals 没有基础费用，但策略里的分类器按所用 token 计费；如果一个策略触发了 Claude 的审查，即使在 observe 模式，也会产生一次计费的 Code Review。跑 /ship 计入普通的 Claude Code 用量。"
+        },
+        {
+          "p": "促销额度：符合条件的企业组织可领至少 1 万美元 Claude Ship 额度，领取后 30 天内使用，需在 2027 年 1 月 15 日前领取，有条款限制。"
+        },
+        {
+          "p": "适用范围：GitHub 仓库上的 Claude Team 和 Enterprise 计划。不支持零数据保留（ZDR）、HIPAA 配置、客户管理加密密钥（CMEK）的组织。"
+        }
+      ]
+    },
+    {
+      "h": "客户已经在用的反馈",
+      "blocks": [
+        {
+          "p": "已经有团队把它接进日常流程。工程总监 Vatsal Bhatt 说，Code Review 在真人评审看到 PR 之前就抓到过真实问题，PR Steward 还帮提交者修好了；他们保留人工关卡，让人把时间花在真正需要判断的改动上。"
+        },
+        {
+          "fig": {
+            "type": "quote",
+            "title": "客户反馈：真问题在人工评审前就被抓到",
+            "text": "We have had numerous cases where Claude Code Review caught real issues before a human reviewer got to the pull request, and PR Steward helped the contributor fix them. Our reviewers were already using Claude Code to keep up with the volume, so having Code Review, PR Steward and Claude Approvals start automatically when a pull request opens makes that simpler.",
+            "zh": "我们多次遇到：真人评审还没看到 PR，Claude Code Review 已经发现真实问题，PR Steward 还帮提交者修好了。我们的评审本来就用 Claude Code 跟上代码量，现在 PR 一开，Code Review、PR Steward 和 Claude Approvals 自动启动，事情更简单了。",
+            "who": "Vatsal Bhatt",
+            "role": "Director of Engineering",
+            "source_url": "https://claude.com/resources/articles/introducing-claude-ship"
+          }
+        },
+        {
+          "p": "另一位客户 Alex Devkar（工程与分析高级副总裁）提到，PR Steward 让试点团队花更少时间处理评审反馈、更多时间写代码，而且能按团队自己的流程调整。"
+        }
+      ]
+    },
+    {
+      "h": "官方还没说的",
+      "blocks": [
+        {
+          "list": [
+            "额度之外的具体单价：每 token 多少钱、三档审查各自的花费差异，原文没写。",
+            "Quick / Standard / Deep 三档各自的耗时和检出效果差异，没写。",
+            "支持哪些 CI 系统、是否只支持 GitHub（原文只明确 GitHub），没写。",
+            "内部「PR 翻倍」「回滚降 40%」的绝对值和基数，没写。",
+            "PR Steward 和 Claude Approvals 何时转正式（GA），没写。",
+            "不符合额度领取条件的企业具体标准，没写。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "适合谁",
+      "blocks": [
+        {
+          "p": "价值：对已经在用 Claude Code 或智能体写代码的团队，Claude Ship 把 PR 之后那段「来回等评审」的循环接过去，让人的时间花在真正需要判断的改动上。"
+        },
+        {
+          "p": "代价：按 token 计费会增加成本；「批」这一步关系到代码质量，需要先用 observe 模式建立信任，而不是一上来就全自动合并。"
+        },
+        {
+          "list": [
+            "如果你日常用 Claude Code、被 PR 审核拖慢——先在自己的 PR 上跑 /ship，体会审查和修复的实际效果。",
+            "如果你是工程负责人、想团队级落地——先挑一个仓库、设月度额度上限，把批准策略放 observe 模式观察几周。",
+            "如果你们有 ZDR、HIPAA 或 CMEK 要求——目前用不了，等后续支持。",
+            "如果只想先要更快的审查、还不想碰自动批准——Code Review 已正式可用，可以先单独接入。"
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Introducing Claude Ship",
+      "publisher": "Anthropic",
+      "date": "2026-11-23",
+      "url": "https://claude.com/resources/articles/introducing-claude-ship"
+    },
+    "more": [],
+    "note": "图均为示意图或数据整理。kpi 中「翻倍」「降 40%」为 Claude Code 团队内部数据，非独立第三方评测；额度为「至少」1 万美元，有条款限制。"
+  },
+  "claims": [
+    {
+      "text": "符合条件的企业组织可领至少 1 万美元 Claude Ship 额度",
+      "value": "$10,000",
+      "source_url": "https://claude.com/resources/articles/introducing-claude-ship",
+      "as_written": "1 万美元",
+      "quote": "Eligible Claude Enterprise organizations can claim at least $10,000 in Claude Ship credits to use within 30 days of claiming."
+    },
+    {
+      "text": "额度领取后需在 30 天内使用",
+      "value": "30 days",
+      "source_url": "https://claude.com/resources/articles/introducing-claude-ship",
+      "as_written": "30 天",
+      "quote": "claim at least $10,000 in Claude Ship credits to use within 30 days of claiming."
+    },
+    {
+      "text": "额度需在 2027 年 1 月 15 日前领取",
+      "value": "January 15, 2027",
+      "source_url": "https://claude.com/resources/articles/introducing-claude-ship",
+      "as_written": "2027 年 1 月 15 日",
+      "quote": "Claim by January 15, 2027."
+    },
+    {
+      "text": "Claude Code 团队合并的 PR 从 6 月到 9 月翻了一倍多",
+      "value": "more than doubled",
+      "source_url": "https://claude.com/resources/articles/introducing-claude-ship",
+      "as_written": "翻了一倍多",
+      "quote": "merged PRs more than doubled from June to September while the share reverted fell by more than 40%."
+    },
+    {
+      "text": "同期被回滚的比例下降超过 40%",
+      "value": "more than 40%",
+      "source_url": "https://claude.com/resources/articles/introducing-claude-ship",
+      "as_written": "超过 40%",
+      "quote": "the share reverted fell by more than 40%."
+    },
+    {
+      "text": "合并 PR 的增长发生在 6 月到 9 月",
+      "value": "from June to September",
+      "source_url": "https://claude.com/resources/articles/introducing-claude-ship",
+      "as_written": "从 6 月到 9 月",
+      "quote": "merged PRs more than doubled from June to September while the share reverted fell by more than 40%."
+    },
+    {
+      "text": "Claude Ship 包含两个新的 beta 智能体：PR Steward 和 Claude Approvals",
+      "value": "two",
+      "source_url": "https://claude.com/resources/articles/introducing-claude-ship",
+      "as_written": "两个",
+      "quote": "and two new agents in beta: PR Steward and Claude Approvals."
+    }
+  ],
+  "cover": {
+    "headline": "Claude Ship 上线",
+    "highlight": "PR 之后，审查修复合并自动跑",
+    "glyph": {
+      "kind": "flow",
+      "nodes": [
+        {
+          "label": "PR 打开",
+          "tone": "base"
+        },
+        {
+          "label": "审查",
+          "tone": "hi"
+        },
+        {
+          "label": "修复",
+          "tone": "hi"
+        },
+        {
+          "label": "合并",
+          "tone": "hi"
+        }
+      ]
+    }
+  },
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "origin": "auto",
+    "candidate": "e277391e1a",
+    "tier": "official",
+    "via": null,
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "generated_at": "2026-11-24T10:10:57.876Z"
+  }
+}
