@@ -1,0 +1,427 @@
+{
+  "slug": "vercel-board-agentic-primitive",
+  "date": "2026-11-18",
+  "category": "product",
+  "publisher": "Vercel",
+  "title": "Vercel 推出 Board：多智能体共享一块消息板，v0 工厂已自动合并超 50% PR",
+  "summary": "如果你让好几个 AI 智能体同时干活，最难的是让它们互相知道谁在做什么。Vercel Board 就是为此做的共享消息板：智能体在里面领任务、报进度、交成果，还能和 Slack、GitHub 双向同步。",
+  "ai_summary": "Vercel 在 11 月 18 日发布 Vercel Board：一个实验性的智能体协作原语，给多个 AI 智能体一块共享消息板，用来认领任务、报进度、交成果。它用 CLI 或 JavaScript SDK 读写，按频道和线程组织，能和 Slack、GitHub 双向同步；能在有新回复时自动唤醒智能体，或让智能体自己安排后续（比如 5 分钟后查 CI）。官方称内部 v0 软件工厂在它上面自动合并了超过 50% 的 PR，但这是自家内部数据、口径未公开；它还宣称与 Claude Code、Codex、Pi 等框架无关。适合正在让多个智能体协同工作的开发者；定价和正式上线时间还没给。",
+  "brief": [
+    "v0 软件工厂改用 Board 后，自动合并了超过 50% 的 PR（Vercel 内部数据，口径未公开）。",
+    "Board 是「无头」消息板：智能体通过 CLI 或 JavaScript SDK 读写，不靠界面。",
+    "支持 Slack、GitHub 双向同步，回复、表情、编辑、删除会互相镜像。",
+    "可以用 grants 给人和智能体分别开权限，沙箱接入时不用把凭证放进沙箱。"
+  ],
+  "readMinutes": 6,
+  "sections": [
+    {
+      "h": "Vercel Board 是什么？",
+      "blocks": [
+        {
+          "p": "Vercel 在 11 月 18 日发布 Vercel Board，一个实验性的「智能体原语」（agentic primitive）。它本质是一块给多个 AI 智能体——也包括人——共用的消息板，用来记录任务、委派、状态、日志和成果。原来单个智能体把进度写进一个 Markdown 文件就够了；但一旦变成一群智能体互相协作，就缺一个大家都能读写的公共层，Board 补的就是这一层。"
+        },
+        {
+          "p": "它不是为人类聊天设计的，而是「无头」（headless）的：没有固定界面，智能体通过命令行（CLI）或 JavaScript SDK 读写，人类也可以打开查看器实时看各个频道、线程的动态。"
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "单个智能体记事够用，多智能体需要一块共享板",
+            "subtitle": "琥珀色=Board 带来的新能力；灰=单个 Markdown 文件做不到",
+            "left": {
+              "label": "单个智能体 + Markdown",
+              "sub": "自己记录、自己看",
+              "items": [
+                {
+                  "label": "记录任务",
+                  "state": "base"
+                },
+                {
+                  "label": "记进度日志",
+                  "state": "base"
+                },
+                {
+                  "label": "和其他智能体共享",
+                  "state": "dim"
+                },
+                {
+                  "label": "权限与审计",
+                  "state": "dim"
+                }
+              ]
+            },
+            "right": {
+              "label": "Vercel Board",
+              "sub": "共享消息板",
+              "items": [
+                {
+                  "label": "频道 + 线程",
+                  "state": "hi"
+                },
+                {
+                  "label": "状态标签 + 日志",
+                  "state": "hi"
+                },
+                {
+                  "label": "多智能体共享",
+                  "state": "hi"
+                },
+                {
+                  "label": "权限与审计",
+                  "state": "base"
+                }
+              ]
+            },
+            "footer": "从「自己记」变成「大家共用、可查、可管」"
+          }
+        }
+      ]
+    },
+    {
+      "h": "Vercel 自己先在哪用，跑出了什么结果？",
+      "blocks": [
+        {
+          "p": "官方说这是先给自己造的工具，内部先在两个关键项目上实验：一是让一群安全智能体（swarm）分析代码库漏洞、推修复；二是把 v0 的 software factory（软件工厂）重建在 Board 上。官方称，v0 软件工厂现在自动合并了超过 50% 的 PR。注意这是 Vercel 自家项目的数据，不是通用基准，官方也没有说明统计口径——比如对比的基线是什么、涵盖哪些 PR。"
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "内部先跑出来的几个数字，读的时候要分清口径",
+            "subtitle": "百分比来自 Vercel 内部数据；分钟数是 CLI 示例参数",
+            "items": [
+              {
+                "value": "50",
+                "unit": "%",
+                "label": "v0 软件工厂自动合并的 PR 比例",
+                "note": "Vercel 自家数据，口径未公开"
+              },
+              {
+                "value": "10",
+                "unit": "分钟",
+                "label": "认领任务最长等待",
+                "note": "CLI 示例 --wait 10m"
+              },
+              {
+                "value": "1",
+                "unit": "小时",
+                "label": "任务租约续期",
+                "note": "CLI 示例 --lease 1h"
+              },
+              {
+                "value": "5",
+                "unit": "分钟",
+                "label": "开 PR 后自动提醒查 CI",
+                "note": "CLI 示例 --in 5m"
+              }
+            ]
+          }
+        },
+        {
+          "p": "另一个值得注意的点是官方强调它「harness agnostic」——harness 可以理解成运行、编排智能体的那套框架或环境。官方名单里有 Claude Code、Codex、Pi、OpenCode、eve、fx、Mastra、LangChain，说它们可以像同一套框架那样协作。"
+        },
+        {
+          "fig": {
+            "type": "quote",
+            "title": "官方强调：与框架无关，各家智能体可以像一套班子协作",
+            "text": "It is harness agnostic and fits well into existing multi-agent reinforcement learning.",
+            "zh": "它与运行框架无关，能很好地融入现有的多智能体强化学习流程。",
+            "who": "Vercel",
+            "role": "官方博客",
+            "source_url": "https://vercel.com/blog/introducing-vercel-board"
+          }
+        }
+      ]
+    },
+    {
+      "h": "智能体怎么在 Board 上领任务、交结果？",
+      "blocks": [
+        {
+          "p": "每个 Board 按频道（channel）和线程（thread）组织：线程把一段对话、上下文、更新放在一起，标签（label）用来记关联的 pull request 或当前状态。任务上板后，智能体就能认领（claim）、发进度、记录结果。"
+        },
+        {
+          "fig": {
+            "type": "code",
+            "title": "从认领到交结果，四条命令走完一遍",
+            "subtitle": "命令逐字来自 Vercel 官方博客；< id >、<pr-url> 是占位符",
+            "lang": "bash",
+            "code": "# Claim the next ready task in a channel\nvercel board tasks claim --ready dev --label kind = bug --wait 10m\n# Update coworkers on progress\nvercel board post < id > \"Working on it. This might take me ~30 minutes.\"\n# Renew your lease after learning it's a tough one\nvercel board tasks renew < id > --lease 1h\n# Share the fix and settle the task\nvercel board tasks complete < id > \"Can I get a review? <pr-url>\"",
+            "highlight": [
+              2,
+              4,
+              6,
+              8
+            ]
+          }
+        },
+        {
+          "p": "几个参数值得读一下：`--wait 10m` 表示找不到就绪任务时最多等 10 分钟；`--lease 1h` 是把任务的「租约」续到 1 小时，表示这段时间归它处理；`complete` 时附上 PR 链接，别人就能在同一线程看到原始报告、发现和修复。这些是官方给的示例参数，不是产品承诺。"
+        },
+        {
+          "p": "想实时看动态，运行 npx @vercel/board inspect 就能打开查看器。官方博客末尾还有一个脚本化演示：一个数据库构建任务从「请求」走到「可交付」，里面的人物和结果是示意，任务事件是真实 Board 事件。"
+        }
+      ]
+    },
+    {
+      "h": "怎么让智能体不用人催，自己接着干？",
+      "blocks": [
+        {
+          "p": "Board 有两个自动化机制。一是 watcher：配置监听某个频道，当有人（或另一个智能体）回复、标签变化时，触发你的智能体去处理反馈、回帖或提 PR。在 Vercel 上，匹配的事件会唤醒部署，事件之间不需要常驻进程。"
+        },
+        {
+          "fig": {
+            "type": "steps",
+            "title": "有回复时，不用等人催：watcher 把智能体叫起来接着干",
+            "subtitle": "示意：事件从发生到智能体回应的流程",
+            "steps": [
+              {
+                "name": "有事件进来",
+                "tool": "Slack / 其他智能体",
+                "desc": "新回复被发出，或某个标签发生变化"
+              },
+              {
+                "name": "watcher 匹配",
+                "tool": "Board watch",
+                "desc": "按配置的频道监听，命中就触发 run"
+              },
+              {
+                "name": "唤醒部署",
+                "tool": "Vercel",
+                "desc": "事件之间无需常驻进程，到来才唤醒"
+              },
+              {
+                "name": "智能体回应",
+                "tool": "智能体",
+                "desc": "在同一线程回帖或提 PR，也可 schedule 后续"
+              }
+            ]
+          }
+        },
+        {
+          "p": "二是 schedule：智能体可以给自己排后续。例如开完 PR 后，用 vercel board schedule 让它 5 分钟后自己去查 CI，这样不必等人发新消息才动。加 --no-sync 可以把内部笔记只留在 Board 上，不同步到外部工具。"
+        }
+      ]
+    },
+    {
+      "h": "怎么和 Slack、GitHub 打通？",
+      "blocks": [
+        {
+          "p": "任务可以直接推到 Board，也可以从 Slack、GitHub 这类工具同步进来。SDK 负责双向同步，把回复、表情（reaction）、编辑、删除在 Board 和外部工具之间镜像：你在 Slack 回一句，Board 线程里也会出现，反过来也一样。"
+        },
+        {
+          "fig": {
+            "type": "illustration",
+            "title": "Slack、GitHub 和智能体都挂在同一块板上",
+            "subtitle": "示意：回复、表情、编辑、删除会在两者间双向镜像",
+            "glyph": "hub",
+            "center": {
+              "label": "Vercel Board",
+              "tone": "hi"
+            },
+            "nodes": [
+              {
+                "label": "Slack #prs",
+                "tone": "base"
+              },
+              {
+                "label": "GitHub pulls",
+                "tone": "base"
+              },
+              {
+                "label": "GitHub issues",
+                "tone": "base"
+              },
+              {
+                "label": "智能体",
+                "tone": "base"
+              }
+            ],
+            "legend": [
+              {
+                "tone": "hi",
+                "label": "共享板中心"
+              },
+              {
+                "tone": "base",
+                "label": "连进来的工具 / 智能体"
+              }
+            ]
+          }
+        },
+        {
+          "p": "消息还能带结构化数据：先定义 schema，比如 security-finding@1（@1 是版本），字段有 repository、severity、status。数据上板时 Board 会校验，智能体就能直接读字段，不用从原始文本里抠信息。"
+        }
+      ]
+    },
+    {
+      "h": "权限和安全怎么管？",
+      "blocks": [
+        {
+          "p": "官方说造 Board 的一个核心原因是自己需要安全和可审计。你可以建多块 Board、给每块设不同访问规则（grants），而且每块板的事件会记录是谁做了每个动作。"
+        },
+        {
+          "p": "CLI 里能看到这种粒度：给自己保留 `security/=all`，给所有人设 `security/=none`，再给某个项目在 production 环境只开 `security/=read,post`。和 Vercel Sandbox 配合时，可以用 SDK 生成一个「不把凭证放进沙箱」的策略，只允许访问你指定的频道和权限——比如只给 dev/ 读和回帖。"
+        }
+      ]
+    },
+    {
+      "h": "实际能拿来做什么？",
+      "blocks": [
+        {
+          "p": "官方列了两种典型模式，并配了模板。"
+        },
+        {
+          "fig": {
+            "type": "cards",
+            "title": "三种典型用法，从人机协作到智能体群",
+            "subtitle": "琥珀色=面向智能体群的场景",
+            "items": [
+              {
+                "icon": "chat",
+                "title": "人与智能体协作",
+                "desc": "队友在 Slack 报 bug，智能体认领、更新进度、开 GitHub PR，全程留记录。",
+                "tags": [
+                  "Slack",
+                  "GitHub",
+                  "Linear"
+                ],
+                "tone": "base"
+              },
+              {
+                "icon": "robot",
+                "title": "智能体互帮",
+                "desc": "不同机器、不同框架的智能体共享一个 backlog，各自认领、分享发现、留下结果。",
+                "tags": [
+                  "共享 backlog",
+                  "任务依赖"
+                ],
+                "tone": "base"
+              },
+              {
+                "icon": "layers",
+                "title": "大项目迁移 / swarm",
+                "desc": "像代码库迁移这种大任务拆成小任务，一组智能体并行执行，实时看进度。",
+                "tags": [
+                  "并行执行",
+                  "实时视图"
+                ],
+                "tone": "hi"
+              }
+            ]
+          }
+        },
+        {
+          "p": "第一种是人和智能体协作：队友在 Slack 报 bug，智能体接成任务、更新进度、开 GitHub PR，Board 把报告、归属、发现、更新一路记下来。Vercel 内部软件工厂就是这么用的；有新工具请求时，工厂会在人工审查后自动把工具加进去。"
+        },
+        {
+          "p": "第二种是智能体之间协作：不同机器、不同框架的智能体共享一个 backlog（待办池），各自认领任务、分享发现、留下结果。Board 还支持任务之间的依赖——比如 review 任务要等修复完成后才可用，而相互独立的修复可以并行。官方说这对 swarm 协调有用，因为大家随时知道哪些活能开工、哪些要等。"
+        }
+      ]
+    },
+    {
+      "h": "官方还没说的",
+      "blocks": [
+        {
+          "list": [
+            "定价：没有任何价格或是否收费的说明。",
+            "正式上线时间：现在明确是实验性（experimental），没给 GA（正式可用）日期。",
+            "容量与性能：能支撑多少智能体、多少线程、多少事件，没给数字。",
+            "「超过 50% PR」的口径：没说明统计了哪些 PR、对比的基线是多少。",
+            "与同类方案对比：没和现有的消息存储或编排工具做对照。",
+            "数据存储与保留：数据存在哪、保留多久、怎么导出，没说明。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "适合谁",
+      "blocks": [
+        {
+          "p": "价值在于省掉自己搭消息存储和双向同步的活，同时让多智能体协作变得可查看、可审计。代价是它还在实验期，要自己试、自己接入现有框架；如果你只有一个智能体，收益不大。"
+        },
+        {
+          "list": [
+            "如果你在跑多个智能体、swarm，或想搭自己的软件工厂，可以拿官方 Factory、Swarm 模板先试。",
+            "如果你已经在用 Slack、GitHub 组织工作，又想让它和智能体打通，双向同步值得看。",
+            "如果你看重安全和审计，grants 和沙箱「不放凭证」的能力是重点。",
+            "如果你只是单人用单个智能体，Markdown 文件可能就够，不必引入这套。"
+          ]
+        },
+        {
+          "p": "官方也直说这是为满足自己需求造的工具，欢迎有好奇心的开发者一起试、给反馈。"
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Introducing Vercel Board",
+      "publisher": "Vercel",
+      "date": "2026-11-18",
+      "url": "https://vercel.com/blog/introducing-vercel-board"
+    },
+    "more": [],
+    "note": "数据均来自 Vercel 官方博客这一篇原文。「超过 50% PR」是 Vercel 自家内部数据，非通用基准；CLI 示例里的 10m、1h、5m、~30 minutes 是官方示例参数而非产品承诺；配图除逐字引用的命令行外均为示意。"
+  },
+  "claims": [
+    {
+      "text": "Vercel 称 v0 的软件工厂在 Board 上重建后，自动合并了超过 50% 的 PR。",
+      "value": "50%",
+      "source_url": "https://vercel.com/blog/introducing-vercel-board",
+      "as_written": "超过 50%",
+      "quote": "we rebuilt v0 's software factory on it, and it now merges over 50% of PRs."
+    },
+    {
+      "text": "Vercel 内部先在两个关键项目上实验共享消息板。",
+      "value": "two",
+      "source_url": "https://vercel.com/blog/introducing-vercel-board",
+      "as_written": "两个",
+      "quote": "started experimenting with a shared message board as a primitive on two key projects"
+    },
+    {
+      "text": "官方 CLI 示例中，认领任务时可设最多等待 10 分钟（--wait 10m）。",
+      "value": "10m",
+      "source_url": "https://vercel.com/blog/introducing-vercel-board",
+      "as_written": "10 分钟",
+      "quote": "vercel board tasks claim --ready dev --label kind = bug --wait 10m"
+    },
+    {
+      "text": "官方 CLI 示例中，智能体发进度时可写「这大概要花我约 30 分钟」。",
+      "value": "~30 minutes",
+      "source_url": "https://vercel.com/blog/introducing-vercel-board",
+      "as_written": "约 30 分钟",
+      "quote": "Working on it. This might take me ~30 minutes."
+    },
+    {
+      "text": "官方 CLI 示例中，续租约命令把任务租约设为 1 小时（--lease 1h）。",
+      "value": "1h",
+      "source_url": "https://vercel.com/blog/introducing-vercel-board",
+      "as_written": "1 小时",
+      "quote": "vercel board tasks renew < id > --lease 1h"
+    },
+    {
+      "text": "智能体可以在开 PR 后用 schedule 安排 5 分钟后检查 CI。",
+      "value": "5 minutes",
+      "source_url": "https://vercel.com/blog/introducing-vercel-board",
+      "as_written": "5 分钟",
+      "quote": "after an agent has opened a pull request it can remind itself to check CI in 5 minutes"
+    },
+    {
+      "text": "Vercel Board 于 2026 年 11 月 18 日发布。",
+      "value": "18 Nov 2026",
+      "source_url": "https://vercel.com/blog/introducing-vercel-board",
+      "as_written": "11 月 18 日",
+      "quote": "18 Nov 2026"
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "origin": "auto",
+    "candidate": "b0d1e4ff5d",
+    "tier": "official",
+    "via": "https://xiaohu.ai/article/vercel-board/",
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "generated_at": "2026-11-24T07:31:38.379Z"
+  }
+}
