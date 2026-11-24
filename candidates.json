@@ -1,58 +1,11 @@
 [
   {
-    "id": "1d0c151fef",
-    "title": "OpenAI and Cisco introduce Shirudo",
-    "url": "https://openai.com/index/introducing-shirudo",
+    "id": "71996d9786",
+    "title": "How iFood scales coding agents across 15,000 repositories",
+    "url": "https://openai.com/index/ifood",
     "publisher": "OpenAI",
     "tier": "official",
-    "published": "2026-11-23T21:20:00.000Z",
-    "score": 6.5,
-    "category_hint": "product",
-    "related": []
-  },
-  {
-    "id": "e277391e1a",
-    "title": "Introducing Claude Ship",
-    "url": "https://claude.com/resources/articles/introducing-claude-ship",
-    "publisher": "Anthropic",
-    "tier": "official",
-    "published": "2026-11-23",
-    "score": 6.3,
-    "category_hint": "product",
-    "related": [
-      {
-        "title": "Anthropic 发布 Claude Ship：解决 AI 写代码很快、但“交接上线”太慢的问题，让代码上线和写代码一样快",
-        "url": "https://claude.com/resources/articles/introducing-claude-ship",
-        "publisher": "claude.com",
-        "tier": "official"
-      }
-    ]
-  },
-  {
-    "id": "1fa47c423b",
-    "title": "Introducing file slicing controls in the Gemini API",
-    "url": "https://blog.google/innovation-and-ai/technology/developers-tools/file-slicing-controls/",
-    "publisher": "Google",
-    "tier": "official",
-    "published": "2026-11-23",
-    "score": 6.3,
-    "category_hint": "product",
-    "related": [
-      {
-        "title": "Google 推出 Gemini API 文件切片：工具能把视频片段、PDF 某几页直接交回模型，只按看过的部分计 token",
-        "url": "https://blog.google/innovation-and-ai/technology/developers-tools/file-slicing-controls/",
-        "publisher": "Google",
-        "tier": "official"
-      }
-    ]
-  },
-  {
-    "id": "61dcf11694",
-    "title": "Finding faster quantum algorithms with agents and formal verification",
-    "url": "https://deepmind.google/blog/finding-faster-quantum-algorithms-with-agents-and-formal-verification/",
-    "publisher": "Google DeepMind",
-    "tier": "official",
-    "published": "2026-11-23T16:59:40.000Z",
+    "published": "2026-11-24T00:00:00.000Z",
     "score": 6,
     "category_hint": "product",
     "related": []
@@ -64,7 +17,7 @@
     "publisher": "a16z.news",
     "tier": "official",
     "published": "2026-11-24T00:00:00.000Z",
-    "score": 5.9,
+    "score": 5.4,
     "category_hint": null,
     "via": "https://xiaohu.ai/article/b2a-agents-as-customers/",
     "discovered_by": "xiaohu",
@@ -77,7 +30,7 @@
     "publisher": "Z.ai",
     "tier": "official",
     "published": "2026-11-24T00:00:00.000Z",
-    "score": 5.9,
+    "score": 5.4,
     "category_hint": null,
     "via": "https://xiaohu.ai/article/glm-5-4/",
     "discovered_by": "xiaohu",
@@ -90,65 +43,10 @@
     "publisher": "phonic.co",
     "tier": "official",
     "published": "2026-11-24T00:00:00.000Z",
-    "score": 5.9,
+    "score": 5.4,
     "category_hint": null,
     "via": "https://xiaohu.ai/article/phonic-1-1/",
     "discovered_by": "xiaohu",
-    "related": []
-  },
-  {
-    "id": "d1e1fa1ba8",
-    "title": "Connectors and skills come together as plugins",
-    "url": "https://x.com/claudeai/status/2124970294523945328",
-    "publisher": "@claudeai",
-    "tier": "official",
-    "published": "2026-11-23T20:56:12.910Z",
-    "score": 5.1,
-    "category_hint": "product",
-    "related": []
-  },
-  {
-    "id": "a8d5fa7d24",
-    "title": "Introducing Gemini 4 Hydrogen",
-    "url": "https://deepmind.google/blog/introducing-gemini-4-hydrogen/",
-    "publisher": "Google DeepMind",
-    "tier": "official",
-    "published": "2026-11-12T18:00:50.000Z",
-    "score": 5,
-    "category_hint": "product",
-    "related": []
-  },
-  {
-    "id": "fc6b6a56df",
-    "title": "Gemini 4 Carbon is now available",
-    "url": "https://deepmind.google/blog/gemini-4-carbon-is-now-available/",
-    "publisher": "Google DeepMind",
-    "tier": "official",
-    "published": "2026-11-10T16:03:47.000Z",
-    "score": 5,
-    "category_hint": "product",
-    "related": []
-  },
-  {
-    "id": "f8c1a7370c",
-    "title": "Introducing AlphaProof Code: a breakthrough in verifying complex software at depth",
-    "url": "https://deepmind.google/blog/introducing-alphaproof-code/",
-    "publisher": "Google DeepMind",
-    "tier": "official",
-    "published": "2026-11-10T12:02:28.000Z",
-    "score": 5,
-    "category_hint": "product",
-    "related": []
-  },
-  {
-    "id": "cd88f6cf71",
-    "title": "Opening the datasets behind our AI weather models",
-    "url": "https://deepmind.google/blog/opening-the-datasets-behind-our-ai-weather-models/",
-    "publisher": "Google DeepMind",
-    "tier": "official",
-    "published": "2026-11-10T11:13:04.000Z",
-    "score": 5,
-    "category_hint": "product",
     "related": []
   },
   {
@@ -217,12 +115,23 @@
     "related": []
   },
   {
-    "id": "372f1627fa",
-    "title": "If you’re in Europe, you get a month of Vibe Pro for free",
-    "url": "https://x.com/MistralAI/status/2124905610386780451",
-    "publisher": "@MistralAI",
+    "id": "63ca2eddd0",
+    "title": "Gemini 4 Neon is now rolled out to @GoogleWorkspace customers through the Gemini App!",
+    "url": "https://x.com/OfficialLoganK/status/2125018427790344654",
+    "publisher": "@OfficialLoganK",
     "tier": "official",
-    "published": "2026-11-23T16:39:11.010Z",
+    "published": "2026-11-24T00:07:28.775Z",
+    "score": 4.6,
+    "category_hint": "product",
+    "related": []
+  },
+  {
+    "id": "d1e1fa1ba8",
+    "title": "Connectors and skills come together as plugins",
+    "url": "https://x.com/claudeai/status/2124970294523945328",
+    "publisher": "@claudeai",
+    "tier": "official",
+    "published": "2026-11-23T20:56:12.910Z",
     "score": 4.6,
     "category_hint": "product",
     "related": []
@@ -410,17 +319,6 @@
     "related": []
   },
   {
-    "id": "a88353929e",
-    "title": "Merry Making: Play, Build and Create With NVIDIA Technologies This Holiday Season",
-    "url": "https://blogs.nvidia.com/blog/nvidia-technologies-holidays-2026/",
-    "publisher": "NVIDIA",
-    "tier": "official",
-    "published": "2026-11-23T17:00:08.000Z",
-    "score": 4.3,
-    "category_hint": null,
-    "related": []
-  },
-  {
     "id": "3ea993db7e",
     "title": "Combatting adversarial distillation",
     "url": "https://openai.com/index/combatting-adversarial-distillation",
@@ -504,6 +402,94 @@
     "publisher": "OpenAI",
     "tier": "official",
     "published": "2026-11-18T10:00:00.000Z",
+    "score": 4.2,
+    "category_hint": "product",
+    "related": []
+  },
+  {
+    "id": "9fa731b0ef",
+    "title": "Research acceleration: The jagged frontier",
+    "url": "https://openai.com/index/research-acceleration-jagged-frontier",
+    "publisher": "OpenAI",
+    "tier": "official",
+    "published": "2026-11-18T08:00:00.000Z",
+    "score": 4.2,
+    "category_hint": "product",
+    "related": []
+  },
+  {
+    "id": "b527b6f0dd",
+    "title": "How Sumitomo Life’s leaders helped teams adopt ChatGPT Enterprise",
+    "url": "https://openai.com/business/customer-stories/sumitomo-life",
+    "publisher": "OpenAI",
+    "tier": "official",
+    "published": "2026-11-18T08:00:00.000Z",
+    "score": 4.2,
+    "category_hint": "product",
+    "related": []
+  },
+  {
+    "id": "53f2a14376",
+    "title": "Inside the Codex sandbox",
+    "url": "https://openai.com/index/inside-the-codex-sandbox",
+    "publisher": "OpenAI",
+    "tier": "official",
+    "published": "2026-11-18T08:00:00.000Z",
+    "score": 4.2,
+    "category_hint": "product",
+    "related": []
+  },
+  {
+    "id": "8b6ac2940f",
+    "title": "Managing frontier AI risk: From training to deployment",
+    "url": "https://openai.com/index/managing-frontier-ai-risk",
+    "publisher": "OpenAI",
+    "tier": "official",
+    "published": "2026-11-18T06:00:00.000Z",
+    "score": 4.2,
+    "category_hint": "product",
+    "related": []
+  },
+  {
+    "id": "6cab9c8cd3",
+    "title": "Le Groupe Figaro and OpenAI partner to bring Le Figaro journalism to ChatGPT",
+    "url": "https://openai.com/index/le-groupe-figaro-and-openai-announce-partnership",
+    "publisher": "OpenAI",
+    "tier": "official",
+    "published": "2026-11-18T00:00:00.000Z",
+    "score": 4.2,
+    "category_hint": "product",
+    "related": []
+  },
+  {
+    "id": "590cb0b9c5",
+    "title": "Strengthening NATO and allied cyber defenses with AI",
+    "url": "https://openai.com/index/strengthening-nato-allied-cyber-defences-ai",
+    "publisher": "OpenAI",
+    "tier": "official",
+    "published": "2026-11-17T00:00:00.000Z",
+    "score": 4.2,
+    "category_hint": "product",
+    "related": []
+  },
+  {
+    "id": "0604bc2b50",
+    "title": "Astra for Law leads in legal intelligence",
+    "url": "https://openai.com/index/astra-law-6-2",
+    "publisher": "OpenAI",
+    "tier": "official",
+    "published": "2026-11-17T00:00:00.000Z",
+    "score": 4.2,
+    "category_hint": "product",
+    "related": []
+  },
+  {
+    "id": "f26f2a4dfd",
+    "title": "Broadening access to AI for scientists",
+    "url": "https://openai.com/index/expanding-chatgpt-for-academic-researchers",
+    "publisher": "OpenAI",
+    "tier": "official",
+    "published": "2026-11-16T17:00:00.000Z",
     "score": 4.2,
     "category_hint": "product",
     "related": []
