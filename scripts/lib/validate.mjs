@@ -112,6 +112,19 @@ export function validateArticle(a, { sourceTexts = {} } = {}) {
   const orphan = nums.filter(n => ![...claimed].some(c => c.includes(n) || n.includes(c)));
   if (orphan.length) warnings.push(`正文里这些数字没有列进事实清单：${orphan.slice(0, 12).join("、")}`);
 
+  /* 封面材料（可选）：字要短，大数字要在事实清单里，零件要认识 */
+  if (a.cover) {
+    const cv = a.cover;
+    if (cv.headline && [...cv.headline].length > 18) warnings.push(`封面大字（cover.headline）超过 18 字，会被截断`);
+    if (cv.highlight && [...cv.highlight].length > 22) warnings.push(`封面结论（cover.highlight）超过 22 字，会被截断`);
+    if (cv.big?.value != null && ![...claimed].some(c => c.includes(normNum(cv.big.value)) || numCore(cv.big.value) && c.includes(numCore(cv.big.value))))
+      errors.push(`封面大数字 ${cv.big.value} 不在事实清单里`);
+    if (cv.glyph) {
+      if (!GLYPH_SPEC[cv.glyph.kind]) errors.push(`封面：不认识的示意零件 ${cv.glyph.kind}`);
+      else GLYPH_SPEC[cv.glyph.kind].forEach(k => need(cv.glyph[k] != null, `封面：示意零件 ${cv.glyph.kind} 缺少参数 ${k}`));
+    }
+  }
+
   /* 措辞 */
   const all = JSON.stringify(a);
   HYPE.forEach(w => { if (all.includes(w)) warnings.push(`出现夸张用词「${w}」`); });

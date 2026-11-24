@@ -456,14 +456,14 @@ test("新图型：代码高亮、对照表、卡片、竖柱、两栏对照、�
   assert.match(validateArticle(withQuote("We are thrilled to bring slicing to everyone."), { sourceTexts: { s: src } }).errors.join(""), /引语在原文里找不到/);
 });
 
-test("示意小图零件：19 种都能画出 SVG，未知零件和缺参数会被校验拦下", async () => {
+test("示意小图零件：20 种都能画出 SVG，未知零件和缺参数会被校验拦下", async () => {
   const { GLYPHS, GLYPH_SPEC, figure } = await import("../site/assets/components.js");
   const { validateArticle } = await import("../scripts/lib/validate.mjs");
-  assert.equal(Object.keys(GLYPHS).length, 19);
+  assert.equal(Object.keys(GLYPHS).length, 20);
   const sample = { pages: { count: 6, select: [2, 3] }, tracks: { lanes: ["画面"] }, frames: { count: 4 }, context: { segments: [{ size: 1 }] }, stack: { layers: [{ label: "a" }] },
     flow: { nodes: [{ label: "a" }] }, hub: { center: { label: "c" }, nodes: [{ label: "n" }] }, chat: { turns: [{ role: "user", text: "hi" }] }, window: { items: [{ label: "x" }] },
     dots: { total: 10, hi: 3 }, ring: { value: 40 }, area: { before: { value: 100 }, after: { value: 87 } }, devices: { left: { kind: "laptop" }, right: { kind: "cloud" } },
-    funnel: { stages: [{ label: "a", value: 3 }] }, clock: { segments: [{ from: 1, to: 3 }] }, matrix: { rows: ["r"], cols: ["c"], cells: [[1]] } };
+    funnel: { stages: [{ label: "a", value: 3 }] }, clock: { segments: [{ from: 1, to: 3 }] }, matrix: { rows: ["r"], cols: ["c"], cells: [[1]] }, minibars: { items: [{ label: "a", value: 3 }, { label: "b", value: 1 }] } };
   for (const k of Object.keys(GLYPHS)) {
     const out = GLYPHS[k]({ kind: k, ...(sample[k] || {}) });
     assert.match(out, /^<svg class="glyph"/, k); assert.doesNotMatch(out, /NaN|undefined/, k);
@@ -473,5 +473,5 @@ test("示意小图零件：19 种都能画出 SVG，未知零件和缺参数会�
   const withFig = fig => ({ ...base, sections: [...base.sections, { h: "x", blocks: [{ fig }] }] });
   assert.match(validateArticle(withFig({ type: "illustration", title: "t", subtitle: "示意", glyph: { kind: "rocket" } }), {}).errors.join(""), /不认识的示意零件 rocket/);
   assert.match(validateArticle(withFig({ type: "illustration", title: "t", subtitle: "示意", glyph: { kind: "dots", total: 10 } }), {}).errors.join(""), /缺少参数 hi/);
-  assert.ok(Object.keys(GLYPH_SPEC).length === 19);
+  assert.ok(Object.keys(GLYPH_SPEC).length === 20);
 });

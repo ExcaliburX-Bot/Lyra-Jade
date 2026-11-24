@@ -20,7 +20,7 @@ export const GLYPH_SPEC = {
   pages: ["count"], sheet: [], tracks: ["lanes"], wave: [], frames: ["count"], doc: [],
   context: ["segments"], stack: ["layers"], flow: ["nodes"], hub: ["center", "nodes"], chat: ["turns"],
   window: ["items"], dots: ["total", "hi"], ring: ["value"], area: ["before", "after"], devices: ["left", "right"],
-  funnel: ["stages"], clock: ["segments"], matrix: ["rows", "cols", "cells"]
+  funnel: ["stages"], clock: ["segments"], matrix: ["rows", "cols", "cells"], minibars: ["items"]
 };
 
 export const GLYPHS = {
@@ -200,6 +200,18 @@ export const GLYPHS = {
         b += v ? `<circle cx="${x}" cy="${y + 9}" r="7" class="${v === 2 ? "g-hi" : "g-def"}"/><path d="M${x - 3} ${y + 9}l2 2 4-4" class="g-ck"/>` : `<circle cx="${x}" cy="${y + 9}" r="7" class="g-dim"/>`; }); });
     return gSvg(W, H, b, "功能或权限矩阵");
   }
+};
+
+/* 小柱状图（封面和卡片用）：{items:[{label, value, tone}]}，用真实数值按比例画 */
+GLYPHS.minibars = g => {
+  /* 封面用（g.bare）：不写标签、画布更小，缩放后数字更大更清楚 */
+  const it = (g.items || []).filter(x => Number.isFinite(+x.value)).slice(0, 6), n = it.length || 1, max = Math.max(...it.map(x => +x.value), 1);
+  const bare = !!g.bare, W = bare ? 150 : 240, H = bare ? 104 : 130, base = bare ? 100 : 100, top = bare ? 70 : 84;
+  const bw = Math.min(bare ? 30 : 44, (W - 16) / n - (bare ? 8 : 12)), gap = (W - 16 - n * bw) / Math.max(1, n);
+  return gSvg(W, H, it.map((x, i) => { const h = Math.max(4, +x.value / max * top), X = 8 + gap / 2 + i * (bw + gap);
+    return `<rect x="${X}" y="${base - h}" width="${bw}" height="${h}" rx="4" class="${gTone(x.tone || (i === 0 ? "hi" : "base"))}"/>` +
+      gTxt(X + bw / 2, base - 6 - h, x.display ?? String(x.value), "g-tx-b") + (bare ? "" : gTxt(X + bw / 2, 116, gCut(x.label, Math.max(3, Math.floor(bw / 7))))); }).join("") +
+    `<path d="M4 ${base}h${W - 8}" class="g-ln g-thin"/>`, "几项数值对比");
 };
 
 export function glyph(g) {

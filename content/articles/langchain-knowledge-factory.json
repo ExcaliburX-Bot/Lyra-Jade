@@ -296,5 +296,30 @@
     "provider": "deepseek",
     "model": "deepseek-v4-pro",
     "generated_at": "2026-11-23T23:46:25.626Z"
+  },
+  "cover": {
+    "headline": "LangChain 提出「知识工厂」",
+    "highlight": "让 AI 代理懂公司的规矩",
+    "glyph": {
+      "kind": "flow",
+      "nodes": [
+        {
+          "label": "收集",
+          "tone": "base"
+        },
+        {
+          "label": "整理",
+          "tone": "base"
+        },
+        {
+          "label": "维护",
+          "tone": "base"
+        },
+        {
+          "label": "喂给代理",
+          "tone": "hi"
+        }
+      ]
+    }
   }
 }

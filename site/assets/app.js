@@ -137,7 +137,14 @@ function fmtDate(d){return d.toISOString().slice(0,10)}
 
 /* 生成式封面：根据文章随机生成配色和版式，替换成真实图片时改这里 */
 function cover(a){
-  const c=CATS.find(c=>c.k===a.cat), hue=(c.hue+a.h%40-20+360)%360;
+  if(a.cv){ /* 按内容生成的封面：版式、配图在构建时定好，这里只上色 */
+    const {html,layout,hue,light}=a.cv;
+    const bg=light?`linear-gradient(160deg,hsl(${hue} 45% 97%),hsl(${hue} 32% 90%))`:`linear-gradient(150deg,hsl(${hue} 38% 14%),hsl(${(hue+28)%360} 42% 7%))`;
+    const acc=light?`hsl(${hue} 70% 38%)`:`hsl(${hue} 85% 68%)`;
+    const glow=`hsl(${hue} 80% ${light?82:38}% / .5)`;
+    return `<div class="cover cv cv-${layout}${light?" light":""}" style="--cbg:${bg};--cacc:${acc};--cglow:${glow}">${html}</div>`;
+  }
+  const c=CATS.find(c=>c.k===a.cat)||CATS[0], hue=(c.hue+a.h%40-20+360)%360;
   const light=a.v===3;
   const bg=light?`linear-gradient(160deg,hsl(${hue} 40% 96%),hsl(${hue} 30% 90%))`:`linear-gradient(150deg,hsl(${hue} 35% 13%),hsl(${(hue+30)%360} 40% 7%))`;
   const acc=light?`hsl(${hue} 65% 42%)`:`hsl(${hue} 85% 68%)`;

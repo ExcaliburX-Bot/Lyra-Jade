@@ -7,7 +7,7 @@
    ========================================================= */
 
 import { glyph, GLYPHS, GLYPH_SPEC } from "./glyphs.js";
-export { GLYPHS, GLYPH_SPEC };
+export { glyph, GLYPHS, GLYPH_SPEC };
 
 export const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const pct = (v, max) => Math.max(0, Math.min(100, (v / max) * 100)).toFixed(2) + "%";

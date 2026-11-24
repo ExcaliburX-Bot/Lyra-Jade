@@ -173,3 +173,9 @@ html.style-coss .cover .ck,html.style-coss .cover .ch b,html.style-coss .cover .
 html.style-coss .cover .ck::before,html.style-coss .cover .bars i,html.style-coss .cover .wave i{background:var(--rose)}
 html.style-coss .cover .ring,html.style-coss .cover .ring::before{border-color:var(--rose)}
 html.style-coss .cover .ch{font-weight:600}
+
+/* 按内容生成的封面：简约风格下统一灰底，配图用玉绿 */
+html.style-coss .cover.cv{--c-hi:var(--rose);--c-hi-soft:color-mix(in srgb,var(--rose) 16%,transparent);--cacc:var(--rose);
+  --ink:inherit;--ink-2:inherit;--ink-3:inherit;--bg-3:inherit;--line-2:inherit;--c-def:inherit;--c-def-soft:inherit;color:var(--ink)}
+html.style-coss .cover.cv .ch-b,html.style-coss .cbig2{color:var(--rose)}
+html.style-coss .cover.cv .cchip.hi{color:var(--rose);border-color:var(--rose);background:color-mix(in srgb,var(--rose) 10%,transparent)}

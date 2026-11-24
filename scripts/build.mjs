@@ -8,6 +8,7 @@ import path from "node:path";
 import { CONTENT, DIST, SITE, ROOT } from "./lib/paths.mjs";
 import { readJson } from "./lib/store.mjs";
 import { sha } from "./lib/text.mjs";
+import { coverHtml } from "./lib/cover.mjs";
 import { renderArticleBody, esc } from "../site/assets/components.js";
 
 const SITE_NAME = "玲珑玉 Lyra-Jade";
@@ -43,7 +44,8 @@ for (const a of articles) a._day = bjDay(a._pub);
 const index = articles.map((a, i) => ({
   id: a.slug, no: a.no ?? articles.length - i, slug: a.slug, date: a._day, src: a.date, cat: a.category, co: a.publisher, title: a.title, summary: a.summary,
   min: a.readMinutes || Math.max(3, Math.ceil(textLen(a) / 450)), verified: !!a.verified, pod: null,
-  v: parseInt(sha(a.slug, 4), 16) % 5, h: parseInt(sha(a.slug + "h", 4), 16) % 360
+  v: parseInt(sha(a.slug, 4), 16) % 5, h: parseInt(sha(a.slug + "h", 4), 16) % 360,
+  cv: coverHtml(a)   /* 按内容生成的封面（见 lib/cover.mjs） */
 }));
 /* 今日精选：最新上线的一篇（人工核对过的优先，但只在最近两天内找） */
 const featured = (articles.find(a => a.verified && a._day >= bjDay(new Date(Date.now() - 2 * 864e5).toISOString())) || articles[0])?.slug || null;

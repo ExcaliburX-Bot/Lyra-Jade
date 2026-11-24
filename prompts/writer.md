@@ -124,9 +124,24 @@ schematic、storyboard、illustration 和 cards（每张卡可以用 glyph 代�
 - 图里的例子（任务名、文件名）如果不是原文给的，subtitle 要写「示意图：任务是举例」。
 - 旧的颜色名仍然可用：local / main / good = 本机或主角，cloud = 云端，laptop / warn = 对照或需要注意，ref = 参照对象，bad = 超出或不行。新写的图优先用 hi / def / base / ref / dim。
 
+## 封面（可选，建议填）
+
+首页卡片的封面按这篇的内容画。不填 cover 时，程序会从文中第一张示意零件图、柱状图、指标卡和标题里的数字自动挑；想让封面更准，就填：
+
+```json
+"cover": {"headline": "Gemini 4 Neon 发布", "highlight": "100 万 token 上下文",
+          "big": {"value": "100", "unit": "万 token", "label": "上下文长度"},
+          "glyph": {"kind": "context", "total": 100, "segments": [{"size": 100, "tone": "hi", "label": "100 万"}]}}
+```
+
+- headline：封面大字，18 字以内，说是谁的什么事；highlight：一句结论，22 字以内，用强调色。
+- big 和 glyph 二选一就够：有一个最能说明这篇的数字就填 big（它必须在 claims 里）；有一个画面比喻（结构、比例、前后对比、谁连着谁）就填 glyph，参数同上表。
+- 封面零件上的字越少越好，1–4 个标签。
+
 # 交稿前检查
 
 1. 每张用了琥珀色（hi）的图，subtitle 里写了「琥珀色是……」；用了蓝色（def）的，写了「蓝色是默认……」。没写就把颜色去掉。
 2. 示意类图型（timeline、route、steps、pipeline、beforeafter、schematic、storyboard、illustration）的 subtitle 含「示意」二字。
 3. 至少 1 张示意零件图，glyph 是带 kind 的对象。
 4. 所有数字都在 claims 里，图里的 value 是数字。
+5. 填了 cover 的话，headline ≤ 18 字、highlight ≤ 22 字，big 的数字在 claims 里。

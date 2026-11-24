@@ -213,6 +213,54 @@
           }
         }
       }
+    },
+    "cover": {
+      "type": "object",
+      "description": "可选：封面图的材料。不填时程序从文中图表和标题自动挑。",
+      "properties": {
+        "headline": {
+          "type": "string",
+          "maxLength": 18,
+          "description": "封面大字，2 行以内"
+        },
+        "highlight": {
+          "type": "string",
+          "maxLength": 22,
+          "description": "封面上用强调色写的一句结论"
+        },
+        "big": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "string",
+                "number"
+              ]
+            },
+            "unit": {
+              "type": "string"
+            },
+            "label": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "value"
+          ]
+        },
+        "glyph": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        }
+      },
+      "additionalProperties": false
     }
   }
 }
