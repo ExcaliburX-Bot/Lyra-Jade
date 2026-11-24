@@ -1,10 +1,10 @@
 [
   {
-    "slug": "vercel-board",
-    "title": "Vercel 推出 Board：多 agent 协作的共享消息板，v0 软件工厂已靠它合并超过 50% PR",
-    "file": "content/articles/vercel-board.json",
+    "slug": "rl-infrastructure-rocket-microsoft-ai",
+    "title": "微软 AI 的自研 RL 框架 Rocket，正在后训练 3 万亿参数的 MAI Base 2",
+    "file": "content/articles/rl-infrastructure-rocket-microsoft-ai.json",
     "errors": 0,
-    "warnings": 0,
+    "warnings": 1,
     "provider": "deepseek",
     "model": "deepseek-v4-pro"
   }
