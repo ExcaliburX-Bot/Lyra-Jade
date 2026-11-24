@@ -1,5 +1,5 @@
 # 英文版：中文稿合并进主分支后，自动翻成英文（DeepSeek），开一个 PR；直接上线模式下校验通过就自动合并发布
-# 也可以手动运行：补翻旧稿，或只翻某几篇。不勾「发布」时只把译文打包成附件，方便先看质量
+# 也可以手动运行：补翻旧稿，或只翻某几篇。不勾「发布」时译文只推到 preview/en-* 分支，方便先看质量
 # 注意：这个工作流没有定时触发，改它不影响定时任务
 name: 翻译
 on:
@@ -16,7 +16,7 @@ on:
         description: 这次最多翻几篇
         default: "6"
       publish:
-        description: 翻完开 PR 上线（不勾就只打包成附件）
+        description: 翻完开 PR 上线（不勾就只推到预览分支）
         type: boolean
         default: true
 permissions:
@@ -47,13 +47,16 @@ jobs:
           ARGS=(--max "${{ inputs.max || '6' }}" --out /tmp/new-translations.json)
           if [ -n "${{ inputs.slugs }}" ]; then ARGS+=(--slug "${{ inputs.slugs }}"); fi
           node scripts/translate.mjs "${ARGS[@]}"
-      - name: 打包译文（不上线）
+      - name: 只预览：译文推到 preview/en-<运行编号> 分支，不开 PR、不上线
         if: github.event_name == 'workflow_dispatch' && !inputs.publish
-        uses: actions/upload-artifact@v4
-        with:
-          name: english-preview
-          path: content/en/
-          if-no-files-found: ignore
+        run: |
+          [ -d content/en ] || { echo "没有译文"; exit 0; }
+          git config user.name "lyra-jade-bot"; git config user.email "lyra-jade-bot@users.noreply.github.com"
+          BR="preview/en-${{ github.run_id }}"
+          git switch -c "$BR"
+          git add content/en
+          git commit -qm "预览：英文译文（不上线）" && git push -q origin "$BR"
+          echo "译文在分支 $BR 的 content/en/ 下，看完可删除这个分支" >> "$GITHUB_STEP_SUMMARY"
       - name: 开 PR
         if: github.event_name == 'push' || inputs.publish
         env:

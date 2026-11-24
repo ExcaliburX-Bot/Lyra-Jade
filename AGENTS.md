@@ -51,7 +51,7 @@ node scripts/bot.mjs status
 
 - **不合并任何 PR，不推送 main。** 阶段 B 的自动合并由 `automerge.yml` 按规则执行，你只负责打 `bot-reviewed` 标签。
 - **不改** `.github/`、`scripts/`、`site/`、`prompts/`、`schema/`、`test/`、`AGENTS.md`、`bot/`。这些需要改时，开 Issue 写清楚原因和建议改法。
-- **不改已发布的文章**（`main` 上的 `content/articles/`）。发现错误开 Issue，标题以「勘误：」开头，并写明原文出处。
+- **不改已发布的文章**（`main` 上的 `content/articles/` 和英文版 `content/en/`）。英文版由翻译工作流生成，发现译文问题开 Issue，标题以「译文：」开头。发现错误开 Issue，标题以「勘误：」开头，并写明原文出处。
 - 在 `draft/*` 分支上只能改那一篇文章的 JSON，不能加别的文件。
 - 不删除分支和文件，除了你自己开的 `bot/*` 分支在 PR 关闭后。
 - 不接触任何密钥；令牌只放在仓库外的 `~/.config/lyra-jade/token`，不写进仓库、评论、日志、聊天回复。

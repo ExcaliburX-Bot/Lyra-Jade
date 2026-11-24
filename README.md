@@ -57,6 +57,7 @@ npm run dev         # 构建并在 http://localhost:4321 预览
    | `WG_REASONING` | `medium` | Grok 写稿的推理强度：`low` / `medium` / `high` / `xhigh`，越高越慢越贵 |
    | `WG_AUTOMERGE` | 关 | `direct`＝校验 0 个必须修改、主材料是官方或一手的新稿直接上线；`on`＝阶段 B，Grok Bot 初审打 `bot-reviewed` 后才合并。两种都要配 `WG_MERGE_TOKEN` |
    | `WG_AUTOMERGE_CATEGORIES` | `product` | 允许自动合并的栏目，逗号分隔 |
+   | `WG_TRANSLATE_MODEL` | `deepseek-v4-pro` | 英文版翻译用的 DeepSeek 模型 |
 6. **开启 Pages**：Settings → Pages → Source 选 *GitHub Actions*。
 7. 依次手动运行「X 监测」（如果配了 xAI）、「抓取」、「写稿」，就会看到第一批 PR。
 
@@ -70,6 +71,7 @@ npm run dev         # 构建并在 http://localhost:4321 预览
 - **选题入口（小互）**：`sources.json` 里的 `xiaohu` 源只当线索：每篇只打开一次文章页取「查看主材料」链接，回到一手原文写；不用对方的标题、简介和正文。找不到一手原文的直接跳过，不改写对方的稿子。同样的方式可以接别的解读站：加 `"resolveOriginal": true`。
 - **X 监测名单**：`sources/x-accounts.json`，每组最多 20 个账号；KOL 两组默认关着。Actions 里的「X 监测」走 xAI API、按帖子数收费，2026-11-22 起因额度用完已停用（在 Actions 里点 Enable 可恢复）。现在由 Grok Bot 用订阅自带的 X 访问来看（`bot/skills/x-watch.md`），读到的帖子用 `node scripts/bot.mjs x-add` 进素材库并存档原文，写稿时不再调用 xAI API。
 - **换写稿模型**：默认 Grok。改用 DeepSeek：加 `DEEPSEEK_API_KEY`，把变量 `WG_PROVIDER` 设为 `deepseek`；想先试一篇，手动运行「写稿」时在 provider 里选 deepseek 即可。定时写稿已避开 DeepSeek 的工作日高峰（UTC 01–04、06–10 点），按半价计费。
+- **英文版**：中文稿合并进主分支后，「翻译」工作流自动用 DeepSeek 翻成英文（先整篇翻译改写，再由「母语编辑」润色；每个数字都和中文版核对，对不上的让模型修，修不好就不发这篇的英文版），开 PR，直接上线模式下自动合并。英文页面在网站的 `en/` 下，右上角「EN / 中文」切换。翻译规则在 `prompts/translator.md`。补翻旧稿：Actions → 翻译 → Run workflow（max 填篇数）；只想先看效果就不勾「发布」，译文只推到 `preview/en-*` 分支。中文稿改过后，旧译文先下线，下一次翻译自动重翻。
 - **导出单页**：`npm run build && node scripts/export.mjs <slug> 文件名.html`，把一篇文章导出成一个独立的 HTML 文件（样式、脚本、动态图都内嵌），双击就能打开，适合发给别人看。
 - **调写作规则**：`prompts/writer.md`。**改页面样式**：`site/assets/site.css`，图形组件在 `site/assets/components.js`。
 
@@ -105,9 +107,10 @@ npm run dev         # 构建并在 http://localhost:4321 预览
 | `scripts/build.mjs` | 生成首页、文章页、关于页、RSS、sitemap，以及只读内容 API（`api/v1/`，App 直接读） |
 | `scripts/bot.mjs` | 机器人工具：状态、收件箱、试抓源、跳过候选、周报 |
 | `scripts/open-prs.sh` | 每篇新稿开一个 PR |
+| `scripts/translate.mjs` · `scripts/open-translation-pr.sh` | 英文版：翻译、核对数字、开 PR |
 | `scripts/ci/` | data 分支的检出与提交、自动合并检查 |
 | `schema/article.schema.json` | 文章的数据结构（模型按它输出） |
-| `content/articles/` | 已发布的文章（JSON） |
+| `content/articles/` · `content/en/` | 已发布的文章（JSON）· 英文版（由翻译工作流生成，不要手改） |
 | `site/` | 页面模板、样式、图形组件 |
 
 ## 八种解读图
