@@ -1,0 +1,88 @@
+URL: https://phonic.co/blog/phonic-1-1
+FETCHED: 2026-11-24T20:42:56.300Z
+
+Introducing Phonic-1.1 | Phonic Blog 
+ Loading article 
+
+ Try now Docs (opens in a new tab) Book a demo 
+
+ Three weeks ago, we released Phonic-1. Today, we're introducing Phonic-1.1, our latest speech-to-speech model.
+
+ Phonic-1.1 is the new leader on Artificial Analysis's Speech to Speech Index , improving 1.8 points over Phonic-1, and also tops other industry benchmarks such as Sierra's τ³-Voice and David AI's DIAL.
+
+ Ranks are positions on the full index, which also lists other versions and settings of these models.
+ Source: Artificial Analysis Speech to Speech Index (November 23, 2026).
+
+ Here are some of the improvements you can expect from Phonic-1.1
+ Compared to Phonic-1 , Phonic-1.1 has more natural turn-taking, stronger intelligence, and improved speech naturalness. 
+
+ Scores for Phonic-1.1, Phonic-1 and four competitors on the seven benchmarks in the chart Benchmark Phonic-1.1 High Phonic-1.1 Phonic-1 High Phonic-1 Gemini 3.8 Ext. thinking, high Gemini 3.8 Live (Extended thinking, high) Grok 3.0 High Grok Voice 3.0 GPT-Live-1 Astra, medium GPT-Live-1 (Astra, medium) Eleven Max Default Eleven Realtime v1 Max 
+ Turn-taking 
+ No turn-taking problems DIAL 53.7% 40.8% 14.4% 38.2% 35.9% 30.0% 
+ Turn-taking score Cekura 79 76 79 81 71 80 
+ Naturalness 
+ Arena Elo Artificial Analysis 1046 1010 966 1059 1027 990 
+ Naturalness DIAL 4.21 4.07 2.81 3.57 3.91 3.45 
+ Intelligence 
+ Sierra's τ-Voice 1.0 Artificial Analysis 82.8% 79.9% 68.6% 71.6% 74.5% 47.6% 
+ Sierra's τ-Voice 2.0 Artificial Analysis 87.1% 85.6% 65.1% 66.9% 80.4% 57.8% 
+ Big Bench Audio Artificial Analysis 99.5% 98.9% 97.7% 98.5% 90.1% 98.8% 
+ Shaded: the best score in each row. Gemini 3.8 is Gemini 3.8 Live with Extended Thinking (high), Grok 3.0 is Grok Voice 3.0 and Eleven Max is Eleven Realtime v1 Max.
+
+ Show the scores as Chart Table Replay animation 
+
+ Outward is better; each axis has its own range. Hover a model in the legend to highlight it. τ-Voice is Sierra's benchmark; Artificial Analysis runs τ-Voice 1.0 and 2.0 and Big Bench Audio. On τ-Voice 2.0, GPT-Live-1 runs with Sierra's GPT-Live defaults. On Cekura, GPT-Live-1 runs with GPT-6 Sol.
+ Source: Artificial Analysis , Sierra τ-Voice , David AI DIAL , Cekura (November 23, 2026)
+
+ Turn-taking
+ Phonic-1.1 is significantly better at understanding when to speak and when to listen. It waits for the speaker to finish, even when they pause mid-thought, and it holds up in noisy environments with other voices in the background.
+ On DIAL , which holds live, multi-turn conversations with human raters, Phonic-1.1 has the lowest turn-taking defect rate and ranks first :
+
+ Whiskers show 95% intervals.
+ Source: David AI DIAL , v1.1 leaderboard (November 23, 2026).
+
+ Intelligence
+ Phonic's models are built for your most challenging conversations that can require complex tool calling, nuanced instruction following, and strong intelligence. With Phonic-1.1, we continue to improve on this front:
+
+ τ-Voice is Sierra's benchmark, run here by Artificial Analysis. On τ-Voice 2.0, GPT-Live-1 runs with Sierra's GPT-Live defaults.
+ Source: Artificial Analysis , Sierra τ-Voice (November 23, 2026).
+
+ Naturalness
+ Lastly, Phonic-1.1 exhibits improved naturalness, which includes better pacing, emotional inflections, and conversationalness.
+ On DIAL, human annotators found Phonic-1.1 to be a substantial improvement over Phonic-1.
+
+ Whiskers show 95% intervals.
+ Source: David AI DIAL , v1.1 leaderboard (November 23, 2026).
+
+ Phonic-1.1 is available today
+ Try now Docs (opens in a new tab) Book a demo 
+
+ Are you a startup building on voice? Apply to our Speech-to-Speech Starter Grant for 144,000 minutes of Phonic across 12 months and direct access to our research and engineering team in a dedicated Slack channel.
+
+ Join us
+ We're still in the early innings of voice. Every era of computing has brought its own interface, from the command line to the touchscreen, and each one has made us work on the computer's terms: typing commands, tapping through menus, filling in forms. Voice lets us talk to computers the way we talk to each other. As quality improves, use cases will grow in ways most people still underestimate. Our mission is to make speaking with agents delightful, and there's a lot of work left to do.
+ We're a small team of researchers and engineers from MIT, Stanford, and CMU, including International Olympiad medalists and former founders. We're hiring rapidly across research, engineering, product, and business roles. If you're as obsessed with the frontier of voice AI as we are, we'd love to hear from you .
+
+ Expand your view of voice AI
+
+ Product
+ 6 mins
+
+ Bring Phonic voice agents into live meetings with Recall.ai
+ Recall.ai team
+
+ Phonic team
+
+ Product
+ 8 mins
+
+ Stop picking your speech-to-speech model on price per minute
+ Phonic team
+
+ Engineering
+ 10 mins
+
+ Concurrency Limits: The Hidden Tax in Voice AI (and how we solved it!)
+ Kendrick Shen
+
+ Moin Nadeem

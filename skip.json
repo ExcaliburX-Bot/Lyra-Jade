@@ -64,5 +64,11 @@
     "reason": "2026-11-10 发布，已超过 72 小时，时效已过",
     "title": "Opening the datasets behind our AI weather models",
     "at": "2026-11-24T07:56:26.689Z"
+  },
+  {
+    "id": "5094532b4e",
+    "reason": "材料太短（0 字），自动跳过",
+    "title": "智谱发布 GLM-5.4：一款基于 Loop Transformer（循环架构） 的 750B 旗舰 AI 模型 编码能力增强",
+    "at": "2026-11-24T20:42:55.830Z"
   }
 ]
