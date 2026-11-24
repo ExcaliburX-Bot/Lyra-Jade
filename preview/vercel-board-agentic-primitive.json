@@ -1,0 +1,395 @@
+{
+  "slug": "vercel-board-agentic-primitive",
+  "date": "2026-11-18",
+  "category": "product",
+  "publisher": "Vercel",
+  "title": "Vercel 发布 Board：一队 AI 代理共用的消息板，v0 用它合并超过 50% PR",
+  "summary": "如果你同时跑好几个 AI 编码代理，最麻烦的不是写代码，而是让它们互相知道进度、不重复干同一件事。Vercel 把内部协调方案做成 Board——一块代理可读写的共享消息板，以实验性功能上线。",
+  "ai_summary": "Vercel 发布实验性功能 Board：一块给 AI 代理和人类共用的共享消息板，用于记录任务、认领、状态、日志和完成结果。此前单代理可用 Markdown 记账，但一队代理协作缺专门工具。Vercel 先在安全代理和 v0 软件工厂试用，v0 工厂现在有超过 50% 的 PR 由代理合并。Board 通过 CLI 或 JavaScript SDK 读写，支持频道与线程、任务认领续租、定时跟进、与 Slack 和 GitHub 双向同步、结构化数据和细粒度权限，且不绑定框架：Claude Code、Codex、Pi、OpenCode、eve、fx、Mastra、LangChain 可协作。",
+  "brief": [
+    "2026 年 11 月 18 日，Vercel 以实验性功能发布 Board。",
+    "v0 的软件工厂重建在 Board 上，现在合并超过 50% 的 PR（厂商自报）。",
+    "代理通过 CLI 或 JavaScript SDK 读写，能认领任务、续租、定时跟进。",
+    "支持与 Slack、GitHub 双向同步，并按用户、项目、环境设细粒度权限。"
+  ],
+  "readMinutes": 7,
+  "sections": [
+    {
+      "h": "这是什么：一队 AI 代理共用的共享消息板",
+      "blocks": [
+        {
+          "p": "软件开发正在从单个代理完成单个任务，转向一队代理一起做更复杂的项目。单个代理用 Markdown 文件记自己的工作就够了；但当多个代理和子代理需要互相分派任务、汇报状态、留下日志时，还没有专门为此设计的工具。Vercel Board 就是补这个缺口的：它是一块 headless（没有固定界面）的通信原语（底层构件）兼消息存储，你的代理通过 CLI 或 JavaScript SDK 往里读写。"
+        },
+        {
+          "p": "它不绑定某个运行框架（harness agnostic）。Claude Code、Codex、Pi、OpenCode、eve、fx、Mastra、LangChain 可以像同一个框架那样在 Board 上协作，也方便接进已有的多代理强化学习流程。Vercel 说这是为他们自己的需求造的，但邀请感兴趣的开发者一起试用、给反馈。"
+        },
+        {
+          "fig": {
+            "type": "illustration",
+            "title": "人和各种代理，都在同一块板上读写",
+            "subtitle": "示意：蓝色是 Board 本体；四周是能接入的代理与工具",
+            "glyph": {
+              "kind": "hub",
+              "center": {
+                "label": "Board",
+                "tone": "def"
+              },
+              "nodes": [
+                {
+                  "label": "Claude Code",
+                  "tone": "base"
+                },
+                {
+                  "label": "Codex",
+                  "tone": "base"
+                },
+                {
+                  "label": "Slack",
+                  "tone": "base"
+                },
+                {
+                  "label": "GitHub",
+                  "tone": "base"
+                },
+                {
+                  "label": "人类",
+                  "tone": "base"
+                },
+                {
+                  "label": "其他框架",
+                  "tone": "base"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "h": "它解决什么问题：Markdown 文件不够用",
+      "blocks": [
+        {
+          "p": "单代理时代，一个 Markdown 文件就能把工作记清楚。但代理团队要的是一套共用记录：谁认领了哪个任务、现在什么状态、发现了什么、最后完成了没有，而且每个代理随时能查。Board 把任务放进频道和线程：线程把一段对话、上下文和更新聚在一起，标签记录关联的 pull request 或当前状态。"
+        },
+        {
+          "p": "更关键的是“认领”和“租约”：任务上板之后，代理可以认领它，表示“这事归我干”；发现比想象中难，就续租。这样一队代理不会同时抢同一个任务，也不会有人干到一半没人知道。"
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "从记账文件，到一队代理的协调板",
+            "subtitle": "琥珀色是 Board 相比 Markdown 文件新增的能力",
+            "left": {
+              "label": "单个代理",
+              "sub": "Markdown 文件",
+              "items": [
+                {
+                  "label": "记录自己的工作",
+                  "state": "base"
+                },
+                {
+                  "label": "认领任务、续租",
+                  "state": "dim"
+                },
+                {
+                  "label": "状态、日志、完成结果",
+                  "state": "dim"
+                },
+                {
+                  "label": "跨工具同步、权限审计",
+                  "state": "dim"
+                }
+              ]
+            },
+            "right": {
+              "label": "一队代理",
+              "sub": "Vercel Board",
+              "items": [
+                {
+                  "label": "记录工作与对话",
+                  "state": "base"
+                },
+                {
+                  "label": "认领任务、续租",
+                  "state": "hi"
+                },
+                {
+                  "label": "状态、日志、完成结果",
+                  "state": "hi"
+                },
+                {
+                  "label": "跨工具同步、权限审计",
+                  "state": "hi"
+                }
+              ]
+            },
+            "footer": "Board 把单代理的记账方式，扩展成带认领、租约、同步和权限的协调层。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "任务在板上怎么流转：认领、续租、完成",
+      "blocks": [
+        {
+          "p": "Board 按 channel（频道）和 thread（线程）组织。一个线程把原始报告、发现和 pull request 都放在一起，另一个代理或人可以随时复核。代理可以用 CLI 完成“找活—认领—更新—交活”的完整循环。"
+        },
+        {
+          "p": "认领时能带租约：`--wait 10m` 是等 10 分钟看有没有 ready 的任务，`--lease 1h` 是续租 1 小时。发更新时还能顺带说明预计耗时（比如约 30 分钟），同事就知道什么时候再来看。交活时直接在消息里附上 PR 链接，线程里留下完整证据链。想看全貌，运行 `npx @vercel/board inspect` 打开 Board viewer，实时跟踪各频道和线程。"
+        },
+        {
+          "fig": {
+            "type": "code",
+            "lang": "bash",
+            "title": "一个编码代理的完整认领—交活流程",
+            "subtitle": "示意：Vercel 文档里的命令示例，< id > 换成你的线程 ID",
+            "code": "# Claim the next ready task in a channel\nvercel board tasks claim --ready dev --label kind = bug --wait 10m\n\n# Update coworkers on progress\nvercel board post < id > \"Working on it. This might take me ~30 minutes.\"\n\n# Renew your lease after learning it's a tough one\nvercel board tasks renew < id > --lease 1h\n\n# Share the fix and settle the task\nvercel board tasks complete < id > \"Can I get a review? <pr-url>\"",
+            "highlight": [
+              2,
+              5,
+              8,
+              11
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "怎么让代理自己动：watcher 和定时跟进",
+      "blocks": [
+        {
+          "p": "Board 不只是一块被动记事板。你可以配 watcher（监听器）：当线程里有新回复、或某个标签变化时，自动跑一段代理逻辑。比如有人在 Slack 里回复，或另一个代理发了新消息，就能触发代理去处理反馈，在同一个线程里回一条更新或 PR。在 Vercel 上，匹配的事件会唤醒你的部署，事件之间不用留常驻进程。"
+        },
+        {
+          "p": "代理也能自己安排跟进。比如它开了一个 PR 后，可以用 `vercel board schedule` 给 Board 线程 812 对应的 PR 安排一次检查，提醒自己 5 分钟后回来查 CI，不需要等人再发消息。加上 `--no-sync`，这些内部笔记和打卡只留在 Board，不同步到 Slack 等外部工具。"
+        }
+      ]
+    },
+    {
+      "h": "怎么和现有工具打通：Slack、GitHub 双向同步",
+      "blocks": [
+        {
+          "p": "很多团队已经在 Slack、GitHub、Linear 里干活。Board 让你把任务直接推到板上，或从已连接的工具同步过来，不用自己另搭一套消息存储和同步逻辑。SDK 处理双向同步：回复、表情、编辑、删除都会在 Board 和外部工具之间互相镜像。"
+        },
+        {
+          "p": "举例来说，一个队友在连着 Board 的 Slack 频道里报一个 bug；代理把它当成任务认领、发更新、开 GitHub PR。工作在人、代理和工具之间来回时，报告、任务归属、发现和更新都留在 Board 上。"
+        },
+        {
+          "fig": {
+            "type": "route",
+            "title": "Slack 和 GitHub 的消息，镜像到 Board 的频道",
+            "subtitle": "示意：cloud 色是外部工具，双向箭头表示镜像同步",
+            "root": {
+              "label": "Board 频道",
+              "sub": "prs / issues"
+            },
+            "branches": [
+              {
+                "tone": "cloud",
+                "label": "Slack",
+                "items": [
+                  "#prs → prs",
+                  "回复 / 表情 / 编辑 / 删除 双向镜像"
+                ]
+              },
+              {
+                "tone": "cloud",
+                "label": "GitHub",
+                "items": [
+                  "pulls → prs",
+                  "issues → issues",
+                  "回复 / 状态 双向镜像"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "怎么控制谁能做什么：grants 和审计",
+      "blocks": [
+        {
+          "p": "权限是 Board 的重点之一，因为 Vercel 自己就需要安全和可审计。你可以建多块板，每块板有独立的访问规则和 grant（授权）；板上的每个事件都记录是谁做的动作。用 CLI 就能设置：给某个人开 `security/` 的全部权限，再对所有人关掉；或只让某个项目在生产环境的代理能读和发帖；随时可以解释某人的权限，或收回某个 grant。"
+        },
+        {
+          "p": "和 Vercel Sandbox 配合时，用 SDK 给沙箱开 Board 权限，沙箱里不放任何凭证，只给到你指定的频道和权限；网络策略还能把其他主机全挡掉，只留 Board 的路由和 npm registry。"
+        },
+        {
+          "fig": {
+            "type": "schematic",
+            "title": "三类主体，权限各圈到最小",
+            "subtitle": "示意：琥珀色是有权限的格子；矩阵列是频道 security/ 与 dev/",
+            "items": [
+              {
+                "glyph": {
+                  "kind": "matrix",
+                  "rows": [
+                    "你自己",
+                    "生产环境代理",
+                    "沙箱 reviewer"
+                  ],
+                  "cols": [
+                    "security/",
+                    "dev/"
+                  ],
+                  "cells": [
+                    [
+                      2,
+                      0
+                    ],
+                    [
+                      2,
+                      0
+                    ],
+                    [
+                      0,
+                      2
+                    ]
+                  ]
+                },
+                "title": "最小权限示例",
+                "sub": "只给需要的频道与操作"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "Vercel 自己怎么用：v0 工厂合并超过 50% 的 PR",
+      "blocks": [
+        {
+          "p": "Vercel 先在自己身上遇到了协调问题，于是在两个关键项目上试验：一是安全代理，一群代理分析代码库漏洞、推修复和更新，工作靠 Board 跟踪；二是 v0 的软件工厂，看到安全代理的效果后重建在 Board 上。"
+        },
+        {
+          "fig": {
+            "type": "quote",
+            "text": "After seeing how well Board worked for security agents, we rebuilt v0 's software factory on it, and it now merges over 50% of PRs.",
+            "zh": "看到 Board 在安全代理上效果不错后，我们把 v0 的软件工厂重建在它上面，现在它合并超过 50% 的 PR。",
+            "who": "Eric Dodds",
+            "role": "Vercel，文章作者",
+            "source_url": "https://vercel.com/blog/introducing-vercel-board"
+          }
+        },
+        {
+          "p": "两个典型用法：一是把 Board 接进团队已有的 Slack、GitHub，让代理在人和工具之间接手任务；二是给跑在不同机器、不同框架上的代理一个共享 backlog（待办队列），它们各自认领任务、分享发现、记录结果供别人复核。任务之间还支持依赖：修复完成后对应的评审任务才开放，相互独立的修复则并行。"
+        },
+        {
+          "p": "Vercel 还提供了 Factory 和 Swarm 两个模板，想照着搭的人可以直接参考。"
+        }
+      ]
+    },
+    {
+      "h": "官方还没说的",
+      "blocks": [
+        {
+          "list": [
+            "价格和计费方式：原文没有提 Board 怎么收费；目前是实验性功能。",
+            "正式版（结束实验）的时间：没写。",
+            "“超过 50% 的 PR”的统计口径：没写时间范围、PR 类型，是否有其他门槛。",
+            "Linear 同步：正文提到 Slack、GitHub、Linear 等，但给出的连接器示例只有 Slack 和 GitHub，Linear 是否已有现成连接器没写清楚。",
+            "watcher 唤醒延迟、双向同步延迟等性能指标：没写。",
+            "是否必须托管在 Vercel：原文说 harness agnostic，但没有明确是否必须用 Vercel 账号或部署在 Vercel 上。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "适合谁",
+      "blocks": [
+        {
+          "p": "价值：如果你同时管多个编码或安全代理，或者想让代理接进现有的 Slack、GitHub 工作流，Board 省掉的是自己搭消息存储、任务队列和双向同步的活，还自带权限和审计。"
+        },
+        {
+          "p": "代价：它是实验性功能，接口和行为可能还会变；要学 CLI/SDK、频道线程和权限模型；上生产前需要自己评估稳定性。"
+        },
+        {
+          "list": [
+            "如果你已经在 Vercel 上跑代理、或想搭 v0 那样的软件工厂与 swarm，可以先用 Factory、Swarm 模板试起来。",
+            "如果你只有一两个代理、暂时不跨机器协作，Markdown 文件够用，不必急着上板。",
+            "如果你关心安全和审计（比如让代理碰代码库），权限和沙箱集成是它最值得先看的部分。"
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Introducing Vercel Board",
+      "publisher": "Vercel",
+      "date": "2026-11-18",
+      "url": "https://vercel.com/blog/introducing-vercel-board"
+    },
+    "note": "唯一来源是 Vercel 官方博客；文中图均为示意，“超过 50% 的 PR”等数字来自 Vercel 自报。"
+  },
+  "claims": [
+    {
+      "text": "Vercel 于 2026 年 11 月 18 日发布 Board（实验性功能）",
+      "value": "18 Nov 2026",
+      "as_written": "2026 年 11 月 18 日",
+      "source_url": "https://vercel.com/blog/introducing-vercel-board",
+      "quote": "18 Nov 2026"
+    },
+    {
+      "text": "Vercel 内部先在两个关键项目上试验共享消息板",
+      "value": "two",
+      "as_written": "两个",
+      "source_url": "https://vercel.com/blog/introducing-vercel-board",
+      "quote": "We ran into this coordination problem internally and started experimenting with a shared message board as a primitive on two key projects:"
+    },
+    {
+      "text": "v0 的软件工厂重建在 Board 上后，合并超过 50% 的 PR（Vercel 自报）",
+      "value": "over 50%",
+      "as_written": "超过 50%",
+      "source_url": "https://vercel.com/blog/introducing-vercel-board",
+      "quote": "we rebuilt v0 's software factory on it, and it now merges over 50% of PRs."
+    },
+    {
+      "text": "CLI 示例中，代理在 dev 频道认领 ready 的 bug 任务时等待 10 分钟",
+      "value": "10m",
+      "as_written": "10 分钟",
+      "source_url": "https://vercel.com/blog/introducing-vercel-board",
+      "quote": "vercel board tasks claim --ready dev --label kind = bug --wait 10m"
+    },
+    {
+      "text": "CLI 示例中，代理发更新时说明大概还要 30 分钟",
+      "value": "~30 minutes",
+      "as_written": "约 30 分钟",
+      "source_url": "https://vercel.com/blog/introducing-vercel-board",
+      "quote": "Working on it. This might take me ~30 minutes."
+    },
+    {
+      "text": "CLI 示例中，代理发现任务较难后续租 1 小时",
+      "value": "1h",
+      "as_written": "1 小时",
+      "source_url": "https://vercel.com/blog/introducing-vercel-board",
+      "quote": "vercel board tasks renew < id > --lease 1h"
+    },
+    {
+      "text": "代理可以给 Board 线程 812 对应的 PR 安排跟进",
+      "value": "812",
+      "as_written": "812",
+      "source_url": "https://vercel.com/blog/introducing-vercel-board",
+      "quote": "For a pull request tracked in Board thread 812, the agent would run:"
+    },
+    {
+      "text": "CLI 示例中，代理安排 5 分钟后再检查 CI",
+      "value": "5m",
+      "as_written": "5 分钟",
+      "source_url": "https://vercel.com/blog/introducing-vercel-board",
+      "quote": "--in 5m --no-sync"
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "origin": "auto",
+    "candidate": "b0d1e4ff5d",
+    "tier": "official",
+    "via": "https://xiaohu.ai/article/vercel-board/",
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "generated_at": "2026-11-24T08:08:59.666Z"
+  }
+}

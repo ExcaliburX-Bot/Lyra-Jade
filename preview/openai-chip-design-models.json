@@ -1,0 +1,532 @@
+{
+  "slug": "openai-chip-design-models",
+  "date": "2026-11-18",
+  "category": "product",
+  "publisher": "OpenAI",
+  "title": "OpenAI 用模型改芯片设计：向量单元面积减 13%，AMD GPU 最高提升 14%",
+  "summary": "如果你在设计芯片，最耗时的环节之一是把电路代码一遍遍改好。OpenAI 现在用模型直接重写这些电路，并在自研芯片和 AMD 的 GPU/CPU 上拿到了面积和性能提升。",
+  "ai_summary": "OpenAI 公布用自家模型改进芯片设计的结果：自研推理芯片 Jalapeño 的向量单元标准单元面积减少约 13%、矩阵单元约 10%，并通过硅片验证；与 AMD 合作中，旗舰 GPU IP 相对深度优化的基线最高提升 14%，把通常约一年的进展压缩到不足 5 个月。基准测试里，GPT-6.2 Astra 在两个开源 32 位 RISC-V 核心上从规格设计核心，平均分约 0.7 和 0.75。这套能力主要面向芯片设计团队；原文未给出具体芯片型号、价格，也未拆分 14% 落在面积、性能还是功耗。",
+  "brief": [
+    "Jalapeño 向量单元标准单元面积减约 13%、矩阵单元约 10%，并已在硅片验证。",
+    "AMD 旗舰 GPU IP 相对深度优化基线最高提升 14%；OpenAI 称这是不到 5 个月完成约一年的进展。",
+    "RISC-V 基准里，GPT-6.2 Astra 在约 112,000 token 预算下，从规格设计核心拿到 0.7（PicoRV32）和 0.75（Ibex）。",
+    "OpenAI 正与 Synopsys 合作训练 GPT-Synopsys，让模型像专家一样使用 EDA 工具。"
+  ],
+  "readMinutes": 8,
+  "sections": [
+    {
+      "h": "这是什么：OpenAI 的模型开始直接改芯片电路",
+      "blocks": [
+        {
+          "p": "2026 年 11 月 18 日，OpenAI 发布一篇研究博客，讲的不是聊天或写代码，而是让模型动手改进芯片设计。今年 8 月，他们曾分享用前沿模型加速首颗自研推理芯片 Jalapeño 的开发；这次把背后的设计细节、与 AMD 的合作，以及一套用来衡量模型芯片设计能力的 RISC-V 基准讲清楚了。"
+        },
+        {
+          "p": "芯片设计里最核心的三个指标合称 PPA：功耗（Power）、性能（Performance）、面积（Area）。同一块电路，面积越小越省成本，跑得越快越好，耗电越低越好。传统做法是资深工程师一点一点磨；OpenAI 的思路是让模型直接重写描述电路的代码，再用 EDA（电子设计自动化，工程师用来设计和验证芯片的软件工具）检查改动有没有破坏功能。"
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "四个关键数字：两块自研芯片省面积，AMD GPU 最高提升 14%",
+            "subtitle": "百分比都是相对「改动前」或「已深度优化的基线」，不是从零设计",
+            "items": [
+              {
+                "value": 13,
+                "unit": "%",
+                "label": "Jalapeño 向量单元",
+                "note": "标准单元面积减少，团队估算，硅片验证"
+              },
+              {
+                "value": 10,
+                "unit": "%",
+                "label": "Jalapeño 矩阵单元",
+                "note": "标准单元面积减少，硅片验证"
+              },
+              {
+                "value": 14,
+                "unit": "%",
+                "label": "AMD 旗舰 GPU IP",
+                "note": "相对深度优化基线，最高（up to）"
+              },
+              {
+                "value": 5,
+                "unit": "个月",
+                "label": "AMD 合作用时",
+                "note": "原文称「不到 5 个月」，约一年进展"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "Jalapeño：两块计算电路，面积各省约 13% 和 10%",
+      "blocks": [
+        {
+          "p": "Jalapeño 是 OpenAI 首颗自研推理芯片。OpenAI 从 2025 年初开始用 GPT-o3 mini 帮它做设计——注意，那时还不是最新的模型，就已经能找到有价值的改动。重点优化的是两块计算电路：向量单元负责并行计算任务，矩阵单元是算术组件，都涉及大量浮点加法器、乘法器等底层电路。"
+        },
+        {
+          "p": "模型的改法不是推倒重来，而是在已有设计里找更好的实现：换一种逻辑实现，或者重新切分流水线阶段（把一个计算拆成几步、每拍算一点），让不同计算共享硬件、减少中间存储。团队估算，模型提出的改动让向量单元的标准单元面积减少约 13%、矩阵单元减少约 10%，并且在 Jalapeño 的硅片验证阶段得到实际验证——不是只在纸面仿真。"
+        },
+        {
+          "fig": {
+            "type": "schematic",
+            "title": "两块计算电路，各把面积压下去一截",
+            "subtitle": "示意：100 个点代表原设计面积，琥珀色是省掉的部分（13 个和 10 个）",
+            "items": [
+              {
+                "glyph": {
+                  "kind": "dots",
+                  "total": 100,
+                  "hi": 13
+                },
+                "title": "向量单元",
+                "sub": "标准单元面积约 -13%",
+                "rows": [
+                  {
+                    "k": "改动点",
+                    "v": "浮点加法器、乘法器、转换函数、归约逻辑、特殊函数单元"
+                  }
+                ]
+              },
+              {
+                "glyph": {
+                  "kind": "dots",
+                  "total": 100,
+                  "hi": 10
+                },
+                "title": "矩阵单元",
+                "sub": "标准单元面积约 -10%",
+                "rows": [
+                  {
+                    "k": "改动点",
+                    "v": "浮点加法器、乘法器、低精度点积电路"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "一个乘法器怎么改：面积省 15%，延迟从 2 拍降到 1 拍",
+      "blocks": [
+        {
+          "p": "矩阵单元里最直观的例子是乘法器。乘法是很多计算的基础操作；延迟用「时钟周期」（也叫一拍）衡量，一拍就是芯片时钟走一下。原设计的乘法器要花 2 拍才出结果。"
+        },
+        {
+          "p": "模型改过的乘法器，合成后的单元面积减少约 15%，同时延迟从 2 拍降到 1 拍——同样的乘法，结果出得更快，占的面积还更小。另一个加法器也省了约 15% 面积，但保留 2 拍延迟，相当于只压面积、不牺牲速度。这些都是「面积和性能同时改善」或「只压面积」的典型微架构优化。"
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "同一个乘法器：面积省约 15%，延迟从 2 拍降到 1 拍",
+            "subtitle": "琥珀色是模型改动后的结果",
+            "left": {
+              "label": "原设计",
+              "sub": "乘法器",
+              "items": [
+                {
+                  "label": "合成后单元面积",
+                  "tag": "基准"
+                },
+                {
+                  "label": "延迟",
+                  "tag": "2 个时钟周期"
+                }
+              ]
+            },
+            "right": {
+              "label": "模型重写后",
+              "sub": "乘法器",
+              "items": [
+                {
+                  "label": "合成后单元面积",
+                  "tag": "省约 15%",
+                  "state": "hi"
+                },
+                {
+                  "label": "延迟",
+                  "tag": "1 个时钟周期",
+                  "state": "hi"
+                }
+              ]
+            },
+            "footer": "面积和延迟同时改善，是这类改动里比较理想的情况。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "和 AMD 合作：旗舰 GPU IP 最高提升 14%，不到 5 个月",
+      "blocks": [
+        {
+          "p": "除了自家芯片，OpenAI 把这套方法用在 AMD 的旗舰 GPU IP 上（IP 是可以复用到芯片里的设计块）。原文说，模型通过重写描述电路的 SystemVerilog RTL 代码（一种硬件描述语言，芯片电路就是用这种代码写出来的），相对「已经深度优化的基线」最高取得 14% 的提升。"
+        },
+        {
+          "p": "这里有两个前提要看清楚：一是 14% 是最高值（原文用 up to），不是每个设计块都固定这么多；二是对比对象本身已经优化得很充分，起点很高，能再挤出 14% 并不容易。OpenAI 称这相当于把通常约一年的进展压缩到不到 5 个月。AMD 已把其中一些改动放进一个近期送去制造的芯片，另一些加入生产设计文件，供未来版本使用。"
+        },
+        {
+          "p": "在 AMD 即将推出的下一代旗舰 CPU 上，模型写的设计也在关键块拿到「个位数百分比」的 PPA 提升——具体数字原文没给。OpenAI 预期后续在 GPU 和 CPU 上还能继续往上提。"
+        },
+        {
+          "fig": {
+            "type": "quote",
+            "title": "OpenAI 这样形容 AMD 合作的进度",
+            "text": "This represents roughly a year of progress achieved in less than 5 months–unprecedented results at the frontier of chip design.",
+            "zh": "这相当于把大约一年的进展，压缩到不到 5 个月完成——在芯片设计前沿，是前所未见的结果。",
+            "who": "OpenAI",
+            "role": "官方博客（对 AMD 合作的评价，属 OpenAI 自己的说法）",
+            "source_url": "https://openai.com/index/advancing-chip-design-with-our-models"
+          }
+        }
+      ]
+    },
+    {
+      "h": "怎么衡量模型一代比一代强：用开源 RISC-V 核心打基准",
+      "blocks": [
+        {
+          "p": "生产芯片的改动证明模型能用，但要比较不同代模型的进步，需要标准化考试。OpenAI 选了 2 个开源的 32 位 RISC-V 处理器核心（RISC-V 是一种开源的处理器指令集架构）：PicoRV32 是面向 FPGA（可编程芯片）的紧凑核心；OpenTitan 安全芯片里的处理器是 Ibex。两者都是完整的嵌入式、微控制器级别核心。"
+        },
+        {
+          "p": "任务很直接：给模型原始电路描述，让它提高吞吐量——每秒能执行的指令数。比如某个改动让一条指令用更少的时钟周期完成，但每拍变长；只看拍数会误判，吞吐量能同时反映这两方面。"
+        },
+        {
+          "p": "评分规则也值得细看：改完的设计先过仿真验证；验证失败，或面积超过原核心 16 倍，直接记 0 分。通过的设计，在模型没见过的测试负载上测每周期指令数，取几何平均，再乘以用 Yosys 估算的最高时钟频率，得到每秒指令数。每个核心上，同一约束下观察到的最好成绩记 1.0 分。图表展示的是所有运行的平均分，包括记 0 分的。"
+        },
+        {
+          "fig": {
+            "type": "steps",
+            "title": "RISC-V 基准的评分流程",
+            "subtitle": "示意：模型改完电路后，要过验证、限面积、测吞吐",
+            "steps": [
+              {
+                "name": "给 RTL",
+                "tool": "",
+                "desc": "把开源核心的电路描述交给模型"
+              },
+              {
+                "name": "模型重写",
+                "tool": "",
+                "desc": "目标是提高每秒执行的指令数"
+              },
+              {
+                "name": "仿真验证",
+                "tool": "仿真",
+                "desc": "改动后行为必须保持一致"
+              },
+              {
+                "name": "面积上限",
+                "tool": "",
+                "desc": "超过原核心 16 倍直接 0 分"
+              },
+              {
+                "name": "测吞吐",
+                "tool": "Yosys",
+                "desc": "每周期指令数 × 估算最高频率"
+              },
+              {
+                "name": "归一打分",
+                "tool": "",
+                "desc": "同约束下最好成绩记 1.0 分"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "从规格重新设计核心：GPT-6.2 Astra 拿到 0.7 和 0.75",
+      "blocks": [
+        {
+          "p": "第二个任务更难、也更像真实工作：不给现成电路，只给文字规格和模板（说明核心怎么连到系统其他部分），让模型自己决定数据怎么在核心里流动、工作怎么分阶段。正确性检查、缓存设置、吞吐目标都和第一个任务相同。"
+        },
+        {
+          "p": "结果有两点：在约 112,000 token 预算下，全部 5 个模型从规格设计的得分都高于改进现有设计；其中 GPT-6.2 Astra 在 PicoRV32 上平均分约 0.7，在 Ibex 上约 0.75。整个评估一共打了 9,881 个分。另外，在改进现有 PicoRV32 的任务里，GPT-6.2 Astra 在约 112,000 token 处的分数约为 GPT-6 Astra 的 2 倍。"
+        },
+        {
+          "p": "要给一个打折说明：从规格设计时，模型可以省掉原核心里对吞吐帮助不大的功能，比如性能计数器和额外指令，这会部分解释分数优势。原文也承认，如果强制保留这些功能、把面积上限卡得更紧、并在物理综合后检查时序，测试会更接近真实生产。"
+        },
+        {
+          "fig": {
+            "type": "columns",
+            "title": "从规格设计核心，GPT-6.2 Astra 的平均分",
+            "subtitle": "满分 1.0 = 同约束下最好吞吐；琥珀色是 GPT-6.2 Astra 的成绩（约 112,000 token 预算下）",
+            "note": "其他模型的精确分数原文没公布；GPT-6.2 Astra 是两者中的最高分。",
+            "items": [
+              {
+                "label": "PicoRV32",
+                "sub": "紧凑 FPGA 核心",
+                "value": 0.7,
+                "display": "0.7",
+                "tone": "hi"
+              },
+              {
+                "label": "Ibex",
+                "sub": "OpenTitan 安全芯片处理器",
+                "value": 0.75,
+                "display": "约 0.75",
+                "tone": "hi"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "官方还没说的",
+      "blocks": [
+        {
+          "list": [
+            "AMD 合作中的具体芯片型号和测量条件：14% 到底落在面积、性能还是功耗，原文只笼统说是 PPA 提升。",
+            "AMD 下一代 CPU 的「个位数百分比」具体是多少，没有给。",
+            "Jalapeño 的量产时间、规格、售价，以及这套方法省下的实际成本，都没公布。",
+            "GPT-6.2 Astra、GPT-6.1 Sol 这些模型的发布时间和可用性，原文没提。",
+            "RISC-V 基准里除 GPT-6.2 Astra 外，其他模型的精确分数没公布。",
+            "GPT-Synopsys 的发布时间、是否对外提供，没有说。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "适合谁",
+      "blocks": [
+        {
+          "p": "价值先说：这套方法最直接受益的是芯片设计团队，尤其是做数字电路 PPA 优化的工程师。模型能在加法器、乘法器、流水线切分这些底层电路里自动找改进空间，相当于多了一个不知疲倦的「微架构级」助手，还能用 Synopsys 这类 EDA 工具自我验证。"
+        },
+        {
+          "p": "代价和限制：目前公布的都来自 OpenAI 自用和与 AMD 的合作，外部团队要复用得等工具和模型开放；14% 这类数字依赖「已深度优化」的高起点基线，换一个设计不一定有同样幅度；RISC-V 基准里的从规格设计还允许省功能，不能直接等同于生产设计。"
+        },
+        {
+          "p": "关于 Synopsys 的合作：OpenAI 正在训练一个新模型 GPT-Synopsys，让它像专家芯片设计师一样使用 Synopsys 的 EDA 工具，把前面这些能力打包进工程师的日常工具链。"
+        },
+        {
+          "fig": {
+            "type": "illustration",
+            "title": "GPT-Synopsys：让模型像专家一样用 EDA 工具",
+            "subtitle": "示意：琥珀色是正在训练的模型，节点是它要用 Synopsys EDA 工具做的事",
+            "glyph": {
+              "kind": "hub",
+              "center": {
+                "label": "GPT-Synopsys",
+                "tone": "hi"
+              },
+              "nodes": [
+                {
+                  "label": "验证行为",
+                  "tone": "base"
+                },
+                {
+                  "label": "功耗",
+                  "tone": "base"
+                },
+                {
+                  "label": "性能",
+                  "tone": "base"
+                },
+                {
+                  "label": "面积",
+                  "tone": "base"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "p": "如果你在做芯片 PPA 优化、想了解模型能帮上什么，这篇值得细看，尤其是 RISC-V 评分方法可以参考。如果你是普通 AI 用户，这件事短期内不会改变你用到的产品，但它是「模型不只生成内容、还能干工程」的一个具体样本。"
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Advancing chip design with OpenAI models",
+      "publisher": "OpenAI",
+      "date": "2026-11-18",
+      "url": "https://openai.com/index/advancing-chip-design-with-our-models"
+    },
+    "more": [],
+    "note": "本文只基于 OpenAI 官方博客一篇材料。配图均为示意图：面积用 100 个点代表原设计的示意刻度，流程图为评分规则的可视化；所有百分比、分数、日期均来自原文。"
+  },
+  "claims": [
+    {
+      "text": "Jalapeño 向量单元的标准单元面积减少约 13%",
+      "value": "13%",
+      "source_url": "https://openai.com/index/advancing-chip-design-with-our-models",
+      "as_written": "约 13%",
+      "quote": "the team estimates that model proposed changes reduced standard-cell area by about 13% in the vector unit and 10% in the matrix unit."
+    },
+    {
+      "text": "Jalapeño 矩阵单元的标准单元面积减少约 10%",
+      "value": "10%",
+      "source_url": "https://openai.com/index/advancing-chip-design-with-our-models",
+      "as_written": "约 10%",
+      "quote": "the team estimates that model proposed changes reduced standard-cell area by about 13% in the vector unit and 10% in the matrix unit."
+    },
+    {
+      "text": "矩阵单元里一个乘法器重设计，合成后单元面积减少约 15%",
+      "value": "15%",
+      "source_url": "https://openai.com/index/advancing-chip-design-with-our-models",
+      "as_written": "约 15%",
+      "quote": "One multiplier redesign used about 15% less cell area in synthesis while reducing latency from two clock cycles to one."
+    },
+    {
+      "text": "该乘法器的延迟从 2 个时钟周期降到 1 个",
+      "value": "two clock cycles to one",
+      "source_url": "https://openai.com/index/advancing-chip-design-with-our-models",
+      "as_written": "2 个时钟周期降到 1 个",
+      "quote": "One multiplier redesign used about 15% less cell area in synthesis while reducing latency from two clock cycles to one."
+    },
+    {
+      "text": "另一个加法器重设计，单元面积减少约 15%，保留 2 拍延迟",
+      "value": "15%",
+      "source_url": "https://openai.com/index/advancing-chip-design-with-our-models",
+      "as_written": "约 15%",
+      "quote": "A separate adder redesign reduced cell area by about 15% while retaining its two-cycle latency."
+    },
+    {
+      "text": "与 AMD 合作中，旗舰 GPU IP 相对深度优化基线最高提升 14%",
+      "value": "14%",
+      "source_url": "https://openai.com/index/advancing-chip-design-with-our-models",
+      "as_written": "最高 14%",
+      "quote": "We have partnered with AMD on PPA improvements and seen up to 14% improvement relative to heavily optimized baselines on the flagship GPU IP."
+    },
+    {
+      "text": "OpenAI 称 AMD 合作把通常约一年的进展压缩到不到 5 个月",
+      "value": "5 months",
+      "source_url": "https://openai.com/index/advancing-chip-design-with-our-models",
+      "as_written": "不到 5 个月",
+      "quote": "This represents roughly a year of progress achieved in less than 5 months–unprecedented results at the frontier of chip design."
+    },
+    {
+      "text": "OpenAI 称 AMD 合作的进展相当于通常约一年的工作量",
+      "value": "a year",
+      "source_url": "https://openai.com/index/advancing-chip-design-with-our-models",
+      "as_written": "约一年",
+      "quote": "This represents roughly a year of progress achieved in less than 5 months–unprecedented results at the frontier of chip design."
+    },
+    {
+      "text": "AMD 下一代旗舰 CPU 关键块获得个位数百分比的 PPA 提升",
+      "value": "single-digit percentage",
+      "source_url": "https://openai.com/index/advancing-chip-design-with-our-models",
+      "as_written": "个位数百分比",
+      "quote": "AMD also verified single-digit percentage gains in PPA across key blocks of its upcoming next-generation flagship CPU using designs written by our model."
+    },
+    {
+      "text": "RISC-V 基准中，面积超过原核心 16 倍的设计记 0 分",
+      "value": "16 times",
+      "source_url": "https://openai.com/index/advancing-chip-design-with-our-models",
+      "as_written": "16 倍",
+      "quote": "Designs scored zero if they failed a check or used more than 16 times the original core's area."
+    },
+    {
+      "text": "验证失败或面积超限的设计记 0 分",
+      "value": "zero",
+      "source_url": "https://openai.com/index/advancing-chip-design-with-our-models",
+      "as_written": "0 分",
+      "quote": "Designs scored zero if they failed a check or used more than 16 times the original core's area."
+    },
+    {
+      "text": "每个核心在同一约束下的最好吞吐记 1.0 分",
+      "value": "1.0",
+      "source_url": "https://openai.com/index/advancing-chip-design-with-our-models",
+      "as_written": "1.0 分",
+      "quote": "For each core, we assigned the best throughput we observed under the same constraints a score of 1.0."
+    },
+    {
+      "text": "在约 112,000 token 的每次运行预算下，GPT-6.2 Astra 在两个核心上平均分最高",
+      "value": "112,000 tokens",
+      "source_url": "https://openai.com/index/advancing-chip-design-with-our-models",
+      "as_written": "约 112,000 token",
+      "quote": "With a comparable budget of about 112,000 tokens per run, GPT‑6.2 Astra had the highest average score on both cores."
+    },
+    {
+      "text": "从 PicoRV32 规格设计核心，GPT-6.2 Astra 平均分约 0.7",
+      "value": "0.7",
+      "source_url": "https://openai.com/index/advancing-chip-design-with-our-models",
+      "as_written": "约 0.7 分",
+      "quote": "Starting from a PicoRV32 specification, GPT‑6.2 Astra passes a mean score of 0.7 near 112,000 tokens and scores higher at the next two observed budgets."
+    },
+    {
+      "text": "从 Ibex 规格设计核心，GPT-6.2 Astra 平均分约 0.75",
+      "value": "0.75",
+      "source_url": "https://openai.com/index/advancing-chip-design-with-our-models",
+      "as_written": "约 0.75 分",
+      "quote": "On Ibex, GPT‑6.2 Astra averages about 0.75 near 112,000 tokens when designing from a specification."
+    },
+    {
+      "text": "完整评估共打了 9,881 个分（两个任务、两个核心、全部 token 预算）",
+      "value": "9,881",
+      "source_url": "https://openai.com/index/advancing-chip-design-with-our-models",
+      "as_written": "9,881 个",
+      "quote": "The full evaluation included 9,881 scored runs across both tasks, both cores, and all token budgets."
+    },
+    {
+      "text": "基准覆盖两个任务（改进现有设计、从规格设计）",
+      "value": "both tasks",
+      "source_url": "https://openai.com/index/advancing-chip-design-with-our-models",
+      "as_written": "两个任务",
+      "quote": "The full evaluation included 9,881 scored runs across both tasks, both cores, and all token budgets."
+    },
+    {
+      "text": "基准用的是两个开源 32 位 RISC-V 核心",
+      "value": "32-bit",
+      "source_url": "https://openai.com/index/advancing-chip-design-with-our-models",
+      "as_written": "32 位",
+      "quote": "we tested each model on two open-source 32-bit RISC-V cores."
+    },
+    {
+      "text": "基准用了两个核心：PicoRV32 和 Ibex",
+      "value": "two",
+      "source_url": "https://openai.com/index/advancing-chip-design-with-our-models",
+      "as_written": "2 个",
+      "quote": "we tested each model on two open-source 32-bit RISC-V cores."
+    },
+    {
+      "text": "OpenAI 从 2025 年初开始用 GPT-o3 mini 设计 Jalapeño",
+      "value": "early 2025",
+      "source_url": "https://openai.com/index/advancing-chip-design-with-our-models",
+      "as_written": "2025 年初",
+      "quote": "We started using GPT‑o3 mini to help design Jalapeño in early 2025."
+    },
+    {
+      "text": "在约 112,000 token 预算下，全部 5 个模型从规格设计的得分都高于改进现有设计",
+      "value": "five",
+      "source_url": "https://openai.com/index/advancing-chip-design-with-our-models",
+      "as_written": "5 个",
+      "quote": "all five models scored higher when they designed a core from written requirements than when they tried to improve the existing design."
+    },
+    {
+      "text": "在 PicoRV32 上、约 112,000 token 处，GPT-6.2 Astra 的分数约为 GPT-6 Astra 的 2 倍",
+      "value": "twice",
+      "source_url": "https://openai.com/index/advancing-chip-design-with-our-models",
+      "as_written": "约 2 倍",
+      "quote": "Around 112,000 tokens, its score is about twice GPT‑6 Astra's."
+    },
+    {
+      "text": "OpenAI 在今年 8 月分享过用前沿模型加速 Jalapeño 开发",
+      "value": "August",
+      "source_url": "https://openai.com/index/advancing-chip-design-with-our-models",
+      "as_written": "8 月",
+      "quote": "In August, we shared how OpenAI engineers used our frontier models to accelerate the development of our first custom inference chip, Jalapeño."
+    },
+    {
+      "text": "这篇博客发布于 2026 年 11 月 18 日",
+      "value": "November 18, 2026",
+      "source_url": "https://openai.com/index/advancing-chip-design-with-our-models",
+      "as_written": "2026 年 11 月 18 日",
+      "quote": "November 18, 2026"
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "origin": "auto",
+    "candidate": "c7d3ecb006",
+    "tier": "official",
+    "via": null,
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "generated_at": "2026-11-24T07:56:21.350Z"
+  }
+}
