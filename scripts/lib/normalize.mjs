@@ -20,6 +20,18 @@ export function normalizeArticle(a) {
     if (f.type === "bars") for (const g of f.groups || []) for (const it of g.items || []) fix(it, "value", `图「${f.title}」的 ${it.label}`);
     if (f.type === "capacity") { fix(f, "max", `图「${f.title}」的 max`); for (const it of [...(f.items || []), ...(f.thresholds || [])]) fix(it, "value", `图「${f.title}」的 ${it.label}`); }
     if (f.type === "pipeline" && f.compare) { fix(f.compare, "max", `图「${f.title}」的 max`); for (const it of f.compare.items || []) fix(it, "value", `图「${f.title}」的 ${it.label}`); }
+    if (f.type === "columns") for (const it of f.items || []) fix(it, "value", `图「${f.title}」的 ${it.label}`);
+    /* 示意零件写扁了：glyph 写成零件名字符串、参数平铺在外层 → 收拢成 {kind, ...参数} */
+    const GLYPH_KEYS = ["count", "select", "rows", "cols", "lanes", "lines", "total", "segments", "layers", "nodes", "center", "turns", "items", "hi", "value", "max", "label", "display", "before", "after", "left", "right", "arrow", "stages", "cells", "title"];
+    const lift = (host, where) => {
+      if (!host || typeof host.glyph !== "string") return;
+      const g = { kind: host.glyph };
+      for (const k of GLYPH_KEYS) if (host[k] != null && !(host === f && ["items", "title"].includes(k) && f.type !== "illustration")) { g[k] = host[k]; if (host === f && f.type === "illustration" && k !== "title") delete host[k]; }
+      if (host === f && f.type === "illustration") delete g.title;
+      host.glyph = g; fixes.push(`${where}：示意零件 ${g.kind} 的参数收拢进 glyph`);
+    };
+    lift(f, `图「${f.title}」`);
+    for (const x of [...(f.items || []), ...(f.panels || [])]) if (x && typeof x.glyph === "string") lift(x, `图「${f.title}」的 ${x.title || x.label || ""}`);
     if (f.type === "timeline") { if (f.axis) { fix(f.axis, "from", "时间轴"); fix(f.axis, "to", "时间轴"); } for (const l of f.lanes || []) for (const s of l.segments || []) { fix(s, "from", l.label); fix(s, "to", l.label); } }
   }
   return fixes;

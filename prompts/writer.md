@@ -100,6 +100,20 @@ schematic、storyboard、illustration 和 cards（每张卡可以用 glyph 代�
 | clock | 一天 24 小时里的时段 | segments: [{from, to, tone, label}]（小时） |
 | matrix | 勾选矩阵（谁有哪些权限、哪个型号支持哪些功能） | rows, cols, cells: [[0 没有 / 1 有 / 2 重点]] |
 
+- **glyph 必须是一个对象**，零件名写在 kind 里，参数和 kind 放在一起，例如：
+
+```json
+{"type": "illustration", "title": "芯片关键单元的面积省了约 13%", "subtitle": "示意：琥珀色是用模型改过的设计，面积按比例画",
+ "glyph": {"kind": "area", "before": {"label": "原设计", "value": 100}, "after": {"label": "模型改过", "value": 87}}}
+```
+
+```json
+{"type": "schematic", "title": "四类文件，各有自己的切片旋钮", "subtitle": "示意：琥珀色框出的部分交给模型，也只为这部分计费",
+ "items": [{"glyph": {"kind": "pages", "count": 10, "select": [3, 4]}, "title": "文档和幻灯片", "sub": "PDF、Word、PPT",
+            "rows": [{"k": "页码", "v": "`start_page` 到 `end_page`"}, {"k": "清晰度", "v": "`low` / `medium` / `high`"}]}]}
+```
+
+- **全文至少 1 张示意零件图**（schematic、storyboard、illustration，或带 glyph 的 cards）。几乎每篇都有能画的东西：比例（dots、ring）、结构（stack、hub）、前后（area、devices）、取一部分（pages、tracks 等）、谁有什么权限（matrix）。实在没有才不画。
 - 零件里的数字（页数、比例、百分比）如果来自原文，要进 claims；只是为了画图举的例子，subtitle 写「示意」。
 - 零件里的文字要短：节点、轨道、标签 2–8 个字。
 - 一篇里示意零件 1–3 张就够，不要每张图都用。
@@ -109,3 +123,10 @@ schematic、storyboard、illustration 和 cards（每张卡可以用 glyph 代�
 - 数值字段（value、max）填数字本身，例如 70.9，不要写成「70.9%」；要显示的写法放 display，例如「约 101 万」。
 - 图里的例子（任务名、文件名）如果不是原文给的，subtitle 要写「示意图：任务是举例」。
 - 旧的颜色名仍然可用：local / main / good = 本机或主角，cloud = 云端，laptop / warn = 对照或需要注意，ref = 参照对象，bad = 超出或不行。新写的图优先用 hi / def / base / ref / dim。
+
+# 交稿前检查
+
+1. 每张用了琥珀色（hi）的图，subtitle 里写了「琥珀色是……」；用了蓝色（def）的，写了「蓝色是默认……」。没写就把颜色去掉。
+2. 示意类图型（timeline、route、steps、pipeline、beforeafter、schematic、storyboard、illustration）的 subtitle 含「示意」二字。
+3. 至少 1 张示意零件图，glyph 是带 kind 的对象。
+4. 所有数字都在 claims 里，图里的 value 是数字。
