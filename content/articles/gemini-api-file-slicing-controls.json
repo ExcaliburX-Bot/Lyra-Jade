@@ -1,0 +1,392 @@
+{
+  "slug": "gemini-api-file-slicing-controls",
+  "date": "2026-11-23",
+  "category": "product",
+  "publisher": "Google",
+  "title": "Gemini API 上线文件切片：只读需要的页面和片段，按实际读取计费",
+  "summary": "给模型喂一整本 PDF 或一段长录音，现在可以只圈出要看的几页、几格、几秒，token 也只为模型真正查看的部分付费。",
+  "ai_summary": "Google 在 2026 年 11 月 23 日为 Gemini API 推出「文件切片」控制，并新增 Microsoft Office 与 OpenDocument 格式的原生上传。开发者上传一次 PDF、Office 文档、表格、音频或视频，就能让模型只读取指定的几页、几个单元格或几秒片段，token 只按模型实际查看的部分计费。文档和幻灯片的分辨率可选 low、medium、high，还能挑文字层或图片层；表格能指定工作表与单元格范围；视频可裁时间区间、调帧率和分辨率，并选转录、帧或音频。能力对所有 Gemini 4 模型生效，覆盖 Google AI Studio 和 Gemini 平台。",
+  "brief": [
+    "上传一次、跨轮复用：同一个 Files API URI 可以在多轮对话和工具调用里反复切片使用。",
+    "支持的媒体类型是文档/幻灯片、表格、视频、音频，各有自己的切片参数。",
+    "不填参数时，文档默认输出保留版式的页面图片；表格默认带计算值、公式和所有标签页的工作表名。",
+    "Google 表示网关和 SDK 伙伴已在发布前试用，称能在生产线束里直接削减 prompt token 支出。"
+  ],
+  "readMinutes": 6,
+  "sections": [
+    {
+      "h": "这是什么：给文件开一个「只看这部分」的口子",
+      "blocks": [
+        {
+          "p": "Google 在 2026 年 11 月 23 日给 Gemini API 加了一组「文件切片」（file slicing）控制。以前要模型读一个 PDF，要么整份读进来，要么你自己在本地先拆开；现在可以直接告诉模型：只看第 3 页、只看某个单元格区域、只看视频里的某一段。"
+        },
+        {
+          "p": "这次更新带来两件事：切片控制本身，以及 Microsoft Office（Word、PowerPoint、Excel）和 OpenDocument 格式的原生上传——这些文件不用再先转成纯文本或图片。能力覆盖 Google AI Studio 和 Gemini 平台，并对所有 Gemini 4 模型生效。"
+        }
+      ]
+    },
+    {
+      "h": "为什么以前这么麻烦：客户端要先渲染整份文件",
+      "blocks": [
+        {
+          "p": "模型只支持整份读入时，开发者常见的做法是在自己的客户端里跑 LibreOffice、PDF 渲染器和 ffmpeg，先把文件渲染、切片、抽帧再喂给模型。这会让内存膨胀、本地磁盘塞满抽出来的帧，企业平台还得为每个用户维护沙箱，只为了做「切文件」这一件事。"
+        },
+        {
+          "p": "新的做法把这些搬回 Gemini 服务端：你只传一个 Files API 的 URI，服务端按模型训练时看到的方式原生地切片、渲染和 tokenize。客户端不用再装一堆转换工具。"
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "把转码工作搬回服务端，本地不用再堆转换工具",
+            "subtitle": "琥珀色是这次新增的服务端做法，灰色是旧做法",
+            "left": {
+              "label": "以前：客户端自己切",
+              "sub": "本地跑转换工具",
+              "items": [
+                {
+                  "label": "本地跑 LibreOffice、PDF 渲染器、ffmpeg",
+                  "tag": "旧",
+                  "state": "base"
+                },
+                {
+                  "label": "内存膨胀、本地磁盘塞满抽出的帧",
+                  "tag": "旧",
+                  "state": "base"
+                },
+                {
+                  "label": "企业平台要维护 per-user 沙箱",
+                  "tag": "旧",
+                  "state": "base"
+                }
+              ]
+            },
+            "right": {
+              "label": "现在：服务端原生切",
+              "sub": "只传 Files API URI",
+              "items": [
+                {
+                  "label": "服务端原生切片、渲染、tokenize",
+                  "tag": "新",
+                  "state": "hi"
+                },
+                {
+                  "label": "按模型训练时看到的方式处理",
+                  "tag": "新",
+                  "state": "hi"
+                },
+                {
+                  "label": "function_result 里直接指定要读的部分",
+                  "tag": "新",
+                  "state": "hi"
+                }
+              ]
+            },
+            "footer": "渲染、切片、tokenize 都留在服务端，客户端只传一个 URI。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "核心用法：上传一次，先粗扫、再细看",
+      "blocks": [
+        {
+          "p": "最典型的流程是「先粗扫、再细看」：先用提取文字的方式把整份文档便宜地扫一遍，找到目标；再用同一个 URI，只把那一页高清地交给模型。上传一次之后，URI 可以在多轮对话和多次工具调用里反复复用。"
+        },
+        {
+          "p": "对 agent 来说还有一个好处：模型可以在函数返回结果（function_result）里直接指定要读文件的哪一部分，让多轮工作流更快、更省。"
+        },
+        {
+          "fig": {
+            "type": "code",
+            "lang": "python",
+            "title": "同一个 URI：先整份扫文字，再高清看第 3 页",
+            "subtitle": "官方示例代码：gemini-4-hydrogen 粗扫，gemini-4-neon 细看",
+            "note": "高亮行是切片参数 start_page / end_page",
+            "highlight": [
+              38,
+              39
+            ],
+            "code": "from google import genai\nclient = genai.Client()\ndoc = client.files.upload(file=\"quarterly_report.docx\")\n\n# 1. Skim the whole document cheaply as extracted text.\nskim = client.interactions.create(\n model=\"gemini-4-hydrogen\",\n input=[\n {\n \"type\": \"document\",\n \"uri\": doc.uri,\n \"mime_type\": doc.mime_type,\n \"processing\": {\n \"type\": \"static\",\n \"page_options\": {\"content_layers\": [\"page_text\"]},\n },\n },\n {\n \"type\": \"text\",\n \"text\": \"Which page has the revenue bridge chart?\",\n },\n ],\n)\nprint(skim.output_text)\n\n# 2. Zoom into the target page at high resolution (reusing the same URI).\ndetail = client.interactions.create(\n model=\"gemini-4-neon\",\n input=[\n {\n \"type\": \"document\",\n \"uri\": doc.uri,\n \"mime_type\": doc.mime_type,\n \"resolution\": \"high\",\n \"processing\": {\n \"type\": \"static\",\n \"page_options\": {\n \"start_page\": 3,\n \"end_page\": 3,\n \"content_layers\": [\"page_image\"],\n },\n },\n },\n {\n \"type\": \"text\",\n \"text\": \"Read the revenue bridge chart and footnotes on page 3.\",\n },\n ],\n)\nprint(detail.output_text)"
+          }
+        }
+      ]
+    },
+    {
+      "h": "四类文件各有自己的「切片旋钮」",
+      "blocks": [
+        {
+          "p": "切片控制按媒体类型分组，参数都写在 processing 里。下面是每一类可以调的旋钮。"
+        },
+        {
+          "fig": {
+            "type": "schematic",
+            "title": "四类文件，各有自己的「切片旋钮」",
+            "subtitle": "示意：琥珀色是被框出、交给模型并计费的部分",
+            "items": [
+              {
+                "glyph": {
+                  "kind": "pages",
+                  "count": 10,
+                  "select": [
+                    3,
+                    4
+                  ]
+                },
+                "title": "文档 / 幻灯片",
+                "sub": "PDF、Office、OpenDocument",
+                "rows": [
+                  {
+                    "k": "页码范围",
+                    "v": "`start_page` 到 `end_page`"
+                  },
+                  {
+                    "k": "分辨率",
+                    "v": "`low` / `medium` / `high`"
+                  },
+                  {
+                    "k": "内容层",
+                    "v": "`page_text` 或 `page_image`"
+                  }
+                ]
+              },
+              {
+                "glyph": {
+                  "kind": "sheet",
+                  "rows": 6,
+                  "cols": 6,
+                  "select": [
+                    2,
+                    2,
+                    4,
+                    4
+                  ]
+                },
+                "title": "表格",
+                "sub": ".xlsx、.xls、.ods",
+                "rows": [
+                  {
+                    "k": "工作表",
+                    "v": "`sheet_index`"
+                  },
+                  {
+                    "k": "单元格",
+                    "v": "`visible_cells`"
+                  },
+                  {
+                    "k": "内容层",
+                    "v": "`data` / `formulas` / `visuals`"
+                  }
+                ]
+              },
+              {
+                "glyph": {
+                  "kind": "frames",
+                  "count": 8,
+                  "select": [
+                    3,
+                    5
+                  ]
+                },
+                "title": "视频",
+                "sub": "裁时间区间",
+                "rows": [
+                  {
+                    "k": "时间区间",
+                    "v": "`start_offset` 到 `end_offset`"
+                  },
+                  {
+                    "k": "帧率",
+                    "v": "`fps`"
+                  },
+                  {
+                    "k": "分辨率",
+                    "v": "`low` / `high`"
+                  },
+                  {
+                    "k": "内容层",
+                    "v": "`transcript` / `frames` / `audio`"
+                  }
+                ]
+              },
+              {
+                "glyph": {
+                  "kind": "wave",
+                  "select": [
+                    0.3,
+                    0.6
+                  ]
+                },
+                "title": "音频",
+                "sub": "裁时间区间",
+                "rows": [
+                  {
+                    "k": "时间区间",
+                    "v": "`start_offset` 到 `end_offset`"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "不写参数时，模型默认怎么读",
+      "blocks": [
+        {
+          "p": "如果不写这些处理参数，模型会按默认方式读：文档和幻灯片默认输出保留版式的页面图片；表格默认包含计算值、公式和所有标签页的工作表名。视频和音频省略参数时的默认行为，原文没有写明。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "省略参数时，模型按默认方式读",
+            "subtitle": "蓝色一列是省略 processing 参数时的默认行为",
+            "columns": [
+              "文件类型",
+              "省略参数时的默认处理"
+            ],
+            "rows": [
+              [
+                "文档 / 幻灯片（PDF、Office、OpenDocument）",
+                "保留版式的页面图片"
+              ],
+              [
+                "表格（.xlsx、.xls、.ods）",
+                "计算值、公式、所有标签页的工作表名"
+              ],
+              [
+                "视频 / 音频",
+                "原文未写明"
+              ]
+            ],
+            "highlight": {
+              "col": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "h": "计费怎么算：只算模型实际查看的部分",
+      "blocks": [
+        {
+          "p": "这套能力最直接的收益是省钱：token 只按模型实际「查看」的部分计费。你可以先靠提取文字、低分辨率预览或转录便宜地扫一遍，再把高分辨率 token 花在真正重要的图表、复杂版面和帧上。"
+        },
+        {
+          "fig": {
+            "type": "illustration",
+            "title": "只为你框出的部分付 token",
+            "subtitle": "示意：琥珀色是模型实际查看并计费的部分",
+            "glyph": {
+              "kind": "context",
+              "total": 100,
+              "segments": [
+                {
+                  "size": 25,
+                  "tone": "hi",
+                  "label": "查看并计费"
+                },
+                {
+                  "size": 75,
+                  "tone": "base",
+                  "label": "未查看"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "p": "Google 表示，网关和 SDK 伙伴在发布前已经验证过这套控制，称能在生产线束里直接削减 prompt token 支出。"
+        },
+        {
+          "fig": {
+            "type": "quote",
+            "text": "cutting prompt token spend directly in production harnesses",
+            "zh": "在生产线束里直接削减 prompt token 支出",
+            "who": "Google 官方博客",
+            "role": "发布说明",
+            "source_url": "https://blog.google/innovation-and-ai/technology/developers-tools/file-slicing-controls/"
+          }
+        }
+      ]
+    },
+    {
+      "h": "官方还没说的",
+      "blocks": [
+        {
+          "p": "下面这些读者可能最关心的问题，原文没有给出答案："
+        },
+        {
+          "list": [
+            "具体能省多少 token 或多少百分比：原文只说了「减少成本」，没有给数字。",
+            "上传文件的大小和页数上限具体是多少：原文只说「仍适用原有限制」，没写数值。",
+            "切片是否影响模型理解或输出准确率：原文没提。",
+            "这次功能是否带来价格变化：原文没写。",
+            "视频、音频省略参数时的默认帧率、分辨率等具体值：原文没写。",
+            "其他办公套件或更多格式何时支持：原文没写。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "适合谁",
+      "blocks": [
+        {
+          "p": "如果你在给 agent 喂长文档、多标签表格、长录音或视频，并且在意 token 成本，这套切片控制能帮你省掉本地转码和「整份吞下」的开销。代价是要自己设计「先粗扫、再细看」的调用流程，并在参数里明确圈出范围。"
+        },
+        {
+          "p": "如果你只是偶尔传几个小文件、对成本不敏感，可以先按默认行为用，不必马上改。如果你需要精确的省钱比例来做预算，那还要等官方给出更具体的数字，或者自己实测。"
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Introducing file slicing controls in the Gemini API",
+      "publisher": "Google",
+      "date": "2026-11-23",
+      "url": "https://blog.google/innovation-and-ai/technology/developers-tools/file-slicing-controls/"
+    },
+    "more": [],
+    "note": "配图均为示意：页面数、单元格范围、时间区间和 token 比例是举例，不是原文数据。官方示例代码中的第 3 页来自原文；正文里除发布日期和该页码外，没有官方给出的具体省钱数字。"
+  },
+  "claims": [
+    {
+      "text": "Gemini API 文件切片控制于 2026 年 11 月 23 日发布",
+      "value": "Nov 23, 2026",
+      "source_url": "https://blog.google/innovation-and-ai/technology/developers-tools/file-slicing-controls/",
+      "as_written": "2026 年 11 月 23 日",
+      "quote": "Nov 23, 2026"
+    },
+    {
+      "text": "官方示例代码里，高清细看的是第 3 页",
+      "value": "3",
+      "source_url": "https://blog.google/innovation-and-ai/technology/developers-tools/file-slicing-controls/",
+      "as_written": "第 3 页",
+      "quote": "\"start_page\": 3,"
+    }
+  ],
+  "cover": {
+    "headline": "Gemini API 文件切片",
+    "highlight": "只读需要的部分，只按查看计费",
+    "glyph": {
+      "kind": "pages",
+      "count": 10,
+      "select": [
+        3,
+        5
+      ]
+    }
+  },
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "origin": "auto",
+    "candidate": "1fa47c423b",
+    "tier": "official",
+    "via": null,
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "generated_at": "2026-11-24T10:15:15.492Z"
+  }
+}
