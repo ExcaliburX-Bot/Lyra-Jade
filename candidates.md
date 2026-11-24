@@ -1,33 +1,28 @@
-# 候选清单（2026-11-23 23:08 UTC）
+# 候选清单（2026-11-24 07:00 UTC）
 
 | 分数 | 标题 | 发布方 | 层级 | 相关报道 |
 | --- | --- | --- | --- | --- |
 | 6.5 | [OpenAI and Cisco introduce Shirudo](https://openai.com/index/introducing-shirudo) | OpenAI | official | 0 |
-| 6.5 | [Finding faster quantum algorithms with agents and formal verification](https://deepmind.google/blog/finding-faster-quantum-algorithms-with-agents-and-formal-verification/) | Google DeepMind | official | 0 |
+| 6.3 | [Introducing Claude Ship](https://claude.com/resources/articles/introducing-claude-ship) | Anthropic | official | 1 |
+| 6.3 | [Introducing file slicing controls in the Gemini API](https://blog.google/innovation-and-ai/technology/developers-tools/file-slicing-controls/) | Google | official | 1 |
+| 6 | [Finding faster quantum algorithms with agents and formal verification](https://deepmind.google/blog/finding-faster-quantum-algorithms-with-agents-and-formal-verification/) | Google DeepMind | official | 0 |
 | 5.9 | [a16z 公开 1.1 万多次 Agent 购物测试：流量入口正在从“人眼搜索”转向“机器读取 + 交易闭环”](https://a16z.news/p/welcome-to-the-b2a-economy-how-agents) | a16z.news | official | 0 |
 | 5.9 | [智谱发布 GLM-5.4：一款基于 Loop Transformer（循环架构） 的 750B 旗舰 AI 模型 编码能力增强](https://z.ai/blog/glm-5.4) | Z.ai | official | 0 |
-| 5.9 | [Vercel 发布 Board：Claude Code、Codex 等不同 Agent 能在一块板上分活、认领、汇报](https://vercel.com/blog/introducing-vercel-board) | vercel.com | official | 0 |
-| 5.2 | [Connected intelligence for in-house legal](https://openai.com/business/learn/connected-intelligence-for-in-house-legal) | OpenAI | official | 0 |
-| 5.2 | [Richpanel helps companies automate 50% of support in 30 days](https://openai.com/business/customer-stories/richpanel-ai-customer-support) | OpenAI | official | 0 |
-| 5.1 | [Muse 连上手机和电脑的 9 个用法：轻点手机背面自动送截图、经 Codex 操作 Windows 电脑、一起看 iPhone 屏幕教你设置](https://x.com/memuringo7544/status/2123749668056432769) | @memuringo7544 | official | 5 |
-| 5.1 | [Meta 官方 Muse 指南：付款前一定先问你，订阅分每月 20 和 100 美元两档，删掉的聊天它可能还记得](https://www.meta.com/help/superintelligence/1303670544995562/) | meta.com | official | 1 |
-| 5.1 | [RL infrastructure at Microsoft AI](https://microsoft.ai/news/rl-infrastructure-at-microsoft-ai/) | Microsoft AI | official | 0 |
-| 5 | [A step toward defining the Standard Model on a lattice](https://openai.com/index/step-toward-defining-the-standard-model) | OpenAI | official | 0 |
-| 5 | [Introducing ChatGPT Wallet](https://openai.com/index/introducing-chatgpt-wallet) | OpenAI | official | 0 |
+| 5.9 | [Phonic 发布 Phonic-1.1 语音模型：综合指数 88.9 分登顶，客服任务完成率达 87.1%](https://phonic.co/blog/phonic-1-1) | phonic.co | official | 0 |
+| 5.1 | [Connectors and skills come together as plugins](https://x.com/claudeai/status/2124970294523945328) | @claudeai | official | 0 |
 | 5 | [Introducing Gemini 4 Hydrogen](https://deepmind.google/blog/introducing-gemini-4-hydrogen/) | Google DeepMind | official | 0 |
 | 5 | [Gemini 4 Carbon is now available](https://deepmind.google/blog/gemini-4-carbon-is-now-available/) | Google DeepMind | official | 0 |
 | 5 | [Introducing AlphaProof Code: a breakthrough in verifying complex software at depth](https://deepmind.google/blog/introducing-alphaproof-code/) | Google DeepMind | official | 0 |
 | 5 | [Opening the datasets behind our AI weather models](https://deepmind.google/blog/opening-the-datasets-behind-our-ai-weather-models/) | Google DeepMind | official | 0 |
-| 4.9 | [MemOS 与 NVIDIA 发布 MemT-1.0-Pro：554B 记忆原生大模型 将历史信息存储在原生记忆中 可随时直接使用](https://arxiv.org/abs/2610.26825) | arXiv | primary | 0 |
-| 4.9 | [OpenAI 发布 GPT-6.2 提示指南：能拆开的活交给子 Agent，精简AGENTS.md 只写代码里推不出来的事](https://learn.chatgpt.com/guides/prompting-gpt-6-2-astra) | learn.chatgpt.com | official | 0 |
-| 4.9 | [OpenAI 公开其个人 Agent Dot 背后的时间感知技术：Bot 如何能在特定状态下感知并提醒你](https://developers.openai.com/blog/time-awareness-and-async-input-for-personal-agents) | OpenAI | official | 0 |
-| 4.9 | [Thinking Machines 发布 Inkling 2 Mini 模型：32GB 内存的 Mac 就能本地跑 在断网的 MacBook 上几分钟写出能玩的飞行模拟器](https://thinkingmachines.ai/news/inkling-2-mini/) | thinkingmachines.ai | official | 0 |
-| 4.8 | [Merry Making: Play, Build and Create With NVIDIA Technologies This Holiday Season](https://blogs.nvidia.com/blog/nvidia-technologies-holidays-2026/) | NVIDIA | official | 0 |
 | 4.8 | [NVIDIA RTX Spark Compact Desktops Out Now](https://blogs.nvidia.com/blog/rtx-spark-desktop-local-ai-available-now/) | NVIDIA | official | 1 |
 | 4.8 | [MAI Image 2.7: Frontier quality at a fraction of the cost](https://microsoft.ai/news/introducing-mai-image-2-7/) | Microsoft AI | official | 1 |
 | 4.8 | [MAI Realtime 1: Leading voice AI at $0.01 per audio minute](https://microsoft.ai/news/introducing-mai-realtime-1/) | Microsoft AI | official | 1 |
 | 4.7 | [Perplexity and Intelligence](https://openai.com/index/perplexity-and-intelligence) | OpenAI | official | 0 |
-| 4.4 | [How to build and maintain an agentic evaluation](https://huggingface.co/blog/agentic-evals) | Hugging Face | primary | 0 |
+| 4.6 | [If you’re in Europe, you get a month of Vibe Pro for free](https://x.com/MistralAI/status/2124905610386780451) | @MistralAI | official | 0 |
+| 4.4 | [MemOS 与 NVIDIA 发布 MemT-1.0-Pro：554B 记忆原生大模型 将历史信息存储在原生记忆中 可随时直接使用](https://arxiv.org/abs/2610.26825) | arXiv | primary | 0 |
+| 4.4 | [OpenAI 发布 GPT-6.2 提示指南：能拆开的活交给子 Agent，精简AGENTS.md 只写代码里推不出来的事](https://learn.chatgpt.com/guides/prompting-gpt-6-2-astra) | learn.chatgpt.com | official | 0 |
+| 4.4 | [OpenAI 公开其个人 Agent Dot 背后的时间感知技术：Bot 如何能在特定状态下感知并提醒你](https://developers.openai.com/blog/time-awareness-and-async-input-for-personal-agents) | OpenAI | official | 0 |
+| 4.4 | [Thinking Machines 发布 Inkling 2 Mini 模型：32GB 内存的 Mac 就能本地跑 在断网的 MacBook 上几分钟写出能玩的飞行模拟器](https://thinkingmachines.ai/news/inkling-2-mini/) | thinkingmachines.ai | official | 0 |
 | 4.4 | [Pika 发布了一个全新的 AI视频工具Enact：能模仿片场当导演现场实时导戏 视频一边播一边改，能拖人摆位、还能给 AI 演员说戏](https://pika.art/blog/pika-enact) | pika.art | official | 0 |
 | 4.4 | [Ideogram 发布了 Ideogram 4.6 模型：原生 4K 出图 宣称为迄今最精确的改图模型](https://ideogram.ai/models/4.6) | ideogram.ai | official | 0 |
 | 4.4 | [Microsoft launched Canvas, a new workspace powered by MAI Image 2.7 Flash](https://labs.microsoft.ai/?model=canvas) | @MicrosoftAI | official | 0 |
@@ -38,9 +33,14 @@
 | 4.4 | [Anthropic 推出 Claude Code 实验功能 Code Mode：写一段代码串起多次工具调用，能并行跑命令、只读需要的结果](https://code.claude.com/docs/en/code-mode) | code.claude.com | official | 0 |
 | 4.4 | [Mirelo 发布 Sound Agent：一句话给视频加音效、去配乐、拆人声，还能配成 32 种语言](https://mirelo.ai/blog/mirelo-sound-agent) | mirelo.ai | official | 0 |
 | 4.4 | [Higgsfield 发布 AI 品牌吉祥物教程：不训练模型，靠固定描述和三张参考表画同一只熊](https://higgsfield.ai/zh/blog/consistent-brand-mascot-ai) | higgsfield.ai | official | 0 |
+| 4.3 | [Merry Making: Play, Build and Create With NVIDIA Technologies This Holiday Season](https://blogs.nvidia.com/blog/nvidia-technologies-holidays-2026/) | NVIDIA | official | 0 |
 | 4.2 | [Combatting adversarial distillation](https://openai.com/index/combatting-adversarial-distillation) | OpenAI | official | 0 |
 | 4.2 | [Hebbia sees improvements in financial research with GPT-6 Astra](https://openai.com/business/customer-stories/hebbia) | OpenAI | official | 0 |
 | 4.2 | [How OpenAI’s Performance Factory keeps ChatGPT fast](https://openai.com/index/how-openai-performance-factory-keeps-chatgpt-fast) | OpenAI | official | 0 |
 | 4.2 | [Deploying Daybreak Red](https://openai.com/business/learn/deploying-daybreak-red) | OpenAI | official | 0 |
+| 4.2 | [See PR scans in action](https://openai.com/business/learn/pr-scans-demo) | OpenAI | official | 0 |
+| 4.2 | [Explore the Codex Security Plugin](https://openai.com/business/learn/codex-security-plugin-demo) | OpenAI | official | 0 |
+| 4.2 | [Get started with Daybreak Blue](https://openai.com/business/learn/daybreak-blue-onboarding-demo) | OpenAI | official | 0 |
+| 4.2 | [The Silent Consensus](https://openai.com/index/the-silent-consensus) | OpenAI | official | 0 |
 
 **超过 30 天没有新内容的源**：Mistral 新闻、Kimi 博客

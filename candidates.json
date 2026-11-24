@@ -11,13 +11,49 @@
     "related": []
   },
   {
+    "id": "e277391e1a",
+    "title": "Introducing Claude Ship",
+    "url": "https://claude.com/resources/articles/introducing-claude-ship",
+    "publisher": "Anthropic",
+    "tier": "official",
+    "published": "2026-11-23",
+    "score": 6.3,
+    "category_hint": "product",
+    "related": [
+      {
+        "title": "Anthropic 发布 Claude Ship：解决 AI 写代码很快、但“交接上线”太慢的问题，让代码上线和写代码一样快",
+        "url": "https://claude.com/resources/articles/introducing-claude-ship",
+        "publisher": "claude.com",
+        "tier": "official"
+      }
+    ]
+  },
+  {
+    "id": "1fa47c423b",
+    "title": "Introducing file slicing controls in the Gemini API",
+    "url": "https://blog.google/innovation-and-ai/technology/developers-tools/file-slicing-controls/",
+    "publisher": "Google",
+    "tier": "official",
+    "published": "2026-11-23",
+    "score": 6.3,
+    "category_hint": "product",
+    "related": [
+      {
+        "title": "Google 推出 Gemini API 文件切片：工具能把视频片段、PDF 某几页直接交回模型，只按看过的部分计 token",
+        "url": "https://blog.google/innovation-and-ai/technology/developers-tools/file-slicing-controls/",
+        "publisher": "Google",
+        "tier": "official"
+      }
+    ]
+  },
+  {
     "id": "61dcf11694",
     "title": "Finding faster quantum algorithms with agents and formal verification",
     "url": "https://deepmind.google/blog/finding-faster-quantum-algorithms-with-agents-and-formal-verification/",
     "publisher": "Google DeepMind",
     "tier": "official",
     "published": "2026-11-23T16:59:40.000Z",
-    "score": 6.5,
+    "score": 6,
     "category_hint": "product",
     "related": []
   },
@@ -48,134 +84,26 @@
     "related": []
   },
   {
-    "id": "b0d1e4ff5d",
-    "title": "Vercel 发布 Board：Claude Code、Codex 等不同 Agent 能在一块板上分活、认领、汇报",
-    "url": "https://vercel.com/blog/introducing-vercel-board",
-    "publisher": "vercel.com",
+    "id": "8c04164934",
+    "title": "Phonic 发布 Phonic-1.1 语音模型：综合指数 88.9 分登顶，客服任务完成率达 87.1%",
+    "url": "https://phonic.co/blog/phonic-1-1",
+    "publisher": "phonic.co",
     "tier": "official",
     "published": "2026-11-24T00:00:00.000Z",
     "score": 5.9,
     "category_hint": null,
-    "via": "https://xiaohu.ai/article/vercel-board/",
+    "via": "https://xiaohu.ai/article/phonic-1-1/",
     "discovered_by": "xiaohu",
     "related": []
   },
   {
-    "id": "f8a4e02f42",
-    "title": "Connected intelligence for in-house legal",
-    "url": "https://openai.com/business/learn/connected-intelligence-for-in-house-legal",
-    "publisher": "OpenAI",
+    "id": "d1e1fa1ba8",
+    "title": "Connectors and skills come together as plugins",
+    "url": "https://x.com/claudeai/status/2124970294523945328",
+    "publisher": "@claudeai",
     "tier": "official",
-    "published": "2026-11-23T08:00:00.000Z",
-    "score": 5.2,
-    "category_hint": "product",
-    "related": []
-  },
-  {
-    "id": "680b35173b",
-    "title": "Richpanel helps companies automate 50% of support in 30 days",
-    "url": "https://openai.com/business/customer-stories/richpanel-ai-customer-support",
-    "publisher": "OpenAI",
-    "tier": "official",
-    "published": "2026-11-23T08:00:00.000Z",
-    "score": 5.2,
-    "category_hint": "product",
-    "related": []
-  },
-  {
-    "id": "753ba0c3b3",
-    "title": "Muse 连上手机和电脑的 9 个用法：轻点手机背面自动送截图、经 Codex 操作 Windows 电脑、一起看 iPhone 屏幕教你设置",
-    "url": "https://x.com/memuringo7544/status/2123749668056432769",
-    "publisher": "@memuringo7544",
-    "tier": "official",
-    "published": "2026-11-24T00:00:00.000Z",
+    "published": "2026-11-23T20:56:12.910Z",
     "score": 5.1,
-    "category_hint": null,
-    "via": "https://xiaohu.ai/article/muse-guide-connect-devices/",
-    "discovered_by": "xiaohu",
-    "related": [
-      {
-        "title": "Muse 声音玩法：装上开源日语语音 Irodori，做左右耳 ASMR、每天换着台词叫你起床",
-        "url": "https://x.com/memuringo7544/status/2123749668056432769",
-        "publisher": "@memuringo7544",
-        "tier": "official"
-      },
-      {
-        "title": "让 Muse 给你做小应用：AI 剩余额度挂上 iPhone 主屏、走近景点自动发导览、每天清掉推广邮件",
-        "url": "https://x.com/memuringo7544/status/2123749668056432769",
-        "publisher": "@memuringo7544",
-        "tier": "official"
-      },
-      {
-        "title": "Muse 分房间用的 12 个做法：每类活单开一个侧聊，小应用收进一个应用架，每周把自己备份到你电脑",
-        "url": "https://x.com/memuringo7544/status/2123749668056432769",
-        "publisher": "@memuringo7544",
-        "tier": "official"
-      },
-      {
-        "title": "Muse 性格和记忆的改法：没回话就每 5 分钟追一条，侧聊里养出的性格让主聊天学过去",
-        "url": "https://x.com/memuringo7544/status/2123749668056432769",
-        "publisher": "@memuringo7544",
-        "tier": "official"
-      },
-      {
-        "title": "Muse 上手第一周：到家主动说欢迎回来，每天 7:30 报天气，拍张预约单就排进日历和提醒",
-        "url": "https://x.com/memuringo7544/status/2123749668056432769",
-        "publisher": "@memuringo7544",
-        "tier": "official"
-      }
-    ]
-  },
-  {
-    "id": "f278ad7220",
-    "title": "Meta 官方 Muse 指南：付款前一定先问你，订阅分每月 20 和 100 美元两档，删掉的聊天它可能还记得",
-    "url": "https://www.meta.com/help/superintelligence/1303670544995562/",
-    "publisher": "meta.com",
-    "tier": "official",
-    "published": "2026-11-24T00:00:00.000Z",
-    "score": 5.1,
-    "category_hint": null,
-    "via": "https://xiaohu.ai/article/muse-guide-official-safety-cost/",
-    "discovered_by": "xiaohu",
-    "related": [
-      {
-        "title": "Meta 官方 Muse 上手指南：从别的 AI 导入记忆，给它一个自己的 @muse.ai 邮箱，在 Mac 上替你找文件、读消息",
-        "url": "https://www.meta.com/help/superintelligence/1303670544995562/",
-        "publisher": "meta.com",
-        "tier": "official"
-      }
-    ]
-  },
-  {
-    "id": "af86ecc858",
-    "title": "RL infrastructure at Microsoft AI",
-    "url": "https://microsoft.ai/news/rl-infrastructure-at-microsoft-ai/",
-    "publisher": "Microsoft AI",
-    "tier": "official",
-    "published": "2026-11-23T12:00:00.000Z",
-    "score": 5.1,
-    "category_hint": null,
-    "related": []
-  },
-  {
-    "id": "87d7014c15",
-    "title": "A step toward defining the Standard Model on a lattice",
-    "url": "https://openai.com/index/step-toward-defining-the-standard-model",
-    "publisher": "OpenAI",
-    "tier": "official",
-    "published": "2026-11-15T22:00:01.000Z",
-    "score": 5,
-    "category_hint": "product",
-    "related": []
-  },
-  {
-    "id": "5bf4951adb",
-    "title": "Introducing ChatGPT Wallet",
-    "url": "https://openai.com/index/introducing-chatgpt-wallet",
-    "publisher": "OpenAI",
-    "tier": "official",
-    "published": "2026-11-13T15:00:00.000Z",
-    "score": 5,
     "category_hint": "product",
     "related": []
   },
@@ -221,69 +149,6 @@
     "published": "2026-11-10T11:13:04.000Z",
     "score": 5,
     "category_hint": "product",
-    "related": []
-  },
-  {
-    "id": "74d5169d80",
-    "title": "MemOS 与 NVIDIA 发布 MemT-1.0-Pro：554B 记忆原生大模型 将历史信息存储在原生记忆中 可随时直接使用",
-    "url": "https://arxiv.org/abs/2610.26825",
-    "publisher": "arXiv",
-    "tier": "primary",
-    "published": "2026-11-23T00:00:00.000Z",
-    "score": 4.9,
-    "category_hint": null,
-    "via": "https://xiaohu.ai/article/memt-1-pro/",
-    "discovered_by": "xiaohu",
-    "related": []
-  },
-  {
-    "id": "a5b77eee49",
-    "title": "OpenAI 发布 GPT-6.2 提示指南：能拆开的活交给子 Agent，精简AGENTS.md 只写代码里推不出来的事",
-    "url": "https://learn.chatgpt.com/guides/prompting-gpt-6-2-astra",
-    "publisher": "learn.chatgpt.com",
-    "tier": "official",
-    "published": "2026-11-21T00:00:00.000Z",
-    "score": 4.9,
-    "category_hint": null,
-    "via": "https://xiaohu.ai/article/gpt-6-2-codex-prompting-guide/",
-    "discovered_by": "xiaohu",
-    "related": []
-  },
-  {
-    "id": "4bd6f0b210",
-    "title": "OpenAI 公开其个人 Agent Dot 背后的时间感知技术：Bot 如何能在特定状态下感知并提醒你",
-    "url": "https://developers.openai.com/blog/time-awareness-and-async-input-for-personal-agents",
-    "publisher": "OpenAI",
-    "tier": "official",
-    "published": "2026-11-21T00:00:00.000Z",
-    "score": 4.9,
-    "category_hint": null,
-    "via": "https://xiaohu.ai/article/openai-agent-time-async/",
-    "discovered_by": "xiaohu",
-    "related": []
-  },
-  {
-    "id": "a0ebc9ee45",
-    "title": "Thinking Machines 发布 Inkling 2 Mini 模型：32GB 内存的 Mac 就能本地跑 在断网的 MacBook 上几分钟写出能玩的飞行模拟器",
-    "url": "https://thinkingmachines.ai/news/inkling-2-mini/",
-    "publisher": "thinkingmachines.ai",
-    "tier": "official",
-    "published": "2026-11-21T00:00:00.000Z",
-    "score": 4.9,
-    "category_hint": null,
-    "via": "https://xiaohu.ai/article/thinking-machines-inkling-2-mini/",
-    "discovered_by": "xiaohu",
-    "related": []
-  },
-  {
-    "id": "a88353929e",
-    "title": "Merry Making: Play, Build and Create With NVIDIA Technologies This Holiday Season",
-    "url": "https://blogs.nvidia.com/blog/nvidia-technologies-holidays-2026/",
-    "publisher": "NVIDIA",
-    "tier": "official",
-    "published": "2026-11-23T17:00:08.000Z",
-    "score": 4.8,
-    "category_hint": null,
     "related": []
   },
   {
@@ -352,14 +217,66 @@
     "related": []
   },
   {
-    "id": "6fd4c32fe3",
-    "title": "How to build and maintain an agentic evaluation",
-    "url": "https://huggingface.co/blog/agentic-evals",
-    "publisher": "Hugging Face",
+    "id": "372f1627fa",
+    "title": "If you’re in Europe, you get a month of Vibe Pro for free",
+    "url": "https://x.com/MistralAI/status/2124905610386780451",
+    "publisher": "@MistralAI",
+    "tier": "official",
+    "published": "2026-11-23T16:39:11.010Z",
+    "score": 4.6,
+    "category_hint": "product",
+    "related": []
+  },
+  {
+    "id": "74d5169d80",
+    "title": "MemOS 与 NVIDIA 发布 MemT-1.0-Pro：554B 记忆原生大模型 将历史信息存储在原生记忆中 可随时直接使用",
+    "url": "https://arxiv.org/abs/2610.26825",
+    "publisher": "arXiv",
     "tier": "primary",
     "published": "2026-11-23T00:00:00.000Z",
     "score": 4.4,
     "category_hint": null,
+    "via": "https://xiaohu.ai/article/memt-1-pro/",
+    "discovered_by": "xiaohu",
+    "related": []
+  },
+  {
+    "id": "a5b77eee49",
+    "title": "OpenAI 发布 GPT-6.2 提示指南：能拆开的活交给子 Agent，精简AGENTS.md 只写代码里推不出来的事",
+    "url": "https://learn.chatgpt.com/guides/prompting-gpt-6-2-astra",
+    "publisher": "learn.chatgpt.com",
+    "tier": "official",
+    "published": "2026-11-21T00:00:00.000Z",
+    "score": 4.4,
+    "category_hint": null,
+    "via": "https://xiaohu.ai/article/gpt-6-2-codex-prompting-guide/",
+    "discovered_by": "xiaohu",
+    "related": []
+  },
+  {
+    "id": "4bd6f0b210",
+    "title": "OpenAI 公开其个人 Agent Dot 背后的时间感知技术：Bot 如何能在特定状态下感知并提醒你",
+    "url": "https://developers.openai.com/blog/time-awareness-and-async-input-for-personal-agents",
+    "publisher": "OpenAI",
+    "tier": "official",
+    "published": "2026-11-21T00:00:00.000Z",
+    "score": 4.4,
+    "category_hint": null,
+    "via": "https://xiaohu.ai/article/openai-agent-time-async/",
+    "discovered_by": "xiaohu",
+    "related": []
+  },
+  {
+    "id": "a0ebc9ee45",
+    "title": "Thinking Machines 发布 Inkling 2 Mini 模型：32GB 内存的 Mac 就能本地跑 在断网的 MacBook 上几分钟写出能玩的飞行模拟器",
+    "url": "https://thinkingmachines.ai/news/inkling-2-mini/",
+    "publisher": "thinkingmachines.ai",
+    "tier": "official",
+    "published": "2026-11-21T00:00:00.000Z",
+    "score": 4.4,
+    "category_hint": null,
+    "via": "https://xiaohu.ai/article/thinking-machines-inkling-2-mini/",
+    "discovered_by": "xiaohu",
     "related": []
   },
   {
@@ -493,6 +410,17 @@
     "related": []
   },
   {
+    "id": "a88353929e",
+    "title": "Merry Making: Play, Build and Create With NVIDIA Technologies This Holiday Season",
+    "url": "https://blogs.nvidia.com/blog/nvidia-technologies-holidays-2026/",
+    "publisher": "NVIDIA",
+    "tier": "official",
+    "published": "2026-11-23T17:00:08.000Z",
+    "score": 4.3,
+    "category_hint": null,
+    "related": []
+  },
+  {
     "id": "3ea993db7e",
     "title": "Combatting adversarial distillation",
     "url": "https://openai.com/index/combatting-adversarial-distillation",
@@ -532,6 +460,50 @@
     "publisher": "OpenAI",
     "tier": "official",
     "published": "2026-11-19T00:00:00.000Z",
+    "score": 4.2,
+    "category_hint": "product",
+    "related": []
+  },
+  {
+    "id": "cb99e2baa6",
+    "title": "See PR scans in action",
+    "url": "https://openai.com/business/learn/pr-scans-demo",
+    "publisher": "OpenAI",
+    "tier": "official",
+    "published": "2026-11-19T00:00:00.000Z",
+    "score": 4.2,
+    "category_hint": "product",
+    "related": []
+  },
+  {
+    "id": "e29ac258c0",
+    "title": "Explore the Codex Security Plugin",
+    "url": "https://openai.com/business/learn/codex-security-plugin-demo",
+    "publisher": "OpenAI",
+    "tier": "official",
+    "published": "2026-11-19T00:00:00.000Z",
+    "score": 4.2,
+    "category_hint": "product",
+    "related": []
+  },
+  {
+    "id": "a2fb003440",
+    "title": "Get started with Daybreak Blue",
+    "url": "https://openai.com/business/learn/daybreak-blue-onboarding-demo",
+    "publisher": "OpenAI",
+    "tier": "official",
+    "published": "2026-11-19T00:00:00.000Z",
+    "score": 4.2,
+    "category_hint": "product",
+    "related": []
+  },
+  {
+    "id": "e683d40fba",
+    "title": "The Silent Consensus",
+    "url": "https://openai.com/index/the-silent-consensus",
+    "publisher": "OpenAI",
+    "tier": "official",
+    "published": "2026-11-18T10:00:00.000Z",
     "score": 4.2,
     "category_hint": "product",
     "related": []
