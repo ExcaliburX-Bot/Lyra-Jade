@@ -439,3 +439,19 @@ test("构建：关于页、sitemap、内容 API 都生成，且 API 不带流水
   assert.match(fs.readFileSync(path.join(out, "index.html"), "utf8"), /og:image" content="https:\/\/lyra\.example\/assets\/og\.png/);
   fs.rmSync(out, { recursive: true, force: true });
 });
+
+test("新图型：代码高亮、对照表、卡片、竖柱、两栏对照、引语都能渲染，引语必须出自原文", async () => {
+  const { figure } = await import("../site/assets/components.js");
+  const { validateArticle } = await import("../scripts/lib/validate.mjs");
+  const code = figure({ type: "code", title: "t", lang: "python", code: "a = 1\nb = 2\n", highlight: [2] });
+  assert.match(code, /<span class="cl hl">b = 2<\/span>/);
+  assert.match(figure({ type: "table", title: "t", columns: ["k", "A"], rows: [["x", "1"]], highlight: { col: 1 } }), /<td class="hc">1<\/td>/);
+  assert.match(figure({ type: "cards", title: "t", items: [{ icon: "video", title: "a" }, { icon: "nope", title: "b" }] }), /class="fic"/);
+  assert.match(figure({ type: "columns", title: "t", items: [{ label: "low", value: 280 }, { label: "mid", value: 560, tone: "def", calc: "2 × 280" }] }), /t-def[\s\S]*2 × 280/);
+  assert.match(figure({ type: "compare", title: "t", left: { label: "L", items: [{ label: "x" }] }, right: { label: "R", items: [{ label: "y", state: "hi" }] } }), /s-hi/);
+  const base = { ...readJson("llm-article.json"), date: "2026-11-18" };
+  const src = "We are excited to bring slicing to every developer today.";
+  const withQuote = text => ({ ...base, sections: [...base.sections, { h: "q", blocks: [{ fig: { type: "quote", title: "t", subtitle: "s", text, who: "Google", source_url: "s" } }] }] });
+  assert.doesNotMatch(validateArticle(withQuote("We are excited to bring slicing to every developer today."), { sourceTexts: { s: src } }).errors.join(""), /引语/);
+  assert.match(validateArticle(withQuote("We are thrilled to bring slicing to everyone."), { sourceTexts: { s: src } }).errors.join(""), /引语在原文里找不到/);
+});

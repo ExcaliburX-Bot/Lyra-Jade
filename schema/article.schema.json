@@ -107,12 +107,18 @@
                         "steps",
                         "pipeline",
                         "beforeafter",
-                        "bars"
+                        "bars",
+                        "code",
+                        "table",
+                        "cards",
+                        "columns",
+                        "compare",
+                        "quote"
                       ]
                     },
                     "title": {
                       "type": "string",
-                      "description": "观点式标题"
+                      "description": "结论句标题：读者只看标题也知道这张图要说明什么"
                     },
                     "subtitle": {
                       "type": "string",

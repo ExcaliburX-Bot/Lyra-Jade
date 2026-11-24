@@ -58,6 +58,20 @@ export function validateArticle(a, { sourceTexts = {} } = {}) {
     if (f.type === "capacity") (f.items || []).forEach(it => need(typeof it.value === "number" && it.value >= 0 && it.value <= f.max, `${where}：${it.label} 的数值不在 0 到 max 之间`));
     if (f.type === "bars") (f.groups || []).flatMap(g => g.items || []).forEach(it => need(typeof it.value === "number" || it.status, `${where}：${it.label} 既没有数值也没有状态说明`));
     if (f.type === "timeline") (f.lanes || []).flatMap(l => l.segments || []).forEach(s => need(s.from < s.to && s.from >= f.axis.from && s.to <= f.axis.to, `${where}：时间段 ${s.from}–${s.to} 超出坐标轴`));
+    if (f.type === "columns") (f.items || []).forEach(it => need(typeof it.value === "number" && it.value >= 0, `${where}：${it.label} 的数值要是非负数字`));
+    if (f.type === "table") (f.rows || []).forEach((r, i) => need(Array.isArray(r) && r.length === (f.columns || []).length, `${where}：第 ${i + 1} 行的格数和表头对不上`));
+    if (f.type === "cards") need((f.items || []).length >= 2 && f.items.length <= 6, `${where}：卡片要 2–6 张`);
+    if (f.type === "quote") {
+      /* 引语必须逐字出自原文：编造或改写的引语直接拦下 */
+      const src = sourceTexts[f.source_url];
+      if (!src) warnings.push(`${where}：引语的出处没有存档，无法核对，需人工确认`);
+      else need(normNum(src).includes(normNum(f.text)), `${where}：引语在原文里找不到，必须逐字复制原文`);
+      if ([...String(f.text || "")].length > 320) warnings.push(`${where}：引语太长，控制在两三句以内`);
+    }
+    if (f.type === "code") {
+      const inSource = Object.values(sourceTexts).some(t => normNum(t).includes(normNum(String(f.code || "").split("\n").find(l => l.trim().length > 12) || "\u0000")));
+      if (!inSource && f.subtitle && !f.subtitle.includes("示意")) warnings.push(`${where}：代码不是原文里的，副标题要写「示意」`);
+    }
   }));
   if (figCount === 0) warnings.push("全文没有图：确认这篇确实不需要配图");
   if (figCount > 7) warnings.push(`图有 ${figCount} 张，偏多`);

@@ -5,7 +5,7 @@
 1. 只用 <source> 里的事实。原文没写的数字、日期、价格、对比，一律不写；拿不准就不写。
 2. 正文、AI 总结、速览和图里出现的每个有实际含义的数值（价格、规格、分数、比例、日期、数量），都要在 claims 里列一条。型号、版本号、产品名里的数字（如 Gemini 4、Terminal-Bench 4.1、v1.1）不用登记。每条：value 用原文里的写法（例如 6,144、128GB、30%），source_url 是提供给你的链接之一，quote 原样复制原文里那一句；as_written 写这个数字在你中文正文里的写法（例如原文 34 billion，正文写 340 亿）。
 3. 厂商宣传的数字要补一句前提或限制（峰值还是常态、什么精度、和什么比）。
-4. 用自己的话写，不要大段翻译原文；引用原文不超过一句。
+4. 用自己的话写，不要大段翻译原文；正文里引用原文不超过一句，quote 图里的原话两三句以内。
 5. 不用夸张词（革命性、炸裂、颠覆、遥遥领先、王炸、很炫、碾压等）。
 6. 标题不写排名和最高级（第一、最强、最好、榜首、SOTA 等）。厂商说的排名可以写进正文，但要写明是哪个榜、哪一档、谁说的。
 7. quote 必须从原文逐字复制，用原文语言，一句以内；不确定原话就不填 quote，绝不改写后当引文。
@@ -40,21 +40,38 @@
 
 # 配图
 
-在文字讲完一个概念之后放图。全文 3–6 张，没有合适的就不画。每张图都要有：观点式的 title、写明性质或单位的 subtitle（示意类图型必须含「示意」二字）、说明怎么读或出处的 note。
+图是解读的一半。读者往往先看图，再决定读不读文字，所以每张图都要为这篇文章专门设计，不要为了有图而画。
 
-按内容选图型：
+## 先定全篇的视觉规则（写图之前先想好）
+
+1. **一个贯穿全文的视觉比喻。** 找到这篇新闻最核心的那个动作或变化，让几张图都围绕它画。例如讲「只取文件的一部分」，就让每张图都画「整体里框出一块」；讲「从云端搬到本机」，就让每张图都分「本机 / 云端」两边。
+2. **颜色只表达意思，全文统一：** `hi`（琥珀色）= 这次的变化或重点；`def`（蓝色）= 默认档；`base` = 普通；`ref`（灰）= 参照对象；`dim` = 不适用或没有。每张用到颜色的图，subtitle 里用一句话交代，例如「琥珀色是这次新放开的三种」「蓝色是不设时的默认档」。一张图里的 hi 不超过三处，全都 hi 就等于没有重点。
+3. **标题是结论句。** 读者只看标题也知道这张图说明什么，例如「工具交回的内容，和用户直接发的一样全」，而不是「输入类型对比」。
+4. **能验算的数字给算式。** 数字是算出来的（估算费用、token 数、倍数），在条目的 calc 里写算式，例如「3,492 秒 × (258 + 32)」，subtitle 写「示意估算」，算式用到的每个原始数字都要进 claims。
+
+## 图型
+
+在文字讲完一个概念之后放图。全文 3–7 张，图型尽量不重复。每张图都要有：结论句 title、交代颜色含义或单位的 subtitle（示意类图型必须含「示意」二字）、说明怎么读或出处的 note（可选）。
 
 | 正文在讲 | type | 必填字段 |
 | --- | --- | --- |
 | 三到六个关键数字 | kpi | items: [{value, unit, label, note}] |
+| 几个选项、档位、型号比同一个数字（价格、token、分数），想让人一眼看出高低 | columns（竖向柱） | items: [{label, sub, value, display, tone, calc}] |
+| 几样东西比价格、跑分、速度，条目多或标签长 | bars（横向条） | legend: [{tone, label}]; groups: [{label, items: [{label, sub, value, display, tone, calc}]}]；没有数值的用 status 写「未公布价格」等 |
+| 变化前后、两种用法、两个对象各有哪些项，哪几项是新的 | compare（两栏对照） | left / right: {label, sub, items: [{label, tag, state: hi/dim/base}]}; footer（一句结论，可选） |
+| 多个文件格式、型号、档位在几个维度上的取值 | table（对照表） | columns: [表头]; rows: [[每格文字]]; highlight: {col: n} 或 {row: n}（从 0 数，用来标默认或重点） |
+| 三到六种用法、场景、能力，每种一两句话 | cards（卡片） | items: [{icon, title, desc, tags: [参数名或关键词], tone}]；icon 只能从 code、video、audio、doc、table、chart、chat、bolt、shield、money、globe、user、image、search、layers、clock、cpu、robot 里选 |
+| 开发者要怎么调用（参数、请求格式） | code（代码块） | lang, code（多行字符串）, highlight: [要高亮的行号，从 1 数]；代码原文里有就逐字用；是你写的示例，subtitle 要写「示意」 |
+| 厂商或合作方说的一句关键原话 | quote（引语） | text（原文逐字复制，原文语言，两三句以内）, zh（中文意思）, who, role, source_url |
+| 装不装得下、有没有超过上限 | capacity | unit, max, thresholds: [{value, label}], items: [{label, sub, value, display, tone: good/warn/bad, calc}] |
 | 一天 / 一周里谁在什么时间做什么 | timeline | axis: {from, to, ticks, unit}; lanes: [{label, sub, tone, segments: [{from, to, n, label}]}] |
-| 装不装得下、有没有超过上限 | capacity | unit, max, thresholds: [{value, label}], items: [{label, sub, value, tone: good/warn/bad}] |
 | 任务或数据被分到不同地方 | route | root: {label, sub}; branches: [{tone: local/cloud, label, items: [文字], note}] |
-| 一个工作流有先后几步（必须有先后顺序；并列的选项不要用它，改用列表或 route） | steps | steps: [{name, tool, desc}] |
-| 两种做法在流程或架构上差在哪一层、差多少（只比两三个数字时不要用它，用 bars） | pipeline | rows: [{label, note, nodes: [{label, hi}]}]; compare: {label, max, items: [{label, value, display, tone: main/ref}]} |
+| 一个工作流有先后几步（必须有先后顺序） | steps | steps: [{name, tool, desc}] |
+| 两种做法在流程或架构上差在哪一层 | pipeline | rows: [{label, note, nodes: [{label, hi}]}]; compare: {label, max, items: [{label, value, display, tone: main/ref}]} |
 | 看得见的效果差异（画质、噪点） | beforeafter | left: {label}; right: {label, note} |
-| 几样东西比价格、跑分、速度；同一指标的两三个数字对比 | bars | legend: [{tone, label}]; groups: [{label, items: [{label, sub, value, tone}]}]；没有数值的条目用 status 写明「未公布价格」等 |
 
-颜色语义固定：local / main / good = 本机或主角，cloud = 云端，laptop / warn = 对照或需要注意，ref = 参照对象，bad = 超出或不行。
-
-图里的例子（比如任务名）如果不是原文给的，subtitle 要写「示意图：任务是举例」。
+- 选图型看「读者要比较什么」：比大小用 columns / bars，比有无和新旧用 compare，比多个维度用 table，讲几种用法用 cards，讲怎么调用用 code。
+- 并列的选项不要用 steps；只比两三个数字不要用 pipeline。
+- 数值字段（value、max）填数字本身，例如 70.9，不要写成「70.9%」；要显示的写法放 display，例如「约 101 万」。
+- 图里的例子（任务名、文件名）如果不是原文给的，subtitle 要写「示意图：任务是举例」。
+- 旧的颜色名仍然可用：local / main / good = 本机或主角，cloud = 云端，laptop / warn = 对照或需要注意，ref = 参照对象，bad = 超出或不行。新写的图优先用 hi / def / base / ref / dim。

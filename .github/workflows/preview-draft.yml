@@ -1,0 +1,62 @@
+# 试写：用当前的写稿规则重写指定候选，只推到 preview/ 分支给人看，不开 PR、不上线、不改 data 分支
+# 用途：改了写稿规则或图形组件之后，拿已发布的文章重写一遍做对比
+name: 试写预览
+on:
+  workflow_dispatch:
+    inputs:
+      ids:
+        description: 候选 ID，多个用空格隔开（见文章 JSON 里的 pipeline.candidate）
+        required: true
+      provider:
+        description: 这次用哪家写（不选就用变量 WG_PROVIDER）
+        type: choice
+        options: ["", "xai", "deepseek", "anthropic"]
+        default: ""
+permissions:
+  contents: write
+concurrency:
+  group: preview-draft
+  cancel-in-progress: false
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/checkout@v4
+        with:
+          ref: data
+          path: data
+      - name: 试写
+        env:
+          WG_PROVIDER: ${{ inputs.provider || vars.WG_PROVIDER }}
+          WG_MODEL: ${{ vars.WG_MODEL }}
+          WG_REASONING: ${{ vars.WG_REASONING }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+        run: |
+          mkdir -p preview
+          for id in ${{ inputs.ids }}; do
+            node scripts/draft.mjs --id "$id" || echo "::warning::候选 $id 试写失败"
+            node -e '
+              const fs = require("fs"), list = JSON.parse(fs.readFileSync("data/new-drafts.json", "utf8"));
+              for (const d of list) { fs.copyFileSync(d.file, `preview/${require("path").basename(d.file)}`);
+                const r = `data/reports/${d.slug}.md`; if (fs.existsSync(r)) fs.copyFileSync(r, `preview/${d.slug}.report.md`); }
+            '
+          done
+          ls -la preview
+      - name: 推到 preview 分支（只放试写的文章和校验报告）
+        run: |
+          [ -n "$(ls -A preview)" ] || { echo "::error::没有写出任何稿子"; exit 1; }
+          BR="preview/${{ github.run_id }}"
+          git config user.name "lyra-jade-bot"; git config user.email "lyra-jade-bot@users.noreply.github.com"
+          git switch --orphan "$BR"
+          git rm -rq --cached . >/dev/null 2>&1 || true
+          git add -f preview
+          git commit -qm "试写预览 ${{ inputs.ids }}"
+          git push -q origin "$BR"
+          echo "已推到分支 $BR"

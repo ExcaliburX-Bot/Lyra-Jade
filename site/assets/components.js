@@ -18,8 +18,34 @@ export const FIGURE_SPEC = {
   steps: ["steps"],
   pipeline: ["rows"],
   beforeafter: ["left", "right"],
-  bars: ["groups"]
+  bars: ["groups"],
+  /* 2026-11 新增 */
+  code: ["code"],
+  table: ["columns", "rows"],
+  cards: ["items"],
+  columns: ["items"],
+  compare: ["left", "right"],
+  quote: ["text", "who", "source_url"]
 };
+
+/* 颜色语义（全站统一，图的副标题里要说明本图用到的颜色）：
+   hi = 这次的变化 / 重点（琥珀色）   def = 默认档（蓝色）   base = 普通   ref = 参照对象（灰）   dim = 不适用 / 没有 */
+const TONE = t => ["hi", "def", "base", "ref", "dim", "main", "good", "warn", "bad", "local", "cloud", "laptop", "gray"].includes(t) ? t : "base";
+
+/* 卡片图标：只用这一组，名字以外的一律不画 */
+const ICONS = {
+  code: '<path d="m8 7-5 5 5 5M16 7l5 5-5 5"/>', video: '<rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3"/>',
+  audio: '<path d="M3 12h2l2-6 3 12 3-9 2 6 2-3h4"/>', doc: '<path d="M6 3h8l4 4v14H6zM14 3v4h4M9 12h6M9 16h6"/>',
+  table: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16M15 4v16"/>', chart: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+  chat: '<path d="M4 5h16v11H9l-5 4z"/>', bolt: '<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>', shield: '<path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/>',
+  money: '<circle cx="12" cy="12" r="9"/><path d="M15 9a3 3 0 0 0-3-1.5c-1.7 0-3 .9-3 2.2 0 3 6 1.6 6 4.6 0 1.3-1.3 2.2-3 2.2a3.4 3.4 0 0 1-3-1.6M12 6v12"/>',
+  globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/>', user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>',
+  image: '<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-8 8"/>', search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>',
+  layers: '<path d="m12 3 9 5-9 5-9-5zM3 13l9 5 9-5"/>', clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  cpu: '<rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/>', robot: '<rect x="4" y="8" width="16" height="11" rx="3"/><path d="M12 4v4M9 13h.01M15 13h.01M9 16h6"/>'
+};
+const icon = n => ICONS[n] ? `<svg class="fic" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n]}</svg>` : "";
+const fmt = v => typeof v === "number" ? v.toLocaleString("en-US") : esc(v);
 
 export const FIGS = {
   kpi: f => `<div class="kpis">${f.items.map((k, i) => `<div class="kpi" style="--i:${i}"><b>${esc(k.value)}<small>${esc(k.unit || "")}</small></b><span>${esc(k.label)}</span>${k.note ? `<em>${esc(k.note)}</em>` : ""}</div>`).join("")}</div>`,
@@ -33,7 +59,7 @@ export const FIGS = {
   },
 
   capacity: f => `<div class="cap"><div class="cap-lines">${(f.thresholds || []).map(th => `<div class="cap-line" style="left:${pct(th.value, f.max)}"><span>${esc(th.label)}</span></div>`).join("")}</div>
-    ${f.items.map((it, i) => `<div class="row2"><div class="lab"><b>${esc(it.label)}</b><span>${esc(it.sub || "")}</span></div><div class="ftrack"><div class="fill t-${esc(it.tone || "main")}" style="--w:${pct(it.value, f.max)};--i:${i}">${esc(it.value)} ${esc(f.unit)}</div></div></div>`).join("")}</div>`,
+    ${f.items.map((it, i) => `<div class="row2"><div class="lab"><b>${esc(it.label)}</b><span>${esc(it.sub || "")}</span></div><div class="ftrack"><div class="fill t-${esc(it.tone || "main")}" style="--w:${pct(it.value, f.max)};--i:${i}">${esc(it.display ?? `${it.value} ${f.unit}`)}</div></div></div>${it.calc ? `<div class="row2 calc-row"><span></span><div class="calc">${esc(it.calc)}</div></div>` : ""}`).join("")}</div>`,
 
   route: f => {
     let k = 0;
@@ -55,8 +81,43 @@ export const FIGS = {
     const max = (f.max || Math.max(...all.map(x => x.value))) * 1.08; let k = 0;
     return `<div class="bars">${f.legend ? `<div class="legend">${f.legend.map(l => `<span><i class="t-${esc(l.tone)}"></i>${esc(l.label)}</span>`).join("")}</div>` : ""}
       ${f.groups.map(g => `<div class="bars-g">${esc(g.label)}</div>${g.items.map(it => `<div class="row2"><div class="lab"><b>${esc(it.label)}</b><span>${esc(it.sub || "")}</span></div>` +
-      (it.value != null ? `<div class="ftrack"><div class="fill t-${esc(it.tone || "main")}" style="--w:${pct(it.value, max)};--i:${k++}">${Number(it.value).toLocaleString("en-US")}</div></div>` : `<div class="ftrack unknown"><em>${esc(it.status || "")}</em></div>`) + `</div>`).join("")}`).join("")}</div>`;
-  }
+      (it.value != null ? `<div class="ftrack"><div class="fill t-${esc(it.tone || "main")}" style="--w:${pct(it.value, max)};--i:${k++}">${esc(it.display ?? Number(it.value).toLocaleString("en-US"))}</div></div>` : `<div class="ftrack unknown"><em>${esc(it.status || "")}</em></div>`) + `</div>` +
+      (it.calc ? `<div class="row2 calc-row"><span></span><div class="calc">${esc(it.calc)}</div></div>` : "")).join("")}`).join("")}</div>`;
+  },
+
+  /* 代码块：highlight 是要高亮的行号（从 1 数） */
+  code: f => {
+    const hl = new Set(f.highlight || []);
+    const lines = String(f.code).replace(/\n$/, "").split("\n");
+    return `<div class="codeblk">${f.lang ? `<span class="code-lang">${esc(f.lang)}</span>` : ""}<pre><code>${lines.map((l, i) => `<span class="cl${hl.has(i + 1) ? " hl" : ""}">${esc(l) || " "}</span>`).join("")}</code></pre></div>`;
+  },
+
+  /* 对照表：highlight {col: n} 或 {row: n}（从 0 数，表头那行不算） */
+  table: f => {
+    const hc = f.highlight?.col, hr = f.highlight?.row;
+    return `<div class="tblwrap"><table class="ftbl"><thead><tr>${f.columns.map((c, j) => `<th class="${j === hc ? "hc" : ""}">${esc(c)}</th>`).join("")}</tr></thead>
+      <tbody>${f.rows.map((r, i) => `<tr class="${i === hr ? "hr" : ""}">${r.map((c, j) => `<td class="${j === hc ? "hc" : ""}${j === 0 ? " k" : ""}">${esc(c)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+  },
+
+  /* 卡片网格：每张卡 icon（见 ICONS）、title、desc、tags（参数或关键词，等宽字体） */
+  cards: f => `<div class="fcards${f.items.length === 3 ? " c3" : ""}">${f.items.map((c, i) => `<div class="fcard t-${TONE(c.tone)}" style="--i:${i}">${icon(c.icon)}<b>${esc(c.title)}</b>${c.desc ? `<p>${esc(c.desc)}</p>` : ""}${c.tags?.length ? `<div class="ftags">${c.tags.map(t => `<code>${esc(t)}</code>`).join("")}</div>` : ""}</div>`).join("")}</div>`,
+
+  /* 竖向柱状图：items [{label, sub, value, display, tone, calc}] */
+  columns: f => {
+    const max = (f.max || Math.max(...f.items.map(x => x.value || 0))) * 1.12;
+    return `<div class="fcols" style="--n:${f.items.length}">${f.items.map((it, i) => `<div class="fcol">
+      <div class="fcol-bar-wrap"><div class="fcol-bar t-${TONE(it.tone)}" style="--h:${pct(it.value || 0, max)};--i:${i}"><span>${esc(it.display ?? fmt(it.value))}</span></div></div>
+      <div class="fcol-lab"><b>${esc(it.label)}</b>${it.sub ? `<span>${esc(it.sub)}</span>` : ""}${it.calc ? `<em>${esc(it.calc)}</em>` : ""}</div></div>`).join("")}</div>`;
+  },
+
+  /* 左右两栏对照：每栏 label、sub、items [{label, tag, state: hi/dim/base}]；footer 一句结论 */
+  compare: f => {
+    const col = c => `<div class="fcmp-col"><h5>${esc(c.label)}${c.sub ? `<small>${esc(c.sub)}</small>` : ""}</h5>${c.items.map((it, i) => `<div class="fcmp-it s-${["hi", "dim"].includes(it.state) ? it.state : "base"}" style="--i:${i}"><span>${esc(it.label)}</span>${it.tag ? `<code>${esc(it.tag)}</code>` : ""}</div>`).join("")}</div>`;
+    return `<div class="fcmp">${col(f.left)}${f.arrow === false ? "" : `<div class="fcmp-arrow" aria-hidden="true">→</div>`}${col(f.right)}</div>${f.footer ? `<div class="fcmp-foot">${esc(f.footer)}</div>` : ""}`;
+  },
+
+  /* 官方引语：text 必须逐字来自原文；zh 是中文意思 */
+  quote: f => `<blockquote class="fquote"><p class="q-orig">${esc(f.text)}</p>${f.zh ? `<p class="q-zh">${esc(f.zh)}</p>` : ""}<footer><b>${esc(f.who)}</b>${f.role ? ` · ${esc(f.role)}` : ""} · <a href="${esc(f.source_url)}" target="_blank" rel="noopener">出处 ↗</a></footer></blockquote>`
 };
 
 export function figure(f) {
