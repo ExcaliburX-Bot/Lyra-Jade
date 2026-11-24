@@ -1,0 +1,384 @@
+{
+  "slug": "gemini-api-file-slicing-controls",
+  "date": "2026-11-23",
+  "category": "product",
+  "publisher": "Google",
+  "title": "Gemini API launches file slicing: inspect only the pages and segments you need, pay only for what the model inspects",
+  "summary": "Feed the model a whole PDF or a long recording, and you can now mark just the pages, cells, or seconds you want it to look at — and pay tokens only for the parts the model actually inspects.",
+  "ai_summary": "On November 23, 2026, Google introduced file slicing controls in the Gemini API, along with native upload support for Microsoft Office and OpenDocument formats. Upload a PDF, Office document, spreadsheet, audio, or video once, and the model can read only the pages, cells, or seconds you specify — with tokens billed only for the parts it actually inspects. Documents and slides support low, medium, or high resolution and a text or image layer; spreadsheets can target worksheets and cell ranges; video can clip time intervals, adjust frame rate and resolution, and choose transcript, frames, or audio. The controls work across all Gemini 4 models in Google AI Studio and the Gemini platform.",
+  "brief": [
+    "Upload once, reuse across turns: a single Files API URI can be sliced repeatedly across multiple conversation turns and tool calls.",
+    "Supported media types are documents/slides, spreadsheets, video, and audio, each with its own slicing parameters.",
+    "When parameters are omitted, documents default to layout-preserving page images; spreadsheets include evaluated values, formulas, and sheet names across all tabs.",
+    "Google says gateway and SDK partners validated the controls ahead of launch, cutting prompt-token spend directly in production harnesses."
+  ],
+  "readMinutes": 6,
+  "sections": [
+    {
+      "h": "What it is: a way to tell the model to inspect only part of a file",
+      "blocks": [
+        {
+          "p": "On November 23, 2026, Google added a set of file slicing controls to the Gemini API. Before, getting a model to read a PDF meant either ingesting the whole file or splitting it locally first; now you can simply tell the model to inspect only page 3, only a specific cell range, or only a particular segment of a video."
+        },
+        {
+          "p": "The update brings two changes: the slicing controls themselves, and native upload support for Microsoft Office (Word, PowerPoint, Excel) and OpenDocument formats — so these files no longer need to be converted to plain text or images first. The capability is available in Google AI Studio and on the Gemini platform and works across all Gemini 4 models."
+        }
+      ]
+    },
+    {
+      "h": "Why this used to be painful: the client had to render the whole file first",
+      "blocks": [
+        {
+          "p": "When model APIs could only ingest whole files, developers typically ran LibreOffice, PDF renderers, and ffmpeg inside their own client harness to render, slice, and extract frames before sending anything to the model. That bloats memory, clutters local disk with extracted frames, and forces enterprise platforms to maintain per-user sandboxes just to slice files."
+        },
+        {
+          "p": "The new approach moves all of that to Gemini's server: you pass only a Files API URI, and the server natively slices, renders, and tokenizes each file the way the model was trained to see it. You no longer need to install a pile of conversion tools on the client."
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "Move conversion to the server — no more local conversion tools",
+            "subtitle": "Amber shows the new server-side approach; gray shows the old approach.",
+            "left": {
+              "label": "Before: client-side slicing",
+              "sub": "Local conversion tools",
+              "items": [
+                {
+                  "label": "Run LibreOffice, PDF renderers, and ffmpeg locally",
+                  "tag": "Old",
+                  "state": "base"
+                },
+                {
+                  "label": "Memory bloat and local disk cluttered with extracted frames",
+                  "tag": "Old",
+                  "state": "base"
+                },
+                {
+                  "label": "Enterprise platforms maintain per-user sandboxes",
+                  "tag": "Old",
+                  "state": "base"
+                }
+              ]
+            },
+            "right": {
+              "label": "Now: native server-side slicing",
+              "sub": "Pass only a Files API URI",
+              "items": [
+                {
+                  "label": "Native server-side slicing, rendering, and tokenization",
+                  "tag": "New",
+                  "state": "hi"
+                },
+                {
+                  "label": "Processed the way the model was trained to see it",
+                  "tag": "New",
+                  "state": "hi"
+                },
+                {
+                  "label": "Specify the parts to inspect directly in function_result",
+                  "tag": "New",
+                  "state": "hi"
+                }
+              ]
+            },
+            "footer": "Rendering, slicing, and tokenizing all stay on the server; the client only passes a URI."
+          }
+        }
+      ]
+    },
+    {
+      "h": "Core pattern: upload once, skim first, then zoom in",
+      "blocks": [
+        {
+          "p": "The most common flow is skim first, then zoom in: cheaply scan the whole document as extracted text to locate the target, then use the same URI to hand the model only that page at high resolution. Once uploaded, the URI can be reused across multiple turns and tool calls."
+        },
+        {
+          "p": "For agents, there is another benefit: the model can specify which part of a file to inspect directly inside a function response (function_result), making multi-turn workflows faster and cheaper."
+        },
+        {
+          "fig": {
+            "type": "code",
+            "lang": "python",
+            "title": "Same URI: skim the whole document as text, then inspect page 3 at high resolution",
+            "subtitle": "Official sample code: gemini-4-hydrogen skims, gemini-4-neon zooms in",
+            "note": "Highlighted lines are the slicing parameters start_page / end_page",
+            "highlight": [
+              38,
+              39
+            ],
+            "code": "from google import genai\nclient = genai.Client()\ndoc = client.files.upload(file=\"quarterly_report.docx\")\n\n# 1. Skim the whole document cheaply as extracted text.\nskim = client.interactions.create(\n model=\"gemini-4-hydrogen\",\n input=[\n {\n \"type\": \"document\",\n \"uri\": doc.uri,\n \"mime_type\": doc.mime_type,\n \"processing\": {\n \"type\": \"static\",\n \"page_options\": {\"content_layers\": [\"page_text\"]},\n },\n },\n {\n \"type\": \"text\",\n \"text\": \"Which page has the revenue bridge chart?\",\n },\n ],\n)\nprint(skim.output_text)\n\n# 2. Zoom into the target page at high resolution (reusing the same URI).\ndetail = client.interactions.create(\n model=\"gemini-4-neon\",\n input=[\n {\n \"type\": \"document\",\n \"uri\": doc.uri,\n \"mime_type\": doc.mime_type,\n \"resolution\": \"high\",\n \"processing\": {\n \"type\": \"static\",\n \"page_options\": {\n \"start_page\": 3,\n \"end_page\": 3,\n \"content_layers\": [\"page_image\"],\n },\n },\n },\n {\n \"type\": \"text\",\n \"text\": \"Read the revenue bridge chart and footnotes on page 3.\",\n },\n ],\n)\nprint(detail.output_text)"
+          }
+        }
+      ]
+    },
+    {
+      "h": "Four file types, each with its own slicing controls",
+      "blocks": [
+        {
+          "p": "Slicing controls are grouped by media type, and the parameters all live in processing. Here are the controls available for each type."
+        },
+        {
+          "fig": {
+            "type": "schematic",
+            "title": "Four file types, each with its own slicing controls",
+            "subtitle": "Illustrative: amber is the part that is selected, sent to the model, and billed.",
+            "items": [
+              {
+                "glyph": {
+                  "kind": "pages",
+                  "count": 10,
+                  "select": [
+                    3,
+                    4
+                  ]
+                },
+                "title": "Documents / slides",
+                "sub": "PDF, Office, OpenDocument",
+                "rows": [
+                  {
+                    "k": "Page range",
+                    "v": "`start_page` to `end_page`"
+                  },
+                  {
+                    "k": "Resolution",
+                    "v": "`low` / `medium` / `high`"
+                  },
+                  {
+                    "k": "Content layer",
+                    "v": "`page_text` or `page_image`"
+                  }
+                ]
+              },
+              {
+                "glyph": {
+                  "kind": "sheet",
+                  "rows": 6,
+                  "cols": 6,
+                  "select": [
+                    2,
+                    2,
+                    4,
+                    4
+                  ]
+                },
+                "title": "Spreadsheets",
+                "sub": ".xlsx, .xls, .ods",
+                "rows": [
+                  {
+                    "k": "Worksheet",
+                    "v": "`sheet_index`"
+                  },
+                  {
+                    "k": "Cell range",
+                    "v": "`visible_cells`"
+                  },
+                  {
+                    "k": "Content layer",
+                    "v": "`data` / `formulas` / `visuals`"
+                  }
+                ]
+              },
+              {
+                "glyph": {
+                  "kind": "frames",
+                  "count": 8,
+                  "select": [
+                    3,
+                    5
+                  ]
+                },
+                "title": "Video",
+                "sub": "Clip time intervals",
+                "rows": [
+                  {
+                    "k": "Time interval",
+                    "v": "`start_offset` to `end_offset`"
+                  },
+                  {
+                    "k": "Frame rate",
+                    "v": "`fps`"
+                  },
+                  {
+                    "k": "Resolution",
+                    "v": "`low` / `high`"
+                  },
+                  {
+                    "k": "Content layer",
+                    "v": "`transcript` / `frames` / `audio`"
+                  }
+                ]
+              },
+              {
+                "glyph": {
+                  "kind": "wave",
+                  "select": [
+                    0.3,
+                    0.6
+                  ]
+                },
+                "title": "Audio",
+                "sub": "Clip time intervals",
+                "rows": [
+                  {
+                    "k": "Time interval",
+                    "v": "`start_offset` to `end_offset`"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "How the model reads files by default",
+      "blocks": [
+        {
+          "p": "If you omit these processing parameters, the model falls back to defaults: documents and slides default to layout-preserving page images, and spreadsheets include evaluated values, formulas, and sheet names across all tabs. The announcement does not specify the default behavior for video and audio when parameters are omitted."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "When parameters are omitted, the model reads files with these defaults",
+            "subtitle": "Blue column shows the default behavior when processing parameters are omitted.",
+            "columns": [
+              "File type",
+              "Default handling when parameters are omitted"
+            ],
+            "rows": [
+              [
+                "Documents / slides (PDF, Office, OpenDocument)",
+                "Layout-preserving page images"
+              ],
+              [
+                "Spreadsheets (.xlsx, .xls, .ods)",
+                "Evaluated values, formulas, and sheet names across all tabs"
+              ],
+              [
+                "Video / audio",
+                "Not specified in the announcement"
+              ]
+            ],
+            "highlight": {
+              "col": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "h": "Billing: you pay only for what the model actually inspects",
+      "blocks": [
+        {
+          "p": "The most immediate benefit is cost savings: tokens are billed only for the parts the model actually inspects. You can skim cheaply with extracted text, low-resolution previews, or transcripts, then spend high-resolution tokens on the charts, dense layouts, and frames that really matter."
+        },
+        {
+          "fig": {
+            "type": "illustration",
+            "title": "Pay tokens only for the part you select",
+            "subtitle": "Illustrative: amber is the part the model actually inspects and is billed for.",
+            "glyph": {
+              "kind": "context",
+              "total": 100,
+              "segments": [
+                {
+                  "size": 25,
+                  "tone": "hi",
+                  "label": "Inspected and billed"
+                },
+                {
+                  "size": 75,
+                  "tone": "base",
+                  "label": "Not inspected"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "p": "Google says gateway and SDK partners validated the controls ahead of launch and were able to cut prompt-token spend directly in production harnesses."
+        },
+        {
+          "fig": {
+            "type": "quote",
+            "text": "cutting prompt token spend directly in production harnesses",
+            "who": "Google's official blog",
+            "role": "发布说明",
+            "source_url": "https://blog.google/innovation-and-ai/technology/developers-tools/file-slicing-controls/"
+          }
+        }
+      ]
+    },
+    {
+      "h": "What Google hasn't said",
+      "blocks": [
+        {
+          "p": "These are the questions readers are most likely to ask, and the announcement doesn't answer them:"
+        },
+        {
+          "list": [
+            "How many tokens or what percentage you can save: the announcement only says costs are reduced and gives no figures.",
+            "Exact upload file size and page limits: Google only says existing limits still apply and doesn't give numbers.",
+            "Whether slicing affects model understanding or output accuracy: the announcement doesn't say.",
+            "Whether this feature changes pricing: the announcement doesn't say.",
+            "Default frame rate, resolution, and other values for video and audio when parameters are omitted: the announcement doesn't say.",
+            "When other office suites or formats will be supported: the announcement doesn't say."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Who it's for",
+      "blocks": [
+        {
+          "p": "If you're feeding agents long documents, multi-tab spreadsheets, long recordings, or video and care about token costs, these slicing controls can help you skip local transcoding and avoid ingesting entire files. The trade-off is that you need to design your own skim-first-then-zoom-in workflow and explicitly specify the ranges in the parameters."
+        },
+        {
+          "p": "If you only occasionally upload a few small files and are not cost-sensitive, you can keep the default behavior for now. If you need a precise savings percentage for budgeting, you'll need to wait for Google to publish more concrete numbers or benchmark it yourself."
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Introducing file slicing controls in the Gemini API",
+      "publisher": "Google",
+      "date": "2026-11-23",
+      "url": "https://blog.google/innovation-and-ai/technology/developers-tools/file-slicing-controls/"
+    },
+    "more": [],
+    "note": "Illustrations are schematic: page counts, cell ranges, time intervals, and token proportions are examples, not figures from the announcement. Page 3 in the official sample code comes from the source; apart from the release date and that page number, the announcement gives no concrete savings numbers."
+  },
+  "claims": [
+    {
+      "text": "Gemini API file slicing controls were released on November 23, 2026.",
+      "value": "Nov 23, 2026",
+      "source_url": "https://blog.google/innovation-and-ai/technology/developers-tools/file-slicing-controls/",
+      "as_written": "November 23, 2026",
+      "quote": "Nov 23, 2026"
+    },
+    {
+      "text": "In the official sample code, the high-resolution zoom-in targets page 3.",
+      "value": "3",
+      "source_url": "https://blog.google/innovation-and-ai/technology/developers-tools/file-slicing-controls/",
+      "as_written": "Page 3",
+      "quote": "\"start_page\": 3,"
+    }
+  ],
+  "cover": {
+    "headline": "Gemini API file slicing",
+    "highlight": "Inspect only what you need, pay only for what the model inspects.",
+    "glyph": {
+      "kind": "pages",
+      "count": 10,
+      "select": [
+        3,
+        5
+      ]
+    }
+  },
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "1089d05268f2c54e"
+}

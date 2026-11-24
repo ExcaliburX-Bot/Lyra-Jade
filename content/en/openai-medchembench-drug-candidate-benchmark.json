@@ -1,0 +1,417 @@
+{
+  "slug": "openai-medchembench-drug-candidate-benchmark",
+  "date": "2026-11-20",
+  "category": "product",
+  "publisher": "OpenAI",
+  "title": "OpenAI launches MedChemBench: GPT-6.2 Astra scores 84.5% on medicinal chemistry reasoning",
+  "summary": "Medicinal chemists face the same question every day: which compound to synthesize and test next. OpenAI's new MedChemBench uses 99 problems drawn from published research to test whether AI can connect molecular structures, experimental evidence, and the decision of what to try next. The best-performing model, GPT-6.2 Astra, earned 84.5% of available credit at the xhigh setting, but compound selection and numerical prediction remain weak spots.",
+  "ai_summary": "OpenAI released MedChemBench on November 20, 2026, a benchmark for medicinal chemistry reasoning. It uses 99 problems drawn from published research to test whether AI can connect molecular structures, experimental evidence, and the next compound to test. At xhigh, the highest shared reasoning setting, GPT-6.2 Astra earned 84.5% of available credit, ahead of GPT-6 Astra at 83.3% and GPT-5.6 Sol at 58.2%. By component, Astra was strongest at reconstructing molecular structures at 95.4%, but earned only about half the credit on compound selection and numerical prediction. For scientists who want to use AI in drug discovery, this reveals the models' strengths and limits; OpenAI is clear that the results do not show models can discover new drugs, cannot rule out prior exposure to public sources, and each problem was attempted once with no tools or feedback.",
+  "brief": [
+    "MedChemBench contains 99 problems, drawn from 117 papers and patents and covering 761 distinct molecular structures.",
+    "At the xhigh setting, total scores were GPT-6.2 Astra 84.5%, GPT-6 Astra 83.3%, GPT-6.1 Sol 82.0%, and GPT-5.6 Sol 58.2%.",
+    "Astra earned 95.4% on reconstructing molecular structures, but only about half the credit on compound selection and numerical prediction.",
+    "On the 18-atom ring spatial-reasoning problem, GPT-6 Astra got all 10 attempts right; the GPT-5.6 models got all 10 wrong."
+  ],
+  "readMinutes": 5,
+  "sections": [
+    {
+      "h": "What MedChemBench is: a test of medicinal chemistry reasoning",
+      "blocks": [
+        {
+          "p": "OpenAI released MedChemBench on November 20, 2026. It is not itself a drug-discovery AI, but an evaluation set: it checks whether a model can match what a molecule looks like with what experiments measured, then decide which compound to try next. Medicinal chemistry is the field of designing, modifying, and evaluating compounds as potential medicines."
+        },
+        {
+          "p": "The hardest part of this work is the trade-off: improving one property often makes another worse. A compound can act strongly against a disease-related protein but be poorly absorbed or break down too quickly in the body. A working medicinal chemist spends their days designing, synthesizing, and testing a series of related compounds, then judging where to go next. MedChemBench is designed to test whether AI has that reasoning ability—connecting structural changes to experimental evidence."
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "The scale of MedChemBench",
+            "subtitle": "Benchmark composition (units shown in each label)",
+            "note": "Data from OpenAI's release page.",
+            "items": [
+              {
+                "value": 99,
+                "unit": "problems",
+                "label": "Problems",
+                "note": "Drawn from published research"
+              },
+              {
+                "value": 117,
+                "unit": "sources",
+                "label": "Papers and patents",
+                "note": "Where the problems come from"
+              },
+              {
+                "value": 761,
+                "unit": "structures",
+                "label": "Distinct molecular structures",
+                "note": "Included in the benchmark"
+              },
+              {
+                "value": 4,
+                "unit": "categories",
+                "label": "Scoring dimensions",
+                "note": "Structure, reasoning, selection, prediction"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "What four abilities does it grade?",
+      "blocks": [
+        {
+          "p": "MedChemBench splits its scoring into four categories. For most problems, the model receives the context available at a chosen point in a research project: the biological target, the research goals, the compounds studied so far, and selected experimental findings. It is then graded on four dimensions:"
+        },
+        {
+          "list": [
+            "Molecular structures: assemble molecules from the chemical drawings and groups provided; atom connections and stereochemistry (the spatial arrangement of atoms) must both be correct.",
+            "Scientific reasoning: explanations must be supported by the evidence provided, such as why one compound was chosen over another.",
+            "Ranking and selection: compound rankings and choices must meet the stated requirements.",
+            "Property prediction: predicted values and categories must be close to the results reported in the source literature, including measured and calculated properties."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "How to read the scores: who earned what",
+      "blocks": [
+        {
+          "p": "At xhigh, the shared setting with the highest reasoning effort—a mode that lets models think more—the top total came from GPT-6.2 Astra at 84.5% of available credit, followed by GPT-6 Astra at 83.3%, GPT-6.1 Sol at 82.0%, GPT-6.1 Terra at 75.1%, and GPT-5.6 Sol at 58.2%."
+        },
+        {
+          "fig": {
+            "type": "bars",
+            "title": "Total MedChemBench scores for five models at xhigh",
+            "subtitle": "Unit: percent of available credit (%); higher is better",
+            "note": "Data from OpenAI's release page; other models at the same xhigh reasoning setting are shown in the original.",
+            "legend": [
+              {
+                "tone": "main",
+                "label": "Astra series"
+              },
+              {
+                "tone": "ref",
+                "label": "GPT-6.1 series"
+              },
+              {
+                "tone": "laptop",
+                "label": "GPT-5.6 reference"
+              }
+            ],
+            "groups": [
+              {
+                "label": "xhigh total score",
+                "items": [
+                  {
+                    "label": "GPT-6.2 Astra",
+                    "value": 84.5,
+                    "tone": "main"
+                  },
+                  {
+                    "label": "GPT-6 Astra",
+                    "value": 83.3,
+                    "tone": "main"
+                  },
+                  {
+                    "label": "GPT-6.1 Sol",
+                    "value": 82,
+                    "tone": "ref"
+                  },
+                  {
+                    "label": "GPT-6.1 Terra",
+                    "value": 75.1,
+                    "tone": "ref"
+                  },
+                  {
+                    "label": "GPT-5.6 Sol",
+                    "value": 58.2,
+                    "tone": "laptop"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "p": "The 84.5% figure is the share of available credit, not a simple percentage of correct answers—some problems award partial credit, with scores increasing as predictions get closer to the measured values. Results also change with the reasoning setting: GPT-6 Astra reaches 83.8% at max effort. Figure 2 in the original plots 9 models and 51 model-by-reasoning-setting combinations; the horizontal axis is output tokens, and the trend is that more reasoning raises scores, though clear gaps between models remain."
+        }
+      ]
+    },
+    {
+      "h": "A hard example: inhibit the target, and still be absorbed and not metabolized too quickly",
+      "blocks": [
+        {
+          "p": "One MedChemBench problem comes from research on PRMT5 inhibitors. PRMT5 is a protein studied in cancer drug discovery. Given molecular structures and results from earlier experiments, the model must predict three properties for three related compounds: how strongly each blocks PRMT5 in cells, how readily it crosses a cell barrier, and how quickly liver enzymes break it down in an assay."
+        },
+        {
+          "p": "The problem withholds the later experiments, which revealed a trade-off: compound 23 blocks PRMT5 at a lower concentration, but compound 24 crosses the cell barrier more readily and breaks down more slowly in the liver-enzyme assay. In other words, no single compound wins on all three. That is the central challenge in medicinal chemistry—being stronger against the target does not mean better permeability or slower breakdown."
+        },
+        {
+          "p": "Grading checks whether the model reconstructs the molecular structures correctly and how close its predictions are to the measured values; the closer they are, the more partial credit. Measurements already given in the problem must also be reproduced correctly."
+        }
+      ]
+    },
+    {
+      "h": "Before reasoning, models have to draw the molecule correctly",
+      "blocks": [
+        {
+          "p": "Before discussing properties, a model must first identify the molecule correctly. Chemical drawings encode atom connections, ring structures, and stereochemistry, and MedChemBench checks whether the model preserves that information when reconstructing a molecule."
+        },
+        {
+          "p": "One problem asks the model to assemble a molecule from a central structure and two attached groups while preserving an 18-atom ring. At xhigh, GPT-6 Astra got all ten responses right; GPT-5.6 Sol and GPT-5.6 Luna failed all ten. In the examples, GPT-5.6 Sol built a 15-atom ring, and GPT-5.6 Luna split the molecule into two disconnected pieces. These mistakes change the identity of the molecule being analyzed."
+        },
+        {
+          "p": "This is also Astra's most reliable area: at xhigh it earned 95.4% of available credit on the structure component. By contrast, it scored only about half on compound selection and numerical prediction. In other words, the model reads molecules and explains reasoning well, but it still has a long way to go in choosing the next compound and getting the numbers right."
+        },
+        {
+          "fig": {
+            "type": "bars",
+            "title": "Astra: strong at structure reconstruction, weak at selection and prediction",
+            "subtitle": "Unit: percent of available credit (%); right side shows qualitative labels",
+            "note": "The original says selection and prediction are about half and gives no exact percentages; this chart labels them in words only and does not invent numbers.",
+            "legend": [
+              {
+                "tone": "main",
+                "label": "Astra strengths"
+              },
+              {
+                "tone": "laptop",
+                "label": "Astra weak spots"
+              }
+            ],
+            "groups": [
+              {
+                "label": "Component scores at xhigh",
+                "items": [
+                  {
+                    "label": "Molecular structure reconstruction",
+                    "value": 95.4,
+                    "tone": "main"
+                  },
+                  {
+                    "label": "Selection and numerical prediction",
+                    "status": "About half (original gives no exact figure)",
+                    "tone": "laptop"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "What OpenAI hasn't said",
+      "blocks": [
+        {
+          "list": [
+            "Whether MedChemBench's problem set and scoring scripts are fully available for download: the original only links the paper, with no release date or access details.",
+            "Whether the benchmark will become an external OpenAI product or API: the original doesn't say.",
+            "How other companies' models perform: this round evaluated only 11 GPT models and listed no external models for comparison.",
+            "Whether model training data includes these papers and patents: OpenAI says it cannot rule out that models have seen these public sources before.",
+            "Whether these scores reflect real-world drug-discovery ability in the lab: OpenAI says the results don't establish that models can discover new drugs or improve experimental decisions.",
+            "Whether each answer was a single attempt with no tools: the original says each response was a single attempt, with no tools, feedback, or new experiments."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Who it's for",
+      "blocks": [
+        {
+          "p": "Value: for teams in medicinal chemistry or computational chemistry, or anyone wondering whether AI can now help choose compounds, MedChemBench offers a relatively concrete four-part scorecard—molecular structures, scientific reasoning, ranking and selection, and property prediction broken out separately, which is more useful than a single overall number."
+        },
+        {
+          "p": "Cost: it tests reasoning on historical literature, not real drug-discovery workflows; the problems may have been seen by the models, and every answer is a single attempt with no tools. Treating it as proof that AI can replace chemists would substantially overstate it."
+        },
+        {
+          "list": [
+            "If you're a medicinal chemistry researcher: treat it as a capability map, and pay particular attention to the weak spots in selection and property prediction.",
+            "If you're on an AI team or building evaluations: the 'strong structure and reasoning, weak selection and prediction' breakdown is a useful starting point for later improvements and comparisons.",
+            "If you only want to know whether AI will find new drugs soon: the safer conclusion is not yet. These results show reasoning is improving, not that AI can discover new drugs."
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Can AI help scientists identify promising drug candidates?",
+      "publisher": "OpenAI",
+      "date": "2026-11-20",
+      "url": "https://openai.com/index/introducing-medchembench"
+    },
+    "more": [],
+    "note": "Charts are based on the scores listed on OpenAI's release page. The original says selection and prediction are 'about half'; the chart labels this in words only and does not invent exact figures. All scores are self-reported by OpenAI and have not been independently verified."
+  },
+  "claims": [
+    {
+      "text": "OpenAI released MedChemBench on November 20, 2026.",
+      "value": "November 20, 2026",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "November 20, 2026",
+      "quote": "OpenAI November 20, 2026"
+    },
+    {
+      "text": "MedChemBench uses 99 problems drawn from published research to measure these abilities.",
+      "value": "99",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "99 problems",
+      "quote": "MedChemBench measures these abilities through 99 problems drawn from published research."
+    },
+    {
+      "text": "The benchmark draws on 117 papers and patents.",
+      "value": "117",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "117 papers and patents",
+      "quote": "MedChemBench draws on 117 papers and patents and includes 761 distinct molecular structures."
+    },
+    {
+      "text": "The benchmark includes 761 distinct molecular structures.",
+      "value": "761",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "761 distinct molecular structures",
+      "quote": "MedChemBench draws on 117 papers and patents and includes 761 distinct molecular structures."
+    },
+    {
+      "text": "The benchmark evaluates four categories of ability.",
+      "value": "four",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "four categories",
+      "quote": "The benchmark evaluates four components:"
+    },
+    {
+      "text": "At xhigh, GPT-6.2 Astra earned 84.5% of available credit.",
+      "value": "84.5%",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "84.5%",
+      "quote": "At the xhigh reasoning setting, GPT‑6.2 Astra earned 84.5% of the available credit"
+    },
+    {
+      "text": "At xhigh, GPT-6 Astra earned 83.3% of available credit.",
+      "value": "83.3%",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "83.3%",
+      "quote": "compared with 83.3% for GPT‑6 Astra, 82.0% for GPT‑6.1 Sol, and 58.2% for GPT‑5.6 Sol."
+    },
+    {
+      "text": "At xhigh, GPT-6.1 Sol earned 82.0% of available credit.",
+      "value": "82.0%",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "82.0%",
+      "quote": "compared with 83.3% for GPT‑6 Astra, 82.0% for GPT‑6.1 Sol, and 58.2% for GPT‑5.6 Sol."
+    },
+    {
+      "text": "At xhigh, GPT-5.6 Sol earned 58.2% of available credit.",
+      "value": "58.2%",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "58.2%",
+      "quote": "compared with 83.3% for GPT‑6 Astra, 82.0% for GPT‑6.1 Sol, and 58.2% for GPT‑5.6 Sol."
+    },
+    {
+      "text": "At xhigh, GPT-6.1 Terra earned 75.1% of available credit.",
+      "value": "75.1%",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "75.1%",
+      "quote": "compared with 82.0% for GPT‑6.1 Sol, 75.1% for GPT‑6.1 Terra, and 58.2% for GPT‑5.6 Sol."
+    },
+    {
+      "text": "GPT-6 Astra reached 83.8% at the max reasoning setting.",
+      "value": "83.8%",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "83.8%",
+      "quote": "At max effort, GPT‑6 Astra reached 83.8%."
+    },
+    {
+      "text": "Astra earned 95.4% of available credit on the structure component at xhigh.",
+      "value": "95.4%",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "95.4%",
+      "quote": "While measuring the benchmark for structure components, Astra earned 95.4% of the available credit at xhigh."
+    },
+    {
+      "text": "Astra earned only about half the credit on selecting compounds and predicting numerical properties.",
+      "value": "about half",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "About half",
+      "quote": "Astra earned 95.4% of the available structure credit at xhigh, but only about half the credit for selecting compounds and predicting numerical properties."
+    },
+    {
+      "text": "The spatial reasoning problem requires assembling a molecule while preserving an 18-atom ring.",
+      "value": "18",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "18-atom ring",
+      "quote": "One problem asks models to assemble a molecule from a central structure and two attached groups while preserving an 18-atom ring."
+    },
+    {
+      "text": "GPT-6 Astra answered all 10 attempts correctly on this spatial reasoning problem.",
+      "value": "ten",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "10 attempts",
+      "quote": "GPT‑6 Astra reconstructed this compound correctly in all ten responses."
+    },
+    {
+      "text": "In the example, GPT-5.6 Sol produced a 15-atom ring.",
+      "value": "15",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "15-atom ring",
+      "quote": "GPT‑5.6 Sol produced a 15-atom ring, while GPT‑5.6 Luna split the molecule into two disconnected fragments."
+    },
+    {
+      "text": "OpenAI evaluated 11 GPT models in total.",
+      "value": "eleven",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "11 models",
+      "quote": "We evaluated eleven GPT models at different reasoning-effort settings."
+    },
+    {
+      "text": "Figure 2 in the original shows 51 model-by-reasoning-setting combinations.",
+      "value": "51",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "51 combinations",
+      "quote": "Each point represents a model at one reasoning setting, showing 51 combinations across nine models from GPT‑5.6 onward."
+    },
+    {
+      "text": "Figure 2 in the original shows 9 models.",
+      "value": "nine",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "9 models",
+      "quote": "Each point represents a model at one reasoning setting, showing 51 combinations across nine models from GPT‑5.6 onward."
+    },
+    {
+      "text": "The error bars in Figure 2 of the original are 95% uncertainty intervals.",
+      "value": "95%",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "95% uncertainty intervals",
+      "quote": "Scores are averaged across 99 problems; bars show 95% uncertainty intervals."
+    },
+    {
+      "text": "The PRMT5 example requires the model to predict the behavior of three related compounds at the same time.",
+      "value": "three",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "three compounds",
+      "quote": "It must predict how three related compounds will behave: how strongly they block PRMT5 in cells, how readily they cross a cell barrier, and how quickly liver enzymes break them down in a laboratory assay."
+    },
+    {
+      "text": "The spatial reasoning problem requires assembling a molecule from one central structure and two attached groups.",
+      "value": "two",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "two attached groups",
+      "quote": "One problem asks models to assemble a molecule from a central structure and two attached groups while preserving an 18-atom ring."
+    },
+    {
+      "text": "GPT-5.6 Luna split the molecule into two disconnected fragments.",
+      "value": "two",
+      "source_url": "https://openai.com/index/introducing-medchembench",
+      "as_written": "two disconnected fragments",
+      "quote": "GPT‑5.6 Sol produced a 15-atom ring, while GPT‑5.6 Luna split the molecule into two disconnected fragments."
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "1b3db8f94b62418f"
+}

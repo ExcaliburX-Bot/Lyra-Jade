@@ -1,0 +1,428 @@
+{
+  "slug": "claude-ship-beta-launch",
+  "category": "product",
+  "publisher": "Anthropic",
+  "date": "2026-11-23",
+  "title": "Claude Ship launches to handle PR review, fixes, and merges; eligible organizations can claim $10,000 in credits",
+  "summary": "Once a PR is open, the review, CI fixes, and the call on whether it can merge can now run automatically with Claude Ship. Developers trigger it with a single /ship command in Claude Code, while admins set rules per repository; eligible organizations can claim at least $10,000 in credits.",
+  "ai_summary": "Claude Ship launches: alongside Code Review, two new beta agents — PR Steward and Claude Approvals — tie PR review through merge into a pipeline. Developers use /ship to push code, open a PR, review it, and fix issues; admins set review level, timing, and spend caps per repository, and use a policy file to decide what can be auto-approved. Internal data: merged PRs on the Claude Code team more than doubled from June to September, while the share reverted fell by more than 40%. Available on Claude Team and Enterprise for GitHub repos, billed by token; eligible organizations can claim at least $10,000, to use within 30 days. Not available for zero data retention, HIPAA, or customer-managed keys.",
+  "brief": [
+    "Claude Ship combines the already generally available Code Review with two new beta agents: PR Steward and Claude Approvals.",
+    "Eligible organizations can claim at least $10,000 in credits, to be used within 30 days of claiming; claims must be made by January 15, 2027.",
+    "Available only for Claude Team and Enterprise repositories on GitHub, billed by token; not available to organizations with ZDR, HIPAA, or CMEK.",
+    "Developers can run /ship in Claude Code and the desktop app starting today."
+  ],
+  "readMinutes": 7,
+  "sections": [
+    {
+      "h": "What it is: handing everything after the PR to Claude",
+      "blocks": [
+        {
+          "p": "Anyone who has opened a pull request knows the loop: you've moved on to the next thing, the review comes back, so you stop, dig back into the old code, push a fix, wait for the review to run again, and finally go find someone to approve it."
+        },
+        {
+          "p": "There is a reason for this: most teams want a person to look at every change, and that's easy to keep up with when people write code line by line. But many developers now write code with agents. On the Claude Code team, Claude writes most of the code, and they want everything after the PR to move just as fast."
+        },
+        {
+          "p": "That's why Claude Ship exists, available in beta today. It reviews PRs, fixes issues, and decides what can merge according to policies each team sets. Anthropic's goal in one sentence: ship code as fast as teams write it."
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "Four numbers to know: credits, deadline, and internal results",
+            "subtitle": "Credits are at least $10,000; growth figures are internal Claude Code team data (June–September 2026).",
+            "items": [
+              {
+                "value": 10000,
+                "unit": "$",
+                "label": "Claimable credits",
+                "note": "At least $10,000"
+              },
+              {
+                "value": 30,
+                "unit": "days",
+                "label": "Credit window",
+                "note": "Within 30 days of claiming"
+              },
+              {
+                "value": 2,
+                "unit": "×",
+                "label": "Internal merged PR growth",
+                "note": "June–September, more than doubled"
+              },
+              {
+                "value": 40,
+                "unit": "%",
+                "label": "Rollback rate reduction",
+                "note": "Internal, Claude Code team"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "Three components, one for each stage",
+      "blocks": [
+        {
+          "p": "First, to be clear: Claude Ship isn't a standalone new model. It's a pipeline of three pieces. Code Review is already generally available (GA), while PR Steward and Claude Approvals are the two new agents launching in beta."
+        },
+        {
+          "fig": {
+            "type": "steps",
+            "title": "A PR goes through three steps to a merge decision",
+            "subtitle": "Illustrative: the order of Claude Ship's three components",
+            "steps": [
+              {
+                "name": "Code Review reviews",
+                "tool": "Code Review (GA)",
+                "desc": "Reviews PRs against the codebase from multiple angles, finds issues and then adversarially checks them, and surfaces findings at three depth levels."
+              },
+              {
+                "name": "PR Steward fixes",
+                "tool": "PR Steward (beta)",
+                "desc": "Handles failing CI checks, merge conflicts, and review feedback. After each push, it comments on what changed and how to undo it; it doesn't approve or merge."
+              },
+              {
+                "name": "Claude Approvals approves",
+                "tool": "Claude Approvals (beta)",
+                "desc": "Uses a policy file in the repository to decide: routine changes can be approved automatically, while sensitive scenarios can require human sign-off."
+              }
+            ]
+          }
+        },
+        {
+          "p": "Code Review handles the review: it reviews PRs in depth against the codebase from multiple angles. It collects findings, adversarially verifies them (first finds issues, then tries to poke holes in its own findings), categorizes them, and posts them to the PR. Each repository can choose Quick, Standard, or Deep."
+        },
+        {
+          "p": "Internal impact: on the Claude Code team, where Claude's review is one layer of a broader process, merged PRs more than doubled from June to September, and the share reverted fell by more than 40%."
+        },
+        {
+          "p": "PR Steward handles the fixes: it keeps a PR green but is designed not to approve or merge. It deals with failing CI checks, merge conflicts, and feedback from Code Review, other review tools, or colleagues. After each push, it comments on what it changed and how to undo it. Developers can comment @claude with an instruction, or @claude stop to pull it back."
+        },
+        {
+          "p": "Claude Approvals handles the approval: it applies a policy file the team writes in the repository. If the policy allows, it can approve routine changes on its own; for certain scenarios, it can require deeper human sign-off. Anthropic describes it as a smarter CODEOWNERS file, which in GitHub specifies who is responsible for which code. When deciding, it can consider several signals, including Code Review findings or custom classifiers teams write in natural language. Anthropic recommends most customers start in observe-only mode to build confidence before requiring its green light via branch protection."
+        }
+      ]
+    },
+    {
+      "h": "How developers use it: a single /ship command",
+      "blocks": [
+        {
+          "p": "Developers can now try Claude Ship on their own PRs with the new /ship command in Claude Code."
+        },
+        {
+          "p": "When a change is ready, run /ship: Claude pushes the code, opens a PR, reviews the change, and keeps fixing it in response to feedback and failing checks to move the PR toward merge."
+        },
+        {
+          "p": "Whether it can ultimately merge still depends on the developer's own permissions and the repository's branch rules — it doesn't bypass human access controls."
+        },
+        {
+          "p": "/ship is rolling out in Claude Code and the desktop app starting today."
+        }
+      ]
+    },
+    {
+      "h": "How admins configure it: rules per repository",
+      "blocks": [
+        {
+          "p": "Turn on Claude Ship for an entire repository and it runs automatically across the team's PRs, following admin-defined policies, so developers don't have to type /ship manually."
+        },
+        {
+          "p": "Admins turn on Code Review and PR Steward for each repository. Claude Approvals starts working once a connected repository has a policy file on its default branch, and admins can turn it off anytime."
+        },
+        {
+          "p": "Each repository gets its own settings: review level (Quick / Standard / Deep), when reviews run, and a spend limit. It works with existing branch protection and required checks, so teams don't need to replace their current tools."
+        },
+        {
+          "fig": {
+            "type": "schematic",
+            "title": "Three knobs to tune per repository",
+            "subtitle": "Illustrative: amber marks the step that triggers a review; 70% credit usage is illustrative — the announcement doesn't give a specific figure.",
+            "items": [
+              {
+                "glyph": {
+                  "kind": "window",
+                  "title": "Review level",
+                  "items": [
+                    {
+                      "label": "Quick",
+                      "tone": "base"
+                    },
+                    {
+                      "label": "Standard",
+                      "tone": "base"
+                    },
+                    {
+                      "label": "Deep",
+                      "tone": "base"
+                    }
+                  ]
+                },
+                "title": "Review depth",
+                "sub": "Choose one of three per repository",
+                "rows": [
+                  {
+                    "k": "Three levels",
+                    "v": "Quick / Standard / Deep"
+                  }
+                ]
+              },
+              {
+                "glyph": {
+                  "kind": "flow",
+                  "nodes": [
+                    {
+                      "label": "PR opened",
+                      "tone": "hi"
+                    },
+                    {
+                      "label": "Review triggered",
+                      "tone": "base"
+                    }
+                  ]
+                },
+                "title": "When reviews run",
+                "sub": "Choose when it runs",
+                "rows": [
+                  {
+                    "k": "Timing",
+                    "v": "On PR trigger / scheduled"
+                  }
+                ]
+              },
+              {
+                "glyph": {
+                  "kind": "ring",
+                  "value": 70,
+                  "max": 100,
+                  "label": "Credits",
+                  "display": "Illustrative 70%"
+                },
+                "title": "Spend limit",
+                "sub": "Monthly cap to prevent overspending",
+                "rows": [
+                  {
+                    "k": "Limit",
+                    "v": "Monthly spend limit"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "p": "Teams set the pace: start with one repository, choose a review level, set a monthly spend limit, and run the approval policy in observe mode until it has earned enough trust."
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "One command for developers, one set of rules for admins",
+            "subtitle": "Amber marks the starting action in each path.",
+            "left": {
+              "label": "Developers: start with /ship",
+              "sub": "In Claude Code / desktop app",
+              "items": [
+                {
+                  "label": "Run /ship, one command",
+                  "tag": "Start",
+                  "state": "hi"
+                },
+                {
+                  "label": "Claude pushes code, opens PR, reviews, fixes issues",
+                  "state": "base"
+                },
+                {
+                  "label": "Merging depends on your permissions and branch rules",
+                  "state": "base"
+                }
+              ]
+            },
+            "right": {
+              "label": "Admins: enable per repository",
+              "sub": "For the whole team",
+              "items": [
+                {
+                  "label": "Turn on Code Review and PR Steward for the repo",
+                  "tag": "Enable",
+                  "state": "hi"
+                },
+                {
+                  "label": "Policy file in the default branch activates Claude Approvals",
+                  "state": "base"
+                },
+                {
+                  "label": "Start in observe mode, then set branch protection",
+                  "state": "base"
+                }
+              ]
+            },
+            "footer": "Same pipeline, different entry points and control"
+          }
+        }
+      ]
+    },
+    {
+      "h": "Pricing: billed by token; credits must be used within 30 days",
+      "blocks": [
+        {
+          "p": "Claude Ship is billed by token, so turning it on adds to your organization's costs. How much depends on the number and size of PRs covered, the review level, how often reviews run, and how much work PR Steward does."
+        },
+        {
+          "p": "Admins can set spend limits for Code Review and PR Steward. Claude Approvals has no base fee, but classifiers in a policy are billed on the tokens they use; if a policy triggers a Claude review, it generates a billed Code Review even in observe mode. Running /ship counts as normal Claude Code usage."
+        },
+        {
+          "p": "Promotional credits: eligible organizations can claim at least $10,000 in Claude Ship credits, to use within 30 days of claiming. Claims must be made by January 15, 2027, and terms apply."
+        },
+        {
+          "p": "Availability: Claude Team and Enterprise plans on GitHub repositories. Not available to organizations with zero data retention (ZDR), the HIPAA configuration, or customer-managed encryption keys (CMEK)."
+        }
+      ]
+    },
+    {
+      "h": "What customers are saying",
+      "blocks": [
+        {
+          "p": "Teams are already building it into their daily workflow. Engineering director Vatsal Bhatt says Code Review has caught real issues before a human reviewer got to the PR, and PR Steward helped the contributor fix them. They keep a human in the loop, so people spend time on changes that actually need judgment."
+        },
+        {
+          "fig": {
+            "type": "quote",
+            "title": "Customer feedback: real issues caught before human review",
+            "text": "We have had numerous cases where Claude Code Review caught real issues before a human reviewer got to the pull request, and PR Steward helped the contributor fix them. Our reviewers were already using Claude Code to keep up with the volume, so having Code Review, PR Steward and Claude Approvals start automatically when a pull request opens makes that simpler.",
+            "who": "Vatsal Bhatt",
+            "role": "Director of Engineering",
+            "source_url": "https://claude.com/resources/articles/introducing-claude-ship"
+          }
+        },
+        {
+          "p": "Another customer, Alex Devkar (Senior Vice President, Engineering and Analytics), says PR Steward is helping pilot teams spend less time on review feedback and more time writing code, and it can be tailored to their team's process."
+        }
+      ]
+    },
+    {
+      "h": "What Anthropic hasn't said",
+      "blocks": [
+        {
+          "list": [
+            "Specific pricing beyond the credits: the per-token rate and cost differences across the three review levels aren't stated.",
+            "The differences in speed and detection across Quick / Standard / Deep aren't stated.",
+            "Which CI systems are supported, and whether anything beyond GitHub works, isn't stated (the announcement only names GitHub).",
+            "The absolute numbers and baselines behind the internal 'PRs doubled' and 'rollbacks down 40%' figures aren't shared.",
+            "When PR Steward and Claude Approvals will become generally available (GA) isn't stated.",
+            "The exact eligibility criteria for the credits aren't stated."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Who it's for",
+      "blocks": [
+        {
+          "p": "Value: for teams already using Claude Code or coding with agents, Claude Ship takes over the post-PR loop of back-and-forth waiting, so people can spend their time on changes that actually need human judgment."
+        },
+        {
+          "p": "Cost: token-based billing adds expense; the approval step affects code quality, so teams should build trust with observe mode instead of going straight to fully automatic merges."
+        },
+        {
+          "list": [
+            "If you use Claude Code daily and PR review slows you down: run /ship on your own PRs first and see how the review and fixes actually behave.",
+            "If you're an engineering leader wanting to roll this out team-wide: pick one repository, set a monthly spend limit, and run the approval policy in observe mode for a few weeks.",
+            "If you have ZDR, HIPAA, or CMEK requirements: this isn't available to you yet; wait for future support.",
+            "If you only want faster reviews and aren't ready for auto-approval: Code Review is already GA, so you can start with that alone."
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Introducing Claude Ship",
+      "publisher": "Anthropic",
+      "date": "2026-11-23",
+      "url": "https://claude.com/resources/articles/introducing-claude-ship"
+    },
+    "more": [],
+    "note": "All figures are illustrative or compiled from data. The 'doubled' and 'down 40%' KPI figures are internal Claude Code team data, not independent third-party measurements; credits are 'at least' $10,000 and terms apply."
+  },
+  "claims": [
+    {
+      "text": "Eligible organizations can claim at least $10,000 in Claude Ship credits.",
+      "value": "$10,000",
+      "source_url": "https://claude.com/resources/articles/introducing-claude-ship",
+      "as_written": "$10,000",
+      "quote": "Eligible Claude Enterprise organizations can claim at least $10,000 in Claude Ship credits to use within 30 days of claiming."
+    },
+    {
+      "text": "Credits must be used within 30 days of claiming.",
+      "value": "30 days",
+      "source_url": "https://claude.com/resources/articles/introducing-claude-ship",
+      "as_written": "30 days",
+      "quote": "claim at least $10,000 in Claude Ship credits to use within 30 days of claiming."
+    },
+    {
+      "text": "Credits must be claimed by January 15, 2027.",
+      "value": "January 15, 2027",
+      "source_url": "https://claude.com/resources/articles/introducing-claude-ship",
+      "as_written": "January 15, 2027",
+      "quote": "Claim by January 15, 2027."
+    },
+    {
+      "text": "Merged PRs on the Claude Code team more than doubled from June to September.",
+      "value": "more than doubled",
+      "source_url": "https://claude.com/resources/articles/introducing-claude-ship",
+      "as_written": "more than doubled",
+      "quote": "merged PRs more than doubled from June to September while the share reverted fell by more than 40%."
+    },
+    {
+      "text": "The share reverted fell by more than 40% over the same period.",
+      "value": "more than 40%",
+      "source_url": "https://claude.com/resources/articles/introducing-claude-ship",
+      "as_written": "more than 40%",
+      "quote": "the share reverted fell by more than 40%."
+    },
+    {
+      "text": "The merged-PR growth happened from June to September.",
+      "value": "from June to September",
+      "source_url": "https://claude.com/resources/articles/introducing-claude-ship",
+      "as_written": "June to September",
+      "quote": "merged PRs more than doubled from June to September while the share reverted fell by more than 40%."
+    },
+    {
+      "text": "Claude Ship includes two new beta agents: PR Steward and Claude Approvals.",
+      "value": "two",
+      "source_url": "https://claude.com/resources/articles/introducing-claude-ship",
+      "as_written": "two",
+      "quote": "and two new agents in beta: PR Steward and Claude Approvals."
+    }
+  ],
+  "cover": {
+    "headline": "Claude Ship launches",
+    "highlight": "After the PR, review, fixes, and merges run automatically.",
+    "glyph": {
+      "kind": "flow",
+      "nodes": [
+        {
+          "label": "PR opened",
+          "tone": "base"
+        },
+        {
+          "label": "Review",
+          "tone": "hi"
+        },
+        {
+          "label": "Fix",
+          "tone": "hi"
+        },
+        {
+          "label": "Merge",
+          "tone": "hi"
+        }
+      ]
+    }
+  },
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "27a36e1536702405"
+}

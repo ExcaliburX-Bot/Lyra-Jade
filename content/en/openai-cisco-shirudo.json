@@ -1,0 +1,414 @@
+{
+  "slug": "openai-cisco-shirudo",
+  "date": "2026-11-23",
+  "category": "product",
+  "publisher": "OpenAI",
+  "title": "OpenAI and Cisco open-source Shirudo to block Java4Shell attacks before patches land",
+  "summary": "After a vulnerability is disclosed, a real patch can take days or weeks to ship—and running services are most exposed in that window. OpenAI and Cisco have open-sourced Shirudo, which uses eBPF shields to block attacks, allow legitimate requests, and keep services up.",
+  "ai_summary": "OpenAI and Cisco have open-sourced Shirudo, a runtime that adds temporary protection to Linux systems before patches land. Testing and deploying a patch can take days or weeks, and services that are running are the most exposed in that window. Shirudo uses eBPF to attach a shield to running services that blocks only exploit behavior and allows legitimate requests through, with no restart required. In a controlled test, a Codex-generated shield blocked a Java4Shell attack while Elasticsearch kept running. The project is released under BSD 2-Clause, with BPF programs dual-licensed under BSD and GPL. It is still in the co-development and testing stage, and OpenAI and Cisco have not announced a release date, performance overhead, or distribution support.",
+  "brief": [
+    "Shields attach to running services via eBPF and block exploit behavior without a restart.",
+    "Before loading, shields pass cryptographic signing, the eBPF verifier, and kernel security controls; a TPM also keeps a record of what was loaded.",
+    "The goal is to publish tested shields alongside vulnerability disclosures so operators can protect systems while they patch.",
+    "Getting started: a VM quickstart, an Isovalent self-guided lab, and a December 15 online deep dive."
+  ],
+  "readMinutes": 7,
+  "sections": [
+    {
+      "h": "What Shirudo is: a shield for Linux services while patches are still pending",
+      "blocks": [
+        {
+          "p": "On November 23, 2026, OpenAI and Cisco open-sourced Shirudo, a runtime for Linux systems. It addresses a specific problem: a patch takes time to move from written to deployed, and machines that are actively serving traffic can be attacked in that window. Shirudo lets security teams put a temporary shield on running systems and fix the vulnerability without taking the service down."
+        },
+        {
+          "p": "Shirudo comes from the Japanese word for shield. OpenAI and Cisco position it as temporary protection for the patch window, not a replacement for a real patch: you still need to deploy the permanent fix, but Shirudo covers the riskiest stretch while you wait."
+        }
+      ]
+    },
+    {
+      "h": "Why you can't just wait: patches are slow, and blunt blocking takes services offline",
+      "blocks": [
+        {
+          "p": "Getting a patch from testing to deployment can take days or weeks: teams need to confirm the fix is correct, run regression tests, schedule a change window, and many production systems can't simply be restarted. In the meantime, services keep serving traffic—and attackers may already be exploiting the flaw."
+        },
+        {
+          "p": "But you can't simply block the suspicious operation entirely, because an exploit and legitimate requests may rely on the same low-level Linux operation. Attackers use it to get in; normal applications use it to do their work. Blocking it completely is the same as taking the service offline."
+        },
+        {
+          "p": "Shirudo is designed to find a third path through that tradeoff: block only the behavior that exposes the vulnerability, and let legitimate requests through."
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "The same patch window: the old way waits; Shirudo attaches a shield",
+            "subtitle": "Amber shows Shirudo's approach; gray shows the trouble it avoids.",
+            "left": {
+              "label": "Traditional approach: wait for the real patch",
+              "sub": "Testing and deployment take days to weeks",
+              "items": [
+                {
+                  "label": "Patch testing and deployment",
+                  "tag": "Days to weeks",
+                  "state": "base"
+                },
+                {
+                  "label": "Services exposed to the flaw",
+                  "tag": "Risk window",
+                  "state": "dim"
+                },
+                {
+                  "label": "Block the entire low-level operation",
+                  "tag": "Service goes offline",
+                  "state": "dim"
+                }
+              ]
+            },
+            "right": {
+              "label": "Shirudo: temporary shield",
+              "sub": "Protects running services until the patch is ready",
+              "items": [
+                {
+                  "label": "eBPF shield attaches on the fly",
+                  "tag": "No restart",
+                  "state": "hi"
+                },
+                {
+                  "label": "Blocks only exploit behavior",
+                  "tag": "Legitimate requests allowed",
+                  "state": "hi"
+                },
+                {
+                  "label": "Deploys only after operator approval",
+                  "tag": "Human decides",
+                  "state": "hi"
+                }
+              ]
+            },
+            "footer": "Shirudo covers the patch window with a revocable temporary shield instead of taking the service offline."
+          }
+        }
+      ]
+    },
+    {
+      "h": "How it works: eBPF observes first, shields deploy only after testing and approval",
+      "blocks": [
+        {
+          "p": "Shirudo relies on eBPF, a Linux technology that lets small programs run at specific points inside the operating system. That allows it to observe suspicious activity and attach targeted protections to running services without restarting the system."
+        },
+        {
+          "p": "The flow is roughly this: a security team tests whether a shield blocks the behavior that exposes the vulnerability while allowing legitimate requests through. Once that checks out, an operator approves it, and the shield is deployed while the service keeps running. Before enforcement, teams can also run it in observation mode to see how it affects the application."
+        },
+        {
+          "p": "OpenAI and Cisco point to the Java4Shell vulnerability as an example. Using OpenAI's Codex, the team generated a shield that added an input check to Java's Base64 decoder and attached it directly to a running Elasticsearch process. When someone tried to exploit the vulnerability, the shield recognized the malicious input and rejected it. The attack was blocked, and Elasticsearch never restarted."
+        },
+        {
+          "fig": {
+            "type": "storyboard",
+            "title": "Java4Shell controlled test: attack blocked, service stayed up",
+            "subtitle": "Schematic: amber marks the input check added by the shield, which Codex generated.",
+            "panels": [
+              {
+                "glyph": {
+                  "kind": "chat",
+                  "turns": [
+                    {
+                      "role": "user",
+                      "text": "Malicious Base64 input",
+                      "tone": "hi"
+                    }
+                  ]
+                },
+                "title": "Attack request arrives",
+                "text": "An attack with malicious input targets a running Elasticsearch instance.",
+                "tone": "base"
+              },
+              {
+                "glyph": {
+                  "kind": "window",
+                  "title": "Elasticsearch",
+                  "items": [
+                    {
+                      "label": "Base64 input check",
+                      "tone": "hi"
+                    }
+                  ]
+                },
+                "title": "The shield checks the input",
+                "text": "A Codex-generated shield adds a check to Java's Base64 decoder.",
+                "tone": "hi"
+              },
+              {
+                "glyph": {
+                  "kind": "flow",
+                  "nodes": [
+                    {
+                      "label": "Malicious input",
+                      "tone": "hi"
+                    },
+                    {
+                      "label": "Rejected",
+                      "tone": "dim"
+                    }
+                  ]
+                },
+                "title": "Malicious input is rejected",
+                "text": "The shield blocks the malicious input and the attack is stopped.",
+                "tone": "base"
+              },
+              {
+                "glyph": {
+                  "kind": "flow",
+                  "nodes": [
+                    {
+                      "label": "Legitimate request",
+                      "tone": "base"
+                    },
+                    {
+                      "label": "Allowed through",
+                      "tone": "base"
+                    }
+                  ]
+                },
+                "title": "Service keeps running",
+                "text": "Elasticsearch is not restarted, and normal requests continue to be processed.",
+                "tone": "base"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "Four core capabilities, and the problems each one solves",
+      "blocks": [
+        {
+          "p": "OpenAI and Cisco design Shirudo around four core capabilities, best understood as four layers of protection that work together."
+        },
+        {
+          "p": "Live protection: eBPF shields block vulnerable code paths without restarting the system; teams can also monitor how a shield would affect applications before enforcing it. Defense at machine speed: AI agents get programmable controls to investigate vulnerabilities, develop targeted shields, and validate them against real attacks and real workloads—but security teams decide what gets deployed."
+        },
+        {
+          "p": "Trusted deployment: shields are cryptographically signed and verified before loading. Linux's eBPF verifier checks programs against its safety rules, and kernel security controls restrict unauthorized changes. Hardware-backed verification: a Trusted Platform Module (TPM) keeps a verifiable record of shields being loaded or removed, which operators can use to check whether systems meet their security requirements."
+        },
+        {
+          "fig": {
+            "type": "cards",
+            "title": "Four paths: each core capability covers a different stage",
+            "subtitle": "Schematic: amber marks the points where the shield does its real work.",
+            "items": [
+              {
+                "glyph": {
+                  "kind": "window",
+                  "title": "Running service",
+                  "items": [
+                    {
+                      "label": "Vulnerable path",
+                      "tone": "hi"
+                    }
+                  ]
+                },
+                "title": "Live protection",
+                "desc": "eBPF shields block vulnerable code paths without a restart; you can see how a shield affects applications before enforcing it.",
+                "tags": [
+                  "eBPF",
+                  "No restart"
+                ],
+                "tone": "hi"
+              },
+              {
+                "glyph": {
+                  "kind": "hub",
+                  "center": {
+                    "label": "AI agent",
+                    "tone": "hi"
+                  },
+                  "nodes": [
+                    {
+                      "label": "Find vulnerabilities",
+                      "tone": "base"
+                    },
+                    {
+                      "label": "Generate shields",
+                      "tone": "base"
+                    },
+                    {
+                      "label": "Validate",
+                      "tone": "base"
+                    }
+                  ]
+                },
+                "title": "Defense at machine speed",
+                "desc": "Gives AI agents programmable controls to investigate vulnerabilities, generate shields, and validate against real workloads; deployment stays with the security team.",
+                "tags": [
+                  "Codex",
+                  "Programmable controls"
+                ],
+                "tone": "base"
+              },
+              {
+                "glyph": {
+                  "kind": "stack",
+                  "layers": [
+                    {
+                      "label": "Cryptographic signing",
+                      "tone": "base"
+                    },
+                    {
+                      "label": "eBPF verifier",
+                      "tone": "base"
+                    },
+                    {
+                      "label": "Kernel security controls",
+                      "tone": "base"
+                    }
+                  ]
+                },
+                "title": "Trusted deployment",
+                "desc": "Shields are signed and verified before loading; the eBPF verifier checks them against its safety rules; kernel controls restrict unauthorized changes.",
+                "tags": [
+                  "Signature verified",
+                  "Kernel"
+                ],
+                "tone": "base"
+              },
+              {
+                "glyph": {
+                  "kind": "ring",
+                  "value": 100,
+                  "max": 100,
+                  "label": "TPM record",
+                  "display": "Verifiable"
+                },
+                "title": "Hardware-backed verification",
+                "desc": "Uses a TPM to keep a verifiable record of shields loaded or removed, so operators can verify systems meet requirements.",
+                "tags": [
+                  "TPM",
+                  "Audit"
+                ],
+                "tone": "base"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "Open source, licensing, and how to get started",
+      "blocks": [
+        {
+          "p": "Shirudo is fully open source, with code on GitHub and public docs. Developers, security researchers, and infrastructure operators are welcome to read the code, test protections, and contribute improvements. It is licensed under BSD 2-Clause, while its BPF programs are dual-licensed under BSD and GPL."
+        },
+        {
+          "p": "The goal is to publish tested shields alongside vulnerability disclosures, so operators can evaluate and deploy temporary protections while they prepare permanent patches. That way, when one team finds a better defense, others don't have to start from scratch."
+        },
+        {
+          "p": "To get started, OpenAI and Cisco point to a few entry points: the VM quickstart docs to sign, load, and verify a test protection, Isovalent's self-guided lab, and a December 15 online technical deep dive that requires registration."
+        },
+        {
+          "fig": {
+            "type": "quote",
+            "title": "OpenAI and Cisco: finding a bug today doesn't mean every system is patched tomorrow, so protect while you patch",
+            "text": "We're giving defenders better models and tools to find and fix vulnerabilities faster, but finding a bug today doesn't mean you can patch every system tomorrow.",
+            "who": "Greg Brockman",
+            "role": "OpenAI 总裁兼联合创始人",
+            "source_url": "https://openai.com/index/introducing-shirudo"
+          }
+        }
+      ]
+    },
+    {
+      "h": "What OpenAI and Cisco haven't said",
+      "blocks": [
+        {
+          "list": [
+            "Pricing: the project is open source, but OpenAI and Cisco haven't said whether managed or commercial support will be offered later, or whether it will cost money.",
+            "Release date: for now it's open-source code plus a testing invite; there's no 1.0 or general availability date.",
+            "Performance overhead: the announcement gives no figures for how eBPF shields affect throughput or latency.",
+            "Support scope: there is no list of supported Linux distributions, kernel versions, or applications.",
+            "Java4Shell test details: it's described only as a controlled test; environment, sample size, and false-positive rate are not specified.",
+            "How it integrates with Cisco's existing security products: not stated."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Who it's for",
+      "blocks": [
+        {
+          "p": "The value is clear: it turns the patch window from an exposed period into a temporarily defended one, without taking services down—and operators always keep the final say on deployment."
+        },
+        {
+          "p": "The tradeoffs also need saying: it is still an early open-source project, so you'll need to read the code and test it yourself. To get real value, you should know some Linux and eBPF. A shield is only as good as its accuracy—block too little and the attack gets through; block too much and you break legitimate work."
+        },
+        {
+          "p": "If you run production services that can't be restarted casually, or work in security operations or infrastructure engineering, start with the VM quickstart. If you're a security researcher or eBPF developer, this is a good project to help build. If you want an out-of-the-box commercial product, you may need to wait for a more mature release and official support."
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "OpenAI and Cisco introduce Shirudo",
+      "publisher": "OpenAI",
+      "date": "2026-11-23",
+      "url": "https://openai.com/index/introducing-shirudo"
+    },
+    "more": [],
+    "note": "The text and figures are adapted from OpenAI's announcement. The comparison diagram, storyboard, and schematic were drawn for clarity; the announcement does not provide details about the Java4Shell controlled-test environment."
+  },
+  "claims": [
+    {
+      "text": "OpenAI and Cisco announced and open-sourced Shirudo on November 23, 2026.",
+      "value": "November 23, 2026",
+      "source_url": "https://openai.com/index/introducing-shirudo",
+      "as_written": "November 23, 2026",
+      "quote": "OpenAI November 23, 2026"
+    },
+    {
+      "text": "Testing and deploying a patch can take days or weeks.",
+      "value": "days or weeks",
+      "source_url": "https://openai.com/index/introducing-shirudo",
+      "as_written": "Days to weeks",
+      "quote": "Testing and deploying a patch can still take days or weeks."
+    },
+    {
+      "text": "Shirudo is designed around four core capabilities.",
+      "value": "four",
+      "source_url": "https://openai.com/index/introducing-shirudo",
+      "as_written": "Four",
+      "quote": "OpenAI and Cisco are designing Shirudo around four core capabilities"
+    },
+    {
+      "text": "There is a Shirudo online technical deep dive on December 15, and registration is required.",
+      "value": "December 15",
+      "source_url": "https://openai.com/index/introducing-shirudo",
+      "as_written": "December 15",
+      "quote": "Register for the December 15 webinar"
+    }
+  ],
+  "cover": {
+    "headline": "OpenAI open-sources Shirudo",
+    "highlight": "Shield Linux before the patch is ready",
+    "glyph": {
+      "kind": "hub",
+      "center": {
+        "label": "Shield",
+        "tone": "hi"
+      },
+      "nodes": [
+        {
+          "label": "Exploit behavior",
+          "tone": "dim"
+        },
+        {
+          "label": "Legitimate requests",
+          "tone": "base"
+        }
+      ]
+    }
+  },
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "5e94ee90b7e0e074"
+}
