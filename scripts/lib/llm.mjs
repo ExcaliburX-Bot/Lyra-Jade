@@ -234,13 +234,34 @@ export function parseChatStream(raw) {
   return { content, calls: calls.filter(Boolean), finish, usage };
 }
 
+/* 宽松修复模型输出的 JSON：字符串里的裸换行 / 制表符转义、去掉 } 或 ] 前多余的逗号。只在严格解析失败时用 */
+export function repairJson(t) {
+  let out = "", inStr = false, esc = false;
+  for (const ch of String(t)) {
+    if (inStr) {
+      if (esc) { esc = false; out += ch; continue; }
+      if (ch === "\\") { esc = true; out += ch; continue; }
+      if (ch === '"') { inStr = false; out += ch; continue; }
+      if (ch === "\n") { out += "\\n"; continue; }
+      if (ch === "\r") { continue; }
+      if (ch === "\t") { out += "\\t"; continue; }
+      out += ch;
+    } else {
+      if (ch === '"') inStr = true;
+      out += ch;
+    }
+  }
+  return out.replace(/,(\s*[}\]])/g, "$1");
+}
+
 export function parseDeepseekArticle({ content, calls, finish }) {
   if (finish === "length") throw new Error("DeepSeek 输出被截断（达到 max_tokens），文章不完整");
   const call = calls.find(c => c.name === TOOL.name);
-  const tryParse = t => { try { return JSON.parse(t); } catch { return null; } };
+  let lastErr = "";
+  const tryParse = t => { try { return JSON.parse(t); } catch (e) { lastErr = e.message; try { return JSON.parse(repairJson(t)); } catch (e2) { lastErr = e2.message; return null; } } };
   if (call) {
     const a = unwrapArticle(tryParse(call.arguments));
-    if (!a) throw new Error("DeepSeek 返回的文章参数不是合法 JSON");
+    if (!a) throw new Error(`DeepSeek 返回的文章参数不是合法 JSON（${lastErr.slice(0, 120)}）`);
     return a;
   }
   /* 没调用函数、直接在正文里给了 JSON：取 ```json 代码块或第一个完整对象 */

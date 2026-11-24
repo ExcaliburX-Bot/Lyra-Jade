@@ -52,8 +52,11 @@ export function validateArticle(a, { sourceTexts = {} } = {}) {
     const f = b.fig, where = `第 ${si + 1} 节第 ${bi + 1} 块的图`;
     if (!FIGURE_SPEC[f.type]) { errors.push(`${where}：不认识的图型 ${f.type}`); return; }
     FIGURE_SPEC[f.type].forEach(k => need(f[k] != null, `${where}（${f.type}）缺少字段 ${k}`));
-    need(f.title, `${where} 缺少标题`);
-    if (!f.subtitle) warnings.push(`${where} 没有副标题（应写明「示意图」或单位）`);
+    /* 引语卡片不需要标题和副标题 */
+    if (f.type !== "quote") {
+      need(f.title, `${where} 缺少标题`);
+      if (!f.subtitle) warnings.push(`${where} 没有副标题（应写明「示意图」或单位）`);
+    }
     if (SCHEMATIC.includes(f.type) && f.subtitle && !f.subtitle.includes("示意")) warnings.push(`${where} 是示意类图型，副标题里应写「示意」`);
     if (f.type === "capacity") (f.items || []).forEach(it => need(typeof it.value === "number" && it.value >= 0 && it.value <= f.max, `${where}：${it.label} 的数值不在 0 到 max 之间`));
     if (f.type === "bars") (f.groups || []).flatMap(g => g.items || []).forEach(it => need(typeof it.value === "number" || it.status, `${where}：${it.label} 既没有数值也没有状态说明`));

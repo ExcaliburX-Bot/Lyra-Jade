@@ -140,7 +140,7 @@ export const FIGS = {
 
 export function figure(f) {
   const body = (FIGS[f.type] || (() => ""))(f);
-  return `<figure class="fig" data-type="${esc(f.type)}"><div class="fig-h">${esc(f.title)}</div>${f.subtitle ? `<div class="fig-s">${esc(f.subtitle)}</div>` : ""}${body}${f.note ? `<figcaption>${esc(f.note)}</figcaption>` : ""}</figure>`;
+  return `<figure class="fig" data-type="${esc(f.type)}">${f.title ? `<div class="fig-h">${esc(f.title)}</div>` : ""}${f.subtitle ? `<div class="fig-s">${esc(f.subtitle)}</div>` : ""}${body}${f.note ? `<figcaption>${esc(f.note)}</figcaption>` : ""}</figure>`;
 }
 
 const num = i => String(i + 1).padStart(2, "0");
