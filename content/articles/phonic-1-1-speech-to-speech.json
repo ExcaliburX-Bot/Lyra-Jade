@@ -1,0 +1,735 @@
+{
+  "slug": "phonic-1-1-speech-to-speech",
+  "date": "2026-11-24",
+  "category": "product",
+  "publisher": "Phonic",
+  "title": "Phonic-1.1 发布：接话更自然，指数比上代高 1.8 分",
+  "summary": "想让语音 Agent 在真实对话里不抢话、能听懂停顿、在嘈杂环境也稳得住？Phonic 今天发布 Phonic-1.1，把接话时机、聪明程度和说话自然度又往前推了一档。",
+  "ai_summary": "Phonic 今天发布语音到语音模型 Phonic-1.1，距上一代仅三周。官方称它在 Artificial Analysis 的语音到语音指数上排第一，比 Phonic-1 高 1.8 分。改进集中在接话时机（DIAL 无接话问题率 40.8%→53.7%）、智能（τ-Voice 2.0 85.6%→87.1%）、自然度（DIAL 4.07→4.21）。七个基准里，除 Cekura 接话分和 Arena Elo 外它都领先。适合做语音客服、助手、语音 Agent 的团队。官方未公布价格和延迟，分数来自厂商转述的第三方榜单。",
+  "brief": [
+    "三周内从 Phonic-1 迭代到 Phonic-1.1，节奏很快。",
+    "接话是重点：会等人说完，哪怕中途停顿，也能扛背景杂音。",
+    "智能和自然度同步提升：τ-Voice 2.0 到 87.1%，DIAL 自然度到 4.21。",
+    "想用的话今天就能 Try now；创业团队可申请 144,000 分钟的 Starter Grant。"
+  ],
+  "readMinutes": 6,
+  "sections": [
+    {
+      "h": "这是什么：三周后发布的第二代语音到语音模型",
+      "blocks": [
+        {
+          "p": "Phonic 是一家语音 AI 创业公司，团队来自 MIT、Stanford 和 CMU。三周前他们发布第一代语音到语音模型 Phonic-1，今天推出 Phonic-1.1。这类模型的工作方式是：你直接说话，它直接回语音，不用先转文字、再让文字模型回答、再合成语音。"
+        },
+        {
+          "p": "官方称 Phonic-1.1 在 Artificial Analysis（一家第三方 AI 评测机构）的 Speech to Speech Index（语音到语音指数）上排名第一，比 Phonic-1 高 1.8 分；在 Sierra 的 τ-Voice（Sierra 做的语音 Agent 任务基准）和 David AI 的 DIAL（真人评审打分的对话榜）等榜单上同样领先。下面先看几个关键分数。"
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "Phonic-1.1 关键分数一览",
+            "subtitle": "分数来自 Phonic 转述的第三方榜单，数据截至 2026 年 11 月 23 日",
+            "items": [
+              {
+                "value": 1.8,
+                "unit": "分",
+                "label": "语音到语音指数提升",
+                "note": "比 Phonic-1（Artificial Analysis）"
+              },
+              {
+                "value": 53.7,
+                "unit": "%",
+                "label": "DIAL 无接话问题率",
+                "note": "越高越好，几个模型里领先"
+              },
+              {
+                "value": 4.21,
+                "unit": "分",
+                "label": "DIAL 自然度",
+                "note": "真人打分，几个模型里领先"
+              },
+              {
+                "value": 87.1,
+                "unit": "%",
+                "label": "τ-Voice 2.0 智能分",
+                "note": "Sierra 基准，Artificial Analysis 代跑"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "接话时机：语音 Agent 最容易露馅的地方",
+      "blocks": [
+        {
+          "p": "语音 Agent 最容易出戏的地方，不是答错，而是抢话或冷场。抢话会打断用户，沉默太久又像掉线。Phonic-1.1 这版把重点放在“什么时候该说、什么时候该听”上：它能等人把话说完，哪怕对方中途停顿、还没讲完；在背景有其他说话声的嘈杂环境里也站得住。"
+        },
+        {
+          "p": "DIAL 是 David AI 做的榜单，让真人评审和模型进行多轮实时对话，专门看接话问题。“无接话问题率”越高越好。Phonic-1.1 拿到 53.7%，在这些模型里领先；上代 Phonic-1 是 40.8%，Grok Voice 3.0 是 38.2%，Gemini 3.8 只有 14.4%。这个数字越高，代表对话里越少出现抢话、打断这类问题。"
+        },
+        {
+          "fig": {
+            "type": "storyboard",
+            "title": "它等你说完才接话，哪怕你中途停顿",
+            "subtitle": "示意：琥珀色是 Phonic-1.1 的关键行为——该等的时候不抢话",
+            "panels": [
+              {
+                "glyph": {
+                  "kind": "chat",
+                  "turns": [
+                    {
+                      "role": "user",
+                      "text": "帮我订……嗯……",
+                      "tone": "base"
+                    }
+                  ]
+                },
+                "title": "用户说一半",
+                "text": "中途停顿，话还没说完"
+              },
+              {
+                "glyph": {
+                  "kind": "chat",
+                  "turns": [
+                    {
+                      "role": "ai",
+                      "text": "（安静等待）",
+                      "tone": "hi"
+                    }
+                  ]
+                },
+                "title": "AI 不抢话",
+                "text": "Phonic-1.1 会等你说完",
+                "tone": "hi"
+              },
+              {
+                "glyph": {
+                  "kind": "chat",
+                  "turns": [
+                    {
+                      "role": "user",
+                      "text": "……周五的机票",
+                      "tone": "base"
+                    }
+                  ]
+                },
+                "title": "用户补完",
+                "text": "继续说完后半句"
+              },
+              {
+                "glyph": {
+                  "kind": "chat",
+                  "turns": [
+                    {
+                      "role": "ai",
+                      "text": "好的，周五……",
+                      "tone": "base"
+                    }
+                  ]
+                },
+                "title": "自然接话",
+                "text": "轮到它时再开口"
+              }
+            ]
+          }
+        },
+        {
+          "p": "另一个接话指标 Cekura 给 Phonic-1.1 打了 79 分，和 Gemini 3.8 并列，但低于 Grok Voice 3.0 的 81 分和 Eleven Realtime v1 Max 的 80 分。所以接话这件事，它在 DIAL 榜上领先，在 Cekura 榜上还没排到前面。两个榜的测法不一样，结论不完全一致很正常。"
+        }
+      ]
+    },
+    {
+      "h": "智能：工具调用和指令遵循更强",
+      "blocks": [
+        {
+          "p": "很多语音 Agent 不只是陪聊，还要边听边做事：查订单、改日程、控制设备。这需要模型在理解口语的同时，保持足够的推理和指令遵循能力。Phonic 说它的模型就是为这类“复杂工具调用、细致指令遵循”的对话设计的。"
+        },
+        {
+          "p": "τ-Voice 是 Sierra 出的基准，专门测语音 Agent 处理真实任务的能力，这里由 Artificial Analysis 代跑。Phonic-1.1 在 τ-Voice 2.0 拿到 87.1%，比上代 Phonic-1 的 85.6% 高，也明显高于 Gemini 3.8 的 65.1% 和 Grok Voice 3.0 的 66.9%；GPT-Live-1 在 80.4%。"
+        },
+        {
+          "p": "Big Bench Audio 测音频相关的常识与推理，Phonic-1.1 是 99.5%，接近满分；上代是 98.9%。这个分数几乎到顶，后续提升空间不大了。"
+        }
+      ]
+    },
+    {
+      "h": "自然度：听起来更不像机器",
+      "blocks": [
+        {
+          "p": "自然度决定你愿不愿意继续聊下去，包括节奏（pacing）、情绪起伏（emotional inflections）和对话感（conversationalness）。DIAL 的真人评审给 Phonic-1.1 的自然度打了 4.21 分，在这几个模型里领先；上代 Phonic-1 是 4.07，GPT-Live-1 是 3.91，Grok Voice 3.0 是 3.57，Gemini 3.8 是 2.81。"
+        },
+        {
+          "p": "注意：这个 4.21 和上面的 53.7%、87.1% 不是同一个量纲，不能互相比较大小。它只在“自然度”这一行里和别的模型比。"
+        },
+        {
+          "p": "把这一版的三个方向放在一起看，接话时机是这次最强调的。"
+        },
+        {
+          "fig": {
+            "type": "cards",
+            "title": "这一版改了什么：接话、智能、自然度",
+            "subtitle": "琥珀色标的是接话时机这一改进，另两项用默认色",
+            "items": [
+              {
+                "icon": "chat",
+                "title": "接话时机",
+                "desc": "更会判断何时说、何时听；等人说完，扛得住背景杂音",
+                "tags": [
+                  "DIAL 无接话问题率 53.7%",
+                  "Cekura 79 分"
+                ],
+                "tone": "hi"
+              },
+              {
+                "icon": "cpu",
+                "title": "智能",
+                "desc": "复杂工具调用与指令遵循更强，为语音 Agent 设计",
+                "tags": [
+                  "τ-Voice 2.0 87.1%",
+                  "Big Bench Audio 99.5%"
+                ],
+                "tone": "base"
+              },
+              {
+                "icon": "audio",
+                "title": "自然度",
+                "desc": "节奏、情绪起伏、对话感更好",
+                "tags": [
+                  "DIAL 自然度 4.21",
+                  "上代 4.07"
+                ],
+                "tone": "base"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "七个基准放一起：谁在哪些行领先？",
+      "blocks": [
+        {
+          "p": "把七个基准、各模型的分数放进一张表，看全貌。每行只能横向比：百分比、Elo 分、4 分制的自然度分，量纲各不一样。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "七个基准的完整分数，横向对比",
+            "subtitle": "每行只能横着比，量纲不同（%、Elo、4 分制）",
+            "note": "Gemini 3.8=Gemini 3.8 Live（Extended Thinking, high）；Grok 3.0=Grok Voice 3.0；GPT-Live-1=Astra, medium；Eleven Max=Eleven Realtime v1 Max",
+            "columns": [
+              "基准",
+              "Phonic-1.1",
+              "Phonic-1",
+              "Gemini 3.8",
+              "Grok 3.0",
+              "GPT-Live-1",
+              "Eleven Max"
+            ],
+            "rows": [
+              [
+                "无接话问题 DIAL（%）",
+                "53.7",
+                "40.8",
+                "14.4",
+                "38.2",
+                "35.9",
+                "30.0"
+              ],
+              [
+                "接话分 Cekura（分）",
+                "79",
+                "76",
+                "79",
+                "81",
+                "71",
+                "80"
+              ],
+              [
+                "Arena Elo（分）",
+                "1046",
+                "1010",
+                "966",
+                "1059",
+                "1027",
+                "990"
+              ],
+              [
+                "自然度 DIAL（分）",
+                "4.21",
+                "4.07",
+                "2.81",
+                "3.57",
+                "3.91",
+                "3.45"
+              ],
+              [
+                "τ-Voice 1.0（%）",
+                "82.8",
+                "79.9",
+                "68.6",
+                "71.6",
+                "74.5",
+                "47.6"
+              ],
+              [
+                "τ-Voice 2.0（%）",
+                "87.1",
+                "85.6",
+                "65.1",
+                "66.9",
+                "80.4",
+                "57.8"
+              ],
+              [
+                "Big Bench Audio（%）",
+                "99.5",
+                "98.9",
+                "97.7",
+                "98.5",
+                "90.1",
+                "98.8"
+              ]
+            ],
+            "highlight": {
+              "col": 1
+            }
+          }
+        },
+        {
+          "p": "表里能看到：七个基准里，Phonic-1.1 只有 Cekura 接话分和 Arena Elo 这两项不是它领先，其余各项都排在前；那两项分别由 Grok Voice 3.0 的 81 分和 1059 分拿走。Arena Elo 是让人类盲听后按输赢算的竞技分，Phonic-1.1 是 1046，位列第二。所以指数领先不等于每个单项都领先。"
+        }
+      ]
+    },
+    {
+      "h": "怎么用、多少钱？",
+      "blocks": [
+        {
+          "p": "Phonic-1.1 今天起就可以用：官网有 Try now 和 Docs。这次发布没有写每百万 token 或每分钟的价格，需要到 Docs 或联系他们了解。"
+        },
+        {
+          "callout": {
+            "kind": "note",
+            "title": "创业团队的 Starter Grant",
+            "text": "如果你是做语音产品的创业团队，可以申请 Speech-to-Speech Starter Grant：12 个月内共 144,000 分钟的 Phonic 用量，外加一个专属 Slack 频道，直接接触他们的研究和工程团队。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "官方还没说的",
+      "blocks": [
+        {
+          "list": [
+            "价格：每分钟或每百万 token 多少钱，没有写。",
+            "延迟：从用户说完到 AI 开口要多久，没有写。",
+            "支持的语种和口音范围：没有写。",
+            "模型的参数量、训练数据和具体改动：没有写。",
+            "Starter Grant 之外正式套餐的档位和并发上限：没有写。",
+            "完整榜单里还有哪些模型和配置：只列了这几个对手，完整排名要到 Artificial Analysis 查看。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "适合谁",
+      "blocks": [
+        {
+          "p": "价值很清楚：更会等人、更聪明、更自然，对做语音客服、语音助手、会议里的语音 Agent 的团队都有直接收益。尤其是需要复杂工具调用、又对抢话问题头疼的场景。"
+        },
+        {
+          "p": "代价和前提也要说：价格未知；Cekura 接话和 Arena Elo 两项仍不如 Grok Voice 3.0；以上分数都来自 Phonic 官方博客转述的第三方榜单，正式选型前建议自己到榜单和试用环境里验证。"
+        },
+        {
+          "list": [
+            "如果你在做需要工具调用的语音 Agent，或对抢话问题敏感：值得申请试用和 Starter Grant。",
+            "如果你最在意整体聊天好感（Arena Elo）：Grok Voice 3.0 在榜单上仍领先，建议一起对比。",
+            "如果你只关心价格：这篇没给数字，需要另查 Docs 或联系 Phonic。"
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Introducing Phonic-1.1 | Phonic Blog",
+      "publisher": "Phonic",
+      "date": "2026-11-24",
+      "url": "https://phonic.co/blog/phonic-1-1"
+    },
+    "note": "跑分数据来自 Phonic 官方博客转述的第三方榜单（Artificial Analysis、Sierra τ-Voice、David AI DIAL、Cekura），属厂商转述的二手数据；接话时机 storyboard 图为概念示意。"
+  },
+  "claims": [
+    {
+      "text": "Phonic-1.1 在 Artificial Analysis 语音到语音指数上比 Phonic-1 高 1.8 分",
+      "value": "1.8 points",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "1.8 分",
+      "quote": "improving 1.8 points over Phonic-1"
+    },
+    {
+      "text": "Phonic-1 是三周前发布的",
+      "value": "Three weeks ago",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "三周前",
+      "quote": "Three weeks ago, we released Phonic-1."
+    },
+    {
+      "text": "官方对比表里共有七个基准",
+      "value": "seven",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "七个",
+      "quote": "on the seven benchmarks in the chart"
+    },
+    {
+      "text": "Speech-to-Speech Starter Grant 提供 144,000 分钟的 Phonic 用量",
+      "value": "144,000 minutes",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "144,000 分钟",
+      "quote": "Apply to our Speech-to-Speech Starter Grant for 144,000 minutes of Phonic across 12 months"
+    },
+    {
+      "text": "Starter Grant 的用量横跨 12 个月",
+      "value": "12 months",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "12 个月",
+      "quote": "144,000 minutes of Phonic across 12 months"
+    },
+    {
+      "text": "榜单数据来源日期为 2026 年 11 月 23 日",
+      "value": "November 23, 2026",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "2026 年 11 月 23 日",
+      "quote": "Source: Artificial Analysis Speech to Speech Index (November 23, 2026)."
+    },
+    {
+      "text": "Phonic-1.1 在 DIAL 无接话问题率上得 53.7%",
+      "value": "53.7%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "53.7%",
+      "quote": "No turn-taking problems DIAL 53.7% 40.8% 14.4% 38.2% 35.9% 30.0%"
+    },
+    {
+      "text": "Phonic-1 在 DIAL 无接话问题率上得 40.8%",
+      "value": "40.8%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "40.8%",
+      "quote": "No turn-taking problems DIAL 53.7% 40.8% 14.4% 38.2% 35.9% 30.0%"
+    },
+    {
+      "text": "Gemini 3.8 在 DIAL 无接话问题率上得 14.4%",
+      "value": "14.4%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "14.4%",
+      "quote": "No turn-taking problems DIAL 53.7% 40.8% 14.4% 38.2% 35.9% 30.0%"
+    },
+    {
+      "text": "Grok 3.0 在 DIAL 无接话问题率上得 38.2%",
+      "value": "38.2%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "38.2%",
+      "quote": "No turn-taking problems DIAL 53.7% 40.8% 14.4% 38.2% 35.9% 30.0%"
+    },
+    {
+      "text": "GPT-Live-1 在 DIAL 无接话问题率上得 35.9%",
+      "value": "35.9%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "35.9%",
+      "quote": "No turn-taking problems DIAL 53.7% 40.8% 14.4% 38.2% 35.9% 30.0%"
+    },
+    {
+      "text": "Eleven Max 在 DIAL 无接话问题率上得 30.0%",
+      "value": "30.0%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "30.0%",
+      "quote": "No turn-taking problems DIAL 53.7% 40.8% 14.4% 38.2% 35.9% 30.0%"
+    },
+    {
+      "text": "Phonic-1.1 在 Cekura 接话分上得 79",
+      "value": "79",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "79 分",
+      "quote": "Turn-taking score Cekura 79 76 79 81 71 80"
+    },
+    {
+      "text": "Phonic-1 在 Cekura 接话分上得 76",
+      "value": "76",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "76 分",
+      "quote": "Turn-taking score Cekura 79 76 79 81 71 80"
+    },
+    {
+      "text": "Gemini 3.8 在 Cekura 接话分上得 79",
+      "value": "79",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "79 分",
+      "quote": "Turn-taking score Cekura 79 76 79 81 71 80"
+    },
+    {
+      "text": "Grok 3.0 在 Cekura 接话分上得 81",
+      "value": "81",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "81 分",
+      "quote": "Turn-taking score Cekura 79 76 79 81 71 80"
+    },
+    {
+      "text": "GPT-Live-1 在 Cekura 接话分上得 71",
+      "value": "71",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "71 分",
+      "quote": "Turn-taking score Cekura 79 76 79 81 71 80"
+    },
+    {
+      "text": "Eleven Max 在 Cekura 接话分上得 80",
+      "value": "80",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "80 分",
+      "quote": "Turn-taking score Cekura 79 76 79 81 71 80"
+    },
+    {
+      "text": "Phonic-1.1 的 Arena Elo 为 1046",
+      "value": "1046",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "1046",
+      "quote": "Arena Elo Artificial Analysis 1046 1010 966 1059 1027 990"
+    },
+    {
+      "text": "Phonic-1 的 Arena Elo 为 1010",
+      "value": "1010",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "1010",
+      "quote": "Arena Elo Artificial Analysis 1046 1010 966 1059 1027 990"
+    },
+    {
+      "text": "Gemini 3.8 的 Arena Elo 为 966",
+      "value": "966",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "966",
+      "quote": "Arena Elo Artificial Analysis 1046 1010 966 1059 1027 990"
+    },
+    {
+      "text": "Grok 3.0 的 Arena Elo 为 1059",
+      "value": "1059",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "1059",
+      "quote": "Arena Elo Artificial Analysis 1046 1010 966 1059 1027 990"
+    },
+    {
+      "text": "GPT-Live-1 的 Arena Elo 为 1027",
+      "value": "1027",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "1027",
+      "quote": "Arena Elo Artificial Analysis 1046 1010 966 1059 1027 990"
+    },
+    {
+      "text": "Eleven Max 的 Arena Elo 为 990",
+      "value": "990",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "990",
+      "quote": "Arena Elo Artificial Analysis 1046 1010 966 1059 1027 990"
+    },
+    {
+      "text": "Phonic-1.1 在 DIAL 自然度上得 4.21",
+      "value": "4.21",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "4.21",
+      "quote": "Naturalness DIAL 4.21 4.07 2.81 3.57 3.91 3.45"
+    },
+    {
+      "text": "Phonic-1 在 DIAL 自然度上得 4.07",
+      "value": "4.07",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "4.07",
+      "quote": "Naturalness DIAL 4.21 4.07 2.81 3.57 3.91 3.45"
+    },
+    {
+      "text": "Gemini 3.8 在 DIAL 自然度上得 2.81",
+      "value": "2.81",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "2.81",
+      "quote": "Naturalness DIAL 4.21 4.07 2.81 3.57 3.91 3.45"
+    },
+    {
+      "text": "Grok 3.0 在 DIAL 自然度上得 3.57",
+      "value": "3.57",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "3.57",
+      "quote": "Naturalness DIAL 4.21 4.07 2.81 3.57 3.91 3.45"
+    },
+    {
+      "text": "GPT-Live-1 在 DIAL 自然度上得 3.91",
+      "value": "3.91",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "3.91",
+      "quote": "Naturalness DIAL 4.21 4.07 2.81 3.57 3.91 3.45"
+    },
+    {
+      "text": "Eleven Max 在 DIAL 自然度上得 3.45",
+      "value": "3.45",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "3.45",
+      "quote": "Naturalness DIAL 4.21 4.07 2.81 3.57 3.91 3.45"
+    },
+    {
+      "text": "Phonic-1.1 在 τ-Voice 1.0 上得 82.8%",
+      "value": "82.8%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "82.8%",
+      "quote": "Sierra's τ-Voice 1.0 Artificial Analysis 82.8% 79.9% 68.6% 71.6% 74.5% 47.6%"
+    },
+    {
+      "text": "Phonic-1 在 τ-Voice 1.0 上得 79.9%",
+      "value": "79.9%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "79.9%",
+      "quote": "Sierra's τ-Voice 1.0 Artificial Analysis 82.8% 79.9% 68.6% 71.6% 74.5% 47.6%"
+    },
+    {
+      "text": "Gemini 3.8 在 τ-Voice 1.0 上得 68.6%",
+      "value": "68.6%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "68.6%",
+      "quote": "Sierra's τ-Voice 1.0 Artificial Analysis 82.8% 79.9% 68.6% 71.6% 74.5% 47.6%"
+    },
+    {
+      "text": "Grok 3.0 在 τ-Voice 1.0 上得 71.6%",
+      "value": "71.6%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "71.6%",
+      "quote": "Sierra's τ-Voice 1.0 Artificial Analysis 82.8% 79.9% 68.6% 71.6% 74.5% 47.6%"
+    },
+    {
+      "text": "GPT-Live-1 在 τ-Voice 1.0 上得 74.5%",
+      "value": "74.5%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "74.5%",
+      "quote": "Sierra's τ-Voice 1.0 Artificial Analysis 82.8% 79.9% 68.6% 71.6% 74.5% 47.6%"
+    },
+    {
+      "text": "Eleven Max 在 τ-Voice 1.0 上得 47.6%",
+      "value": "47.6%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "47.6%",
+      "quote": "Sierra's τ-Voice 1.0 Artificial Analysis 82.8% 79.9% 68.6% 71.6% 74.5% 47.6%"
+    },
+    {
+      "text": "Phonic-1.1 在 τ-Voice 2.0 上得 87.1%",
+      "value": "87.1%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "87.1%",
+      "quote": "Sierra's τ-Voice 2.0 Artificial Analysis 87.1% 85.6% 65.1% 66.9% 80.4% 57.8%"
+    },
+    {
+      "text": "Phonic-1 在 τ-Voice 2.0 上得 85.6%",
+      "value": "85.6%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "85.6%",
+      "quote": "Sierra's τ-Voice 2.0 Artificial Analysis 87.1% 85.6% 65.1% 66.9% 80.4% 57.8%"
+    },
+    {
+      "text": "Gemini 3.8 在 τ-Voice 2.0 上得 65.1%",
+      "value": "65.1%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "65.1%",
+      "quote": "Sierra's τ-Voice 2.0 Artificial Analysis 87.1% 85.6% 65.1% 66.9% 80.4% 57.8%"
+    },
+    {
+      "text": "Grok 3.0 在 τ-Voice 2.0 上得 66.9%",
+      "value": "66.9%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "66.9%",
+      "quote": "Sierra's τ-Voice 2.0 Artificial Analysis 87.1% 85.6% 65.1% 66.9% 80.4% 57.8%"
+    },
+    {
+      "text": "GPT-Live-1 在 τ-Voice 2.0 上得 80.4%",
+      "value": "80.4%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "80.4%",
+      "quote": "Sierra's τ-Voice 2.0 Artificial Analysis 87.1% 85.6% 65.1% 66.9% 80.4% 57.8%"
+    },
+    {
+      "text": "Eleven Max 在 τ-Voice 2.0 上得 57.8%",
+      "value": "57.8%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "57.8%",
+      "quote": "Sierra's τ-Voice 2.0 Artificial Analysis 87.1% 85.6% 65.1% 66.9% 80.4% 57.8%"
+    },
+    {
+      "text": "Phonic-1.1 在 Big Bench Audio 上得 99.5%",
+      "value": "99.5%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "99.5%",
+      "quote": "Big Bench Audio Artificial Analysis 99.5% 98.9% 97.7% 98.5% 90.1% 98.8%"
+    },
+    {
+      "text": "Phonic-1 在 Big Bench Audio 上得 98.9%",
+      "value": "98.9%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "98.9%",
+      "quote": "Big Bench Audio Artificial Analysis 99.5% 98.9% 97.7% 98.5% 90.1% 98.8%"
+    },
+    {
+      "text": "Gemini 3.8 在 Big Bench Audio 上得 97.7%",
+      "value": "97.7%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "97.7%",
+      "quote": "Big Bench Audio Artificial Analysis 99.5% 98.9% 97.7% 98.5% 90.1% 98.8%"
+    },
+    {
+      "text": "Grok 3.0 在 Big Bench Audio 上得 98.5%",
+      "value": "98.5%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "98.5%",
+      "quote": "Big Bench Audio Artificial Analysis 99.5% 98.9% 97.7% 98.5% 90.1% 98.8%"
+    },
+    {
+      "text": "GPT-Live-1 在 Big Bench Audio 上得 90.1%",
+      "value": "90.1%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "90.1%",
+      "quote": "Big Bench Audio Artificial Analysis 99.5% 98.9% 97.7% 98.5% 90.1% 98.8%"
+    },
+    {
+      "text": "Eleven Max 在 Big Bench Audio 上得 98.8%",
+      "value": "98.8%",
+      "source_url": "https://phonic.co/blog/phonic-1-1",
+      "as_written": "98.8%",
+      "quote": "Big Bench Audio Artificial Analysis 99.5% 98.9% 97.7% 98.5% 90.1% 98.8%"
+    }
+  ],
+  "cover": {
+    "headline": "Phonic-1.1 语音模型发布",
+    "highlight": "接话更自然，指数高 1.8 分",
+    "big": {
+      "value": "1.8",
+      "unit": "分",
+      "label": "指数较上代提升"
+    },
+    "glyph": {
+      "kind": "chat",
+      "turns": [
+        {
+          "role": "user",
+          "text": "……",
+          "tone": "base"
+        },
+        {
+          "role": "ai",
+          "text": "（等待）",
+          "tone": "hi"
+        }
+      ]
+    }
+  },
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "origin": "auto",
+    "candidate": "8c04164934",
+    "tier": "official",
+    "via": "https://xiaohu.ai/article/phonic-1-1/",
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "generated_at": "2026-11-24T20:47:27.994Z"
+  }
+}
