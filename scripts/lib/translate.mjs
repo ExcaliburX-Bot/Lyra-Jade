@@ -11,9 +11,10 @@ import { parseChatStream, repairJson } from "./llm.mjs";
 export const TRANSLATE_MODEL = process.env.WG_TRANSLATE_MODEL || "deepseek-v4-pro";
 
 const CJK = /[⺀-鿿　-〿豈-﫿＀-￯]/;
-/* 这些字段不翻：标识、链接、日期、数值、颜色、图型名、原文引语（本来就是原文的语言）、代码 */
-const SKIP = new Set(["slug", "category", "date", "url", "source_url", "quote", "value", "tone", "type", "kind", "role", "state",
-  "lang", "translated_from", "status", "pipeline", "code", "lines", "max", "min", "from", "to", "select", "id", "icon", "zh"]);
+/* 这些字段不翻：标识、链接、日期、颜色、图型名、原文引语（本来就是原文的语言）、代码。
+   value、status 不在这里：数值本身不是字符串，不会被拆出来；写成中文的（「数千」「未公布价格」）要翻 */
+const SKIP = new Set(["slug", "category", "date", "url", "source_url", "quote", "tone", "type", "kind", "role", "state",
+  "lang", "translated_from", "pipeline", "code", "lines", "max", "min", "from", "to", "select", "id", "icon", "zh"]);
 
 /* 片段的位置说明，给模型当上下文用 */
 function where(p) {
@@ -150,15 +151,23 @@ export function parseMap(content) {
   return o;
 }
 
-async function chat({ system, user, thinking }) {
+async function chat({ system, user, thinking }, tries = 2) {
   const k = process.env.DEEPSEEK_API_KEY;
   if (!k) throw new Error("缺少 DEEPSEEK_API_KEY");
   const started = Date.now();
   const body = { model: TRANSLATE_MODEL, messages: [{ role: "system", content: system }, { role: "user", content: user }],
     ...(thinking ? { reasoning_effort: "high" } : { thinking: { type: "disabled" } }), max_tokens: 32768, stream: true, stream_options: { include_usage: true } };
-  const res = await fetch("https://api.deepseek.com/chat/completions", { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${k}` }, body: JSON.stringify(body), signal: AbortSignal.timeout(20 * 60_000) });
-  if (!res.ok) throw new Error(`DeepSeek 接口返回 ${res.status}：${(await res.text()).slice(0, 300)}`);
-  const out = parseChatStream(await res.text());
+  let raw;
+  try {
+    const res = await fetch("https://api.deepseek.com/chat/completions", { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${k}` }, body: JSON.stringify(body), signal: AbortSignal.timeout(20 * 60_000) });
+    if (!res.ok) { const e = new Error(`DeepSeek 接口返回 ${res.status}：${(await res.text()).slice(0, 300)}`); e.status = res.status; throw e; }
+    raw = await res.text();
+  } catch (e) {
+    /* 连接中断（terminated、超时、5xx）重试一次；4xx 是请求本身的问题，不重试 */
+    if (tries > 1 && !(e.status >= 400 && e.status < 500)) { console.log(`  连接出错（${e.message.slice(0, 80)}），30 秒后重试`); await new Promise(r => setTimeout(r, 30_000)); return chat({ system, user, thinking }, tries - 1); }
+    throw e;
+  }
+  const out = parseChatStream(raw);
   if (out.finish === "length") throw new Error("翻译输出被截断");
   console.log(`  DeepSeek ${Math.round((Date.now() - started) / 1000)} 秒${out.usage ? `，输入 ${out.usage.prompt_tokens} / 输出 ${out.usage.completion_tokens} token` : ""}`);
   return parseMap(out.content);

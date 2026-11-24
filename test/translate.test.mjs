@@ -110,3 +110,9 @@ test("翻译：连字符写法算对，长串数字要改成 trillion / billion"
   assert.match(checkTranslation([{ id: "s1", text: "3 万亿参数" }], { s1: "3,000,000,000,000 parameters" })[0].msg, /long digit strings/);
   assert.deepEqual(checkTranslation([{ id: "s1", text: "16,843 美元" }], { s1: "$16,843" }), []);
 });
+
+test("翻译：图里写成中文的数值和状态（「数千」「未公布价格」）也要翻", () => {
+  const segs = collectSegments({ title: "t", sections: [{ blocks: [{ fig: { type: "columns", items: [{ label: "步数", value: "数千" }, { label: "价格", status: "未公布价格", value: 3 }] } }] }], status: "published" });
+  const paths = segs.map(s => s.path.join("."));
+  assert.ok(paths.includes("sections.0.blocks.0.fig.items.0.value") && paths.includes("sections.0.blocks.0.fig.items.1.status"), paths.join(" "));
+});
