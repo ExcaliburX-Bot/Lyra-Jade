@@ -1,0 +1,554 @@
+{
+  "slug": "rtx-spark-compact-desktops",
+  "status": "published",
+  "date": "2026-11-18",
+  "category": "product",
+  "publisher": "NVIDIA",
+  "title": "RTX Spark compact desktops go on sale with 128GB unified memory for running agents locally 24/7",
+  "summary": "NVIDIA, ASUS, Dell, and MSI have started selling RTX Spark compact desktops. The pitch isn't a faster workstation—it's a computer that stays on and runs agents locally.",
+  "ai_summary": "NVIDIA and ASUS, Dell, and MSI have started selling RTX Spark compact desktops, with Acer, Gigabyte, HP, and Microsoft Surface to follow. The selling point isn't raw speed—it's an always-on machine that runs agents locally: up to 128GB of unified memory can hold a large model entirely on-device, everyday tasks run locally, and complex reasoning goes to the cloud. It isn't cheap: MSI's 64GB model costs $4,699 and the 128GB model costs $7,999. It's for individual developers and small teams who want to keep data local and run agents around the clock; if you mostly do ad-hoc Q&A, cloud services are more cost-effective.",
+  "brief": [
+    "ASUS, Dell, and MSI RTX Spark compact desktops are available now; Acer, Gigabyte, HP, and Microsoft Surface models are coming.",
+    "Up to 128GB unified memory: at low precision, a 120-billion-parameter model can fit entirely on-device.",
+    "Hermes Agent adds Switchyard: everyday tasks go to the local model, and only complex reasoning calls the cloud."
+  ],
+  "readMinutes": 9,
+  "verified": true,
+  "sections": [
+    {
+      "h": "What this machine is",
+      "blocks": [
+        {
+          "p": "RTX Spark is NVIDIA's Windows PC platform: a Grace CPU (Arm-based) and Blackwell GPU on the same chip share one memory pool. The chip first shipped in laptops; now it's in compact desktops."
+        },
+        {
+          "p": "The first wave comes from ASUS, Dell, and MSI; Acer, Gigabyte, HP, and the Microsoft Surface RTX Spark Dev Box follow."
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "Five key numbers for RTX Spark compact desktops",
+            "subtitle": "Manufacturer specs",
+            "items": [
+              {
+                "value": "20",
+                "unit": "cores",
+                "label": "Grace CPU",
+                "note": "Arm-based"
+              },
+              {
+                "value": "6,144",
+                "unit": "cores",
+                "label": "CUDA cores",
+                "note": "Blackwell GPU"
+              },
+              {
+                "value": "128",
+                "unit": "GB",
+                "label": "Unified memory",
+                "note": "Max config, shared by CPU and GPU"
+              },
+              {
+                "value": "1",
+                "unit": "PFLOPS",
+                "label": "AI compute",
+                "note": "Peak; NVIDIA doesn't specify the precision"
+              },
+              {
+                "value": "10",
+                "unit": "Gb/s",
+                "label": "Ethernet",
+                "note": "Faster model and asset transfers"
+              }
+            ],
+            "note": "Data from NVIDIA's blog."
+          }
+        },
+        {
+          "p": "NVIDIA names three uses: running a 120-billion-parameter model locally, rendering 90GB+ 3D scenes in real time, and editing 4:2:2 video in real time."
+        }
+      ]
+    },
+    {
+      "h": "Why you need an always-on computer",
+      "blocks": [
+        {
+          "p": "Agents and scheduled tasks keep working when you're away. Batch image generation, running tests, organizing files—all of it can continue after you leave your desk. A laptop gets closed up and carried around, so it isn't suited to that kind of background work; a compact desktop that stays plugged in fills the gap."
+        },
+        {
+          "fig": {
+            "type": "timeline",
+            "title": "Your time away is exactly when the compact desktop gets to work",
+            "subtitle": "Illustrative: task schedule shown as example",
+            "axis": {
+              "from": 0,
+              "to": 24,
+              "ticks": [
+                0,
+                6,
+                12,
+                18,
+                24
+              ],
+              "unit": "time of day"
+            },
+            "lanes": [
+              {
+                "label": "You",
+                "sub": "Time at your computer",
+                "tone": "laptop",
+                "segments": [
+                  {
+                    "from": 9,
+                    "to": 12
+                  },
+                  {
+                    "from": 15,
+                    "to": 18
+                  }
+                ]
+              },
+              {
+                "label": "RTX Spark compact desktop",
+                "sub": "Always on",
+                "tone": "local",
+                "segments": [
+                  {
+                    "from": 0,
+                    "to": 5,
+                    "n": 1,
+                    "label": "Fine-tune a small model"
+                  },
+                  {
+                    "from": 6,
+                    "to": 7,
+                    "n": 2,
+                    "label": "Organize the previous day's meeting recordings"
+                  },
+                  {
+                    "from": 12,
+                    "to": 15,
+                    "n": 3,
+                    "label": "While you're in meetings, batch-generate product images"
+                  },
+                  {
+                    "from": 18,
+                    "to": 24,
+                    "n": 4,
+                    "label": "After work, the agent runs tests and writes a report"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "p": "Keeping things local has two direct benefits: files processed by local models never leave the machine, and those tasks don't incur cloud API token charges."
+        }
+      ]
+    },
+    {
+      "h": "How big a model fits in 128GB",
+      "blocks": [
+        {
+          "p": "In a typical desktop, system memory and GPU memory are separate, and a model has to fit in VRAM to run fast. RTX Spark's CPU and GPU share one memory pool—up to 128GB—so a model can be loaded whole."
+        },
+        {
+          "p": "The estimate is simple: model size ≈ parameter count × bytes per parameter. FP16 takes 2 bytes per parameter, FP8 takes 1 byte, and FP4 takes half a byte. A 120-billion-parameter model therefore needs about 240GB, 120GB, or 60GB respectively."
+        },
+        {
+          "fig": {
+            "type": "capacity",
+            "title": "For 120B parameters, only low precision fits",
+            "subtitle": "Illustrative estimate: model weights only",
+            "unit": "GB",
+            "max": 260,
+            "thresholds": [
+              {
+                "value": 64,
+                "label": "64GB model"
+              },
+              {
+                "value": 128,
+                "label": "128GB model"
+              }
+            ],
+            "items": [
+              {
+                "label": "FP16",
+                "sub": "2 bytes per parameter — doesn't fit in either tier",
+                "value": 240,
+                "tone": "bad"
+              },
+              {
+                "label": "FP8",
+                "sub": "1 byte per parameter — just fits in the 128GB tier",
+                "value": 120,
+                "tone": "warn"
+              },
+              {
+                "label": "FP4",
+                "sub": "Half a byte per parameter — leaves headroom in the 128GB tier",
+                "value": 60,
+                "tone": "good"
+              }
+            ],
+            "note": "Horizontal axis is memory; dashed lines mark the two models' limits. Context cache, the OS, and applications need additional memory."
+          }
+        },
+        {
+          "p": "So running a 120-billion-parameter model locally assumes low precision such as FP4. Fitting it doesn't mean it runs fast: generation speed depends mainly on memory bandwidth, and MSI lists 273GB/s."
+        }
+      ]
+    },
+    {
+      "h": "Everyday tasks stay local, hard problems go to the cloud",
+      "blocks": [
+        {
+          "p": "For development, RTX Spark supports CUDA, and you can build agents with Hermes Agent or NVIDIA's NemoClaw blueprints and fine-tune models with Unsloth."
+        },
+        {
+          "p": "Hermes Agent now adds NVIDIA Switchyard: each incoming task is automatically routed to either the local model or a cloud one. Everyday tasks run locally; only tasks that need advanced reasoning call the cloud, so you pay cloud costs only for the hard problems."
+        },
+        {
+          "fig": {
+            "type": "route",
+            "title": "Switchyard routes tasks by difficulty",
+            "subtitle": "Illustrative: tasks shown as examples",
+            "root": {
+              "label": "Tasks the agent receives",
+              "sub": "Routed automatically by Switchyard"
+            },
+            "branches": [
+              {
+                "tone": "local",
+                "label": "Local model",
+                "items": [
+                  "Write captions for a batch of product images",
+                  "Turn meeting recordings into notes",
+                  "Search local documents for information"
+                ],
+                "note": "Everyday tasks: files never leave the machine; no token billing"
+              },
+              {
+                "tone": "cloud",
+                "label": "Cloud model",
+                "items": [
+                  "Turn a vague requirement into a development plan"
+                ],
+                "note": "Advanced reasoning: more capable, billed by usage"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "Creation: one sentence turns a sketch into video",
+      "blocks": [
+        {
+          "p": "NVIDIA showed off a creative agent: Hermes Agent connects Photoshop and ComfyUI—an open-source tool for building image and video pipelines from nodes—so you can give it plain-language instructions."
+        },
+        {
+          "fig": {
+            "type": "steps",
+            "title": "From one sketch to a grade-ready video",
+            "subtitle": "Illustrative: based on NVIDIA's demo workflow",
+            "steps": [
+              {
+                "name": "Sketch",
+                "tool": "Photoshop",
+                "desc": "Start by setting the composition."
+              },
+              {
+                "name": "Give instructions",
+                "tool": "Hermes Agent",
+                "desc": "Describe the desired visuals and motion in one sentence."
+              },
+              {
+                "name": "Generate the image and animation",
+                "tool": "ComfyUI",
+                "desc": "The sketch becomes a rendered image; then the subject is cut out, motion is set, and a video is generated."
+              },
+              {
+                "name": "Interpolate to 60 fps",
+                "tool": "RTX Video Frame Generation",
+                "desc": "New frames are inserted between existing frames for smoother motion."
+              },
+              {
+                "name": "Convert to HDR",
+                "tool": "RTX Video HDR",
+                "desc": "Expands the highlights and shadows to make color grading easier."
+              }
+            ],
+            "note": "The last three steps happen in the same ComfyUI workflow, entirely on-device."
+          }
+        }
+      ]
+    },
+    {
+      "h": "Adobe apps go native on Arm",
+      "blocks": [
+        {
+          "p": "RTX Spark's CPU is Arm-based, while most Windows software is written for x86; without a native version, it has to go through an emulation layer and loses speed. Adobe is now shipping several native Windows on Arm versions with RTX acceleration."
+        },
+        {
+          "fig": {
+            "type": "pipeline",
+            "title": "Arm-native builds skip a translation layer and run faster",
+            "subtitle": "Illustrative",
+            "rows": [
+              {
+                "label": "Emulated run",
+                "note": "Adds a translation layer",
+                "nodes": [
+                  {
+                    "label": "x86 software"
+                  },
+                  {
+                    "label": "Translation layer",
+                    "hi": true
+                  },
+                  {
+                    "label": "Arm CPU"
+                  }
+                ]
+              },
+              {
+                "label": "Native run",
+                "note": "Runs directly",
+                "nodes": [
+                  {
+                    "label": "Arm-native software"
+                  },
+                  {
+                    "label": "Arm CPU"
+                  }
+                ]
+              }
+            ],
+            "compare": {
+              "label": "Illustrator performance (emulated = 100)",
+              "max": 140,
+              "items": [
+                {
+                  "label": "Emulated",
+                  "value": 100,
+                  "display": "100",
+                  "tone": "ref"
+                },
+                {
+                  "label": "Native Arm",
+                  "value": 130,
+                  "display": "Up to 130",
+                  "tone": "main"
+                }
+              ]
+            },
+            "note": "The \"up to 30% faster\" figure is from NVIDIA's blog; actual gains vary by task."
+          }
+        },
+        {
+          "list": [
+            "Premiere: Enhanced Speech, Object Mask, Scene Edit Detection, and Auto Reframe are accelerated by TensorRT-RTX; new support for Canon RAW, RED RAW, ARRI RAW, ProRes RAW, and other formats; everyday H.264 exports are more than 50% faster.",
+            "Photoshop: the Remove Tool is accelerated by TensorRT-RTX, and Camera Raw runs natively.",
+            "Substance 3D Painter 12.2: native Arm version in public beta.",
+            "Illustrator and InDesign: native Arm versions are out; Illustrator is up to 30% faster than under emulation."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Blender 5.3: no more waiting for noisy previews to clear",
+      "blocks": [
+        {
+          "p": "Blender's Cycles renderer uses ray tracing to compute the image: the viewport preview starts out noisy and needs many samples to clean up, and moving the camera resets the process. Blender 5.3 brings DLSS 4.5 Ray Reconstruction into the Cycles viewport, using AI to produce an image close to final quality right away."
+        },
+        {
+          "fig": {
+            "type": "beforeafter",
+            "title": "The same scene, two ways to preview",
+            "subtitle": "Illustrative: noise simulated",
+            "left": {
+              "label": "Standard preview"
+            },
+            "right": {
+              "label": "DLSS Ray Reconstruction",
+              "note": "Close to final quality from the start"
+            }
+          }
+        },
+        {
+          "p": "Requirements: Blender 5.3 plus the latest Game Ready or Studio driver."
+        }
+      ]
+    },
+    {
+      "h": "How much it costs",
+      "blocks": [
+        {
+          "p": "So far MSI is the only brand with published pricing. According to TweakTown, citing MSI's US site, the EdgeMesa N AI+ comes in two configurations: 64GB memory + 1TB storage for $4,699, and 128GB memory + 4TB storage for $7,999. The memory is soldered to the motherboard and can't be upgraded later."
+        },
+        {
+          "p": "For comparison, NVIDIA's Linux compact desktop on the same chip, DGX Spark, went from $3,999 to $4,699 for the 128GB model in February this year, then to $6,950 in October, when a $4,999 64GB model also appeared."
+        },
+        {
+          "fig": {
+            "type": "bars",
+            "title": "64GB cheaper, 128GB pricier",
+            "subtitle": "US dollars, US pricing",
+            "legend": [
+              {
+                "tone": "main",
+                "label": "RTX Spark (Windows)"
+              },
+              {
+                "tone": "ref",
+                "label": "DGX Spark (Linux)"
+              }
+            ],
+            "groups": [
+              {
+                "label": "64GB memory",
+                "items": [
+                  {
+                    "label": "MSI EdgeMesa N AI+",
+                    "sub": "64GB · 1TB",
+                    "value": 4699,
+                    "tone": "main"
+                  },
+                  {
+                    "label": "DGX Spark",
+                    "sub": "64GB",
+                    "value": 4999,
+                    "tone": "ref"
+                  }
+                ]
+              },
+              {
+                "label": "128GB memory",
+                "items": [
+                  {
+                    "label": "DGX Spark",
+                    "sub": "128GB model, after two price increases",
+                    "value": 6950,
+                    "tone": "ref"
+                  },
+                  {
+                    "label": "MSI EdgeMesa N AI+",
+                    "sub": "128GB · 4TB",
+                    "value": 7999,
+                    "tone": "main"
+                  }
+                ]
+              },
+              {
+                "label": "Other",
+                "items": [
+                  {
+                    "label": "ASUS ProArt GR1X",
+                    "sub": "On sale now",
+                    "status": "No price announced"
+                  },
+                  {
+                    "label": "Surface RTX Spark Dev Box",
+                    "sub": "Coming later",
+                    "status": "No price found"
+                  }
+                ]
+              }
+            ],
+            "note": "MSI's 64GB model is $300 cheaper than the 64GB DGX Spark; the 128GB model is $1,049 more."
+          }
+        }
+      ]
+    },
+    {
+      "h": "Who it's for",
+      "blocks": [
+        {
+          "p": "The value of this machine is a Windows PC with up to 128GB of unified memory that can hold large models, plus the familiar Adobe, Blender, and CUDA toolchain—and agents that can run around the clock while local and cloud work is split automatically."
+        },
+        {
+          "p": "The trade-offs are just as clear: the 128GB model is close to $8,000, the memory can't be upgraded, and 1 petaflop is peak performance, not everyday speed."
+        },
+        {
+          "list": [
+            "Mostly do occasional Q&A: cloud services are simpler.",
+            "Have a lot of files you don't want to leave your machine, or batch jobs that can run unattended overnight: worth considering.",
+            "Already have a substantial monthly cloud token bill: calculate how much local offloading could save."
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "NVIDIA RTX Spark Compact Desktops Out Now",
+      "publisher": "NVIDIA",
+      "date": "2026-11-18",
+      "url": "https://blogs.nvidia.com/blog/rtx-spark-desktop-local-ai-available-now/"
+    },
+    "more": [
+      {
+        "label": "TweakTown: MSI RTX Spark compact desktop pricing",
+        "url": "https://www.tweaktown.com/news/114696/msis-rtx-spark-mini-pc-costs-dollars7999-with-128gb-of-memory-dollars4699-with-64gb/index.html"
+      }
+    ],
+    "note": "All charts in this article are illustrative graphics produced by this publication from public information. MSI pricing comes from its US website, as reported by TweakTown; DGX Spark price changes come from TweakTown, citing The Register."
+  },
+  "claims": [
+    {
+      "text": "CPU: 20-core Grace",
+      "value": "20-core",
+      "source_url": "https://blogs.nvidia.com/blog/rtx-spark-desktop-local-ai-available-now/"
+    },
+    {
+      "text": "GPU: 6,144 CUDA cores",
+      "value": "6,144",
+      "source_url": "https://blogs.nvidia.com/blog/rtx-spark-desktop-local-ai-available-now/"
+    },
+    {
+      "text": "Up to 128GB unified memory",
+      "value": "128GB",
+      "source_url": "https://blogs.nvidia.com/blog/rtx-spark-desktop-local-ai-available-now/"
+    },
+    {
+      "text": "Illustrator native version is up to 30% faster",
+      "value": "30%",
+      "source_url": "https://blogs.nvidia.com/blog/rtx-spark-desktop-local-ai-available-now/"
+    },
+    {
+      "text": "Premiere everyday H.264 exports are more than 50% faster",
+      "value": "50%",
+      "source_url": "https://blogs.nvidia.com/blog/rtx-spark-desktop-local-ai-available-now/"
+    },
+    {
+      "text": "MSI 64GB model: $4,699",
+      "value": "4,699",
+      "source_url": "https://www.tweaktown.com/news/114696/msis-rtx-spark-mini-pc-costs-dollars7999-with-128gb-of-memory-dollars4699-with-64gb/index.html"
+    },
+    {
+      "text": "MSI 128GB model: $7,999",
+      "value": "7,999",
+      "source_url": "https://www.tweaktown.com/news/114696/msis-rtx-spark-mini-pc-costs-dollars7999-with-128gb-of-memory-dollars4699-with-64gb/index.html"
+    },
+    {
+      "text": "Memory bandwidth: 273GB/s",
+      "value": "273GB/s",
+      "source_url": "https://www.tweaktown.com/news/114696/msis-rtx-spark-mini-pc-costs-dollars7999-with-128gb-of-memory-dollars4699-with-64gb/index.html"
+    },
+    {
+      "text": "DGX Spark 128GB model: $6,950",
+      "value": "6,950",
+      "source_url": "https://www.tweaktown.com/news/114696/msis-rtx-spark-mini-pc-costs-dollars7999-with-128gb-of-memory-dollars4699-with-64gb/index.html"
+    },
+    {
+      "text": "DGX Spark 64GB model: $4,999",
+      "value": "4,999",
+      "source_url": "https://www.tweaktown.com/news/114696/msis-rtx-spark-mini-pc-costs-dollars7999-with-128gb-of-memory-dollars4699-with-64gb/index.html"
+    }
+  ],
+  "lang": "en",
+  "translated_from": "5269f4946cb32d5c"
+}
