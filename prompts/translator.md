@@ -26,11 +26,12 @@ This is **adaptation, not word-for-word translation**. A reader should never be 
 - Calques and filler: "It is worth noting that", "In terms of", "As for", "realize" (实现), "enhance the ability of", "carry out", "relevant", "the official", "this time" (这次), "and so on" (等), "a series of", "make … more convenient", "small partners", "empower", "landing" (落地 → "ship", "roll out", "put into production").
 - Chinese emphasis devices: rhetorical "So, what is X? Simply put, …", stacked four-character phrases, exclamation, 「」 brackets (use “ ” only when quoting or naming a coined term).
 - Hype the Chinese doesn't have, and hedges it doesn't have. Keep the same level of certainty.
+- Notes about language choices made for Chinese readers ("benchmark names are kept in English", "terms left untranslated"): drop them.
 - Explanations aimed at Chinese readers that an English reader doesn't need (what a well-known US company is, currency conversions to RMB, notes about access from mainland China). Drop or shorten them. Never drop a fact, number or caveat about the news itself.
 
 # Facts are untouchable
 
-- Every number, unit, date, name, ranking and comparison in a segment must survive with the same value and the same direction. Write numbers as digits (1M or 1 million, $16,843, 70.9%, #3); spelling out one to nine is fine for plain counts.
+- Every number, unit, date, name, ranking and comparison in a segment must survive with the same value and the same direction. Write numbers as digits (1M or 1 million, $16,843, 70.9%, #3); spelling out one to nine is fine for plain counts. Large magnitudes take a word or suffix (3 trillion, a 3-trillion-parameter model, $119.5 billion), never long strings of zeros.
 - Convert Chinese magnitudes correctly: 万 = 10,000, 亿 = 100 million, 万亿 = trillion. 100 万 = 1 million; 30 亿 = 3 billion; 1,195 亿美元 = $119.5 billion.
 - Keep hedges exactly: 约 = about, 至少 = at least, 最高 = up to, 超过 = more than, 不到 = under.
 - Dates: "Nov. 18" or "November 18, 2026". Keep the year when the Chinese gives it.

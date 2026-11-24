@@ -104,3 +104,9 @@ test("构建：有译文的文章生成 en/ 页面，互相链接；中文稿改
   assert.ok(!/\{\{\w+\}\}/.test(enPage), "模板占位符都要替换掉");
   fs.rmSync(tmp, { recursive: true, force: true });
 });
+
+test("翻译：连字符写法算对，长串数字要改成 trillion / billion", () => {
+  assert.deepEqual(checkTranslation([{ id: "s1", text: "后训练 3 万亿参数的模型" }], { s1: "post-training a 3-trillion-parameter model" }), []);
+  assert.match(checkTranslation([{ id: "s1", text: "3 万亿参数" }], { s1: "3,000,000,000,000 parameters" })[0].msg, /long digit strings/);
+  assert.deepEqual(checkTranslation([{ id: "s1", text: "16,843 美元" }], { s1: "$16,843" }), []);
+});

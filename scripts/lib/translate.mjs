@@ -91,7 +91,7 @@ export function numbersZh(s) {
 export function numbersEn(s) {
   const out = new Set();
   const t = String(s);
-  for (const m of t.matchAll(/(\d[\d,]*(?:\.\d+)?)(?:\s*(trillion|billion|million|thousand)\b|([kKMBT])(?![A-Za-z]))?/g)) {
+  for (const m of t.matchAll(/(\d[\d,]*(?:\.\d+)?)(?:[\s-]*(trillion|billion|million|thousand)\b|([kKMBT])(?![A-Za-z]))?/g)) {
     const base = parseFloat(m[1].replace(/,/g, ""));
     const mult = m[2] ? EN_MULT[m[2]] : m[3] ? EN_MULT[m[3].toLowerCase()] : 1;
     out.add(key(base * mult)); out.add(key(base));
@@ -112,6 +112,8 @@ export function checkTranslation(segs, map) {
     const en = map[s.id];
     if (typeof en !== "string" || !en.trim()) { problems.push({ id: s.id, msg: "missing translation" }); continue; }
     if (CJK.test(en)) problems.push({ id: s.id, msg: `still contains Chinese characters or full-width punctuation: ${en.match(new RegExp(CJK.source, "g")).slice(0, 6).join("")}` });
+    /* 3,000,000,000,000 这种长串读者没法读：大数用 3 trillion、1.2 billion、1M */
+    if (/\d{1,3}(?:,\d{3}){3,}/.test(en) && !/\d{1,3}(?:,\d{3}){3,}/.test(s.text)) problems.push({ id: s.id, msg: "write large numbers the way English readers do (3 trillion, $119.5 billion, 1M), not as long digit strings" });
     const have = numbersEn(en);
     const miss = [...new Set(numbersZh(s.text))].filter(n => !have.has(n));
     if (miss.length) problems.push({ id: s.id, msg: `numbers missing or changed: ${miss.join(", ")} (Chinese: ${s.text.slice(0, 120)})` });
@@ -136,7 +138,7 @@ export function polishUser(a, segs, map) {
 export function fixUser(segs, map, problems) {
   const byId = Object.fromEntries(segs.map(s => [s.id, s]));
   return problems.map(p => `${p.id} [${byId[p.id]?.where}]\nZH: ${byId[p.id]?.text}\nEN: ${map[p.id] ?? ""}\nPROBLEM: ${p.msg}`).join("\n\n") +
-    `\n\nFix only these segments. Every number in the Chinese must appear in the English with the same value (write numbers as digits; 万 = 10,000, 亿 = 100 million). Remove all Chinese characters and full-width punctuation (use “ ” for quotes). Return a JSON object mapping only these ids to the corrected English.`;
+    `\n\nFix only these segments and keep the rest of each sentence natural. Every number in the Chinese must appear in the English with the same value, written the way an English tech publication would: digits plus a word or suffix for large magnitudes (3 trillion, 3-trillion-parameter, $119.5 billion, 1M tokens), never long strings of zeros (万 = 10,000, 亿 = 100 million, 万亿 = trillion). Remove all Chinese characters and full-width punctuation (use “ ” for quotes). Return a JSON object mapping only these ids to the corrected English.`;
 }
 
 export function parseMap(content) {
