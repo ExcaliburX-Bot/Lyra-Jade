@@ -139,3 +139,8 @@ test("二维码：版本随网址长度变化，太长会报错", async () => {
   assert.equal(qrMatrix("https://excaliburx-bot.github.io/Lyra-Jade/en/a/openai-computer-use-healthcare-agents.html").length, 41);
   assert.throws(() => qrMatrix("x".repeat(300)), /太长/);
 });
+
+test("翻译：引语卡片的头衔（role）是中文时也要翻", () => {
+  const segs = collectSegments({ title: "t", sections: [{ blocks: [{ fig: { type: "quote", text: "Hi.", who: "Greg", role: "OpenAI 总裁", source_url: "https://x" } }] }] });
+  assert.ok(segs.some(s => s.path.at(-1) === "role"));
+});
