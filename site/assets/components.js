@@ -106,8 +106,8 @@ export const FIGS = {
   /* 对照表：highlight {col: n} 或 {row: n}（从 0 数，表头那行不算） */
   table: f => {
     const hc = f.highlight?.col, hr = f.highlight?.row;
-    return `<div class="tblwrap"><table class="ftbl"><thead><tr>${f.columns.map((c, j) => `<th class="${j === hc ? "hc" : ""}">${esc(c)}</th>`).join("")}</tr></thead>
-      <tbody>${f.rows.map((r, i) => `<tr class="${i === hr ? "hr" : ""}">${r.map((c, j) => `<td class="${j === hc ? "hc" : ""}${j === 0 ? " k" : ""}">${esc(c)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+    return `<div class="tblwrap"><table class="ftbl"><thead><tr>${f.columns.map((c, j) => `<th class="${j === hc ? "hc" : ""}">${math(esc(c))}</th>`).join("")}</tr></thead>
+      <tbody>${f.rows.map((r, i) => `<tr class="${i === hr ? "hr" : ""}">${r.map((c, j) => `<td class="${j === hc ? "hc" : ""}${j === 0 ? " k" : ""}">${math(esc(c))}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
   },
 
   /* 卡片网格：每张卡 icon（见 ICONS）、title、desc、tags（参数或关键词，等宽字体） */
@@ -150,7 +150,7 @@ FIGS.heatmap = f => {
 
 export function figure(f) {
   const body = (FIGS[f.type] || (() => ""))(f);
-  return `<figure class="fig" data-type="${esc(f.type)}">${f.title ? `<div class="fig-h">${esc(f.title)}</div>` : ""}${f.subtitle ? `<div class="fig-s">${esc(f.subtitle)}</div>` : ""}${body}${f.note ? `<figcaption>${esc(f.note)}</figcaption>` : ""}</figure>`;
+  return `<figure class="fig" data-type="${esc(f.type)}">${f.title ? `<div class="fig-h">${esc(f.title)}</div>` : ""}${f.subtitle ? `<div class="fig-s">${esc(f.subtitle)}</div>` : ""}${body}${f.note ? `<figcaption>${math(esc(f.note))}</figcaption>` : ""}</figure>`;
 }
 
 const num = i => String(i + 1).padStart(2, "0");

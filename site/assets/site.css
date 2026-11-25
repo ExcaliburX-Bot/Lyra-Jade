@@ -648,7 +648,7 @@ a.chip{text-decoration:none;color:inherit}
 .callout p+ul{margin-top:8px}
 .formula{margin:22px 0;padding:18px 20px;border-radius:14px;border:1px solid var(--line);background:var(--raise)}
 .formula .fx{font-size:18px;line-height:1.7;font-weight:500;text-align:center;padding:8px 0 14px;overflow-x:auto;white-space:nowrap;font-variant-numeric:tabular-nums}
-.formula sub,.formula sup,.reader .body sub,.reader .body sup,.callout sub,.callout sup,.quiz sub,.quiz sup{font-size:.68em;line-height:0}
+.ftbl sub,.ftbl sup,.formula sub,.formula sup,.reader .body sub,.reader .body sup,.callout sub,.callout sup,.quiz sub,.quiz sup{font-size:.68em;line-height:0}
 .formula dl{margin:0;display:grid;gap:8px;border-top:1px dashed var(--line);padding-top:12px}
 .formula dl div{display:grid;grid-template-columns:minmax(70px,auto) 1fr;gap:12px;align-items:baseline}
 .formula dt{font-weight:600;font-size:15px;color:var(--rose);text-align:right;white-space:nowrap}

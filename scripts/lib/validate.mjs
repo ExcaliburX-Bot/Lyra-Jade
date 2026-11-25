@@ -82,6 +82,9 @@ export function validateArticle(a, { sourceTexts = {} } = {}) {
     if (tones.some(t => t.endsWith('"def"')) && !/蓝/.test(f.subtitle || "")) warnings.push(`${where}：用了蓝色（def），副标题要说明它代表什么（只用来标默认档）`);
     if (f.type === "columns") (f.items || []).forEach(it => need(typeof it.value === "number" && it.value >= 0, `${where}：${it.label} 的数值要是非负数字`));
     if (f.type === "table") (f.rows || []).forEach((r, i) => need(Array.isArray(r) && r.length === (f.columns || []).length, `${where}：第 ${i + 1} 行的格数和表头对不上`));
+    /* 表格：高亮的行是琥珀色，高亮的列是蓝色 */
+    if (f.type === "table" && f.highlight?.col != null && /琥珀色列/.test(f.subtitle || "")) warnings.push(`${where}：表格高亮的列显示为蓝色，说明里写成了「琥珀色列」`);
+    if (f.type === "table" && f.highlight?.row != null && /蓝色(一)?行/.test(f.subtitle || "")) warnings.push(`${where}：表格高亮的行显示为琥珀色，说明里写成了「蓝色行」`);
     if (f.type === "heatmap") need((f.values || []).length === (f.rows || []).length && f.values.every(r => Array.isArray(r) && r.length === (f.cols || []).length), `${where}：热力图 values 的行列数要和 rows / cols 对上`);
     if (f.type === "cards") need((f.items || []).length >= 2 && f.items.length <= 6, `${where}：卡片要 2–6 张`);
     if (f.type === "quote") {

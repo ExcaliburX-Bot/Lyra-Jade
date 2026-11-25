@@ -27,7 +27,7 @@
 - `{callout: {kind, title, text, list}}` 提示框。kind：`prereq` 前置知识、`intuition` 直觉、`note` 注意、`myth` 常见误解、`takeaway` 要点。
 - `{formula: {expr, parts: [{sym, desc}], note}}` 公式。`expr` 用 Unicode 加上下标标记，多行用 `\n`；`parts` 逐个符号说人话。
 - `{quiz: {q, options, answer, why}}` 自测题。`answer` 是正确选项的序号（从 0 数）；`why` 必须讲清楚为什么对、错误选项错在哪。全文至少 3 道，难度从「复述」到「推理：改掉某个设计会怎样」。
-- `{fig}` 图：常用 `table`（对比、手算过程）、`columns` / `bars`（实验结果）、`steps`（流程）、`heatmap`（注意力权重等矩阵，`values` 是 0–1 的数）。
+- `{fig}` 图：表格里 `highlight.row` 高亮的行显示为**琥珀色**，`highlight.col` 高亮的列显示为**蓝色**，说明文字要对得上。常用 `table`（对比、手算过程）、`columns` / `bars`（实验结果）、`steps`（流程）、`heatmap`（注意力权重等矩阵，`values` 是 0–1 的数）。
 
 ## 事实和数字
 

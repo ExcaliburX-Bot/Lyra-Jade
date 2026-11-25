@@ -920,7 +920,7 @@
           "fig": {
             "type": "table",
             "title": "一次只改一个地方，看分数怎么变",
-            "subtitle": "来自论文表 3，英译德开发集（newstest2013）；基础模型是 BLEU 25.8、6500 万参数。琥珀色列是 BLEU",
+            "subtitle": "来自论文表 3，英译德开发集（newstest2013）；基础模型是 BLEU 25.8、6500 万参数。蓝色列是 BLEU",
             "columns": [
               "改了什么",
               "改成",
