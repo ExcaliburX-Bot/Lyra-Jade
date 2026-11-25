@@ -1,0 +1,459 @@
+{
+  "slug": "claude-code-code-mode",
+  "date": "2026-11-18",
+  "category": "product",
+  "publisher": "Claude Code Docs",
+  "topics": [
+    "claude"
+  ],
+  "title": "Claude Code 新增实验性 Code Mode：工具调用打包成一段代码跑，默认关闭",
+  "summary": "平时让 Claude Code 改多个文件、跑一串命令，它是一步步来，每一步都停下来读结果。新的 Code Mode 让 Claude 直接写一段 JavaScript，把这些工具调用串起来、并行跑，只把需要读的输出交回来。",
+  "ai_summary": "Claude Code 上线了实验性的 Code Mode，默认关闭。核心变化：以前 Claude 一步步请求 Bash、Read、Edit 等工具，每步读结果再决定下一步；开了 Code Mode 后，Claude 写一段 JavaScript 把多个工具调用串起来，可并行执行、把上一步结果喂给下一步，只返回需要读的那部分输出。适合重复改多文件、搜索结果要先过滤、几个独立命令能同时跑的任务。门槛是 Claude Code v2.1.323 起（云厂商 v2.1.331 起），账号用 Claude 订阅、Console 或 Amazon Bedrock 等云厂商，模型限 Opus 5.5、Sonnet 5.5、Haiku 5.5、Fable 5.2。",
+  "brief": [
+    "Code Mode 让 Claude 写一段 JavaScript 批量调工具：可并行跑、串联结果，只交回需要读的输出。",
+    "实验特性，默认关闭；等待模式代码 10 分钟封顶，后台模式最长 2 小时。",
+    "门槛：Claude Code v2.1.323 起，云厂商 v2.1.331 起，模型限 Opus 5.5、Sonnet 5.5、Haiku 5.5、Fable 5.2。",
+    "要试：把 CLAUDE_CODE_EXPERIMENTAL_CODE_MODE 设为 1，启动 claude 后确认开启。"
+  ],
+  "readMinutes": 8,
+  "sections": [
+    {
+      "h": "这是什么：Claude 改写成一段代码来调工具",
+      "blocks": [
+        {
+          "p": "Code Mode 是 Claude Code 新增的一种工作方式。以前，Claude 会一步步请求工具调用——比如 Bash、Read、Edit——每执行完一个，都要读完结果才决定下一步。开了 Code Mode 后，Claude 改为写一段 JavaScript，由 Claude Code 在你的会话里运行这段代码，用它去发起那些工具调用。"
+        },
+        {
+          "p": "它现在还是实验特性，默认关闭，官方明说可能在任何版本里改动或移除；想提反馈就运行 /feedback。所以下面的用法和门槛，都以当前文档为准。"
+        }
+      ]
+    },
+    {
+      "h": "和以前差在哪：并行、串联、只读需要的部分",
+      "blocks": [
+        {
+          "p": "变化集中在几件事上：一段代码可以并行跑多个命令，可以把上一步的结果喂给下一步，还可以只把 Claude 需要读的那部分输出交回来。以前这些都要靠 Claude 一轮一轮地等。"
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "没有 Code Mode：一步步来；有 Code Mode：一段代码打包干",
+            "subtitle": "琥珀色是 Code Mode 新带来的能力",
+            "left": {
+              "label": "没有 Code Mode",
+              "sub": "Claude 直接发工具调用",
+              "items": [
+                {
+                  "label": "一步步请求 Bash / Read / Edit",
+                  "state": "base"
+                },
+                {
+                  "label": "每个结果都要读完再决定下一步",
+                  "state": "base"
+                },
+                {
+                  "label": "多个命令按顺序等",
+                  "state": "base"
+                }
+              ]
+            },
+            "right": {
+              "label": "有 Code Mode",
+              "sub": "Claude 写 JavaScript 调工具",
+              "items": [
+                {
+                  "label": "一段代码并行跑多个命令",
+                  "state": "hi"
+                },
+                {
+                  "label": "上一步结果喂给下一步",
+                  "state": "hi"
+                },
+                {
+                  "label": "只交回需要读的那部分输出",
+                  "state": "hi"
+                }
+              ]
+            },
+            "footer": "会话里你看到的仍是工具调用（比如 edit 的 diff），代码要按 Ctrl+O 才能展开",
+            "note": "示意：对比的是两种工作方式的差异"
+          }
+        },
+        {
+          "p": "官方给了一个例子：让 Claude 把重试上限调高。它可能写下面这段代码——先用 rg 找到包含 retryPolicy 的文件，取第一个，把 maxAttempts 从 3 改成 5，再跑 npm test，最后一行把文件路径和测试输出一起返回。"
+        },
+        {
+          "fig": {
+            "type": "code",
+            "lang": "javascript",
+            "title": "一段代码串起「找文件 → 改上限 → 跑测试 → 交回结果」",
+            "subtitle": "来自官方文档的示例代码",
+            "highlight": [
+              3,
+              4
+            ],
+            "code": "const files = await $`rg -l \"function retryPolicy\" src`.text();\nconst target = files.trim().split(\"\\n\")[0];\nawait edit(target, \"maxAttempts: 3\", \"maxAttempts: 5\");\n({ edited: target, tests: $`npm test -- retryPolicy`.nothrow() });"
+          }
+        },
+        {
+          "p": "有意思的是，会话里你看到的不是这段代码，而是工具调用的结果（比如 edit 的 diff）。想看背后的代码，按 Ctrl+O 打开 transcript viewer，每段代码显示成一折叠的 Code 行，展开就能读。"
+        }
+      ]
+    },
+    {
+      "h": "哪几类任务值得开",
+      "blocks": [
+        {
+          "p": "官方建议在「需要多次相关工具调用」的任务上试，单次的小改动没必要。"
+        },
+        {
+          "fig": {
+            "type": "cards",
+            "title": "官方点名的适用场景，各有一个共同点：多次相关调用",
+            "subtitle": "琥珀色是官方建议优先尝试的任务",
+            "items": [
+              {
+                "icon": "layers",
+                "title": "跨多文件的重复修改",
+                "desc": "同一个改动要在很多文件里重复，代码可以一次串起来做完。",
+                "tags": [
+                  "多文件"
+                ],
+                "tone": "hi"
+              },
+              {
+                "icon": "search",
+                "title": "搜索结果先过滤",
+                "desc": "搜出一堆结果后先筛一遍再交给 Claude 读，省得读一堆噪音。",
+                "tags": [
+                  "过滤"
+                ],
+                "tone": "hi"
+              },
+              {
+                "icon": "bolt",
+                "title": "多个独立命令并行",
+                "desc": "彼此没有依赖的命令同时跑，不用一个接一个等。",
+                "tags": [
+                  "并行"
+                ],
+                "tone": "hi"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "门槛：版本、账号、模型、界面",
+      "blocks": [
+        {
+          "p": "第一个门槛是版本。不同用法要求的最低版本不一样，起步要求 v2.1.323，云厂商、agent teams、mods、遥测设置各有更高的线。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "不同使用方式，最低版本要求不一样",
+            "subtitle": "版本号以官方文档为准，使用前建议先 claude update",
+            "columns": [
+              "使用方式",
+              "最低版本"
+            ],
+            "rows": [
+              [
+                "普通终端交互会话",
+                "v2.1.323"
+              ],
+              [
+                "云厂商（Amazon Bedrock 等）",
+                "v2.1.331"
+              ],
+              [
+                "agent teams",
+                "v2.1.326"
+              ],
+              [
+                "带 mod / 插件",
+                "v2.1.327"
+              ],
+              [
+                "遥测设置",
+                "v2.1.329"
+              ]
+            ],
+            "highlight": {
+              "row": 0
+            }
+          }
+        },
+        {
+          "p": "账号或供应商：Claude 订阅、Console 账号，或 Amazon Bedrock、Google Cloud Agent Platform、Microsoft Foundry 这类云厂商。不能走 gateway，也不能用于 Claude for Government。"
+        },
+        {
+          "p": "模型：限 Opus 5.5、Sonnet 5.5、Haiku 5.5、Fable 5.2。如果你是用部署名或 application inference profile 选模型，要问管理员它实际指向哪一个。"
+        },
+        {
+          "p": "界面：必须是终端里的交互式 claude 会话；VS Code panel、Desktop app、云会话都不行。组织层面不能开 HIPAA 配置或 zero data retention；Windows 需要先装 Git for Windows。"
+        }
+      ]
+    },
+    {
+      "h": "怎么开、怎么关、怎么禁止",
+      "blocks": [
+        {
+          "p": "打开很简单：把环境变量 CLAUDE_CODE_EXPERIMENTAL_CODE_MODE 设为 1，再启动 claude。首次会问一次确认，重启后顶部会显示开启提示。"
+        },
+        {
+          "fig": {
+            "type": "steps",
+            "title": "打开 Code Mode 要走这几步",
+            "subtitle": "示意：流程来自官方文档的 Try Code Mode 一节",
+            "steps": [
+              {
+                "name": "查版本",
+                "tool": "claude --version",
+                "desc": "版本太旧先 claude update"
+              },
+              {
+                "name": "设环境变量",
+                "tool": "shell / settings.json",
+                "desc": "把 CLAUDE_CODE_EXPERIMENTAL_CODE_MODE 设为 1"
+              },
+              {
+                "name": "确认开启",
+                "tool": "Yes, turn on Code Mode",
+                "desc": "首次会问一次，重启后顶部显示开启提示"
+              },
+              {
+                "name": "给任务",
+                "tool": "prompt",
+                "desc": "找一个涉及多次工具调用的任务"
+              },
+              {
+                "name": "看代码",
+                "tool": "Ctrl+O",
+                "desc": "展开 Code 行，看背后的 JavaScript"
+              }
+            ]
+          }
+        },
+        {
+          "p": "关闭：从 shell、~/.claude/settings.json 或任何 --settings 文件里移除这个变量，或把值改成 0；只要有一处是 0，就保持关闭。"
+        },
+        {
+          "p": "组织要统一禁用，就在 managed settings 里给这个变量加一个 0。已经进入 Code Mode 会话的人会待到退出或重启为止，之后就不能再恢复。"
+        },
+        {
+          "p": "一个安全细节：Claude Code 会忽略项目 settings 文件里的这个变量，所以你克隆下来的仓库没法偷偷帮你打开 Code Mode。"
+        }
+      ]
+    },
+    {
+      "h": "权限怎么管：分类器看的是整段代码",
+      "blocks": [
+        {
+          "p": "权限模式决定代码怎么被检查。auto 和 bypassPermissions 模式下，代码可以从头跑到尾不弹权限提示；auto 模式会先用分类器审查每段代码，而不是每个工具调用。"
+        },
+        {
+          "fig": {
+            "type": "illustration",
+            "title": "审查对象是整段代码，不是每一个工具调用",
+            "subtitle": "示意：琥珀色的 REPL 负责运行代码；Bash、Edit、MCP 调用都从它发出",
+            "glyph": {
+              "kind": "hub",
+              "center": {
+                "label": "REPL 跑代码",
+                "tone": "hi"
+              },
+              "nodes": [
+                {
+                  "label": "Bash",
+                  "tone": "base"
+                },
+                {
+                  "label": "Edit",
+                  "tone": "base"
+                },
+                {
+                  "label": "MCP 工具",
+                  "tone": "base"
+                }
+              ]
+            },
+            "note": "在 auto 模式，分类器审查每段代码；PreToolUse hook 匹配 REPL 可读 tool_input.code 里的 JavaScript"
+          }
+        },
+        {
+          "p": "注意：分类器看不到运行时才算出来的值，比如从搜索结果里取出的路径，所以关键命令还是靠规则和 hook 兜底。想逐个命令控制，就写 deny / ask 规则和 PreToolUse hook，用工具本来的名字（Bash、MCP 工具名）。"
+        },
+        {
+          "p": "想审查代码本身，可以写一个匹配 REPL 的 PreToolUse hook，读 tool_input.code 里的 JavaScript；或者加一条 ask 规则指向 REPL，让每段代码先等你批准。"
+        },
+        {
+          "p": "沙盒方面：sandbox 设置只约束 shell 命令；JavaScript 本身和它的 file、web、MCP 调用跑在沙盒外。要一并隔离，得把 Claude Code 放进容器或虚拟机。"
+        },
+        {
+          "p": "还有一个细节：没连 IDE 时，权限提示可能带一个 1 分 59 秒的倒计时，到点不回答就自动拒绝这次调用。"
+        }
+      ]
+    },
+    {
+      "h": "限制清单：时间、恢复、不可用功能",
+      "blocks": [
+        {
+          "p": "先看运行时间。等待模式下，Claude 要等代码跑完才回复，代码 10 分钟封顶；后台模式可以边跑边聊，最长 2 小时。后台模式要从 auto 或 bypassPermissions 会话开始。"
+        },
+        {
+          "fig": {
+            "type": "capacity",
+            "title": "等待模式的代码 10 分钟封顶，后台模式最长 2 小时",
+            "subtitle": "单位：分钟；蓝色是默认的等待模式，琥珀色是后台模式",
+            "unit": "分钟",
+            "max": 120,
+            "thresholds": [
+              {
+                "value": 10,
+                "label": "等待模式封顶"
+              }
+            ],
+            "items": [
+              {
+                "label": "等待模式",
+                "sub": "Claude 等代码跑完才回复",
+                "value": 10,
+                "display": "10 分钟",
+                "tone": "def"
+              },
+              {
+                "label": "后台模式",
+                "sub": "可继续对话，代码最多跑 2 小时",
+                "value": 120,
+                "display": "2 小时",
+                "tone": "hi",
+                "calc": "2 × 60"
+              }
+            ]
+          }
+        },
+        {
+          "list": [
+            "恢复：Code Mode 会话只能开着 Code Mode 恢复；用 Claude 订阅或 Console 跑过的会话，不能再切到 Amazon Bedrock 这类云厂商上恢复。",
+            "不可用功能：Remote Control、Claude in Chrome、computer use 都不能一起用。",
+            "会话不能搬到 Desktop app，也不能变成后台会话；/fork 不能起后台副本。",
+            "PreToolUse hook 没跑完时，默认会拒绝这次工具调用。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "官方还没说的",
+      "blocks": [
+        {
+          "list": [
+            "价格或计费：这段 JavaScript 是否单独计 token、怎么算费用，文档没写。",
+            "上线时间：什么时候退出实验、成为正式功能，没写。",
+            "性能对比：Code Mode 和普通模式在速度、token 消耗上的量化对比，没写。",
+            "模型范围：后续会不会放开更多模型，没写。",
+            "界面范围：VS Code 面板、Desktop app 会不会支持，没写。",
+            "时间上限：10 分钟和 2 小时以后会不会调整，没写。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "适合谁",
+      "blocks": [
+        {
+          "p": "价值在于：把多次相关工具调用压成一段代码，减少来回，尤其适合重复、批量、可并行的活。"
+        },
+        {
+          "p": "代价是：实验特性可能变，门槛多（版本、账号、模型、终端界面），权限审查逻辑也变了，需要重配规则和 hook。"
+        },
+        {
+          "p": "如果你经常让 Claude Code 跨多文件改代码、改完跑测试，可以开起来试试。如果只做一次性小改动，或离不开 VS Code 面板、Desktop app，暂时用不上。团队管理员可以先用 managed settings 里的 0 把功能拦下，等稳定再放开。"
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Run tool calls from code with Code Mode - Claude Code Docs",
+      "publisher": "Claude Code Docs",
+      "date": "2026-11-18",
+      "url": "https://code.claude.com/docs/en/code-mode"
+    },
+    "more": [],
+    "note": "正文中的代码示例和步骤图按官方文档整理；时间限制、倒计时、开关值等数字均出自同一页面。版本号按产品版本标识处理，未单独列入数字清单。"
+  },
+  "claims": [
+    {
+      "text": "等待模式下，代码要跑完 Claude 才会回复，代码 10 分钟后停止",
+      "value": "ten minutes",
+      "source_url": "https://code.claude.com/docs/en/code-mode",
+      "as_written": "10 分钟",
+      "quote": "unless code can run in the background, you wait for it to finish, and it stops after ten minutes"
+    },
+    {
+      "text": "后台模式下，代码最长可以运行 2 小时",
+      "value": "two hours",
+      "source_url": "https://code.claude.com/docs/en/code-mode",
+      "as_written": "2 小时",
+      "quote": "you can keep talking to Claude, and the code can run for up to two hours"
+    },
+    {
+      "text": "没连 IDE 时，权限提示可能带 1 分 59 秒倒计时，到点自动拒绝",
+      "value": "1:59",
+      "source_url": "https://code.claude.com/docs/en/code-mode",
+      "as_written": "1 分 59 秒",
+      "quote": "Claude Code will automatically block this request in 1:59, to avoid holding up an unattended session"
+    },
+    {
+      "text": "打开 Code Mode 要把环境变量 CLAUDE_CODE_EXPERIMENTAL_CODE_MODE 设为 1",
+      "value": "1",
+      "source_url": "https://code.claude.com/docs/en/code-mode",
+      "as_written": "1",
+      "quote": "Set the CLAUDE_CODE_EXPERIMENTAL_CODE_MODE environment variable to 1"
+    },
+    {
+      "text": "关闭或组织禁用，把该环境变量设为 0",
+      "value": "0",
+      "source_url": "https://code.claude.com/docs/en/code-mode",
+      "as_written": "0",
+      "quote": "Add CLAUDE_CODE_EXPERIMENTAL_CODE_MODE with the value 0 to your managed settings"
+    },
+    {
+      "text": "官方示例里，把重试上限 maxAttempts 从 3 改到 5",
+      "value": "3",
+      "source_url": "https://code.claude.com/docs/en/code-mode",
+      "as_written": "3",
+      "quote": "await edit(target, \"maxAttempts: 3\", \"maxAttempts: 5\");"
+    },
+    {
+      "text": "官方示例里，把重试上限 maxAttempts 从 3 改到 5",
+      "value": "5",
+      "source_url": "https://code.claude.com/docs/en/code-mode",
+      "as_written": "5",
+      "quote": "await edit(target, \"maxAttempts: 3\", \"maxAttempts: 5\");"
+    }
+  ],
+  "cover": {
+    "headline": "Code Mode 上线",
+    "highlight": "工具调用打包成一段代码",
+    "big": {
+      "value": "2",
+      "unit": "小时",
+      "label": "后台代码最长运行"
+    }
+  },
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "origin": "auto",
+    "candidate": "93085d2b25",
+    "tier": "official",
+    "via": "https://xiaohu.ai/article/claude-code-mode/",
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "generated_at": "2026-11-25T09:13:35.129Z"
+  }
+}
