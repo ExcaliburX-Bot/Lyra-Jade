@@ -1,0 +1,848 @@
+{
+  "slug": "gemini-4-neon",
+  "date": "2026-11-19",
+  "category": "product",
+  "publisher": "Google",
+  "topics": [
+    "gemini"
+  ],
+  "readMinutes": 6,
+  "title": "Google launches Gemini 4 Neon with a 1M-token context and $3 input pricing",
+  "summary": "If you regularly process large batches of spreadsheets, PDFs, and charts in one go and find big models slow and token-hungry, Gemini 4 Neon is built for exactly that: a 1M-token context that handles those inputs at a cost well below the big models.",
+  "ai_summary": "On November 18 Google launched Gemini 4 Neon: cheaper than Carbon and able to handle more complex work than Hydrogen. It has a 1M-token context, $3 per million input tokens, $15 per million output tokens, and $0.15 per million cached input tokens. It scores 61 on the Artificial Analysis Intelligence Index at xhigh, ranking #3 overall, and ranks #2 on the Vals Index with 70.9%. At the default high thinking level, it costs 32% less per task than Carbon. It is live today in the Gemini API, AI Studio, Gemini for business, and Google Antigravity. Caveat: many of these results come from vendor or third-party benchmarks and need validation on your own workloads.",
+  "brief": [
+    "Input costs $3 per million tokens, output $15 per million tokens, and cached input $0.15 per million tokens (a 95% discount), with a 1M-token context.",
+    "Scores 61 on the Artificial Analysis Intelligence Index at xhigh, #3 overall, and 70.9% on the Vals Index, #2.",
+    "Default high thinking level costs 32% less per task than Carbon; CWE-bench v2 scores 70.7%, 3.4 percentage points above Carbon.",
+    "Live today in the Gemini API, AI Studio, Gemini for business, and Google Antigravity; Pro/Ultra subscribers can also choose it in the Gemini app."
+  ],
+  "sections": [
+    {
+      "h": "What is Gemini 4 Neon?",
+      "blocks": [
+        {
+          "p": "Gemini 4 Neon is a new model in Google's Gemini 4 family, announced on November 18. Google splits the family into three tiers: Carbon handles the hardest, longest projects; Hydrogen handles fast everyday execution; and Neon sits in between—close to frontier reasoning, but faster and less token-hungry."
+        },
+        {
+          "p": "It is built for complex software engineering, knowledge work, and scientific workflows completed end-to-end at speed. These tasks often involve spreadsheets, PDFs, charts, audio, and video at once; Neon can process all of them in a single 1M-token context and return structured output."
+        },
+        {
+          "p": "Rollout started on launch day: developers can access it through the Gemini API and Google AI Studio; enterprises through Gemini for business (API or model dropdown); Google AI Pro and Ultra subscribers can select it in Google Antigravity and the Gemini app. For cybersecurity, a version for trusted defenders will open through the Fairwind Program in the coming days."
+        }
+      ]
+    },
+    {
+      "h": "Pricing and context: how much it costs and how much it can hold",
+      "blocks": [
+        {
+          "p": "Pricing is direct: $3 per million input tokens and $15 per million output tokens. Cached input is cheapest at $0.15 per million tokens—a 95% discount—for the part of a repeated large context that hits the cache, such as always sending the same long document."
+        },
+        {
+          "p": "The context window is 1M tokens, enough for one request to hold several long PDFs, a large spreadsheet, and a few audio or video clips, so the model can synthesize across files in the same material instead of splitting the work into several calls."
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "Neon's pricing and context at a glance",
+            "subtitle": "Price is per million tokens; the cached price applies only to the portion that hits the cache",
+            "note": "The announcement doesn't specify free allowances or how many tokens are included in subscription plans.",
+            "items": [
+              {
+                "value": 3,
+                "unit": "$ / million tokens",
+                "label": "Input",
+                "note": "Cache miss"
+              },
+              {
+                "value": 15,
+                "unit": "$ / million tokens",
+                "label": "Output",
+                "note": ""
+              },
+              {
+                "value": 0.15,
+                "unit": "$ / million tokens",
+                "label": "Cached input",
+                "note": "95% below input price"
+              },
+              {
+                "value": 100,
+                "unit": "10K tokens",
+                "label": "Context window",
+                "note": "How much one request can hold"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "How to read the benchmarks: intelligence, enterprise, and agents",
+      "blocks": [
+        {
+          "p": "Google cites a range of third-party benchmarks. We'll focus on three categories, with one caveat up front: these scores come from specific evaluation sets, and they don't guarantee the same results on your tasks."
+        },
+        {
+          "p": "General intelligence: On the Artificial Analysis Intelligence Index, a composite intelligence benchmark, Neon scores 61 at the highest xhigh setting and ranks #3 overall, behind several larger, slower models. Note this is the top setting; the everyday default is lower but cheaper."
+        },
+        {
+          "p": "Enterprise capability: It scores 70.9% on the Vals Index and ranks #2, landing on the Pareto frontier—meaning at the same cost, there is basically no clearly better option. It also ranks #1 on the Legal Research Bench and Tax Agent Bench, and #1 on most Surge AI benchmarks covering finance, accounting, spreadsheet modeling, and complex constraint following."
+        },
+        {
+          "p": "Automation agents: Zapier's AutomationBench scores 56.3%, #1. Andon Labs' Vending-Bench 2 returns $16,843, #1—it simulates running a business long-term, and higher is better. Arena's Agent Arena Index, based on real agent sessions, gives Neon 1,336 points and #2 globally across more than 4,200 sessions."
+        },
+        {
+          "p": "Science and math: Terminal-Bench Science 70.5%, RiemannBench 84.0%, HLE-Diamond 71.3%; Google describes these as best in class."
+        },
+        {
+          "fig": {
+            "type": "bars",
+            "title": "Neon's scores on key benchmarks",
+            "subtitle": "Scores out of 100; amber marks items Google calls #1 / state-of-the-art, the rest are other results",
+            "note": "Where no rank is shown, Google does not provide one.",
+            "legend": [
+              {
+                "tone": "hi",
+                "label": "#1 / state-of-the-art"
+              },
+              {
+                "tone": "base",
+                "label": "Other results"
+              }
+            ],
+            "groups": [
+              {
+                "label": "Science / math",
+                "items": [
+                  {
+                    "label": "Terminal-Bench Science",
+                    "value": 70.5,
+                    "display": "70.5%",
+                    "tone": "hi"
+                  },
+                  {
+                    "label": "RiemannBench",
+                    "value": 84,
+                    "display": "84.0%",
+                    "tone": "hi"
+                  },
+                  {
+                    "label": "HLE-Diamond",
+                    "value": 71.3,
+                    "display": "71.3%",
+                    "tone": "hi"
+                  }
+                ]
+              },
+              {
+                "label": "Enterprise / analytics",
+                "items": [
+                  {
+                    "label": "Vals Index",
+                    "sub": "ranked #2",
+                    "value": 70.9,
+                    "display": "70.9%",
+                    "tone": "base"
+                  },
+                  {
+                    "label": "Chartography",
+                    "value": 73.5,
+                    "display": "73.5%",
+                    "tone": "base"
+                  },
+                  {
+                    "label": "Agents' Last Exam v1.1",
+                    "value": 75.8,
+                    "display": "75.8%",
+                    "tone": "base"
+                  },
+                  {
+                    "label": "AutomationBench",
+                    "sub": "Zapier",
+                    "value": 56.3,
+                    "display": "56.3%",
+                    "tone": "hi"
+                  }
+                ]
+              },
+              {
+                "label": "Coding / security",
+                "items": [
+                  {
+                    "label": "Terminal-Bench 4.1",
+                    "value": 65.2,
+                    "display": "65.2%",
+                    "tone": "base"
+                  },
+                  {
+                    "label": "FrontierCode 2.0",
+                    "sub": "default high",
+                    "value": 46.2,
+                    "display": "46.2%",
+                    "tone": "base"
+                  },
+                  {
+                    "label": "SEC-bench Pro",
+                    "value": 90.5,
+                    "display": "90.5%",
+                    "tone": "hi"
+                  },
+                  {
+                    "label": "CWE-bench v2",
+                    "sub": "Collinear",
+                    "value": 70.7,
+                    "display": "70.7%",
+                    "tone": "base"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "Coding and long tasks: why it's built for production",
+      "blocks": [
+        {
+          "p": "Neon's focus isn't writing a small function; it's running long, tool-heavy agent workflows. Google stresses that Neon compresses context reliably in long sessions, avoids re-reading the same files, and reports progress as it works."
+        },
+        {
+          "p": "On coding leaderboards: Artificial Analysis Coding Agent Index 58.6, #1; Terminal-Bench 4.1 65.2%; FrontierCode 2.0 46.2% at the default high setting."
+        },
+        {
+          "p": "The most interesting result is SWE-sweep: the mini-SWE harness alone scores only 12.8%, but in Google Antigravity it rises to 39.0%. Google says this shows how much the Antigravity harness can unlock—in other words, scores are highly sensitive to environment setup, so don't treat a bare-harness score as the ceiling."
+        },
+        {
+          "p": "In Google Antigravity, Neon can also act as an Orchestrator, directing parallel Hydrogen subagents."
+        },
+        {
+          "fig": {
+            "type": "illustration",
+            "title": "Neon as Orchestrator, Hydrogen working in parallel",
+            "subtitle": "Schematic: amber is Neon (Orchestrator), the rest are parallel Hydrogen subagents",
+            "note": "This is a use of Antigravity described in the announcement",
+            "glyph": {
+              "kind": "hub",
+              "center": {
+                "label": "Neon Orchestrator",
+                "tone": "hi"
+              },
+              "nodes": [
+                {
+                  "label": "Hydrogen subagent",
+                  "tone": "base"
+                },
+                {
+                  "label": "Hydrogen subagent",
+                  "tone": "base"
+                },
+                {
+                  "label": "Hydrogen subagent",
+                  "tone": "base"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "h": "Four thinking levels: the token-saving dial",
+      "blocks": [
+        {
+          "p": "Neon has four thinking levels, so teams can tune it to the task—from a token-saving fast mode up to the highest setting, xhigh. The default is high."
+        },
+        {
+          "p": "At the default high setting, its intelligence index score remains high but costs 32% less per task than Carbon. On both the Vals and Agent Arena benchmarks, high sits on the Pareto frontier and costs roughly 50% to 80% less per task than top competing frontier models."
+        },
+        {
+          "p": "xhigh adds deeper multi-step reasoning and gives the highest intelligence score, while still costing 36%+ less than competitors at their highest settings."
+        },
+        {
+          "p": "These 'cheaper by X%' figures are Google's own framing, based on specific benchmark cost calculations; your workflow may not see the same savings."
+        },
+        {
+          "callout": {
+            "kind": "note",
+            "title": "Watch the measurement caveats",
+            "text": "For the 50%–80% and 36%+ savings, Google doesn't say which competitors or which tasks were used, so treat them as directional."
+          }
+        },
+        {
+          "fig": {
+            "type": "schematic",
+            "title": "Four thinking levels, chosen by teams per task",
+            "subtitle": "Schematic: more amber means deeper reasoning and more tokens; level names are examples",
+            "items": [
+              {
+                "glyph": {
+                  "kind": "dots",
+                  "total": 100,
+                  "hi": 25
+                },
+                "title": "Lower level",
+                "sub": "Most token-efficient",
+                "rows": [
+                  {
+                    "k": "Best for",
+                    "v": "simple, high-frequency small tasks"
+                  }
+                ]
+              },
+              {
+                "glyph": {
+                  "kind": "dots",
+                  "total": 100,
+                  "hi": 50
+                },
+                "title": "Medium level",
+                "sub": "Balance of speed and depth",
+                "rows": [
+                  {
+                    "k": "Best for",
+                    "v": "routine analysis"
+                  }
+                ]
+              },
+              {
+                "glyph": {
+                  "kind": "dots",
+                  "total": 100,
+                  "hi": 75
+                },
+                "title": "High level (default)",
+                "sub": "Default out of the box",
+                "rows": [
+                  {
+                    "k": "Best for",
+                    "v": "most complex work"
+                  }
+                ]
+              },
+              {
+                "glyph": {
+                  "kind": "dots",
+                  "total": 100,
+                  "hi": 95
+                },
+                "title": "xhigh highest level",
+                "sub": "Deepest multi-step reasoning",
+                "rows": [
+                  {
+                    "k": "Best for",
+                    "v": "hardest engineering / analytics / science problems"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "Safety and cybersecurity: secure code, vulnerability hunting, injection defense",
+      "blocks": [
+        {
+          "p": "Safety is its own focus area for Neon, with the goal of finding, validating, and fixing vulnerabilities quickly and cheaply."
+        },
+        {
+          "list": [
+            "AutoBaxBench: generates more secure code than Carbon across easy, medium, and hard tiers; 76% on the hard tier, state-of-the-art.",
+            "WebExploitBench v1.2: penetration testing, 51.26%, state-of-the-art, at about half the cost of competing large models.",
+            "SEC-bench Pro: finds code vulnerabilities, 90.5%, state-of-the-art, at about half the cost per challenge.",
+            "ExploitGym: validates risk at frontier level, using half the tokens of Carbon.",
+            "CWE-bench v2: patches vulnerabilities at 70.7%, 3.4 percentage points above Carbon."
+          ]
+        },
+        {
+          "p": "The safety stack also monitors agent behavior itself. On Gray Swan's IPI benchmark with real-time safeguards at the highest setting, malicious prompt injection attacks planted in web pages, emails, and documents had a 0.0% success rate. The agent honesty evaluation passed 99.2%, and the coding cheating evaluation showed a 2.45% shortcut rate—the lowest in the Gemini 4 family."
+        },
+        {
+          "p": "The version for trusted defenders is called Gemini 4 Neon for cyber, opening through the Fairwind Program in the coming days; request access through your Cloud account manager."
+        },
+        {
+          "fig": {
+            "type": "columns",
+            "title": "Four key cybersecurity scores",
+            "subtitle": "Units: percent; amber marks items Google calls state-of-the-art",
+            "items": [
+              {
+                "label": "AutoBaxBench hard",
+                "sub": "Secure code generation",
+                "value": 76,
+                "display": "76%",
+                "tone": "hi"
+              },
+              {
+                "label": "WebExploitBench v1.2",
+                "sub": "Penetration testing, roughly half price",
+                "value": 51.26,
+                "display": "51.26%",
+                "tone": "hi"
+              },
+              {
+                "label": "SEC-bench Pro",
+                "sub": "Find vulnerabilities, roughly half price",
+                "value": 90.5,
+                "display": "90.5%",
+                "tone": "hi"
+              },
+              {
+                "label": "CWE-bench v2",
+                "sub": "Patch vulnerabilities",
+                "value": 70.7,
+                "display": "70.7%",
+                "tone": "base"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "What you can build: three official demos",
+      "blocks": [
+        {
+          "p": "Google shows several demos in Google Antigravity, making the point that Neon can take an idea all the way to a finished product, not just a single response."
+        },
+        {
+          "fig": {
+            "type": "storyboard",
+            "title": "One image becomes a 100,000-cell spreadsheet",
+            "subtitle": "Schematic: based on Google's description of the single-image-to-spreadsheet demo; cell count not to scale",
+            "panels": [
+              {
+                "glyph": {
+                  "kind": "frames",
+                  "count": 1
+                },
+                "title": "One image",
+                "text": "Input a photo",
+                "tone": "base"
+              },
+              {
+                "glyph": {
+                  "kind": "hub",
+                  "center": {
+                    "label": "Neon",
+                    "tone": "hi"
+                  },
+                  "nodes": [
+                    {
+                      "label": "Analysis",
+                      "tone": "base"
+                    }
+                  ]
+                },
+                "title": "Neon processes",
+                "text": "Edge detection, 3D depth, relighting",
+                "tone": "base"
+              },
+              {
+                "glyph": {
+                  "kind": "sheet",
+                  "rows": 20,
+                  "cols": 20
+                },
+                "title": "100,000-cell Google Sheet",
+                "text": "Over 500,000 live formulas, no embedded images, no Apps Script",
+                "tone": "hi"
+              }
+            ]
+          }
+        },
+        {
+          "p": "Another demo is a first-person WebGL2 ski simulator: real Mont Blanc and Chamonix terrain, 10,200 lines of custom shaders, 120 Hz ski physics, six alpine runs, and no pre-made assets."
+        },
+        {
+          "p": "Another uses /swarm to rebuild Alan Turing's 1936 study at King's College, Cambridge from archival photos: from King's Chapel outside to Room X.8, in interactive 3D, with a working Universal Turing Machine on the desk."
+        }
+      ]
+    },
+    {
+      "h": "What Google hasn't said",
+      "blocks": [
+        {
+          "list": [
+            "How many typical enterprise PDFs or spreadsheets fit into the 1M-token context; Google doesn't provide a conversion.",
+            "The names and pricing differences of the two thinking levels besides high and xhigh aren't specified.",
+            "Which competitors and which tasks were used for the '50%–80% cheaper' and '36%+ cheaper' claims.",
+            "Which day and which regions the cyber version opens through Fairwind; only 'in the coming days' is given.",
+            "Whether the demos can be reproduced, or whether runnable code or recordings are available.",
+            "Free allowances and how many tokens are included in subscription plans."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Who it's for",
+      "blocks": [
+        {
+          "p": "The value: one model that covers complex coding, business analysis, and scientific reasoning at a lower price than large models, while reading fewer files and compressing context reliably in long tasks."
+        },
+        {
+          "p": "The trade-off: many of the '#1' and 'half price' claims come from Google's own framing or specific benchmarks, so you need to revalidate them on your own production data. It's also a paid model, requiring a subscription or API billing."
+        },
+        {
+          "list": [
+            "If you do legal, tax, or financial spreadsheet automation in an enterprise, Neon stands out on the relevant benchmarks and is worth testing on real data.",
+            "If you're a developer running long agent tasks and care about SWE-sweep rising from 12.8% to 39.0% in Antigravity, set up a similar environment before evaluating.",
+            "If you're on a security team, contact your Cloud account manager to request the Fairwind Program.",
+            "If you're an individual user, you need a Google AI Pro or Ultra subscription to select Neon in the Gemini app."
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Introducing Gemini 4 Neon",
+      "publisher": "Google",
+      "date": "2026-11-18",
+      "url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/"
+    },
+    "note": "All data comes from this one Google blog post. Schematic figures (thinking levels, single-image-to-spreadsheet, Neon orchestrating subagents) are drawn from the descriptions in the post; level names and cell counts are illustrative."
+  },
+  "cover": {
+    "headline": "Gemini 4 Neon launches",
+    "highlight": "1M-token context, lower token costs",
+    "big": {
+      "value": "100",
+      "unit": "10K tokens",
+      "label": "Context window"
+    },
+    "glyph": {
+      "kind": "context",
+      "total": 100,
+      "segments": [
+        {
+          "size": 100,
+          "tone": "hi",
+          "label": "1 million tokens"
+        }
+      ]
+    }
+  },
+  "claims": [
+    {
+      "text": "Input price is $3 per million tokens",
+      "value": "$3",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+      "as_written": "$3 / million tokens",
+      "quote": "The model is priced at $3 per million input tokens"
+    },
+    {
+      "text": "Cached input costs $0.15 per million tokens",
+      "value": "$0.15",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+      "as_written": "$0.15 / million tokens",
+      "quote": "$0.15 per million cached input tokens, a 95% discount"
+    },
+    {
+      "text": "Cached input gets a 95% discount",
+      "value": "95%",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+      "as_written": "95%",
+      "quote": "a 95% discount"
+    },
+    {
+      "text": "Output price is $15 per million tokens",
+      "value": "$15",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+      "as_written": "$15 / million tokens",
+      "quote": "$15 per million output tokens"
+    },
+    {
+      "text": "Context window is 1 million tokens",
+      "value": "1 million-token",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+      "as_written": "1 million tokens",
+      "quote": "with a 1 million-token context window"
+    },
+    {
+      "text": "Artificial Analysis Intelligence Index scores 61 at xhigh, #3 overall",
+      "value": "61",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+      "as_written": "61",
+      "quote": "#3 overall with a score of 61 on the Artificial Analysis Intelligence Index at its xhigh thinking level"
+    },
+    {
+      "text": "Vals Index scores 70.9%, ranked #2",
+      "value": "70.9%",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+      "as_written": "70.9%",
+      "quote": "it ranks #2 (70.9%)"
+    },
+    {
+      "text": "Legal Research Bench and Tax Agent Bench both rank #1",
+      "value": "#1",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+      "as_written": "#1",
+      "quote": "reaches #1 on both the Legal Research Bench and Tax Agent Bench"
+    },
+    {
+      "text": "Surge AI ranks #1 on most benchmarks in finance, accounting, spreadsheet modeling, and complex constraint following",
+      "value": "#1",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+      "as_written": "#1",
+      "quote": "ranking #1 on most benchmarks across finance, accounting, spreadsheet modeling, and complex constraint following"
+    },
+    {
+      "text": "Chartography 73.5%",
+      "value": "73.5%",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+      "as_written": "73.5%",
+      "quote": "It also scores 73.5% on Chartography"
+    },
+    {
+      "text": "Agents' Last Exam v1.1 75.8%",
+      "value": "75.8%",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+      "as_written": "75.8%",
+      "quote": "performs on par with leading models on Agents' Last Exam v1.1 (75.8%)"
+    },
+    {
+      "text": "Zapier AutomationBench scores 56.3%, #1 overall",
+      "value": "56.3%",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+      "as_written": "56.3%",
+      "quote": "It achieves #1 overall on both Zapier's AutomationBench (56.3%)"
+    },
+    {
+      "text": "Vending-Bench 2 returns $16,843, #1 overall",
+      "value": "$16,843",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+      "as_written": "$16,843",
+      "quote": "Andon Labs' Vending-Bench 2 ($16,843)"
+    },
+    {
+      "text": "Agent Arena Index scores 1,336 points, #2 globally",
+      "value": "1336",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+      "as_written": "1,336",
+      "quote": "debuts #2 globally with a score of 1336 on Arena's new Agent Arena Index across 4,200+ real-world agent sessions"
+    },
+    {
+      "text": "Agent Arena covers more than 4,200 real agent sessions",
+      "value": "4,200+",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+      "as_written": "more than 4,200",
+      "quote": "across 4,200+ real-world agent sessions"
+    },
+    {
+      "text": "Terminal-Bench Science 70.5%",
+      "value": "70.5%",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+      "as_written": "70.5%",
+      "quote": "best in class on Terminal-Bench Science (70.5%)"
+    },
+    {
+      "text": "RiemannBench 84.0%",
+      "value": "84.0%",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+      "as_written": "84.0%",
+      "quote": "RiemannBench (84.0%)"
+    },
+    {
+      "text": "HLE-Diamond 71.3%",
+      "value": "71.3%",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+      "as_written": "71.3%",
+      "quote": "HLE-Diamond (71.3%)"
+    },
+    {
+      "text": "Coding Agent Index scores 58.6, #1",
+      "value": "58.6",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+      "as_written": "58.6",
+      "quote": "ranking #1 overall on the Artificial Analysis Coding Agent Index (58.6)"
+    },
+    {
+      "text": "Terminal-Bench 4.1 65.2%",
+      "value": "65.2%",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+      "as_written": "65.2%",
+      "quote": "with a score of 65.2% on Terminal-Bench 4.1"
+    },
+    {
+      "text": "FrontierCode 2.0 scores 46.2% at default high",
+      "value": "46.2%",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+      "as_written": "46.2%",
+      "quote": "46.2% (at its default high setting) on FrontierCode 2.0"
+    },
+    {
+      "text": "SWE-sweep mini-SWE 12.8%",
+      "value": "12.8%",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+      "as_written": "12.8%",
+      "quote": "it already leads on the mini-SWE harness (12.8%)"
+    },
+    {
+      "text": "SWE-sweep scores 39.0% in Google Antigravity",
+      "value": "39.0%",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+      "as_written": "39.0%",
+      "quote": "more than triples to a state-of-the-art 39.0% in Google Antigravity"
+    },
+    {
+      "text": "Default high setting costs 32% less per task than Carbon",
+      "value": "32%",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+      "as_written": "32%",
+      "quote": "a 32% lower cost per task than Carbon"
+    },
+    {
+      "text": "High setting costs roughly 50% to 80% less per task than top competing frontier models",
+      "value": "50% to 80%",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+      "as_written": "roughly 50% to 80%",
+      "quote": "roughly 50% to 80% lower cost per task than top competing frontier models"
+    },
+    {
+      "text": "xhigh costs 36%+ less than competitors at their highest settings",
+      "value": "36%+",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+      "as_written": "36%+",
+      "quote": "while still costing 36%+ less per task than competing models at their highest setting"
+    },
+    {
+      "text": "AutoBaxBench hard scores 76%, state-of-the-art",
+      "value": "76%",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+      "as_written": "76%",
+      "quote": "achieving state-of-the-art on the hard tier (76%)"
+    },
+    {
+      "text": "WebExploitBench v1.2 scores 51.26%, state-of-the-art",
+      "value": "51.26%",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+      "as_written": "51.26%",
+      "quote": "Neon is state-of-the-art (51.26%) at half the cost of competing large models"
+    },
+    {
+      "text": "WebExploitBench costs about half as much as competing large models",
+      "value": "half",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+      "as_written": "half",
+      "quote": "at half the cost of competing large models"
+    },
+    {
+      "text": "SEC-bench Pro scores 90.5%, state-of-the-art",
+      "value": "90.5%",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+      "as_written": "90.5%",
+      "quote": "state-of-the-art performance on SEC-bench Pro (90.5%)"
+    },
+    {
+      "text": "SEC-bench Pro costs about half as much per challenge as large models",
+      "value": "half",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+      "as_written": "half",
+      "quote": "while costing roughly half as much per challenge"
+    },
+    {
+      "text": "ExploitGym uses half the tokens of Carbon",
+      "value": "half",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+      "as_written": "half",
+      "quote": "using half the tokens of Carbon"
+    },
+    {
+      "text": "CWE-bench v2 70.7%",
+      "value": "70.7%",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+      "as_written": "70.7%",
+      "quote": "Neon reaches 70.7% on Collinear's CWE-bench v2"
+    },
+    {
+      "text": "CWE-bench v2 is 3.4 percentage points above Carbon",
+      "value": "3.4%",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+      "as_written": "3.4 percentage points",
+      "quote": "driving a 3.4% uplift over Carbon"
+    },
+    {
+      "text": "Coding cheating evaluation shortcut rate is 2.45%, the lowest in the family",
+      "value": "2.45%",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+      "as_written": "2.45%",
+      "quote": "took shortcuts on just 2.45% of tasks on our coding cheating evaluation"
+    },
+    {
+      "text": "Agent honesty evaluation pass rate is 99.2%",
+      "value": "99.2%",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+      "as_written": "99.2%",
+      "quote": "a 99.2% pass rate on our agent honesty evaluation"
+    },
+    {
+      "text": "Gray Swan IPI benchmark malicious injection attack success rate is 0.0%",
+      "value": "0.0%",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+      "as_written": "0.0%",
+      "quote": "matching the 0.0% attack success rate reached only by other Gemini models"
+    },
+    {
+      "text": "Ski demo uses 10,200 lines of custom shaders",
+      "value": "10,200",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+      "as_written": "10,200 lines",
+      "quote": "combining 10,200 lines of custom shaders"
+    },
+    {
+      "text": "Ski physics runs at 120 Hz",
+      "value": "120 Hz",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+      "as_written": "120 Hz",
+      "quote": "120 Hz ski physics"
+    },
+    {
+      "text": "Six alpine runs",
+      "value": "six",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+      "as_written": "six",
+      "quote": "across six alpine lines"
+    },
+    {
+      "text": "Single image becomes a 100,000-cell Google Sheet",
+      "value": "100,000",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+      "as_written": "100,000 cells",
+      "quote": "a 100,000-cell Google Sheet"
+    },
+    {
+      "text": "Over 500,000 live spreadsheet formulas",
+      "value": "500,000",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+      "as_written": "over 500,000",
+      "quote": "using over 500,000 live spreadsheet formulas"
+    },
+    {
+      "text": "Recreates Alan Turing's 1936 study",
+      "value": "1936",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+      "as_written": "1936",
+      "quote": "Alan Turing's 1936 study at King's College"
+    },
+    {
+      "text": "Four thinking levels",
+      "value": "four",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+      "as_written": "four",
+      "quote": "Neon's four levels scale steadily"
+    },
+    {
+      "text": "Release date: November 18",
+      "value": "Nov 18, 2026",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+      "as_written": "November 18",
+      "quote": "Nov 18, 2026"
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "1dcbfa8b0a46d5fa"
+}
