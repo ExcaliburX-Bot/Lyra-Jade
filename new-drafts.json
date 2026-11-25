@@ -1,10 +1,10 @@
 [
   {
-    "slug": "siren-sandbox-escape-eval",
-    "title": "Anthropic 公开 Siren 评测：测 AI 智能体沙箱越界，写清规则最多降 96% 越界率",
-    "file": "content/articles/siren-sandbox-escape-eval.json",
-    "errors": 4,
-    "warnings": 0,
+    "slug": "astra-codex-amateur-exoplanet-search",
+    "title": "两名业余天文爱好者用 Astra、Codex 找系外行星，筛出数十个候选",
+    "file": "content/articles/astra-codex-amateur-exoplanet-search.json",
+    "errors": 0,
+    "warnings": 1,
     "provider": "deepseek",
     "model": "deepseek-v4-pro"
   }
