@@ -1,10 +1,10 @@
 [
   {
-    "slug": "gpt6-intrinsic-protein-design",
-    "title": "GPT-6 只用推理和代码就能设计蛋白质，实验室里 5 个靶点出现结合迹象",
-    "file": "content/articles/gpt6-intrinsic-protein-design.json",
-    "errors": 0,
-    "warnings": 6,
+    "slug": "siren-sandbox-escape-eval",
+    "title": "Anthropic 公开 Siren 评测：测 AI 智能体沙箱越界，写清规则最多降 96% 越界率",
+    "file": "content/articles/siren-sandbox-escape-eval.json",
+    "errors": 4,
+    "warnings": 0,
     "provider": "deepseek",
     "model": "deepseek-v4-pro"
   }
