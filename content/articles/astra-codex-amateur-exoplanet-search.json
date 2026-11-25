@@ -1,0 +1,594 @@
+{
+  "slug": "astra-codex-amateur-exoplanet-search",
+  "date": "2026-11-24",
+  "category": "product",
+  "publisher": "OpenAI",
+  "topics": [
+    "openai"
+  ],
+  "readMinutes": 6,
+  "title": "两名业余天文爱好者用 Astra、Codex 找系外行星，筛出数十个候选",
+  "summary": "不用拥有天文台也能参与找行星。两位业余天文爱好者分别用 OpenAI 的 Astra 和 Codex，在 NASA 公开的望远镜数据里搜索系外行星的蛛丝马迹，并把筛出的候选交给专业天文学家进一步核查。",
+  "ai_summary": "OpenAI 公布科学案例：两位业余天文爱好者分别用 Codex 和 Astra，在 NASA 公开数据里搜索系外行星。Kevin Bond 用 Codex 分析约 10 万颗 Kepler 恒星，标出 200 多个信号，其中 10 颗是已知行星；他筛出两颗重点候选，一颗每隔 13.8 天变暗一次，若由行星引起，直径约为地球 2.4 倍。Ethan Byrd 用 Astra 分析约 1900 万颗星，首轮筛出 49 个候选，最强的一个送 TESS 分析。SETI Institute 的天文学家独立复核后找到两个相同信号。这些目前只是候选，确认是否为行星可能要几个月甚至几年。",
+  "brief": [
+    "两位业余天文爱好者分别用 Codex 和 Astra，在公开望远镜数据里找到系外行星候选，已交给专业天文学家复核。",
+    "Bond 搜索了约 10 万颗 Kepler 恒星，程序标出 200 多个信号，其中 10 颗是已知行星。",
+    "Byrd 搜索了约 1900 万颗星，首轮筛出 49 个候选，一个已送 TESS 团队分析。",
+    "这些候选尚未确认为行星：SETI Institute 独立找到了 Bond 的两个相同信号，进一步确认可能要几个月到几年。"
+  ],
+  "sections": [
+    {
+      "h": "这是什么：两位爱好者借 AI 在公开数据里找行星候选",
+      "blocks": [
+        {
+          "p": "自 1992 年公布首批系外行星以来，天文学家已经确认了 6,400 多颗太阳系外的行星。这个领域一直有全球业余天文爱好者的参与：有人翻公开望远镜数据，找恒星亮度周期性下降的痕迹；有人用自家望远镜守着下一次「凌星」，再把看到的结果分享给研究者。"
+        },
+        {
+          "p": "OpenAI 这篇案例讲的是两位业余爱好者——OpenAI 工程师 Kevin Bond，和邮件基础设施初创公司 Primitive 的创始人 Ethan Byrd。两人各自独立地用 AI 工具（Bond 用 Codex，Byrd 用 Astra）分析 NASA 公开数据，分别找到系外行星候选，并且都已经把这些线索交给专业天文学家做独立评估。"
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "放在已确认行星总数旁边，看这次搜索的规模",
+            "subtitle": "数据来自 OpenAI 原文及 NASA 系外行星档案（截至 2026 年）",
+            "items": [
+              {
+                "value": 6400,
+                "unit": "颗",
+                "label": "已确认的系外行星",
+                "note": "1992 年以来累计"
+              },
+              {
+                "value": 100000,
+                "unit": "颗",
+                "label": "Bond 搜的 Kepler 恒星",
+                "note": "用 Codex"
+              },
+              {
+                "value": 19000000,
+                "unit": "颗",
+                "label": "Byrd 搜的恒星",
+                "note": "TESS 等公开档案，用 Astra"
+              },
+              {
+                "value": 200,
+                "unit": "个",
+                "label": "Bond 标出的信号",
+                "note": "其中 10 个是已知行星"
+              },
+              {
+                "value": 49,
+                "unit": "个",
+                "label": "Byrd 首轮候选",
+                "note": "一个已送 TESS 分析"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "找行星的基本功：看恒星会不会周期性变暗",
+      "blocks": [
+        {
+          "p": "找系外行星最常用的方法是凌星法（transit）。当一颗行星从我们的视角经过它的恒星前方，会挡住一点点星光；把恒星亮度随时间画成「光曲线」（light curve），这次遮挡就表现为一个下陷。如果下陷每隔固定时间重复出现，天文学家就知道什么时候再去看它。"
+        },
+        {
+          "fig": {
+            "type": "illustration",
+            "title": "行星从恒星前经过，光曲线上就多一个下陷",
+            "subtitle": "示意：琥珀色框出的是周期性重复的下陷，也就是候选信号",
+            "note": "凌星法（transit）是找系外行星最常用的方法之一。",
+            "glyph": {
+              "kind": "wave",
+              "select": [
+                0.45,
+                0.62
+              ]
+            },
+            "legend": [
+              {
+                "tone": "hi",
+                "label": "被框出的下陷"
+              }
+            ]
+          }
+        },
+        {
+          "p": "用 AI 辅助这个搜索不是新事。2017 年，研究者用 Kepler 太空望远镜的 15,000 个已人工检查过的信号训练神经网络，让它学会识别哪些星光模式最可能来自行星；这个模型后来帮助找到 Kepler-90 恒星周围的第八颗行星。这次的差别在于：Bond 和 Byrd 用的是大模型（Codex、Astra）来读文献、写搜索程序、做初筛，门槛更低。"
+        }
+      ]
+    },
+    {
+      "h": "Bond 的搜索：约 10 万颗星里筛出两颗重点候选",
+      "blocks": [
+        {
+          "p": "Bond 用 Codex 搜索 Kepler 望远镜观测的约 100,000 颗恒星。Kepler 是一颗行星搜寻任务，从 2009 年运行到 2018 年。他让 Codex 比较公开的搜索方法、把方法组合成搜索程序，再测试改动代码能不能提升搜索效果：一个 AI 代理扫光曲线找有希望的信号，另一个代理对前一个标出的候选做更细的核查。"
+        },
+        {
+          "fig": {
+            "type": "illustration",
+            "title": "Bond 的搜索：从约 10 万颗星收敛到 2 颗重点候选",
+            "subtitle": "示意：琥珀色是最后筛出的重点候选",
+            "note": "标出的信号里有 10 个来自已知行星，用来验证搜索方法。",
+            "glyph": {
+              "kind": "funnel",
+              "stages": [
+                {
+                  "label": "搜索的恒星",
+                  "value": 100000,
+                  "display": "约 10 万",
+                  "tone": "base"
+                },
+                {
+                  "label": "标出的信号",
+                  "value": 200,
+                  "display": "200 多个",
+                  "tone": "base"
+                },
+                {
+                  "label": "重点候选",
+                  "value": 2,
+                  "display": "2 颗",
+                  "tone": "hi"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "p": "程序标出了 200 多个信号，其中有 10 个来自此前已确认的行星——能找到已知行星，让 Bond 相信这套方法能挑出他要找的那类信号。其中两颗恒星最突出：KIC 5689121 位于天琴座，是一颗约太阳一半大小的较冷恒星，光曲线每隔 13.8 天出现一次下陷，若由行星引起，被挡的光量暗示它的直径约为地球的 2.4 倍；KIC 6691030 位于北天、比较暗，每隔 4.8 天变暗一次，符合一颗比海王星小的行星。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "两颗重点候选：一个约 2.4 倍地球直径，一个比海王星小",
+            "subtitle": "数据来自 Bond 用 Codex 跑的 Kepler 搜索",
+            "columns": [
+              "恒星",
+              "位置",
+              "变暗周期",
+              "若由行星引起"
+            ],
+            "rows": [
+              [
+                "KIC 5689121",
+                "天琴座，约太阳一半大小",
+                "约 13.8 天",
+                "约 2.4 倍地球直径"
+              ],
+              [
+                "KIC 6691030",
+                "北天，较暗",
+                "约 4.8 天",
+                "小于海王星"
+              ]
+            ],
+            "note": "文章附的四条光曲线按 13.77 天周期对齐显示同一批 Kepler 观测。"
+          }
+        },
+        {
+          "p": "SETI Institute 的一位天文学家独立跑了一遍搜索，在 Kepler 数据里找到了这两个相同的信号。这相当于给 Bond 的候选做了一次外部复核——但复核只说明「信号是真实存在的」，不代表它一定是行星。"
+        },
+        {
+          "fig": {
+            "type": "quote",
+            "title": "专业天文学家：这套方法能挖到传统搜索漏掉的候选",
+            "text": "Kevin's work shows how citizen scientists, equipped with AI, can help astronomers explore the Kepler Bonus Catalog—a vast collection of stars beyond Kepler's original targets. His pipeline has surfaced promising candidates in data traditional searches may have missed. Our initial checks are encouraging, and follow-up observations will tell us more.",
+            "zh": "凯文的工作展示了配备 AI 的公民科学家如何帮助天文学家探索 Kepler Bonus Catalog——一个在 Kepler 原定目标之外的庞大恒星集合。他的流程在传统搜索可能遗漏的数据里发现了有希望的候选。我们的初步检查令人鼓舞，后续观测会告诉我们更多。",
+            "who": "Vishal Gajjar",
+            "role": "SETI Institute 国际 SETI 项目副主任",
+            "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra"
+          }
+        }
+      ]
+    },
+    {
+      "h": "Byrd 的搜索：约 1900 万颗星里筛出 49 个候选",
+      "blocks": [
+        {
+          "p": "Byrd 走的是另一条路。他试过几个 AI 模型，最后选 Astra 帮他分析约 1900 万颗恒星的望远镜数据。他用 Astra 设计了两个搜索：一个广撒网找系外行星候选，另一个聚焦「宜居带」——也就是行星与恒星之间能让表面有合适大气、且可能存在液态水的距离范围。"
+        },
+        {
+          "p": "数据来自 TESS（NASA 在 2018 年发射）和其他公开望远镜档案。TESS 在前 26 个扇区里扫了两个半球，时间是 2018 年到 2020 年；Kepler 则盯着一个天区看了四年。Byrd 让 Astra 读公开方法、搭搜索软件、对有希望的信号做初步核查。第一轮筛出 49 个候选：最强的一个已经送给 TESS 任务的研究者排队分析，另外两个候选在等待提交，搜索本身还在跑。"
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "两位爱好者各自独立搜索，都给出了候选",
+            "subtitle": "琥珀色标记两边最值得记住的数字",
+            "left": {
+              "label": "Kevin Bond",
+              "sub": "OpenAI 工程师",
+              "items": [
+                {
+                  "label": "工具",
+                  "tag": "Codex",
+                  "state": "base"
+                },
+                {
+                  "label": "数据",
+                  "tag": "Kepler，约 10 万颗星",
+                  "state": "base"
+                },
+                {
+                  "label": "结果",
+                  "tag": "200 多个信号",
+                  "state": "hi"
+                },
+                {
+                  "label": "重点候选",
+                  "tag": "2 颗",
+                  "state": "hi"
+                },
+                {
+                  "label": "外部复核",
+                  "tag": "SETI 找到 2 个相同信号",
+                  "state": "base"
+                }
+              ]
+            },
+            "right": {
+              "label": "Ethan Byrd",
+              "sub": "Primitive 创始人",
+              "items": [
+                {
+                  "label": "工具",
+                  "tag": "Astra",
+                  "state": "base"
+                },
+                {
+                  "label": "数据",
+                  "tag": "TESS 等，约 1900 万颗星",
+                  "state": "hi"
+                },
+                {
+                  "label": "结果",
+                  "tag": "首轮 49 个候选",
+                  "state": "base"
+                },
+                {
+                  "label": "去向",
+                  "tag": "1 个送 TESS，2 个待提交",
+                  "state": "base"
+                },
+                {
+                  "label": "状态",
+                  "tag": "搜索仍在运行",
+                  "state": "base"
+                }
+              ]
+            },
+            "footer": "两人用不同工具、不同数据，最后都把候选交给专业天文学家做独立评估。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "从「信号」到「行星」，中间隔了什么",
+      "blocks": [
+        {
+          "p": "看到恒星变暗，天文学家要先排除别的解释：两颗恒星互相遮挡也能造成类似下陷，甚至望远镜仪器温度变化都可能让恒星看起来变暗。确认要靠统计说明「行星是最可能的解释」，或换一种方法补充观测——比如径向速度法：行星引力会拉扯恒星，让恒星轻微地朝我们移近或远离，这种运动表现为星光颜色的微小变化。"
+        },
+        {
+          "fig": {
+            "type": "steps",
+            "title": "从候选到确认行星，还隔好几道关卡",
+            "subtitle": "示意：天文学家确认系外行星的常见流程",
+            "steps": [
+              {
+                "name": "看到周期下陷",
+                "tool": "光曲线",
+                "desc": "恒星每隔固定时间变暗一次，先作为候选记下来"
+              },
+              {
+                "name": "排除别的解释",
+                "tool": "统计检验",
+                "desc": "双星相互遮挡、仪器温度变化，都可能造成类似下陷"
+              },
+              {
+                "name": "换方法补充观测",
+                "tool": "径向速度法",
+                "desc": "行星引力让恒星轻微摆动，表现为星光颜色的微小变化"
+              },
+              {
+                "name": "同行评审发表",
+                "tool": "学术期刊",
+                "desc": "把证据公开，让其他研究者检查"
+              }
+            ]
+          }
+        },
+        {
+          "p": "对 Bond 和 Byrd 来说，每个候选都是一个可以检验的问题。如果天琴座那颗恒星真的每 13.8 天被行星挡一次光，天文学家就能算好时间去看下一次凌星；更多观测能确认下陷是否如期重复，额外的检查能判断到底是什么造成的。OpenAI 的原文也提醒：确认成因可能要花几个月甚至几年。"
+        }
+      ]
+    },
+    {
+      "h": "没有望远镜，也能参与找行星",
+      "blocks": [
+        {
+          "list": [
+            "没有望远镜：NASA 的 Exoplanet Watch 让你请求数据、学着自己画光曲线；它的公民科学项目还有别的参与方式。",
+            "有望远镜：Exoplanet Watch 会带你采集凌星数据、参加观测活动。",
+            "AAVSO 的 Exoplanet Observing Program 教你测量恒星亮度的下降，并把观测分享给研究该行星的科学家。",
+            "Unistellar Network Investigating TESS Exoplanets 协调全球拥有某类望远镜的志愿者看同一颗星，帮天文学家捕捉可能超过一个晚上的凌星。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "官方还没说的",
+      "blocks": [
+        {
+          "list": [
+            "价格或成本：文章没提任何费用。搜索用的是 NASA 公开数据和 OpenAI 工具，但没有说明 Astra、Codex 的使用成本或对科研是否免费。",
+            "候选是否确认为行星、何时确认：没有答案，原文只说确认可能要几个月甚至几年。",
+            "两颗候选恒星对应的行星的其他参数（质量、轨道、大气、是否真的在宜居带）：未提供，文章只给了周期和推算直径。",
+            "Bond 和 Byrd 的搜索程序、代码是否公开：没说。",
+            "与专业巡天完整目录的对照情况：只提到部分信号与已知行星吻合，没给出去重后的完整清单。",
+            "两位爱好者花了多少时间、用了多少轮对话：没说。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "适合谁",
+      "blocks": [
+        {
+          "p": "这个案例的价值，在于把「读文献、写搜索程序、做初筛」这套原本需要一定编程和天文训练的工作，交给 AI 工具代劳一部分。两位没有专业天文背景的爱好者，也能在真实公开数据里给出可供专业天文学家复核的候选。"
+        },
+        {
+          "p": "代价也写得很清楚：候选不等于发现。从信号到确认，还有统计检验、补充观测和同行评审几道关，可能要等几个月甚至几年。这更像「给专业研究者递线索」，而不是「宣布找到新行星」。"
+        },
+        {
+          "list": [
+            "如果你是天文学爱好者、想从看星星进到用数据找行星，可以从 NASA Exoplanet Watch 的公开数据开始。",
+            "如果你会用 AI 写代码、想找一个真实数据集练手，公开的光曲线档案是一个现成方向。",
+            "如果你在带学生做科研入门，这个案例适合讲清「候选—验证—确认」的科学流程。"
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Searching for distant planets with Astra",
+      "publisher": "OpenAI",
+      "date": "2026-11-24",
+      "url": "https://openai.com/index/searching-for-distant-planets-with-astra"
+    },
+    "more": [],
+    "note": "文中示意图（光曲线、漏斗、流程等）为示意；关键数值来自 OpenAI 原文及其引用的 NASA 系外行星档案。开场动画的行星名称与恒星位置来自 NASA Exoplanet Archive（由 Caltech 为 NASA 运营），目录快照抓取于 2026 年 11 月 19 日。"
+  },
+  "claims": [
+    {
+      "text": "自 1992 年以来，天文学家已确认超过 6,400 颗太阳系外的行星",
+      "value": "6,400",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "6,400 多颗",
+      "quote": "Astronomers have confirmed more than 6,400 planets beyond our solar system"
+    },
+    {
+      "text": "首批系外行星于 1992 年公布",
+      "value": "1992",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "1992 年",
+      "quote": "since the first ones were announced in 1992"
+    },
+    {
+      "text": "2017 年，研究者训练神经网络识别行星信号",
+      "value": "2017",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "2017 年",
+      "quote": "In 2017, researchers trained a neural network on 15,000 signals from NASA's Kepler Space Telescope"
+    },
+    {
+      "text": "2017 年的神经网络用 Kepler 的 15,000 个信号训练",
+      "value": "15,000",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "15,000 个",
+      "quote": "researchers trained a neural network on 15,000 signals from NASA's Kepler Space Telescope"
+    },
+    {
+      "text": "该模型后来帮助找到 Kepler-90 恒星周围的第八颗行星",
+      "value": "eighth planet",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "第八颗行星",
+      "quote": "one led them to an eighth planet orbiting a star called Kepler-90"
+    },
+    {
+      "text": "Bond 用 Codex 搜索 Kepler 望远镜观测的约 100,000 颗恒星",
+      "value": "100,000",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "约 10 万颗",
+      "quote": "He used Codex to search observations of about 100,000 stars from the Kepler telescope"
+    },
+    {
+      "text": "Kepler 行星搜寻任务从 2009 年运行到 2018 年",
+      "value": "2009 to 2018",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "2009 年到 2018 年",
+      "quote": "a planet-hunting mission that ran from 2009 to 2018"
+    },
+    {
+      "text": "Byrd 用 Astra 分析来自约 1900 万颗恒星的望远镜数据",
+      "value": "19 million",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "约 1900 万颗",
+      "quote": "he tried several AI models before choosing Astra to help him analyze telescope data from about 19 million stars"
+    },
+    {
+      "text": "Bond 的程序标出了 200 多个信号",
+      "value": "200",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "200 多个",
+      "quote": "The search flagged more than 200 signals, including 10 from previously confirmed planets"
+    },
+    {
+      "text": "这 200 多个信号里有 10 个来自之前已确认的行星",
+      "value": "10",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "10 颗",
+      "quote": "including 10 from previously confirmed planets"
+    },
+    {
+      "text": "Bond 的搜索里有两颗恒星最突出，成为重点候选",
+      "value": "Two",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "两颗",
+      "quote": "Two stars stood out."
+    },
+    {
+      "text": "KIC 5689121 每隔 13.8 天出现一次亮度下降",
+      "value": "13.8",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "13.8 天",
+      "quote": "The Codex search found a dip in brightness every 13.8 days"
+    },
+    {
+      "text": "若由行星引起，KIC 5689121 的行星直径约为地球的 2.4 倍",
+      "value": "2.4",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "2.4 倍",
+      "quote": "the amount of light it blocks suggests it could be about 2.4 times Earth's diameter"
+    },
+    {
+      "text": "文章附的四条光曲线按 13.77 天的周期对齐",
+      "value": "13.77",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "13.77 天",
+      "quote": "These four curves show the same Kepler observations aligned on a 13.77-day cycle"
+    },
+    {
+      "text": "KIC 6691030 每隔 4.8 天变暗一次，符合一颗比海王星小的行星",
+      "value": "4.8",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "4.8 天",
+      "quote": "The Codex search found a dip in its brightness every 4.8 days, consistent with a planet smaller than Neptune"
+    },
+    {
+      "text": "KIC 5689121 是一颗约太阳一半大小的较冷恒星",
+      "value": "half",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "约一半",
+      "quote": "a relatively cool star about half the size of our sun in the constellation Lyra"
+    },
+    {
+      "text": "SETI Institute 的天文学家独立找到了两个相同信号",
+      "value": "two",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "两个",
+      "quote": "ran an independent search and found two of the same signals in the Kepler data"
+    },
+    {
+      "text": "Byrd 用 Astra 设计了两个搜索",
+      "value": "two",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "两个",
+      "quote": "Byrd used Astra to design two searches"
+    },
+    {
+      "text": "Byrd 的搜索第一轮筛出 49 个候选",
+      "value": "49",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "49 个",
+      "quote": "The first pass through the data turned up 49 candidates"
+    },
+    {
+      "text": "Byrd 把最强的一个候选送给 TESS 任务的研究者",
+      "value": "one",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "1 个",
+      "quote": "Byrd sent one of his strongest candidates to researchers working on NASA's Transiting Exoplanet Survey Satellite (TESS) mission"
+    },
+    {
+      "text": "另外两个候选在等待提交",
+      "value": "two",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "两个",
+      "quote": "and two more candidates are awaiting submission"
+    },
+    {
+      "text": "Kepler 盯着一个天区看了四年",
+      "value": "four years",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "四年",
+      "quote": "Kepler watched one field for four years"
+    },
+    {
+      "text": "TESS 在前 26 个扇区里扫了两个半球",
+      "value": "26",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "26 个",
+      "quote": "TESS surveyed both hemispheres in its first 26 sectors, from 2018 to 2020"
+    },
+    {
+      "text": "TESS 前 26 个扇区的观测时间是 2018 年到 2020 年",
+      "value": "2018 to 2020",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "2018 年到 2020 年",
+      "quote": "TESS surveyed both hemispheres in its first 26 sectors, from 2018 to 2020"
+    },
+    {
+      "text": "NASA 于 2018 年发射 TESS",
+      "value": "2018",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "2018 年",
+      "quote": "observations from TESS, which NASA launched in 2018"
+    },
+    {
+      "text": "开场动画使用的目录快照抓取于 2026 年 11 月 19 日",
+      "value": "November 19, 2026",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "2026 年 11 月 19 日",
+      "quote": "The catalog snapshot was retrieved on November 19, 2026"
+    },
+    {
+      "text": "文章发表于 2026 年 11 月 24 日",
+      "value": "November 24, 2026",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "2026 年 11 月 24 日",
+      "quote": "November 24, 2026"
+    },
+    {
+      "text": "两位业余天文爱好者用 Codex 和 Astra 搜索系外行星迹象",
+      "value": "Two",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "两位",
+      "quote": "Two amateur astronomers used Codex and Astra to look for signs of planets in public telescope data"
+    }
+  ],
+  "cover": {
+    "headline": "AI 帮爱好者找系外行星",
+    "highlight": "公开数据里筛出候选，交专业复核",
+    "glyph": {
+      "kind": "funnel",
+      "stages": [
+        {
+          "label": "恒星数据",
+          "value": 19000000,
+          "display": "1900 万",
+          "tone": "base"
+        },
+        {
+          "label": "候选信号",
+          "value": 49,
+          "display": "49 个",
+          "tone": "hi"
+        }
+      ]
+    }
+  },
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "origin": "auto",
+    "candidate": "f3aa9260f1",
+    "tier": "official",
+    "via": null,
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "generated_at": "2026-11-25T08:30:51.360Z"
+  }
+}
