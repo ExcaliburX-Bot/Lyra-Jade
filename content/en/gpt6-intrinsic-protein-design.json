@@ -1,0 +1,998 @@
+{
+  "slug": "gpt6-intrinsic-protein-design",
+  "date": "2026-11-24",
+  "category": "product",
+  "publisher": "OpenAI",
+  "title": "GPT-6 designs proteins with reasoning and code alone; 5 targets show lab binding signs",
+  "summary": "Designing a small protein that binds a cancer target usually means juggling several specialized biology models. OpenAI research shows GPT-6 can handle much of that with reasoning and code alone: in the lab, the proteins it designed showed signs of binding across five targets.",
+  "ai_summary": "OpenAI's research shows the GPT-6 family can design protein structures and amino acid sequences using only reasoning and code, without specialized biology models. In lab tests, designs based on GPT-6.2 showed signs of binding on all 5 targets; 35 of 322 designs (10.9%) succeeded, with varying hit rates for rewriting sequences for existing structures and redesigning antibody binding loops. In computational tests, an internal model matched or beat specialized models on motif scaffolding (43.7% vs 27.8%) and small-molecule docking (97% vs 60%). Full structure prediction remains a clear weakness: average TM-score 0.38, far below ESMFold2's 0.93; the pipeline still relies on specialized models to fill in sequences and filter candidates. For researchers who want natural language to speed up protein design, this is an early signal.",
+  "brief": [
+    "In the lab, 35 of 322 minibinders designed by GPT-6.2 (10.9%) bound to their targets.",
+    "On small-molecule docking, the latest internal model hit 97% on the Scarpino dataset, versus 60% for the specialized DiffDock model.",
+    "Full protein structure prediction remains a weakness: the internal model averages TM-score 0.38, versus 0.93 for ESMFold2.",
+    "The pipeline still relies on specialized models such as SolubleMPNN and ESMFold2 to supply sequences and filter candidates, so it is not yet end to end."
+  ],
+  "readMinutes": 8,
+  "topics": [
+    "openai"
+  ],
+  "cover": {
+    "headline": "GPT-6 can also design proteins",
+    "highlight": "No specialized models. Just reasoning and code.",
+    "big": {
+      "value": "10.9",
+      "unit": "%",
+      "label": "Lab binding hit rate (35/322)"
+    }
+  },
+  "sources": {
+    "main": {
+      "title": "GPT-6 models demonstrate intrinsic protein-design capabilities",
+      "publisher": "OpenAI",
+      "date": "2026-11-24",
+      "url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    "more": [],
+    "note": "Bar and column chart figures come from OpenAI's paper abstract. Schematic diagrams only explain task concepts and are not measured data. This article relies solely on OpenAI's announcement; the lab results have not been independently verified."
+  },
+  "sections": [
+    {
+      "h": "What this is: GPT-6 designed proteins using only reasoning and code",
+      "blocks": [
+        {
+          "p": "Proteins are the molecules that do most of the work in cells: they catalyze reactions, carry oxygen, and fight infections—and when they fold incorrectly, they can cause disease. They are built from chains of amino acids; the order of those amino acids determines how a protein folds into a 3D shape, and that shape determines what it does. The hard part of protein design is working backward: start with a desired function, then figure out the needed 3D structure and the sequence that produces it."
+        },
+        {
+          "p": "Until now, this work has depended on specialized biology models, often several at once. In a preprint published November 24, 2026, OpenAI says the GPT-6 family can design new protein structures and amino acid sequences without those specialized models, using only reasoning and general-purpose coding tools."
+        },
+        {
+          "p": "This is a research paper, not a product launch: OpenAI has not said these capabilities are connected to any API, and has not given pricing or a timeline."
+        },
+        {
+          "callout": {
+            "kind": "takeaway",
+            "title": "The bottom line",
+            "text": "This is a capability demo, not a product you can buy yet."
+          }
+        }
+      ]
+    },
+    {
+      "h": "Why \"no specialized models\" matters",
+      "blocks": [
+        {
+          "p": "The problem with specialized biology models isn't capability—it's that each one covers only part of the job. Each accepts a specific format of inputs and constraints; adding a new kind of information often means changing software or retraining. Researchers need substantial expertise just to chain several models together."
+        },
+        {
+          "p": "A general model's advantage is that you can state what you need directly in a prompt. The paper gives an example: ask the model to predict where on a protein a small molecule will bind and in what orientation; if you already know which two atoms form a bond, give it that information and ask how the rest of the molecule fits. Switching between these tasks takes only a new prompt, not retraining."
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "Specialized models need one-by-one adaptation; general models just need a new prompt",
+            "subtitle": "Amber shows capabilities GPT-6 demonstrates for the first time in this work",
+            "left": {
+              "label": "Specialized biology models",
+              "sub": "Each handles one piece",
+              "items": [
+                {
+                  "label": "Each accepts only specific inputs and constraints",
+                  "tag": "Input",
+                  "state": "base"
+                },
+                {
+                  "label": "Adding a new requirement means changing software or retraining",
+                  "tag": "Adaptation",
+                  "state": "base"
+                },
+                {
+                  "label": "Coordinating multiple models requires expertise",
+                  "tag": "Use",
+                  "state": "base"
+                }
+              ]
+            },
+            "right": {
+              "label": "GPT-6 general model",
+              "sub": "One model, many jobs",
+              "items": [
+                {
+                  "label": "Design instructions written in natural language",
+                  "tag": "Input",
+                  "state": "hi"
+                },
+                {
+                  "label": "Switch tasks by changing the prompt, no retraining",
+                  "tag": "Adaptation",
+                  "state": "hi"
+                },
+                {
+                  "label": "Can direct everything from a single bond to overall shape",
+                  "tag": "Use",
+                  "state": "hi"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "h": "What worked in the lab: small proteins, new sequences, antibody loops",
+      "blocks": [
+        {
+          "p": "Computational tests are one thing; proteins that can actually be synthesized and bind are another. OpenAI and partner Onava ran wet-lab experiments—making real proteins in the lab and testing whether they bound."
+        },
+        {
+          "p": "Experiment one aimed to design small proteins (minibinders) that bind a target. They gave GPT-6.2 the 3D structures of five target proteins, marked where the minibinder should bind, and the model wrote code to generate 3D designs."
+        },
+        {
+          "fig": {
+            "type": "steps",
+            "title": "GPT-6.2 produced the 3D designs; specialized models still handled sequences and screening",
+            "subtitle": "Schematic: workflow follows the paper; specialized models still handle sequence generation and screening",
+            "note": "Steps 3 and 4 still depend on specialized models",
+            "steps": [
+              {
+                "name": "Design backbone",
+                "tool": "GPT-6.2 + code",
+                "desc": "Receives 5 target structures and specified binding sites, writes code to generate 3D backbone designs"
+              },
+              {
+                "name": "Supply sequence",
+                "tool": "Specialized models like SolubleMPNN",
+                "desc": "Turn 3D designs into amino acid sequences that can be synthesized"
+              },
+              {
+                "name": "Screen candidates",
+                "tool": "Specialized models",
+                "desc": "Select candidates predicted to fold correctly and bind at the intended site"
+              },
+              {
+                "name": "Wet lab",
+                "tool": "Onava",
+                "desc": "Synthesize proteins and test whether they bind to the target"
+              }
+            ]
+          }
+        },
+        {
+          "p": "The lab tested 322 minibinders in total, and 35 (10.9%) showed signs of binding to their intended targets: 5 hits for PD-L1, 3 for IL-7Rα, 1 for TrkA, 8 for VEGF-A, and 18 for IL-17A. The paper notes that the original RFdiffusion study reported a higher hit rate, but hit rates depend heavily on how strictly designs are filtered and on the definition of \"binding.\" In any case, these are the first signs that GPT-6.2's 3D designs can bind targets in the lab."
+        },
+        {
+          "p": "Experiment two rewrote sequences for existing structures. They gave GPT-6.2 a 3D structure but withheld the original amino acid sequence, asked it to propose new sequences, then used specialized models to help choose which ones to make and test."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Rewriting sequences for existing structures: binding across three targets",
+            "subtitle": "Binding rates are the percentages shown in the paper; median difference is the median change from the original sequence",
+            "columns": [
+              "Target",
+              "Binding signs / tested",
+              "Hit rate",
+              "Median difference vs original"
+            ],
+            "rows": [
+              [
+                "MDM2",
+                "75 / 88",
+                "85%",
+                "43%"
+              ],
+              [
+                "VEGF-A",
+                "26 / 42",
+                "62%",
+                "50%"
+              ],
+              [
+                "PD-1",
+                "8 / 59",
+                "14%",
+                "15%"
+              ]
+            ],
+            "highlight": {
+              "col": 2
+            }
+          }
+        },
+        {
+          "p": "The unpublished-structure results are stronger evidence. They took three minibinder shapes that GPT-6.2 itself had generated and had not been published—two targeting PD-L1 and one targeting IL-7Rα—and asked the model to rewrite their sequences. Of 107 proteins, 14 (13.1%) bound. For the same PD-L1 structure, the model produced two sequences that changed 52 and 58 of 90 amino acids and differed from each other at 44 positions. That both still bound suggests the model is not simply memorizing training data."
+        },
+        {
+          "p": "The third experiment redesigned antibodies. Antibodies grip targets through three \"binding loops.\" They took six small antibodies against IL-4Rα, hid the sequences of the three loops, and asked the model to rewrite them; 128 of 182 designs (70%) still bound. Then they took five therapeutic antibodies and asked the model to change about half the amino acids in each loop. Of 272 fragments, 179 (66%) still bound their original target, PD-1 or PD-L1."
+        }
+      ]
+    },
+    {
+      "h": "In computational tests, it can also scaffold structures, predict docking, and rank mutations",
+      "blocks": [
+        {
+          "p": "Motif scaffolding: scientists sometimes know how a few key amino acids should be arranged at a reaction site—called a motif—but those amino acids may lie far apart along the chain. The challenge is to design a whole protein that folds to bring them together and hold them in place. OpenAI tested the models on 30 problems from MotifBench."
+        },
+        {
+          "fig": {
+            "type": "illustration",
+            "title": "Give the model a small region to preserve, and it completes the rest of the chain",
+            "subtitle": "Schematic: the amber-outlined motif must stay unchanged; the model designs the rest",
+            "note": "Motif scaffolding task: specify the relative positions of key amino acids and design the rest of the protein",
+            "glyph": {
+              "kind": "doc",
+              "lines": 12,
+              "select": [
+                4,
+                6
+              ]
+            },
+            "legend": [
+              {
+                "tone": "hi",
+                "label": "Motif that must be preserved"
+              },
+              {
+                "tone": "base",
+                "label": "Rest designed by the model"
+              }
+            ]
+          }
+        },
+        {
+          "p": "For each design, they used ProteinMPNN to generate 8 candidate sequences and ESMFold to predict how each would fold. A design passed if at least one candidate preserved the motif and matched the intended overall structure. The latest internal model passed 43.7% of the time versus 27.8% for RFdiffusion. This is a preliminary computational analysis; whether the proteins actually work still needs lab validation."
+        },
+        {
+          "p": "Specifying an overall fold: they gave the model a chain length and a CATH classification code (a system scientists use to classify protein structures) and asked it to place every amino acid in 3D space. Across 200 problems, the latest internal model passed 18.9% versus 17.1% for Proteina, a specialized model."
+        },
+        {
+          "p": "Small-molecule docking: predicting where and how a small drug molecule binds to a protein. On the PoseBusters dataset, which does not reveal the binding site, GPT-6.2 hit 93%, the latest internal model 96%, and the specialized DiffDock-L 50%. On the Scarpino dataset (179 structures), the model is told which two atoms form a bond and must infer how the rest of the molecule fits; GPT-6.2 hit 92%, the internal model 97%, and DiffDock 60%. The advantage of a general model is that extra information can go directly into the prompt."
+        },
+        {
+          "fig": {
+            "type": "bars",
+            "title": "Small-molecule docking: internal model beats specialized models on both datasets",
+            "subtitle": "Unit: share of matching predictions (%); amber is the latest internal model, gray is DiffDock-family specialized model",
+            "legend": [
+              {
+                "tone": "hi",
+                "label": "Latest internal model"
+              },
+              {
+                "tone": "base",
+                "label": "GPT-6.2"
+              },
+              {
+                "tone": "ref",
+                "label": "DiffDock-family specialized model"
+              }
+            ],
+            "groups": [
+              {
+                "label": "PoseBusters (binding site not given)",
+                "items": [
+                  {
+                    "label": "GPT-6.2",
+                    "value": 93,
+                    "display": "93%",
+                    "tone": "base"
+                  },
+                  {
+                    "label": "Latest internal model",
+                    "value": 96,
+                    "display": "96%",
+                    "tone": "hi"
+                  },
+                  {
+                    "label": "DiffDock-L",
+                    "value": 50,
+                    "display": "50%",
+                    "tone": "ref"
+                  }
+                ]
+              },
+              {
+                "label": "Scarpino (bond atoms given)",
+                "items": [
+                  {
+                    "label": "GPT-6.2",
+                    "value": 92,
+                    "display": "92%",
+                    "tone": "base"
+                  },
+                  {
+                    "label": "Latest internal model",
+                    "value": 97,
+                    "display": "97%",
+                    "tone": "hi"
+                  },
+                  {
+                    "label": "DiffDock",
+                    "value": 60,
+                    "display": "60%",
+                    "tone": "ref"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "p": "Antibody binding prediction: after hiding details of surface side chains, they asked successive generations to predict how an antibody would bind and orient. Mean DockQ score (higher is closer to the experimentally observed arrangement) climbed from 0.05 for GPT-5.6 to 0.28 for GPT-6, 0.57 for GPT-6.2, and 0.81 for the latest internal model."
+        },
+        {
+          "fig": {
+            "type": "columns",
+            "title": "Predicting how antibodies attach to proteins: better with each generation",
+            "subtitle": "Unit: DockQ score (higher is closer to experimentally observed); amber is the latest internal model",
+            "note": "Mean scores at each model's highest evaluated compute setting, with antibody surface side-chain details hidden",
+            "items": [
+              {
+                "label": "GPT-5.6",
+                "value": 0.05,
+                "display": "0.05",
+                "tone": "base"
+              },
+              {
+                "label": "GPT-6",
+                "value": 0.28,
+                "display": "0.28",
+                "tone": "base"
+              },
+              {
+                "label": "GPT-6.2",
+                "value": 0.57,
+                "display": "0.57",
+                "tone": "base"
+              },
+              {
+                "label": "Latest internal model",
+                "value": 0.81,
+                "display": "0.81",
+                "tone": "hi"
+              }
+            ]
+          }
+        },
+        {
+          "p": "Mutation ranking: given 50 variants, the model used reasoning alone—no code—to rank them by stability or activity. On 265 groups in the stability dataset, ranking correlation rose from 0.41 for GPT-5.6 to 0.66 for the latest internal model; across all four datasets it beat the specialized ESM2-650M on average."
+        }
+      ]
+    },
+    {
+      "h": "Structure prediction is still a clear weakness",
+      "blocks": [
+        {
+          "p": "Many of the earlier steps still rely on specialized models to predict how a given sequence will fold. OpenAI also tried to get GPT to do this itself, with mixed results—the paper calls this a jagged capability frontier."
+        },
+        {
+          "p": "They evaluate with TM-score: above 0.5 generally means the overall fold has been roughly captured. For directly predicting complete structure from sequence, the average score is 0.16 for GPT-5.6, 0.26 for GPT-6.2, and 0.38 for the latest internal model—versus 0.93 for the specialized ESMFold2, a wide gap."
+        },
+        {
+          "fig": {
+            "type": "bars",
+            "title": "Predicting full structure from sequence: GPT is improving but still far behind specialized models",
+            "subtitle": "Unit: TM-score (above 0.5 generally means the overall fold is captured); amber is latest internal model, gray is specialized model",
+            "legend": [
+              {
+                "tone": "hi",
+                "label": "Latest internal model"
+              },
+              {
+                "tone": "base",
+                "label": "GPT series"
+              },
+              {
+                "tone": "ref",
+                "label": "ESMFold2 (specialized)"
+              }
+            ],
+            "groups": [
+              {
+                "label": "Predicting full structure from sequence",
+                "items": [
+                  {
+                    "label": "GPT-5.6",
+                    "value": 0.16,
+                    "display": "0.16",
+                    "tone": "base"
+                  },
+                  {
+                    "label": "GPT-6.2",
+                    "value": 0.26,
+                    "display": "0.26",
+                    "tone": "base"
+                  },
+                  {
+                    "label": "Latest internal model",
+                    "value": 0.38,
+                    "display": "0.38",
+                    "tone": "hi"
+                  },
+                  {
+                    "label": "ESMFold2",
+                    "value": 0.93,
+                    "display": "0.93",
+                    "tone": "ref"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "p": "When most of the structure is known and the task is to fill in missing antibody loops (100 antibody fragments), the internal model often estimates the shape and position of the six loops well—but ESMFold2 is still more accurate even when it sees only the sequence."
+        }
+      ]
+    },
+    {
+      "h": "What OpenAI hasn't said: pricing, timing, and key limitations",
+      "blocks": [
+        {
+          "list": [
+            "OpenAI hasn't said when or at what price these capabilities will reach an API or product—this is a research preprint, not a launch.",
+            "Not yet end-to-end zero-shot: the pipeline still uses specialized models such as Boltz-2, OpenDDE, and ESMFold2 to supply sequences, predict folds, and filter candidates.",
+            "Full structure prediction remains far behind specialized models: internal model averages TM-score 0.38, versus ESMFold2's 0.93.",
+            "High scores on sequence-reconstruction tests may partly reflect memorized patterns from training data and do not directly prove reliability on new proteins.",
+            "The lab verified only binding; specificity, stability, biological activity, and safety and efficacy for therapeutic use are still unresolved."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Who it's for",
+      "blocks": [
+        {
+          "p": "The value: if you already do protein design, a general model can reduce the back-and-forth of coordinating several specialized models—write constraints in natural language and switch tasks by changing the prompt. For teams that want to generate candidates quickly and then validate them in the wet lab, this adds another generative entry point to try."
+        },
+        {
+          "p": "The trade-off: structure prediction still has to be handed to specialized models, so the pipeline isn't one-click. Binding is far from \"usable,\" and wet-lab validation remains unavoidable."
+        },
+        {
+          "list": [
+            "If you do protein design research and want to generate candidates quickly: try it on computational tasks first, especially motif scaffolding and sequence rewriting.",
+            "If you expect it to replace specialized structure predictors like ESMFold2: not yet—the gap is still large.",
+            "If you care about safety: OpenAI says it will use its Preparedness Framework to assess and reduce biosafety risk, but doesn't expand on specific measures."
+          ]
+        }
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "text": "Computational tests covered 14 protein-related tasks",
+      "value": "14",
+      "as_written": "14",
+      "quote": "Newer generations of models improved on many of the 14 protein tasks tested.",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "The paper was published on November 24, 2026",
+      "value": "November 24, 2026",
+      "as_written": "November 24, 2026",
+      "quote": "November 24, 2026",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "Experiment one selected 5 target proteins",
+      "value": "5",
+      "as_written": "5",
+      "quote": "We tested 322 minibinders against 5 targets in the lab.",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "The lab tested 322 minibinders in total",
+      "value": "322",
+      "as_written": "322",
+      "quote": "We tested 322 minibinders against 5 targets in the lab.",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "35 of them showed signs of binding to their targets",
+      "value": "35",
+      "as_written": "35",
+      "quote": "Of those, 35 (10.9%) tested positive for binding to their intended target.",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "The binding hit rate was 10.9%",
+      "value": "10.9%",
+      "as_written": "10.9%",
+      "quote": "Of those, 35 (10.9%) tested positive for binding to their intended target.",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "PD-L1 had 5 hits",
+      "value": "5",
+      "as_written": "5",
+      "quote": "We found 5 hits for PD-L1 (a protein some cancers use to evade the immune system), 3 for IL-7Rα, 1 for TrkA, 8 for VEGF-A and 18 for IL-17A.",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "IL-7Rα had 3 hits",
+      "value": "3",
+      "as_written": "3",
+      "quote": "We found 5 hits for PD-L1 (a protein some cancers use to evade the immune system), 3 for IL-7Rα, 1 for TrkA, 8 for VEGF-A and 18 for IL-17A.",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "TrkA had 1 hit",
+      "value": "1",
+      "as_written": "1",
+      "quote": "We found 5 hits for PD-L1 (a protein some cancers use to evade the immune system), 3 for IL-7Rα, 1 for TrkA, 8 for VEGF-A and 18 for IL-17A.",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "VEGF-A had 8 hits",
+      "value": "8",
+      "as_written": "8",
+      "quote": "We found 5 hits for PD-L1 (a protein some cancers use to evade the immune system), 3 for IL-7Rα, 1 for TrkA, 8 for VEGF-A and 18 for IL-17A.",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "IL-17A had 18 hits",
+      "value": "18",
+      "as_written": "18",
+      "quote": "We found 5 hits for PD-L1 (a protein some cancers use to evade the immune system), 3 for IL-7Rα, 1 for TrkA, 8 for VEGF-A and 18 for IL-17A.",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "Sequence rewriting first validated 3 targets",
+      "value": "3",
+      "as_written": "3",
+      "quote": "For three targets, we started with computationally predicted structures of confirmed minibinders whose sequences Onava had collected from earlier studies.",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "MDM2 had 75 designs that bound",
+      "value": "75",
+      "as_written": "75",
+      "quote": "we saw binding in 75 of 88 designs for MDM2 (85%)",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "MDM2 had 88 designs tested",
+      "value": "88",
+      "as_written": "88",
+      "quote": "we saw binding in 75 of 88 designs for MDM2 (85%)",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "MDM2 binding rate: 85%",
+      "value": "85%",
+      "as_written": "85%",
+      "quote": "we saw binding in 75 of 88 designs for MDM2 (85%)",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "VEGF-A had 26 designs that bound",
+      "value": "26",
+      "as_written": "26",
+      "quote": "26 of 42 for VEGF-A (62%)",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "VEGF-A had 42 tested",
+      "value": "42",
+      "as_written": "42",
+      "quote": "26 of 42 for VEGF-A (62%)",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "VEGF-A binding rate: 62%",
+      "value": "62%",
+      "as_written": "62%",
+      "quote": "26 of 42 for VEGF-A (62%)",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "PD-1 had 8 designs that bound",
+      "value": "8",
+      "as_written": "8",
+      "quote": "and 8 of 59 for PD-1 (14%)",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "PD-1 had 59 tested",
+      "value": "59",
+      "as_written": "59",
+      "quote": "and 8 of 59 for PD-1 (14%)",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "PD-1 binding rate: 14%",
+      "value": "14%",
+      "as_written": "14%",
+      "quote": "and 8 of 59 for PD-1 (14%)",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "VEGF-A new sequences had a median difference of 50%",
+      "value": "50%",
+      "as_written": "50%",
+      "quote": "with a median of 50% for VEGF-A, 43% for MDM2, and 15% for PD-1",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "MDM2 new sequences had a median difference of 43%",
+      "value": "43%",
+      "as_written": "43%",
+      "quote": "with a median of 50% for VEGF-A, 43% for MDM2, and 15% for PD-1",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "PD-1 new sequences had a median difference of 15%",
+      "value": "15%",
+      "as_written": "15%",
+      "quote": "with a median of 50% for VEGF-A, 43% for MDM2, and 15% for PD-1",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "Unpublished-structure sequence rewriting involved 107 proteins",
+      "value": "107",
+      "as_written": "107",
+      "quote": "Of the 107 proteins made from GPT‑6.2's new sequences, 14 (13.1%) showed binding.",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "14 of them bound",
+      "value": "14",
+      "as_written": "14",
+      "quote": "Of the 107 proteins made from GPT‑6.2's new sequences, 14 (13.1%) showed binding.",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "Binding rate: 13.1%",
+      "value": "13.1%",
+      "as_written": "13.1%",
+      "quote": "Of the 107 proteins made from GPT‑6.2's new sequences, 14 (13.1%) showed binding.",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "There were 3 unpublished shapes",
+      "value": "three",
+      "as_written": "3",
+      "quote": "we asked GPT‑6.2 to design new sequences for three unpublished minibinder shapes it had generated earlier: two targeting PD-L1 and one targeting IL-7Rα",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "2 of them targeted PD-L1",
+      "value": "two",
+      "as_written": "2",
+      "quote": "we asked GPT‑6.2 to design new sequences for three unpublished minibinder shapes it had generated earlier: two targeting PD-L1 and one targeting IL-7Rα",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "1 targeted IL-7Rα",
+      "value": "one",
+      "as_written": "1",
+      "quote": "we asked GPT‑6.2 to design new sequences for three unpublished minibinder shapes it had generated earlier: two targeting PD-L1 and one targeting IL-7Rα",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "One sequence changed 52 of 90 amino acids",
+      "value": "52",
+      "as_written": "52",
+      "quote": "GPT‑6.2 designed two sequences different from the original in 52 and 58 out of 90 total amino acids.",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "Another changed 58",
+      "value": "58",
+      "as_written": "58",
+      "quote": "GPT‑6.2 designed two sequences different from the original in 52 and 58 out of 90 total amino acids.",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "The structure had 90 amino acids in total",
+      "value": "90",
+      "as_written": "90",
+      "quote": "GPT‑6.2 designed two sequences different from the original in 52 and 58 out of 90 total amino acids.",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "The two sequences differed from each other at 44 positions",
+      "value": "44",
+      "as_written": "44",
+      "quote": "The two also differed from each other at 44 positions, nearly half the sequence.",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "Antibody-loop redesign tested 182 designs",
+      "value": "182",
+      "as_written": "182",
+      "quote": "Of the 182 designs we tested, 128 (70%) showed signs of binding to IL-4Rα.",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "128 of them bound",
+      "value": "128",
+      "as_written": "128",
+      "quote": "Of the 182 designs we tested, 128 (70%) showed signs of binding to IL-4Rα.",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "Binding rate: 70%",
+      "value": "70%",
+      "as_written": "70%",
+      "quote": "Of the 182 designs we tested, 128 (70%) showed signs of binding to IL-4Rα.",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "The starting point was 6 small antibodies",
+      "value": "six",
+      "as_written": "6",
+      "quote": "We started with six small antibodies (VHHs) that bind to the same protein, IL-4Rα.",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "The hidden parts were 3 binding loops",
+      "value": "three",
+      "as_written": "3",
+      "quote": "leaving out the three loops that help the antibody grip its target",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "The therapeutic antibody experiment asked for about half the amino acids in each loop to be changed",
+      "value": "about half",
+      "as_written": "about half",
+      "quote": "asked it to change about half the amino acids in each of three binding loops while keeping the rest of the sequence intact",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "272 therapeutic antibody fragments were tested",
+      "value": "272",
+      "as_written": "272",
+      "quote": "Of 272 fragments based on five therapeutic antibodies, 179 (66%) showed binding to the original target, PD-1 or PD-L1.",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "179 bound",
+      "value": "179",
+      "as_written": "179",
+      "quote": "Of 272 fragments based on five therapeutic antibodies, 179 (66%) showed binding to the original target, PD-1 or PD-L1.",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "Binding rate: 66%",
+      "value": "66%",
+      "as_written": "66%",
+      "quote": "Of 272 fragments based on five therapeutic antibodies, 179 (66%) showed binding to the original target, PD-1 or PD-L1.",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "It involved 5 therapeutic antibodies",
+      "value": "five",
+      "as_written": "5",
+      "quote": "Of 272 fragments based on five therapeutic antibodies, 179 (66%) showed binding to the original target, PD-1 or PD-L1.",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "Motif scaffolding tested 30 problems",
+      "value": "30",
+      "as_written": "30",
+      "quote": "We tested our models on 30 challenges from MotifBench",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "Each design got 8 candidate sequences",
+      "value": "eight",
+      "as_written": "8",
+      "quote": "we used ProteinMPNN to propose eight possible amino acid sequences",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "Latest internal model motif pass rate: 43.7%",
+      "value": "43.7%",
+      "as_written": "43.7%",
+      "quote": "43.7% of the designs we evaluated from our latest internal model met both criteria, compared with 27.8% for RFdiffusion.",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "RFdiffusion pass rate: 27.8%",
+      "value": "27.8%",
+      "as_written": "27.8%",
+      "quote": "43.7% of the designs we evaluated from our latest internal model met both criteria, compared with 27.8% for RFdiffusion.",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "Specified-fold tests had 200 problems",
+      "value": "200",
+      "as_written": "200",
+      "quote": "Across 200 challenges, 18.9% of the designs we evaluated from our latest internal model passed, compared with 17.1% for Proteina",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "Internal model pass rate: 18.9%",
+      "value": "18.9%",
+      "as_written": "18.9%",
+      "quote": "Across 200 challenges, 18.9% of the designs we evaluated from our latest internal model passed, compared with 17.1% for Proteina",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "Proteina pass rate: 17.1%",
+      "value": "17.1%",
+      "as_written": "17.1%",
+      "quote": "Across 200 challenges, 18.9% of the designs we evaluated from our latest internal model passed, compared with 17.1% for Proteina",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "GPT-6.2 hit 93% on PoseBusters",
+      "value": "93%",
+      "as_written": "93%",
+      "quote": "GPT‑6.2 closely matched the molecule's observed position and orientation in 93% of scored predictions, compared with 96% for our latest internal model and 50% for DiffDock-L",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "Internal model hit 96% on PoseBusters",
+      "value": "96%",
+      "as_written": "96%",
+      "quote": "GPT‑6.2 closely matched the molecule's observed position and orientation in 93% of scored predictions, compared with 96% for our latest internal model and 50% for DiffDock-L",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "DiffDock-L hit 50%",
+      "value": "50%",
+      "as_written": "50%",
+      "quote": "GPT‑6.2 closely matched the molecule's observed position and orientation in 93% of scored predictions, compared with 96% for our latest internal model and 50% for DiffDock-L",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "The Scarpino dataset has 179 structures",
+      "value": "179",
+      "as_written": "179",
+      "quote": "We tested this on 179 structures from the Scarpino dataset",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "GPT-6.2 hit 92% on Scarpino",
+      "value": "92%",
+      "as_written": "92%",
+      "quote": "GPT‑6.2 closely matched the experimental structure in 92% of scored predictions, and our latest internal model did so in 97%, while DiffDock reached 60%",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "Internal model hit 97% on Scarpino",
+      "value": "97%",
+      "as_written": "97%",
+      "quote": "GPT‑6.2 closely matched the experimental structure in 92% of scored predictions, and our latest internal model did so in 97%, while DiffDock reached 60%",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "DiffDock hit 60%",
+      "value": "60%",
+      "as_written": "60%",
+      "quote": "GPT‑6.2 closely matched the experimental structure in 92% of scored predictions, and our latest internal model did so in 97%, while DiffDock reached 60%",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "GPT-5.6 mean DockQ: 0.05",
+      "value": "0.05",
+      "as_written": "0.05",
+      "quote": "increased from approximately 0.05 for GPT‑5.6 to 0.28 for GPT‑6, 0.57 for GPT‑6.2, and 0.81 for our latest internal model",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "GPT-6 mean DockQ: 0.28",
+      "value": "0.28",
+      "as_written": "0.28",
+      "quote": "increased from approximately 0.05 for GPT‑5.6 to 0.28 for GPT‑6, 0.57 for GPT‑6.2, and 0.81 for our latest internal model",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "GPT-6.2 mean DockQ: 0.57",
+      "value": "0.57",
+      "as_written": "0.57",
+      "quote": "increased from approximately 0.05 for GPT‑5.6 to 0.28 for GPT‑6, 0.57 for GPT‑6.2, and 0.81 for our latest internal model",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "Latest internal model mean DockQ: 0.81",
+      "value": "0.81",
+      "as_written": "0.81",
+      "quote": "increased from approximately 0.05 for GPT‑5.6 to 0.28 for GPT‑6, 0.57 for GPT‑6.2, and 0.81 for our latest internal model",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "Mutation ranking had 50 variants per problem",
+      "value": "50",
+      "as_written": "50",
+      "quote": "we gave our models the sequence of the protein the scientists started with and the sequences of 50 modified versions",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "It used 4 public datasets",
+      "value": "four",
+      "as_written": "4",
+      "quote": "We drew on four public datasets from experiments",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "The stability dataset had 265 groups",
+      "value": "265",
+      "as_written": "265",
+      "quote": "Across 265 sets from the stability study, each model generation improved, from 0.41 for GPT‑5.6 to 0.52 for GPT‑6, 0.57 for GPT‑6.2, and 0.66 for our latest internal model.",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "GPT-5.6 ranking correlation: 0.41",
+      "value": "0.41",
+      "as_written": "0.41",
+      "quote": "Across 265 sets from the stability study, each model generation improved, from 0.41 for GPT‑5.6 to 0.52 for GPT‑6, 0.57 for GPT‑6.2, and 0.66 for our latest internal model.",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "GPT-6 ranking correlation: 0.52",
+      "value": "0.52",
+      "as_written": "0.52",
+      "quote": "Across 265 sets from the stability study, each model generation improved, from 0.41 for GPT‑5.6 to 0.52 for GPT‑6, 0.57 for GPT‑6.2, and 0.66 for our latest internal model.",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "GPT-6.2 ranking correlation: 0.57",
+      "value": "0.57",
+      "as_written": "0.57",
+      "quote": "Across 265 sets from the stability study, each model generation improved, from 0.41 for GPT‑5.6 to 0.52 for GPT‑6, 0.57 for GPT‑6.2, and 0.66 for our latest internal model.",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "Latest internal model ranking correlation: 0.66",
+      "value": "0.66",
+      "as_written": "0.66",
+      "quote": "Across 265 sets from the stability study, each model generation improved, from 0.41 for GPT‑5.6 to 0.52 for GPT‑6, 0.57 for GPT‑6.2, and 0.66 for our latest internal model.",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "GPT-5.6 mean TM-score: 0.16",
+      "value": "0.16",
+      "as_written": "0.16",
+      "quote": "the average score rose from 0.16 for GPT‑5.6 to 0.26 for GPT‑6.2 and 0.38 for our latest internal model",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "GPT-6.2 mean TM-score: 0.26",
+      "value": "0.26",
+      "as_written": "0.26",
+      "quote": "the average score rose from 0.16 for GPT‑5.6 to 0.26 for GPT‑6.2 and 0.38 for our latest internal model",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "Latest internal model mean TM-score: 0.38",
+      "value": "0.38",
+      "as_written": "0.38",
+      "quote": "the average score rose from 0.16 for GPT‑5.6 to 0.26 for GPT‑6.2 and 0.38 for our latest internal model",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "ESMFold2 mean TM-score: 0.93",
+      "value": "0.93",
+      "as_written": "0.93",
+      "quote": "The specialized model ESMFold2 averaged 0.93",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "A TM-score above 0.5 generally means the overall fold is captured.",
+      "value": "0.5",
+      "as_written": "0.5",
+      "quote": "scores above 0.5 generally indicate that the prediction captures the overall fold",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "The antibody-loop completion test used 100 fragments.",
+      "value": "100",
+      "as_written": "100",
+      "quote": "We tested this on 100 antibody fragments",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    },
+    {
+      "text": "The antibody-loop completion test hid 6 loops.",
+      "value": "six",
+      "as_written": "6",
+      "quote": "hiding the six loops that help the antibody recognize its target",
+      "source_url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities"
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "9b9e7b7845063bfd"
+}
