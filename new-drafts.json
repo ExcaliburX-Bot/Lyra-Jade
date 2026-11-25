@@ -1,37 +1,37 @@
 [
   {
-    "slug": "gemini-4-neon",
-    "title": "Gemini 4 Neon 发布：100 万 token 上下文，输入每百万 token 3 美元",
-    "file": "content/articles/gemini-4-neon.json",
+    "slug": "mcp-servers-ship-skills-tasks-and-more",
+    "title": "MCP 服务器现在能带技能、跑长任务、要确认、收文件",
+    "file": "content/articles/mcp-servers-ship-skills-tasks-and-more.json",
     "errors": 0,
-    "warnings": 2,
+    "warnings": 1,
     "provider": "deepseek",
     "model": "deepseek-v4-pro"
   },
   {
-    "slug": "gemini-google-ai-studio-full-stack-android",
-    "title": "Google AI Studio 用 Gemini 生成带登录和存储的 Android 应用，可直接装进手机",
-    "file": "content/articles/gemini-google-ai-studio-full-stack-android.json",
+    "slug": "magi-2-480b-video-model",
+    "title": "Sand.ai 发布 MAGI-2：480B 参数，能原生生成 30 秒 1080p 音画视频",
+    "file": "content/articles/magi-2-480b-video-model.json",
     "errors": 0,
     "warnings": 0,
     "provider": "deepseek",
     "model": "deepseek-v4-pro"
   },
   {
-    "slug": "not-everything-needs-an-llm-decision-models",
-    "title": "PostHog 用决策模型先筛一道，98.7% 的请求不用调大模型",
-    "file": "content/articles/not-everything-needs-an-llm-decision-models.json",
+    "slug": "claude-install-as-app-artifacts",
+    "title": "Claude artifacts 能一键装成 Mac/Windows 桌面应用，权限分三档",
+    "file": "content/articles/claude-install-as-app-artifacts.json",
     "errors": 1,
-    "warnings": 2,
+    "warnings": 0,
     "provider": "deepseek",
     "model": "deepseek-v4-pro"
   },
   {
-    "slug": "claude-code-code-mode",
-    "title": "Claude Code 新增实验性 Code Mode：工具调用打包成一段代码跑，默认关闭",
-    "file": "content/articles/claude-code-code-mode.json",
+    "slug": "google-workspace-cli-gwscli",
+    "title": "谷歌发布 gwscli：AI 代理一句话查日程、回邮件、改文档",
+    "file": "content/articles/google-workspace-cli-gwscli.json",
     "errors": 0,
-    "warnings": 0,
+    "warnings": 1,
     "provider": "deepseek",
     "model": "deepseek-v4-pro"
   }
