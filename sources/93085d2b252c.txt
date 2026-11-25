@@ -1,0 +1,365 @@
+URL: https://code.claude.com/docs/en/code-mode
+FETCHED: 2026-11-25T09:05:22.583Z
+
+Run tool calls from code with Code Mode - Claude Code Docs 
+
+ Documentation Index
+ Fetch the complete documentation index at: /docs/llms.txt 
+ Use this file to discover all available pages before exploring further.
+ Skip to main content 
+ Assistant 
+
+ Responses are generated using AI and may contain mistakes.
+
+ Code Mode changes how Claude uses its tools . Without Code Mode, Claude asks for tool calls such as Bash, Read, or Edit directly and reads each result before it decides what to do next. With Code Mode, Claude writes a piece of JavaScript that makes the tool calls, and Claude Code runs that code in your session. 
+
+ Code Mode is experimental and off by default. It may change or be removed in any release. To share feedback, run /feedback . 
+
+ How Code Mode works 
+
+ In a Code Mode session, you still describe your task in a prompt, and Claude writes JavaScript to carry it out. One piece of code can run commands in parallel, use one result in the next call, and return the part of the output that Claude needs to read. 
+ For example, if you ask Claude to raise a retry limit, Claude might write this code to find the file, edit it, and run the tests. The last line returns the file’s path and the test output to Claude: 
+
+ const files = await $ `rg -l "function retryPolicy" src` . text (); 
+ const target = files . trim (). split ( " \n " )[ 0 ]; 
+ await edit ( target , "maxAttempts: 3" , "maxAttempts: 5" ); 
+ ({ edited: target , tests: $ `npm test -- retryPolicy` . nothrow () }); 
+
+ In the conversation, you see the tool calls, such as the edit’s diff, and not the code. To read the code, press Ctrl+O to open the transcript viewer . Each piece of code appears there as a collapsed Code row, with a hint for how to expand it. 
+ When to use Code Mode 
+
+ Try Code Mode on tasks that take many related tool calls, such as: 
+
+ A change that repeats across many files
+
+ A search whose results need filtering before Claude reads them
+
+ Several independent commands that can run at the same time
+
+ Code Mode limitations 
+
+ Before you turn on Code Mode, check that you can accept these limits: 
+
+ Resuming : you can resume a Code Mode session only with Code Mode on. After a Code Mode session has run with a Claude subscription or a Console account, you can’t resume it on a cloud provider such as Amazon Bedrock
+
+ Auto mode : auto mode’s classifier reviews the code, not each tool call 
+
+ Long-running code : unless code can run in the background , you wait for it to finish, and it stops after ten minutes
+
+ Hooks : by default, expect a refused tool call when a PreToolUse hook doesn’t finish, and a call that can still run when the hook fails another way
+
+ Unavailable features : you can’t use Remote Control , Claude in Chrome , or computer use 
+
+ Moving the session : you can’t move the session to the Desktop app or turn it into a background session , and /fork can’t start a background copy
+
+ Requirements 
+
+ Version : Claude Code v2.1.323 or later, on either release channel . An older version starts without Code Mode, with or without the reason it isn't open to your account yet 
+
+ Account or provider : a Claude subscription, a Console account, or a cloud provider such as Amazon Bedrock, Google Cloud’s Agent Platform, or Microsoft Foundry. With a cloud provider, you need v2.1.331 or later. You can’t use Code Mode through a gateway or with Claude for Government. If you reach a cloud provider with an Enterprise Admin Console sign-in , you need Agent Platform, or Amazon Bedrock without the Mantle endpoint 
+
+ Organization : your organization doesn’t use the HIPAA configuration or zero data retention 
+
+ Model : Claude Opus 5.5, Sonnet 5.5, Haiku 5.5, or Fable 5.2. If you select the model by a deployment name or an application inference profile, ask whoever manages that name whether it points to one of these models
+
+ Surface : an interactive claude session in a terminal. Code Mode doesn’t work with the VS Code panel, the Desktop app, or cloud sessions
+
+ Agent teams : to use Code Mode with agent teams on, you need v2.1.326 or later. Teammates run in Code Mode in the default in-process display mode , and start without it in split panes
+
+ Mods : to use Code Mode with a mod that hooks tool calls, you need v2.1.327 or later. If you’re on the stable channel and an update doesn’t reach that version, switch to latest 
+
+ Telemetry settings : to use Code Mode with feature-flag fetching off or OpenTelemetry events and metrics on, you need v2.1.329 or later. Keep tracing off on any version
+
+ Installation : the native build of Claude Code
+
+ Windows : Git for Windows is installed
+
+ You also can’t start Code Mode with some settings on, such as an API key helper on a direct connection to Anthropic. For the fix for each, see Code Mode doesn’t start . 
+ Try Code Mode 
+
+ Turn on Code Mode, give Claude a task, and look at the code that Claude wrote. 
+
+ 1
+
+ Check your version
+ Run claude --version . If the version is older than the one you need for your setup , run claude update . If you’re on the stable channel and the update doesn’t reach that version, wait for stable to catch up or switch to latest . 
+
+ 2
+
+ Start Claude Code with Code Mode on
+ Set the CLAUDE_CODE_EXPERIMENTAL_CODE_MODE environment variable to 1 . To try Code Mode, set it in your shell. To turn on Code Mode for every new session, set it in your user settings. macOS, Linux, WSL
+
+ Windows PowerShell
+
+ settings.json
+
+ CLAUDE_CODE_EXPERIMENTAL_CODE_MODE = 1 claude 
+
+ $ env: CLAUDE_CODE_EXPERIMENTAL_CODE_MODE = "1" 
+ claude 
+
+ Save this env block in ~/.claude/settings.json and start claude : 
+
+ { 
+ "env" : { 
+ "CLAUDE_CODE_EXPERIMENTAL_CODE_MODE" : "1" 
+ } 
+ } 
+
+ Claude Code ignores this variable in a project’s settings files , so a repository you clone can’t turn on Code Mode for you. 
+
+ 3
+
+ Confirm that you want Code Mode
+ Claude Code asks you to confirm before your first Code Mode session. Select Yes, turn on Code Mode . Claude Code restarts and shows this line near the top of the session: 
+
+ Code Mode (experimental) is on · this session can be resumed only with Code Mode on 
+
+ If you see a different line or none, see Code Mode doesn’t start . 
+
+ 4
+
+ Give Claude a task with many tool calls
+ In a project you know, send a prompt such as this one: 
+
+ Read every Markdown file in this project and list the links that point to local files that don't exist. 
+
+ 5
+
+ Read the code Claude wrote
+ Press Ctrl+O and expand a Code row to see the JavaScript behind the tool calls. Press Ctrl+O again to return to the conversation. 
+
+ To resume a Code Mode session later, keep CLAUDE_CODE_EXPERIMENTAL_CODE_MODE set to 1 when you run claude --continue or claude --resume . With Code Mode off, Claude Code refuses to resume the session. Sessions that you started without Code Mode resume without Code Mode, even with the variable set. 
+
+ Use Code Mode in subagents 
+
+ If your subagent has a tools list, add REPL to the list so that the subagent uses Code Mode: 
+
+ tools : Read, Bash, REPL 
+
+ Turn off Code Mode 
+
+ Remove CLAUDE_CODE_EXPERIMENTAL_CODE_MODE from your shell, ~/.claude/settings.json , and any --settings file, then start a new session. You can also keep the variable and change its value to 0 in any of them. With a 0 in one place, Code Mode stays off even if you set 1 in another. 
+ Block Code Mode for your organization 
+
+ Add CLAUDE_CODE_EXPERIMENTAL_CODE_MODE with the value 0 to your managed settings so that nobody in your organization can use Code Mode: 
+
+ { 
+ "env" : { 
+ "CLAUDE_CODE_EXPERIMENTAL_CODE_MODE" : "0" 
+ } 
+ } 
+
+ If your users can connect through a cloud provider, deploy this setting through MDM or a managed settings file . A user who sets a provider variable such as CLAUDE_CODE_USE_BEDROCK in their shell or user settings can start Code Mode without receiving server-managed settings . 
+ Users who are in a Code Mode session stay in it until they exit or restart Claude Code. After that, your users start without Code Mode and can’t resume their Code Mode sessions while the 0 is in place. You can’t turn on Code Mode for your users from managed settings. 
+ Monitor Code Mode with OpenTelemetry 
+
+ If you collect OpenTelemetry events , your backend receives tool_decision and tool_result events for the tool calls in the code that Claude writes, under each tool’s usual name, such as Bash . Update your queries and settings for these calls: 
+
+ Find calls from code : filter on tool_use_id values that start with repl_ or toolu_cc_ . The REPL tool, which runs the code, has events of its own without either prefix
+
+ Read classifier verdicts : in auto mode, a call that the classifier’s review of the code covers has no classifier_verdict . Look for the verdict on the REPL tool’s tool_decision events that have that call’s request_id . If you find more than one, the events don’t show which piece of code made the call
+
+ Keep secrets out of your backend : code can read a value, such as a token in a file, and pass it to another call. Leave OTEL_LOG_TOOL_DETAILS unset if your backend shouldn’t receive those values
+
+ Permissions and long-running code 
+
+ Your permission mode decides how the code that Claude writes is checked and whether you can talk to Claude while the code runs. 
+ Permission checks 
+
+ In auto and bypassPermissions modes, code can run from start to finish without a permission prompt. Some calls still prompt you, such as the actions no mode auto-approves . 
+ To control tool calls in the code, write deny and ask permission rules and PreToolUse hooks under the tool’s usual name, such as Bash or an MCP tool’s name . Beyond rules and hooks, a classifier reviews the code in auto mode, and you answer prompts in the modes that ask: 
+
+ Auto mode : the classifier reviews each piece of code before it runs, not each tool call. It doesn’t see values computed at run time, such as a path taken from search output, so keep rules or hooks for calls you must control. You can still be prompted for some calls , such as calls in code that you approved yourself after repeated classifier blocks
+
+ Other permission modes : you’re prompted for each tool call that would prompt you in that mode
+
+ If you have a PreToolUse hook that allows or blocks shell commands, make it check each part of a command, as Bash rules do . In Code Mode, a git push in a folder named app can reach your hook as cd 'app' && git push . 
+ To check the code itself, write a PreToolUse hook that matches REPL , the tool that runs the code, and read the JavaScript from tool_input.code . To check what the code returns, see Check code output with a hook . 
+
+ Bash rules match command text, so Claude can run a denied command in a form the rule doesn’t match , with or without Code Mode. For limits that don’t depend on command text, see sandboxing . 
+
+ Require approval for a command 
+
+ To see a prompt for a specific command in auto or bypassPermissions mode, add an ask rule for it. You’re prompted for the forms of the command that the rule matches . To be prompted for commands that start with git push , save this rule in ~/.claude/settings.json : 
+
+ { 
+ "permissions" : { 
+ "ask" : [ "Bash(git push *)" ] 
+ } 
+ } 
+
+ To test the rule, start a new session in auto mode in a repository with no remote, and ask Claude to run git push origin main . You see a prompt for that command. 
+ Approve each piece of code first 
+
+ To read and approve code before it starts, add an ask rule for REPL , the tool that runs the code. Save this rule in ~/.claude/settings.json : 
+
+ { 
+ "permissions" : { 
+ "ask" : [ "REPL" ] 
+ } 
+ } 
+
+ To test the rule, start a new session and give Claude a task. You see a prompt that doesn’t include the code. To read the code before you answer, press Ctrl+O , expand the Code row, and press Ctrl+O again to return. From the main conversation, you don’t see a subagent ’s code in that view. 
+ If you approve in auto mode, the code starts even when the classifier would have blocked it, and its project edits and read-only commands run without a prompt. If Claude reports that the code can’t start a subagent, remove the rule. 
+ Answer a permission prompt while code runs 
+
+ To stop the code at a prompt for one of its tool calls, answer No without a comment. These results apply to prompts that aren’t labeled as coming from a subagent: 
+
+ No, or Esc : the code stops, and changes from calls that already finished stay in place
+
+ No, with a comment : the call is refused, and the code can continue with its other calls
+
+ Limit shell commands with the sandbox 
+
+ Your sandbox settings apply to the shell commands that code runs. The JavaScript itself and its file, web, and MCP tool calls run outside the sandbox . To isolate the JavaScript and those calls too, run Claude Code in a container or virtual machine . 
+ To keep commands in the sandbox when code requests to run them unsandboxed, turn on strict sandbox mode . In auto mode, the classifier reviews the code that makes the request, and the command has no separate review. 
+ Long-running code 
+
+ While code runs a long build or test, Claude either waits for it or lets it continue in the background: 
+
+ Waiting : Claude answers after the code finishes, and the code stops after ten minutes. In Manual and acceptEdits modes , time you spend at a tool’s permission prompt doesn’t count toward the ten minutes. Before v2.1.328, that time counted.
+
+ Background : you can keep talking to Claude, and the code can run for up to two hours
+
+ For background code, start your session in auto or bypassPermissions mode. If Claude still waits, check your current mode and how you started the session: 
+
+ You’re on a version before v2.1.328 and picked the session from the claude --resume list : exit, update Claude Code , then run the same claude --resume command with Code Mode on. To stay on your version, replace --resume with --continue . If Claude still waits after the update, start a new session in auto mode
+
+ You passed tool names to --tools : start a new session in auto mode, with Code Mode on and without that flag
+
+ The session first started in auto or bypassPermissions mode : press Shift+Tab until you’re back in that mode. If that doesn’t help, exit, then run claude --continue --permission-mode auto with Code Mode on
+
+ The session first started in another mode : if auto mode is available to you, exit, then run claude --permission-mode auto with Code Mode on to start a new session. On v2.1.331 or later, expect Claude to keep waiting if you resume the old session instead
+
+ Stop code in progress 
+
+ To stop code while Claude is responding or waiting for the code, press Esc . To stop background code after Claude finishes responding, run /tasks in the session, select the running task, and press x . 
+ After you stop the code, check /tasks for subagents , shell commands , and MCP calls that the code started and that are still running. To stop one, select it and press x . 
+ Check code output with a hook 
+
+ To check or redact what the code returns, write a PostToolUse hook that matches REPL , the tool that runs the code. The same hook runs when background code finishes and when code throws an error. 
+ Read code output in the hook 
+
+ In your PostToolUse hook, read the output from tool_response , which has fields such as these: 
+
+ { 
+ "code" : "(await $`cat notes.txt`.text())" , 
+ "result" : "deploy token: abc123" , 
+ "stdout" : "" , 
+ "stderr" : "" , 
+ "toolsUsed" : [ "Bash" ] 
+ } 
+
+ Redact code output 
+
+ To hide part of the output, return a changed copy of tool_response as updatedToolOutput , and build the copy this way: 
+
+ Change the text : redact result , stdout , stderr , and error . Handle a result that’s missing or null , and expect error only when the code failed or was stopped
+
+ Keep the shape : return code , stdout , and stderr as strings, and return error as a string or leave it out. If you break this shape, Claude gets the original output
+
+ Remove images, PDFs, and page errors : if the copy has images , documents , or imagePagesFailed to hide, set that field to [] . The imagePagesFailed field lists the file path and error for each PDF page that couldn’t be shown
+
+ Remove the path to long output : on v2.1.331 or later, omit uncutOutputNote from the copy. The field gives Claude a path to the uncut text
+
+ To hide the deploy token in the notes.txt result, print this JSON: 
+
+ { 
+ "hookSpecificOutput" : { 
+ "hookEventName" : "PostToolUse" , 
+ "updatedToolOutput" : { 
+ "code" : "(await $`cat notes.txt`.text())" , 
+ "result" : "deploy token: REDACTED" , 
+ "stdout" : "" , 
+ "stderr" : "" , 
+ "toolsUsed" : [ "Bash" ] 
+ } 
+ } 
+ } 
+
+ To test the hook, create a file that contains a value your hook redacts. Then start a Code Mode session, and ask Claude to read and quote the file. Type the path without @ , and check that Claude’s reply shows your replacement text. 
+
+ Don’t rely on this hook to hide a value in a refused tool call’s input, such as a Bash command. The refusedCalls field can repeat that input, and Claude reads it unchanged. 
+
+ Redact when your hook blocks or hits an error 
+
+ Return a changed copy of tool_response as updatedToolOutput even when your hook blocks or hits an error: 
+
+ Your hook blocks : print the redacted copy in the same JSON as "decision": "block" . Without the copy, Claude still reads the original output
+
+ Your hook hits an error : catch the error, and print a copy with placeholder text in the fields that you redact. If the hook crashes, times out, or prints invalid JSON, Claude gets the original output
+
+ Move a check from a UserPromptSubmit hook 
+
+ If you check code output in a UserPromptSubmit hook , move that check to your PostToolUse hook. On v2.1.328 or later, UserPromptSubmit hooks don’t receive code output, even when an administrator sets them in managed settings . 
+ Troubleshooting 
+
+ Code Mode doesn’t start 
+
+ Code Mode (experimental) isn't available near the top of the session means that Claude Code started without Code Mode. The reason follows on the same line, and /status shows it too. Find the reason in this table, make the change, and start a new session. For a reason that isn’t listed, check the requirements . 
+ Reason includes What to do 
+ it isn't open to your account in this version or it isn't open to your account yet If your version is older than v2.1.323, update . Otherwise, check your network connection and start again. If the reason stays, try again another day 
+ Anthropic has turned it off for now Update Claude Code , or start again later 
+ it only works directly with the Anthropic API or it only works with the Anthropic API If you use a cloud provider without a gateway, update Claude Code to v2.1.331 or later. If you use a gateway, follow the next row 
+ it isn't offered yet through a gateway or proxy If your administrator set up the gateway , you need it, or you use Claude for Government, turn off Code Mode to stop seeing the line. Otherwise, remove the gateway’s settings and key, and connect directly. You can keep HTTPS_PROXY . If you signed in to a Claude apps gateway, also remove its entries from your user settings and run /logout , which removes saved MCP server logins and plugin secrets too 
+ it isn't offered yet through a gateway or proxy , with an Enterprise Admin Console sign-in Run /status . If API provider shows a provider that the requirements rule out, such as Microsoft Foundry or Amazon Bedrock (Mantle) , turn off Code Mode to stop seeing the line. Otherwise, follow the previous row 
+ it doesn't work with an API key helper Remove apiKeyHelper , ANTHROPIC_AUTH_TOKEN , and any Authorization or X-Api-Key header in ANTHROPIC_CUSTOM_HEADERS . Then sign in or set ANTHROPIC_API_KEY 
+ it only works with Opus 5.5, Sonnet 5.5 and later models Pass the full name of a supported model that your account can use, for example --model claude-opus-5-5 , or on Microsoft Foundry the name of your deployment of one. Avoid aliases such as sonnet , which select older models on some providers 
+ it doesn't work in background jobs Start in the foreground, without --remote-control . If the reason shows in a teammate’s split pane, use the in-process display mode to run teammates in Code Mode 
+ it needs settings that Claude Code downloads from Anthropic Update Claude Code to meet the telemetry settings requirement . To stay on your version, unset the variable that turns off feature-flag fetching , such as DISABLE_TELEMETRY 
+ OpenTelemetry tracing is on Unset CLAUDE_CODE_ENHANCED_TELEMETRY_BETA , ENABLE_ENHANCED_TELEMETRY_BETA , and ENABLE_BETA_TRACING_DETAILED if you can work without traces 
+ OpenTelemetry is on To keep events and metrics on, update Claude Code and meet the telemetry settings requirement . To stay on your version, unset CLAUDE_CODE_ENABLE_TELEMETRY and ENABLE_BETA_TRACING_DETAILED if you can work without OpenTelemetry export 
+ it doesn't yet work with the plugin Update Claude Code to meet the mods requirement . To stay on your version, run /plugin and disable each plugin that the reason names. If your organization turned one on, ask your administrator to turn it off 
+ it doesn't yet work with an installed mod Update Claude Code to meet the mods requirement . To stay on your version, run /plugin and disable each mod you installed 
+ it can't be used together with agent teams yet To keep agent teams on, update Claude Code to v2.1.326 or later. To stay on your version, unset CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS 
+ this launch's tool options Start without --restricted , add REPL to --tools , and remove REPL from --disallowedTools and your deny rules 
+ couldn't read your organization's settings or policy Start again. If your Enterprise Admin Console sign-in ended, run claude auth login and select your organization. If the reason stays and your network blocks api.anthropic.com , ask your administrator to allow that host. If you use a cloud provider and not that sign-in, you can instead unset ANTHROPIC_API_KEY and run claude auth logout , which also removes saved MCP server logins and plugin secrets 
+ couldn't save your answer Make ~/.claude.json writable 
+ your organization's settings don't allow it Ask your administrator about the managed setting 
+
+ If you see no line about Code Mode, run claude --version . If your version is older than v2.1.323, update. Then check that CLAUDE_CODE_EXPERIMENTAL_CODE_MODE is 1 in your shell or user settings, and remove any 0 from those and from any --settings file. 
+ Permission prompt with a countdown 
+
+ In auto mode, if you approve code yourself after repeated classifier blocks , you can be asked about tool calls in that code and in earlier code that’s still running. Expect the same in auto mode after an ask rule or a PreToolUse hook on REPL has you approve the code. 
+ With no IDE connected, the prompt can show a countdown: 
+
+ Claude Code will automatically block this request in 1:59, to avoid holding up an unattended session 
+
+ Answer before the countdown ends. Otherwise that call is refused, and later calls that would show a countdown are refused without a prompt. To see the prompts again, send Claude a message. 
+ Before v2.1.327, you could also be asked about the remaining calls in running code after Claude started new code, even if the classifier allowed the new code. To see fewer of these prompts, update Claude Code to v2.1.327 or later. 
+ Tool call refused by a hook 
+
+ If Claude reports a refused call, ask it for the error text. These errors mean your PreToolUse hook gave no decision: 
+
+ the hook did not finish : your hook timed out, or your agent hook ended without a decision. Raise the hook’s timeout , or set "onFailure": "continue" on a command or http hook. If an agent hook still gives this error, move the check to a command hook. After Claude runs code, you can see this error on calls outside code too
+
+ the hook failed : your hook failed on a call from code, for example because it couldn’t start. Find the failure in the debug log and fix it. Expect this error before v2.1.329. On later versions, you can see it after you turn off feature-flag fetching during a session
+
+ Tool call ran after a hook failed 
+
+ To stop a call from code when its PreToolUse hook fails, use a command or http hook and set "onFailure": "block" . If several settings files have that hook, give it the same onFailure value in each. 
+ On v2.1.329 or later, expect these results for command and http hooks: 
+ onFailure Hook times out Hook fails another way, such as a missing script 
+ Not set Refused Goes on to permission checks, with rare exceptions 
+ "block" Refused Refused 
+ "continue" Goes on to permission checks Goes on to permission checks 
+
+ Code output withheld by a hook 
+
+ If you expected output from code and see UserPromptSubmit operation blocked by hook in Claude’s reply, your UserPromptSubmit hook received the output as a prompt and blocked it. If Claude reports only the hook’s reason, ask it to quote the message it received. 
+ On v2.1.328 or later, UserPromptSubmit hooks don’t receive code output. To let the output through on an earlier version, update Claude Code or change the hook: 
+
+ Update : if you rely on the hook to check code output, first move the check to a PostToolUse hook . Then update Claude Code to v2.1.328 or later
+
+ Stay on your version : change the hook so that it doesn’t block when source in its input is poll_event 
+
+ Related resources 
+
+ Permission modes : compare auto mode with the modes that prompt you
+
+ Hooks reference : write PreToolUse and PostToolUse hooks
+
+ Managed settings : apply one configuration across an organization
+
+ {"docsConfig":{"theme":"mint","$schema":"https://mintlify.com/docs.json","name":"Claude Code Docs","description":"Official documentation for Claude Code, Anthropic's agentic coding tool available in the terminal, IDE, desktop app, and browser. Covers installation, configuration, skills, subagents, hooks, MCP, the Agent SDK, and reference material.","colors":{"primary":"#0E0E0E","light":"#D4A27F","dark":"#0E0E0E"},"logo":{"light":"https://mintcdn.com/claude-code/c5r9_6tjPMzFdDDT/logo/light.svg?fit=max\u0026auto=format\u0026n=c5r9_6tjPMzFdDDT\u0026q=85\u0026s=78fd01ff4f4340295a4f66e2ea54903c","dark":"https://mintcdn.com/claude-code/c5r9_6tjPMzFdDDT/logo/dark.svg?fit=max\u0026auto=format\u0026n=c5r9_6tjPMzFdDDT\u0026q=85\u0026s=1298a0c3b3a1da603b190d0de0e31712"},"favicon":"https://mintcdn.com/claude-code/T2WlxklWBkR5Y1mJ/favicon.ico?fit=max\u0026auto=format\u0026n=T2WlxklWBkR5Y1mJ\u0026q=85\u0026s=346a85952ae08d5ee90e3c34d4423930","appearance":{"default":"system"},"background":{"color":{"light":"#FDFDF7","dark":"#09090B"}},"navbar":{"links":[{"href":"https://platform.claude.com/","label":"Claude Developer Platform"}],"primary":{"type":"button","label":"Open Claude Code","href":"https://claude.ai/code"}},"footer":{"socials":{"x":"https://x.com/AnthropicAI","linkedin":"https://www.linkedin.com/company/anthropicresearch"},"links":[{"header":"Company","items":[{"label":"Anthropic","href":"https://www.anthropic.com/company"},{"label":"Careers","href":"https://www.anthropic.com/careers"},{"label":"Economic Futures","href":"https://www.anthropic.com/economic-futures"},{"label":"Research","href":"https://www.anthropic.com/research"},{"label":"News","href":"https://www.anthropic.com/news"},{"label":"Trust center","href":"https://trust.anthropic.com/"},{"label":"Transparency","href":"https://www.anthropic.com/transparency"}]},{"header":"Help and security","items":[{"label":"Availability","href":"https://www.anthropic.com/supported-countries"},{"label":"Status","href":"https://status.anthropic.com/"},{"label":"Support center","href":"https://support.claude.com/"}]},{"header":"Learn","items":[{"label":"Courses","href":"https://academy.claude.com/"},{"label":"MCP connectors","href":"https://claude.com/partners/mcp"},{"label":"Customer stories","href":"https://www.claude.com/customers"},{"label":"Engineering blog","href":"https://www.anthropic.com/engineering"},{"label":"Events","href":"https://www.anthropic.com/events"},{"label":"Powered by Claude","href":"https://claude.com/partners/powered-by-claude"},{"label":"Service partners","href":"https://claude.com/partners/services"},{"label":"Startups program","href":"https://claude.com/programs/startups"}]},{"header":"Terms and policies","items":[{"label":"Privacy choices","href":"https://www.anthropic.com/legal/privacy"},{"label":"Privacy policy","href":"https://www.anthropic.com/legal/privacy"},{"label":"Disclosure policy","href":"https://www.anthropic.com/responsible-disclosure-policy"},{"label":"Usage policy","href":"https://www.anthropic.com/legal/aup"},{"label":"Commercial terms","href":"https://www.anthropic.com/legal/commercial-terms"},{"label":"Consumer terms","href":"https://www.anthropic.com/legal/consumer-terms"}]}]},"seo":{"metatags":{"canonical":"https://code.claude.com/docs"}},"fonts":{"family":"Anthropic Sans"},"integrations":{"telemetry":{"enabled":false}},"contextual":{"options":["copy","view","claude"],"display":"header"},"styling":{"latex":true},"navigation":{"languages":[{"language":"en","href":"en/overview"},{"language":"fr","href":"fr/overview"},{"language":"de","href":"de/overview"},{"language":"it","href":"it/overview"},{"language":"jp","href":"ja/overview"},{"language":"es","href":"es/overview"},{"language":"ko","href":"ko/overview"},{"language":"zh-CN","href":"zh-CN/overview"},{"language":"zh-TW","href":"zh-TW/overview"},{"language":"ru","href":"ru/overview"},{"language":"id","href":"id/overview"},{"language":"pt-BR","href":"pt/overview"}]}},"deployment":{"deploymentMetadataValue":{"subdomain":"claude-code","hasAudioNarration":false,"actualSubdomain":"claude-code","customDomains":["code.claude.com"],"gitSource":{"type":"github","owner":"anthropics","repo":"claude-code-docs","deployBranch":"main","contentDirectory":"","isPrivate":true,"mountPath":"","label":""},"feedback":{"thumbs":true,"agentFeedback":false},"entitlements":{"AI_CHAT":{"status":"ENABLED"},"REMOVE_BRANDING":{"status":"ENABLED"},"CONTEXTUAL_FEEDBACK":{"status":"ENABLED","enabled":"ENABLED"},"CODE_SNIPPET_FEEDBACK":{"status":"ENABLED","enabled":"ENABLED"},"WEB_MCP":{"status":"ENABLED"},"NARRATION":{"status":"ENABLED"}},"buildId":"6b06803e876a90ca9159cb96","clientVersion":"0.0.4304","searchFilterCounts":[{"language":"de","tag":"Erste Schritte","count":65},{"language":"es","tag":"Primeros pasos","count":65},{"language":"fr","tag":"Premiers pas","count":65},{"language":"id","tag":"Memulai","count":65},{"language":"it","tag":"Per iniziare","count":65},{"language":"jp","tag":"はじめに","count":65},{"language":"ko","tag":"시작하기","count":65},{"language":"pt-BR","tag":"Primeiros passos","count":65},{"language":"ru","tag":"Начало работы","count":65},{"language":"zh-TW","tag":"快速入門","count":65},{"language":"en","tag":"Getting started","count":64},{"language":"zh-CN","tag":"快速入门","count":62},{"language":"en","tag":"Agent SDK","count":60},{"language":"en","tag":"Overview","count":56},{"language":"en","tag":"Plugins","count":56},{"language":"en","tag":"Setup and access","count":39},{"language":"de","tag":"Administration","count":37},{"language":"en","tag":"Administration","count":37},{"language":"es","tag":"Administración","count":37},{"language":"fr","tag":"Administration","count":37},{"language":"id","tag":"Administrasi","count":37},{"language":"it","tag":"Amministrazione","count":37},{"language":"jp","tag":"管理","count":37},{"language":"ko","tag":"관리","count":37},{"language":"pt-BR","tag":"Administração","count":37},{"language":"ru","tag":"Администрирование","count":37},{"language":"zh-CN","tag":"管理","count":37},{"language":"zh-TW","tag":"管理","count":37},{"language":"de","tag":"Agent SDK","count":36},{"language":"es","tag":"Agent SDK","count":36},{"language":"id","tag":"Agent SDK","count":36},{"language":"it","tag":"Agent SDK","count":36},{"language":"jp","tag":"Agent SDK","count":36},{"language":"pt-BR","tag":"Agent SDK","count":36},{"language":"ru","tag":"Agent SDK","count":36},{"language":"zh-CN","tag":"Agent SDK","count":36},{"language":"zh-TW","tag":"Agent SDK","count":36},{"language":"de","tag":"Plugins","count":32},{"language":"es","tag":"Plugins","count":32},{"language":"fr","tag":"SDK Agent","count":32},{"language":"fr","tag":"Plugins","count":32},{"language":"id","tag":"Plugin","count":32},{"language":"it","tag":"Plugin","count":32},{"language":"jp","tag":"プラグイン","count":32},{"language":"ko","tag":"Agent SDK","count":32},{"language":"ko","tag":"플러그인","count":32},{"language":"pt-BR","tag":"Plugins","count":32},{"language":"ru","tag":"Плагины","count":32},{"language":"zh-CN","tag":"插件","count":32},{"language":"zh-TW","tag":"外掛","count":32},{"language":"es","tag":"Configuración","count":30},{"language":"jp","tag":"設定","count":30},{"language":"zh-TW","tag":"設定","count":30},{"language":"de","tag":"Code-Review und Pull Requests","count":29},{"language":"es","tag":"Revisión de código y pull requests","count":29},{"language":"fr","tag":"Revue de code et pull requests","count":29},{"language":"id","tag":"Code review dan pull request","count":29},{"language":"it","tag":"Code review e pull request","count":29},{"language":"jp","tag":"コードレビューとプルリクエスト","count":29},{"language":"ko","tag":"코드 리뷰 및 풀 리퀘스트","count":29},{"language":"pt-BR","tag":"Revisão de código e pull requests","count":29},{"language":"ru","tag":"Код-ревью и pull request","count":29},{"language":"zh-CN","tag":"代码审查与 Pull Request","count":29},{"language":"zh-TW","tag":"程式碼審查與 pull request","count":29},{"language":"en","tag":"Code review and pull requests","count":28},{"language":"en","tag":"Reference","count":28},{"language":"de","tag":"Konfiguration","count":27},{"language":"en","tag":"Configuration","count":27},{"language":"fr","tag":"Configuration","count":27},{"language":"id","tag":"Konfigurasi","count":27},{"language":"it","tag":"Configurazione","count":27},{"language":"ko","tag":"구성","count":27},{"language":"pt-BR","tag":"Configuração","count":27},{"language":"ru","tag":"Конфигурация","count":27},{"language":"zh-CN","tag":"配置","count":27},{"language":"en","tag":"Settings","count":26},{"language":"de","tag":"Mit Claude Code entwickeln","count":22},{"language":"es","tag":"Crea con Claude Code","count":22},{"language":"fr","tag":"Développer avec Claude Code","count":22},{"language":"id","tag":"Membangun dengan Claude Code","count":22},{"language":"it","tag":"Crea con Claude Code","count":22},{"language":"jp","tag":"Claude Code で構築","count":22},{"language":"ko","tag":"Claude Code로 만들기","count":22},{"language":"pt-BR","tag":"Desenvolva com Claude Code","count":22},{"language":"ru","tag":"Разработка с Claude Code","count":22},{"language":"zh-CN","tag":"使用 Claude Code 构建","count":22},{"language":"zh-TW","tag":"使用 Claude Code 打造","count":22},{"language":"de","tag":"Referenz","count":20},{"language":"de","tag":"Plattformen und Integrationen","count":20},{"language":"es","tag":"Referencia","count":20},{"language":"es","tag":"Plataformas e integraciones","count":20},{"language":"fr","tag":"Référence","count":20},{"language":"fr","tag":"Plateformes et intégrations","count":20},{"language":"id","tag":"Referensi","count":20},{"language":"id","tag":"Platform dan integrasi","count":20},{"language":"it","tag":"Riferimento","count":20},{"language":"it","tag":"Piattaforme e integrazioni","count":20},{"language":"jp","tag":"リファレンス","count":20},{"language":"jp","tag":"プラットフォームと連携","count":20},{"language":"ko","tag":"레퍼런스","count":20},{"language":"ko","tag":"플랫폼 및 통합","count":20},{"language":"pt-BR","tag":"Referência","count":20},{"language":"pt-BR","tag":"Plataformas e integrações","count":20},{"language":"ru","tag":"Справочник","count":20},{"language":"ru","tag":"Платформы и интеграции","count":20},{"language":"zh-CN","tag":"参考","count":20},{"language":"zh-CN","tag":"平台与集成","count":20},{"language":"zh-TW","tag":"平台與整合","count":20},{"language":"de","tag":"Bereitstellung","count":12},{"language":"es","tag":"Despliegue","count":12},{"language":"fr","tag":"Déploiement","count":12},{"language":"id","tag":"Deployment","count":12},{"language":"it","tag":"Distribuzione","count":12},{"language":"jp","tag":"デプロイ","count":12},{"language":"ko","tag":"배포","count":12},{"language":"pt-BR","tag":"Implantação","count":12},{"language":"ru","tag":"Развёртывание","count":12},{"language":"zh-CN","tag":"部署","count":12},{"language":"zh-TW","tag":"部署","count":12},{"language":"zh-TW","tag":"參考","count":11}]},"assistantConfig":{"enableAskAiButton":false,"enableStarterQuestions":false,"enableAskAiSearchBar":true},"basePath":"/docs","hasChatPermissions":true,"hasWebMcpPermissions":true,"toggles":[{"name":"kill-isr","enabled":true,"variant":{"name":"disabled","enabled":false,"feature_enabled":true},"impressionData":false},{"name":"custom-rbac-roles","enabled":true,"variant":{"name":"disabled","enabled":false,"feature_enabled":true},"impressionData":false},{"name":"assistant-bash","enabled":true,"variant":{"name":"disabled","enabled":false,"feature_enabled":true},"impressionData":false},{"name":"chat-bucketing-batched","enabled":true,"variant":{"name":"disabled","enabled":false,"feature_enabled":true},"impressionData":false},{"name":"agent-mintlify-slack","enabled":true,"variant":{"name":"disabled","enabled":false,"feature_enabled":true},"impressionData":false},{"name":"agent-integrations-settings","enabled":true,"variant":{"name":"disabled","enabled":false,"feature_enabled":true},"impressionData":false},{"name":"rbac-expansion","enabled":true,"variant":{"name":"disabled","enabled":false,"feature_enabled":true},"impressionData":false},{"name":"automations-pr-grouping","enabled":true,"variant":{"name":"disabled","enabled":false,"feature_enabled":true},"impressionData":false},{"name":"custom-prefix","enabled":true,"variant":{"name":"disabled","enabled":false,"feature_enabled":true},"impressionData":false},{"name":"analytics-v7","enabled":true,"variant":{"name":"disabled","enabled":false,"feature_enabled":true},"impressionData":false},{"name":"user-flows-analytics","enabled":true,"variant":{"name":"disabled","enabled":false,"feature_enabled":true},"impressionData":false},{"name":"no-publish-flow","enabled":true,"variant":{"name":"disabled","enabled":false,"feature_enabled":true},"impressionData":false},{"name":"snapshot-serving-live","enabled":true,"variant":{"name":"disabled","enabled":false,"feature_enabled":true},"impressionData":false},{"name":"stripTemperatureMiddleware","enabled":true,"variant":{"name":"disabled","enabled":false,"feature_enabled":true},"impressionData":false},{"name":"support-platform-pylon-zendesk","enabled":true,"variant":{"name":"disabled","enabled":false,"feature_enabled":true},"impressionData":false},{"name":"snapshot-serving","enabled":true,"variant":{"name":"disabled","enabled":false,"feature_enabled":true},"impressionData":false},{"name":"instant-rollback","enabled":true,"variant":{"name":"disabled","enabled":false,"feature_enabled":true},"impressionData":false},{"name":"granular-notifications-server","enabled":true,"variant":{"name":"disabled","enabled":false,"feature_enabled":true},"impressionData":false},{"name":"granular-notifications","enabled":true,"variant":{"name":"disabled","enabled":false,"feature_enabled":true},"impressionData":false},{"name":"automations-fable","enabled":true,"variant":{"name":"disabled","enabled":false,"feature_enabled":true},"impressionData":false},{"name":"fixed-ai-action-pricing","enabled":true,"variant":{"name":"disabled","enabled":false,"feature_enabled":true},"impressionData":false},{"name":"site-roles","enabled":true,"variant":{"name":"disabled","enabled":false,"feature_enabled":true},"impressionData":false},{"name":"automation-resolve-merge-conflict","enabled":true,"variant":{"name":"disabled","enabled":false,"feature_enabled":true},"impressionData":false},{"name":"scoped-publishing","enabled":true,"variant":{"name":"disabled","enabled":false,"feature_enabled":true},"impressionData":false},{"name":"mintql","enabled":true,"variant":{"name":"disabled","enabled":false,"feature_enabled":true},"impressionData":false},{"name":"page-level-analytics","enabled":true,"variant":{"name":"disabled","enabled":false,"feature_enabled":true},"impressionData":false},{"name":"editor-version-history-v2","enabled":true,"variant":{"name":"disabled","enabled":false,"feature_enabled":true},"impressionData":false},{"name":"billing-page-v2","enabled":true,"variant":{"name":"disabled","enabled":false,"feature_enabled":true},"impressionData":false},{"name":"full-page-search","enabled":true,"variant":{"name":"disabled","enabled":false,"feature_enabled":true},"impressionData":false},{"name":"workspace-projects","enabled":true,"variant":{"name":"disabled","enabled":false,"feature_enabled":true},"impressionData":false},{"name":"fork-pr-previews","enabled":true,"variant":{"name":"disabled","enabled":false,"feature_enabled":true},"impressionData":false},{"name":"revalidation-jwt","enabled":true,"variant":{"name":"disabled","enabled":false,"feature_enabled":true},"impressionData":false},{"name":"hobby-abuse-scan","enabled":true,"variant":{"name":"disabled","enabled":false,"feature_enabled":true},"impressionData":false},{"name":"dashboard-inbox","enabled":true,"variant":{"name":"disabled","enabled":false,"feature_enabled":true},"impressionData":false},{"name":"turbopuffer-dual-write","enabled":true,"variant":{"name":"disabled","enabled":false,"feature_enabled":true},"impressionData":false},{"name":"approve-review-flow","enabled":true,"variant":{"name":"disabled","enabled":false,"feature_enabled":true},"impressionData":false},{"name":"editor-metadata","enabled":true,"variant":{"name":"disabled","enabled":false,"feature_enabled":true},"impressionData":false},{"name":"sso-setup-deadline-banner","enabled":true,"variant":{"name":"disabled","enabled":false,"feature_enabled":true},"impressionData":false},{"name":"turbopuffer-serve","enabled":true,"variant":{"name":"disabled","enabled":false,"feature_enabled":true},"impressionData":false},{"name":"live-agents","enabled":true,"variant":{"name":"disabled","enabled":false,"feature_enabled":true},"impressionData":false},{"name":"starter-pricing","enabled":true,"variant":{"name":"control","enabled":true,"payload":{"type":"string","value":"control"},"feature_enabled":true},"impressionData":false},{"name":"llms-txt-v2","enabled":true,"variant":{"name":"disabled","enabled":false,"feature_enabled":true},"impressionData":false},{"name":"wildcard-email-auth","enabled":true,"variant":{"name":"disabled","enabled":false,"feature_enabled":true},"impressionData":false}],"googleFontsInlined":false},"customCss":[{"filePath":"button.css","content":".btn{position:relative;display:inline-flex;gap:0.5rem;align-items:center;justify-content:center;flex-shrink:0;min-width:5rem;height:2.25rem;padding:0.5rem 1rem;white-space:nowrap;font-family:Styrene;font-weight:600;border-radius:0.5rem;\u0026:active{transform:scale(0.985)}\u0026.size-xs{height:1.75rem;min-width:3.5rem;padding:0 0.5rem;border-radius:0.25rem;font-size:0.75rem;gap:0.25rem}\u0026.size-sm{height:2rem;min-width:4rem;padding:0 0.75rem;border-radius:0.375rem;font-size:0.75rem}\u0026.size-lg{height:2.75rem;min-width:6rem;padding:0 1.25rem;border-radius:0.6rem}\u0026:disabled{pointer-events:none;opacity:0.5;box-shadow:none}\u0026:focus-visible{outline:none;--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow), var(--tw-ring-shadow)}\u0026.primary{font-weight:600;color:hsl(var(--oncolor-100));background-color:hsl(var(--accent-main-100));background-image:linear-gradient(\n to right,\n hsl(var(--accent-main-100)) 0%,\n hsl(var(--accent-main-200) / 0.5) 50%,\n hsl(var(--accent-main-200)) 100%\n );background-size:200% 100%;background-position:0% 0%;border:0.5px solid hsl(var(--border-300) / 0.25);box-shadow:inset 0 0.5px 0px rgba(255, 255, 0, 0.15),\n 0 1px 1px rgba(0, 0, 0, 0.05);text-shadow:0 1px 2px rgb(0 0 0 / 10%);transition:all 150ms cubic-bezier(0.4, 0, 0.2, 1);\u0026:hover{background-position:100% 0%;background-image:linear-gradient(\n to right,\n hsl(var(--accent-main-200)) 0%,\n hsl(var(--accent-main-200)) 100%\n )}\u0026:active{background-color:hsl(var(--accent-main-000));box-shadow:inset 0 1px 6px rgba(0, 0, 0, 0.2);transform:scale(0.985)}}\u0026.flat{font-weight:500;color:hsl(var(--oncolor-100));background-color:hsl(var(--accent-main-100));transition:background-color 150ms;\u0026:hover{background-color:hsl(var(--accent-main-200))}}\u0026.secondary{font-weight:600;color:hsl(var(--text-100) / 0.9);background-image:radial-gradient(\n ellipse at center,\n hsl(var(--bg-500) / 0.1) 50%,\n hsl(var(--bg-500) / 0.3) 100%\n );border:0.5px solid hsl(var(--border-400));transition:color 150ms, background-color 150ms;\u0026:hover{color:hsl(var(--text-000));background-color:hsl(var(--bg-500) / 0.6)}\u0026:active{background-color:hsl(var(--bg-500) / 0.5)}}\u0026.outline{font-weight:600;color:hsl(var(--text-200));background-color:transparent;border:1.5px solid currentColor;transition:color 150ms, background-color 150ms;\u0026:hover{color:hsl(var(--text-100));background-color:hsl(var(--bg-400));border-color:hsl(var(--bg-400))}}\u0026.ghost{color:hsl(var(--text-200));border-color:transparent;transition:color 150ms, background-color 150ms;\u0026:hover{color:hsl(var(--text-100));background-color:hsl(var(--bg-500) / 0.4)}\u0026:active{background-color:hsl(var(--bg-400))}}\u0026.underline{opacity:0.8;text-decoration-line:none;text-underline-offset:3px;transition:all 150ms;\u0026:hover{opacity:1;text-decoration-line:underline}\u0026:active{transform:scale(0.985)}}\u0026.danger{font-weight:600;color:hsl(var(--oncolor-100));background-color:hsl(var(--danger-100));transition:background-color 150ms;\u0026:hover{background-color:hsl(var(--danger-200))}}}"},{"filePath":"style.css","content":"@font-face{font-family:\"Anthropic Sans\";src:url(\"https://assets.claude.ai/Fonts/AnthropicSans-Text-Regular-Static.otf\") format(\"opentype\");font-weight:400;font-style:normal;font-display:swap}@font-face{font-family:\"Anthropic Sans\";src:url(\"https://assets.claude.ai/Fonts/AnthropicSans-Text-RegularItalic-Static.otf\") format(\"opentype\");font-weight:400;font-style:italic;font-display:swap}@font-face{font-family:\"Anthropic Sans\";src:url(\"https://assets.claude.ai/Fonts/AnthropicSans-Text-Medium-Static.otf\") format(\"opentype\");font-weight:500;font-style:normal;font-display:swap}@font-face{font-family:\"Anthropic Sans\";src:url(\"https://assets.claude.ai/Fonts/AnthropicSans-Text-MediumItalic-Static.otf\") format(\"opentype\");font-weight:500;font-style:italic;font-display:swap}@font-face{font-family:\"Anthropic Sans\";src:url(\"https://assets.claude.ai/Fonts/AnthropicSans-Text-Semibold-Static.otf\") format(\"opentype\");font-weight:600;font-style:normal;font-display:swap}@font-face{font-family:\"Anthropic Sans\";src:url(\"https://assets.claude.ai/Fonts/AnthropicSans-Text-SemiboldItalic-Static.otf\") format(\"opentype\");font-weight:600;font-style:italic;font-display:swap}@font-face{font-family:\"Anthropic Sans\";src:url(\"https://assets.claude.ai/Fonts/AnthropicSans-Text-Bold-Static.otf\") format(\"opentype\");font-weight:700;font-style:normal;font-display:swap}@font-face{font-family:\"Anthropic Sans\";src:url(\"https://assets.claude.ai/Fonts/AnthropicSans-Text-BoldItalic-Static.otf\") format(\"opentype\");font-weight:700;font-style:italic;font-display:swap}@font-face{font-family:\"Anthropic Serif Display\";src:url(\"https://assets.claude.ai/Fonts/AnthropicSerif-Display-Regular-Static.otf\") format(\"opentype\");font-weight:400;font-style:normal;font-display:swap}@font-face{font-family:\"Anthropic Serif Display\";src:url(\"https://assets.claude.ai/Fonts/AnthropicSerif-Display-RegularItalic-Static.otf\") format(\"opentype\");font-weight:400;font-style:italic;font-display:swap}@font-face{font-family:\"Anthropic Serif Display\";src:url(\"https://assets.claude.ai/Fonts/AnthropicSerif-Display-Medium-Static.otf\") format(\"opentype\");font-weight:500;font-style:normal;font-display:swap}@font-face{font-family:\"Anthropic Serif Display\";src:url(\"https://assets.claude.ai/Fonts/AnthropicSerif-Display-Semibold-Static.otf\") format(\"opentype\");font-weight:600;font-style:normal;font-display:swap}@font-face{font-family:\"Anthropic Serif Display\";src:url(\"https://assets.claude.ai/Fonts/AnthropicSerif-Display-Bold-Static.otf\") format(\"opentype\");font-weight:700;font-style:normal;font-display:swap}@font-face{font-family:\"Anthropic Serif\";src:url(\"https://assets.claude.ai/Fonts/AnthropicSerif-Text-Regular-Static.otf\") format(\"opentype\");font-weight:400;font-style:normal;font-display:swap}@font-face{font-family:\"Anthropic Serif\";src:url(\"https://assets.claude.ai/Fonts/AnthropicSerif-Text-RegularItalic-Static.otf\") format(\"opentype\");font-weight:400;font-style:italic;font-display:swap}@font-face{font-family:\"Anthropic Serif\";src:url(\"https://assets.claude.ai/Fonts/AnthropicSerif-Text-Medium-Static.otf\") format(\"opentype\");font-weight:500;font-style:normal;font-display:swap}@font-face{font-family:\"Anthropic Serif\";src:url(\"https://assets.claude.ai/Fonts/AnthropicSerif-Text-MediumItalic-Static.otf\") format(\"opentype\");font-weight:500;font-style:italic;font-display:swap}@font-face{font-family:\"Anthropic Serif\";src:url(\"https://assets.claude.ai/Fonts/AnthropicSerif-Text-Semibold-Static.otf\") format(\"opentype\");font-weight:600;font-style:normal;font-display:swap}@font-face{font-family:\"Anthropic Serif\";src:url(\"https://assets.claude.ai/Fonts/AnthropicSerif-Text-SemiboldItalic-Static.otf\") format(\"opentype\");font-weight:600;font-style:italic;font-display:swap}@font-face{font-family:\"Anthropic Serif\";src:url(\"https://assets.claude.ai/Fonts/AnthropicSerif-Text-Bold-Static.otf\") format(\"opentype\");font-weight:700;font-style:normal;font-display:swap}@font-face{font-family:\"Anthropic Serif\";src:url(\"https://assets.claude.ai/Fonts/AnthropicSerif-Text-BoldItalic-Static.otf\") format(\"opentype\");font-weight:700;font-style:italic;font-display:swap}:root{--always-white: 0 0% 100%;--always-black: 0 0% 0%;--constant-book-cloth: 15 55% 80%;--constant-clay: 15 60% 85%;--constant-kraft: 25 40% 83%;--constant-manilla: 40 20% 92%;--constant-slate-000: 0 0% 100%;--constant-slate-050: 48 33.3% 97.1%;--constant-slate-100: 53 28.6% 94.5%;--constant-slate-150: 48 25% 92.2%;--constant-slate-200: 50 20.7% 88.6%;--constant-slate-250: 51 16.5% 84.5%;--constant-slate-300: 50 11.5% 79.6%;--constant-slate-350: 50 9% 73.7%;--constant-slate-400: 49 6.5% 66.9%;--constant-slate-450: 48 4.8% 59.2%;--constant-slate-500: 53 3.2% 51.4%;--constant-slate-550: 51 3.1% 43.7%;--constant-slate-600: 48 2.7% 35.9%;--constant-slate-650: 48 3.4% 29.2%;--constant-slate-700: 60 2.5% 23.3%;--constant-slate-750: 60 2.1% 18.4%;--constant-slate-800: 60 2.7% 14.5%;--constant-slate-850: 30 3.3% 11.8%;--constant-slate-900: 30 4% 9.8%;--constant-slate-950: 60 2.6% 7.6%;--constant-slate-1000: 60 3.4% 5.7%}:root:not(.dark){--accent-brand: 15 63.1% 59.6%;--accent-main-000: 15 55.6% 52.4%;--accent-main-100: 15 55.6% 52.4%;--accent-main-200: 15 63.1% 59.6%;--accent-main-900: 0 0% 0%;--accent-pro-000: 251 34.2% 33.3%;--accent-pro-100: 251 40% 45.1%;--accent-pro-200: 251 61% 72.2%;--accent-pro-900: 253 33.3% 91.8%;--accent-secondary-000: 210 73.7% 40.2%;--accent-secondary-100: 210 70.9% 51.6%;--accent-secondary-200: 210 70.9% 51.6%;--accent-secondary-900: 211 72% 90%;--bg-000: 0 0% 100%;--bg-100: 48 33.3% 97.1%;--bg-200: 53 28.6% 94.5%;--bg-300: 48 25% 92.2%;--bg-400: 50 20.7% 88.6%;--bg-500: 50 20.7% 88.6%;--border-100: 30 3.3% 11.8%;--border-200: 30 3.3% 11.8%;--border-300: 30 3.3% 11.8%;--border-400: 30 3.3% 11.8%;--danger-000: 0 61.4% 22.4%;--danger-100: 0 58.6% 34.1%;--danger-200: 0 58.6% 34.1%;--danger-900: 0 50% 95%;--oncolor-100: 0 0% 100%;--oncolor-200: 60 6.7% 97.1%;--oncolor-300: 60 6.7% 97.1%;--text-000: 60 2.6% 7.6%;--text-100: 60 2.6% 7.6%;--text-200: 60 2.5% 23.3%;--text-300: 60 2.5% 23.3%;--text-400: 51 3.1% 43.7%;--text-500: 51 3.1% 43.7%}:root.dark{--accent-brand: 15 63.1% 59.6%;--accent-main-000: 15 55.6% 52.4%;--accent-main-100: 15 63.1% 59.6%;--accent-main-200: 15 63.1% 59.6%;--accent-main-900: 0 0% 0%;--accent-pro-000: 251 84.6% 74.5%;--accent-pro-100: 251 40.2% 54.1%;--accent-pro-200: 251 40% 45.1%;--accent-pro-900: 250 25.3% 19.4%;--accent-secondary-000: 210 71.1% 62%;--accent-secondary-100: 210 70.9% 51.6%;--accent-secondary-200: 210 70.9% 51.6%;--accent-secondary-900: 210 55.9% 24.6%;--bg-000: 60 2.1% 18.4%;--bg-100: 60 2.7% 14.5%;--bg-200: 30 3.3% 11.8%;--bg-300: 60 2.6% 7.6%;--bg-400: 60 3.4% 5.7%;--bg-500: 60 3.4% 5.7%;--border-100: 51 16.5% 84.5%;--border-200: 51 16.5% 84.5%;--border-300: 51 16.5% 84.5%;--border-400: 51 16.5% 84.5%;--danger-000: 0 73.1% 66.5%;--danger-100: 0 58.6% 34.1%;--danger-200: 0 58.6% 34.1%;--danger-900: 0 23% 15.6%;--oncolor-100: 0 0% 100%;--oncolor-200: 60 6.7% 97.1%;--oncolor-300: 60 6.7% 97.1%;--text-000: 48 33.3% 97.1%;--text-100: 48 33.3% 97.1%;--text-200: 50 9% 73.7%;--text-300: 50 9% 73.7%;--text-400: 48 4.8% 59.2%;--text-500: 48 4.8% 59.2%}#home-header{font-family:\"Anthropic Sans\", system-ui, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif;font-weight:400!important;font-size:50px;line-height:1.2;margin-bottom:1rem;color:--text-000;display:flex;align-items:baseline;justify-content:center;flex-wrap:nowrap}#localization-select-trigger>:has(img[src*=\"flags\"]){display:none}div[id^=\"localization-select-item\"]>:has(img[src*=\"flags\"]){display:none}@media (min-width: 768px){#home-header{justify-content:center}}.build-with{font-family:\"Anthropic Sans\", system-ui, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif;letter-spacing:-0.02em}.claude-wordmark-wrapper{display:inline-flex;align-items:baseline;margin-left:10px}.claude-wordmark{height:40px;width:auto;position:relative}.dark #home-header{color:white}.description-text{color:black}.dark .description-text{color:white}.dark .claude-wordmark{filter:invert(1)}:root{--bg-color: #f0efea}.dark{--bg-color: #2b2b2b}body,input,#category-select,.dropdown-item,#table-of-contents{font-family:\"Anthropic Sans\", system-ui, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif}.eyebrow{font-family:\"Anthropic Sans\", system-ui, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif;text-transform:uppercase;letter-spacing:0.02rem}#content-container{font-family:\"Anthropic Sans\", system-ui, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif}#content-container h1,#content-container h2,#content-container h3,#content-container h4,#content-container h5,#content-container h6{font-family:\"Anthropic Serif Display\", Georgia, \"Times New Roman\", Times, serif;font-weight:400;letter-spacing:0;word-spacing:0.1em}#content-container p{font-size:1rem;line-height:1.65rem}.font-extrabold{font-weight:600!important}.wide-table{width:100%;overflow-x:auto}.wide-table table{width:175%;margin-bottom:0}#prompt-library-container{margin:4rem auto;max-width:48rem;padding-left:1.25rem;padding-right:1.25rem}.prompt-library-title{font-size:24px;text-align:center;font-weight:700;color:#1f2937}.dark .prompt-library-title{color:#e5e7eb}.prompt-library-description{margin-top:1rem;text-align:center}.main-content{margin-bottom:10rem;max-width:64rem;margin-left:auto;margin-right:auto;padding-left:1.25rem;padding-right:1.25rem}.prompt-controllers{display:flex;gap:0.5rem}.prompt-search-container{position:relative;flex:1 1 0%}.prompt-search-icon-container{display:flex;position:absolute;top:0;bottom:0;left:0;align-items:center;padding-left:0.75rem}.prompt-search-icon{margin-left:0.25rem;margin-right:0.75rem;flex:none;width:1rem;height:1rem;background-color:#6b7280;mask-image:url(https://mintlify.b-cdn.net/v6.5.1/solid/magnifying-glass.svg);mask-repeat:no-repeat;mask-position:center center}input.prompt-search-bar{display:block;height:2.5rem;padding-left:2.5rem;border-radius:0.75rem;border-width:1px;background-color:#ffffff;width:100%;color:#111827;box-shadow:0 1px 2px 0 rgba(0, 0, 0, 0.05)}.dark input.prompt-search-bar{color:#ffffff;background-color:rgb(var(--background-dark));border-color:#d1d5db1a}input.prompt-search-bar:focus{outline-color:rgb(var(--primary))}.dark input.prompt-search-bar:focus{outline-color:rgb(var(--primary-light))}.dark .prompt-search-icon{background-color:#ffffff80}#category-select{padding-left:1rem;padding-right:2.5rem;height:2.5rem;display:flex;align-items:center;border-radius:0.75rem;border-width:1px;color:#111827;background-color:#ffffff;cursor:pointer;box-shadow:0 1px 2px 0 rgba(0, 0, 0, 0.05);white-space:nowrap}.dark #category-select{background-color:rgb(var(--background-dark));border-color:#d1d5db1a;color:#ffffff}#category-select:hover{background-color:#f9fafb}.dark #category-select:hover{background-color:#ffffff0d}#category-select:focus{outline-color:rgb(var(--primary))}.dark #category-select:focus{outline-color:rgb(var(--primary-light))}#categories-dropdown{top:calc(100% + 4px);padding:0.5rem 0.5rem;display:none;position:absolute;z-index:10;border-radius:0.75rem;border-width:1px;width:100%;color:#111827;background-color:#ffffff;box-shadow:0 1px 2px 0 rgba(0, 0, 0, 0.05)}.dark #categories-dropdown{background-color:rgb(var(--background-dark));border-color:#d1d5db1a;color:#ffffff}#categories-dropdown-clickout{position:fixed;top:0;right:0;bottom:0;left:0;z-index:0}.dropdown-icon-container{display:flex;position:absolute;top:0;bottom:0;right:0;align-items:center;padding-right:0.25rem}.dropdown-icon{margin-left:0.25rem;margin-right:0.75rem;flex:none;width:0.75rem;height:0.75rem;background-color:#6b7280;mask-image:url(https://mintlify.b-cdn.net/v6.5.1/solid/caret-down.svg);mask-repeat:no-repeat;mask-position:center center}.dark .dropdown-icon{background-color:#ffffff80}#prompts-container{grid-template-columns:repeat(1, minmax(0, 1fr));gap:2rem}.dropdown-item{padding:0.25rem 0.5rem;border-radius:0.375rem;display:flex;align-items:center;cursor:pointer}.dropdown-item:hover{background-color:#f9fafb}.dark .dropdown-item:hover{background-color:#ffffff0d}.check-icon{mask-image:url(https://mintlify.b-cdn.net/v6.5.1/solid/check.svg);height:0.875rem;width:1rem;background-color:rgb(var(--primary-light));mask-repeat:no-repeat;mask-position:center center}.prompt-card{margin:-0.75rem;padding:0.75rem;display:flex;border-radius:1rem}.prompt-card:hover{background-color:#03071208}.dark .prompt-card:hover{background-color:#ffffff08}.prompt-icon-container{display:flex;flex:none;align-items:center;justify-content:center;margin-right:1.5rem;border-radius:0.75rem;height:4rem;width:4rem;background-color:#cb785c1a}.prompt-icon{height:1.5rem;width:1.5rem;background-color:rgb(var(--primary-light));mask-repeat:no-repeat;mask-position:center center}.prompt-title{color:rgb(31 41 55);font-weight:600}.dark .prompt-title{color:rgb(229 231 235)}.prompt-description{margin-top:0.25rem}#prompts-container{display:grid;margin-top:2.5rem}@media (min-width: 640px){#category-select{width:16rem}}@media (min-width: 1024px){#prompts-container{grid-template-columns:repeat(2, minmax(0, 1fr))}}.home-cards-custom{display:grid;grid-template-columns:repeat(3, 1fr);grid-template-rows:repeat(2, auto);gap:1.5rem}.home-cards-custom .card{background:transparent;border:0.5px solid hsl(var(--border-300));border-radius:12px;padding:0.25rem}@media (max-width: 1024px){.home-cards-custom{grid-template-columns:repeat(2, 1fr);grid-template-rows:repeat(3, auto)}}@media (max-width: 768px){.home-cards-custom{grid-template-columns:1fr;grid-template-rows:repeat(6, auto)}}.relative{position:relative}.flex-1{flex:1 1 0%}.mermaid{position:relative;background-color:#FDFDFB;background-image:linear-gradient(rgba(235, 219, 188, .25) 1px, transparent 1px), /* Secondary color #EBDBBC with low opacity */\n linear-gradient(90deg, rgba(235, 219, 188, .25) 1px, transparent 1px),\n linear-gradient(rgba(235, 219, 188, .1) 1px, t
