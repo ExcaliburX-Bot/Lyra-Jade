@@ -1,191 +1,90 @@
 [
   {
-    "id": "71996d9786",
-    "title": "How iFood scales coding agents across 15,000 repositories",
-    "url": "https://openai.com/index/ifood",
+    "id": "3c6728c1bf",
+    "title": "GPT-6 models demonstrate intrinsic protein-design capabilities",
+    "url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities",
     "publisher": "OpenAI",
     "tier": "official",
-    "published": "2026-11-24T00:00:00.000Z",
+    "published": "2026-11-24T13:00:00.000Z",
     "score": 6,
     "category_hint": "product",
     "related": []
   },
   {
-    "id": "c76ecea55a",
-    "title": "a16z 公开 1.1 万多次 Agent 购物测试：流量入口正在从“人眼搜索”转向“机器读取 + 交易闭环”",
-    "url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
-    "publisher": "a16z.news",
+    "id": "4213e4ae7a",
+    "title": "Measuring and mitigating agent sandbox escape with Siren",
+    "url": "https://safeguards.anthropic.com/2026/siren/",
+    "publisher": "Anthropic",
     "tier": "official",
-    "published": "2026-11-24T00:00:00.000Z",
-    "score": 5.4,
-    "category_hint": null,
-    "via": "https://xiaohu.ai/article/b2a-agents-as-customers/",
-    "discovered_by": "xiaohu",
+    "published": "2026-11-24T21:32:51.000Z",
+    "score": 5.9,
+    "category_hint": "product",
     "related": []
   },
   {
-    "id": "5094532b4e",
-    "title": "智谱发布 GLM-5.4：一款基于 Loop Transformer（循环架构） 的 750B 旗舰 AI 模型 编码能力增强",
-    "url": "https://z.ai/blog/glm-5.4",
-    "publisher": "Z.ai",
-    "tier": "official",
-    "published": "2026-11-24T00:00:00.000Z",
-    "score": 5.4,
-    "category_hint": null,
-    "via": "https://xiaohu.ai/article/glm-5-4/",
-    "discovered_by": "xiaohu",
-    "related": []
-  },
-  {
-    "id": "8c04164934",
-    "title": "Phonic 发布 Phonic-1.1 语音模型：综合指数 88.9 分登顶，客服任务完成率达 87.1%",
-    "url": "https://phonic.co/blog/phonic-1-1",
-    "publisher": "phonic.co",
-    "tier": "official",
-    "published": "2026-11-24T00:00:00.000Z",
-    "score": 5.4,
-    "category_hint": null,
-    "via": "https://xiaohu.ai/article/phonic-1-1/",
-    "discovered_by": "xiaohu",
-    "related": []
-  },
-  {
-    "id": "1c3eaf246b",
-    "title": "NVIDIA RTX Spark Compact Desktops Out Now",
-    "url": "https://blogs.nvidia.com/blog/rtx-spark-desktop-local-ai-available-now/",
-    "publisher": "NVIDIA",
-    "tier": "official",
-    "published": "2026-11-18T14:00:31.000Z",
-    "score": 4.8,
-    "category_hint": null,
-    "related": [
-      {
-        "title": "英伟达 RTX Spark 小主机开卖：最高 128GB 统一内存，本地能跑 1200 亿参数大模型",
-        "url": "https://blogs.nvidia.com/blog/rtx-spark-desktop-local-ai-available-now/",
-        "publisher": "NVIDIA",
-        "tier": "official"
-      }
-    ]
-  },
-  {
-    "id": "d3bf659ccf",
-    "title": "MAI Image 2.7: Frontier quality at a fraction of the cost",
-    "url": "https://microsoft.ai/news/introducing-mai-image-2-7/",
-    "publisher": "Microsoft AI",
-    "tier": "official",
-    "published": "2026-11-17T12:00:00.000Z",
-    "score": 4.8,
-    "category_hint": null,
-    "related": [
-      {
-        "title": "微软发布 MAI Image 2.7 和 Canvas：改图榜第一，价格约为 GPT Image 2.6 的五分之一",
-        "url": "https://microsoft.ai/news/introducing-mai-image-2-7/",
-        "publisher": "Microsoft AI",
-        "tier": "official"
-      }
-    ]
-  },
-  {
-    "id": "e793852d37",
-    "title": "MAI Realtime 1: Leading voice AI at $0.01 per audio minute",
-    "url": "https://microsoft.ai/news/introducing-mai-realtime-1/",
-    "publisher": "Microsoft AI",
-    "tier": "official",
-    "published": "2026-11-17T12:00:00.000Z",
-    "score": 4.8,
-    "category_hint": null,
-    "related": [
-      {
-        "title": "微软发布 MAI Realtime 1 语音模型：每分钟 0.01 美元起，口头推理准确率 98.9%",
-        "url": "https://microsoft.ai/news/introducing-mai-realtime-1/",
-        "publisher": "Microsoft AI",
-        "tier": "official"
-      }
-    ]
-  },
-  {
-    "id": "de5cd1a6d5",
-    "title": "Perplexity and Intelligence",
-    "url": "https://openai.com/index/perplexity-and-intelligence",
+    "id": "f3aa9260f1",
+    "title": "Searching for distant planets with Astra",
+    "url": "https://openai.com/index/searching-for-distant-planets-with-astra",
     "publisher": "OpenAI",
     "tier": "official",
-    "published": "2026-11-22T00:00:00.000Z",
+    "published": "2026-11-24T11:00:00.000Z",
+    "score": 5.2,
+    "category_hint": "product",
+    "related": []
+  },
+  {
+    "id": "c037696db2",
+    "title": "Slide decks you create in Perplexity Computer now have a native viewer",
+    "url": "https://x.com/AravSrinivas/status/2125364190802227680",
+    "publisher": "@AravSrinivas",
+    "tier": "official",
+    "published": "2026-11-24T23:01:25.101Z",
+    "score": 5.1,
+    "category_hint": "product",
+    "related": []
+  },
+  {
+    "id": "b0f32f271a",
+    "title": "Our new Spanish voices have arrived",
+    "url": "https://x.com/inworld/status/2125292918697050196",
+    "publisher": "@inworld",
+    "tier": "official",
+    "published": "2026-11-24T18:18:12.507Z",
+    "score": 5.1,
+    "category_hint": "product",
+    "related": []
+  },
+  {
+    "id": "ec442b764e",
+    "title": "How Intentful uses dots to make more time for growth",
+    "url": "https://openai.com/business/customer-stories/intentful-dots",
+    "publisher": "OpenAI",
+    "tier": "official",
+    "published": "2026-11-24T00:00:00.000Z",
     "score": 4.7,
     "category_hint": "product",
     "related": []
   },
   {
-    "id": "63ca2eddd0",
-    "title": "Gemini 4 Neon is now rolled out to @GoogleWorkspace customers through the Gemini App!",
-    "url": "https://x.com/OfficialLoganK/status/2125018427790344654",
-    "publisher": "@OfficialLoganK",
-    "tier": "official",
-    "published": "2026-11-24T00:07:28.775Z",
-    "score": 4.6,
-    "category_hint": "product",
-    "related": []
-  },
-  {
-    "id": "d1e1fa1ba8",
-    "title": "Connectors and skills come together as plugins",
-    "url": "https://x.com/claudeai/status/2124970294523945328",
-    "publisher": "@claudeai",
-    "tier": "official",
-    "published": "2026-11-23T20:56:12.910Z",
-    "score": 4.6,
-    "category_hint": "product",
-    "related": []
-  },
-  {
-    "id": "74d5169d80",
-    "title": "MemOS 与 NVIDIA 发布 MemT-1.0-Pro：554B 记忆原生大模型 将历史信息存储在原生记忆中 可随时直接使用",
-    "url": "https://arxiv.org/abs/2610.26825",
-    "publisher": "arXiv",
-    "tier": "primary",
-    "published": "2026-11-23T00:00:00.000Z",
-    "score": 4.4,
-    "category_hint": null,
-    "via": "https://xiaohu.ai/article/memt-1-pro/",
-    "discovered_by": "xiaohu",
-    "related": []
-  },
-  {
-    "id": "a5b77eee49",
-    "title": "OpenAI 发布 GPT-6.2 提示指南：能拆开的活交给子 Agent，精简AGENTS.md 只写代码里推不出来的事",
-    "url": "https://learn.chatgpt.com/guides/prompting-gpt-6-2-astra",
-    "publisher": "learn.chatgpt.com",
-    "tier": "official",
-    "published": "2026-11-21T00:00:00.000Z",
-    "score": 4.4,
-    "category_hint": null,
-    "via": "https://xiaohu.ai/article/gpt-6-2-codex-prompting-guide/",
-    "discovered_by": "xiaohu",
-    "related": []
-  },
-  {
-    "id": "4bd6f0b210",
-    "title": "OpenAI 公开其个人 Agent Dot 背后的时间感知技术：Bot 如何能在特定状态下感知并提醒你",
-    "url": "https://developers.openai.com/blog/time-awareness-and-async-input-for-personal-agents",
+    "id": "99b93f3e10",
+    "title": "Clay helps sales teams win with Codex and ChatGPT",
+    "url": "https://openai.com/business/customer-stories/clay-plugins-openai",
     "publisher": "OpenAI",
     "tier": "official",
-    "published": "2026-11-21T00:00:00.000Z",
-    "score": 4.4,
-    "category_hint": null,
-    "via": "https://xiaohu.ai/article/openai-agent-time-async/",
-    "discovered_by": "xiaohu",
+    "published": "2026-11-24T00:00:00.000Z",
+    "score": 4.7,
+    "category_hint": "product",
     "related": []
   },
   {
-    "id": "a0ebc9ee45",
-    "title": "Thinking Machines 发布 Inkling 2 Mini 模型：32GB 内存的 Mac 就能本地跑 在断网的 MacBook 上几分钟写出能玩的飞行模拟器",
-    "url": "https://thinkingmachines.ai/news/inkling-2-mini/",
-    "publisher": "thinkingmachines.ai",
+    "id": "9544aed5e2",
+    "title": "The Google DeepMind Easy Read Co-Creator Tool",
+    "url": "https://www.mencap.org.uk/what-we-do/accessibility/google-deepmind-easy-read-co-creator-tool",
+    "publisher": "Google DeepMind",
     "tier": "official",
-    "published": "2026-11-21T00:00:00.000Z",
-    "score": 4.4,
-    "category_hint": null,
-    "via": "https://xiaohu.ai/article/thinking-machines-inkling-2-mini/",
-    "discovered_by": "xiaohu",
+    "published": "2026-11-24T12:15:46.000Z",
+    "score": 4.6,
+    "category_hint": "product",
     "related": []
   },
   {
@@ -316,6 +215,17 @@
     "category_hint": null,
     "via": "https://xiaohu.ai/article/higgsfield-brand-mascot/",
     "discovered_by": "xiaohu",
+    "related": []
+  },
+  {
+    "id": "de5cd1a6d5",
+    "title": "Perplexity and Intelligence",
+    "url": "https://openai.com/index/perplexity-and-intelligence",
+    "publisher": "OpenAI",
+    "tier": "official",
+    "published": "2026-11-22T00:00:00.000Z",
+    "score": 4.2,
+    "category_hint": "product",
     "related": []
   },
   {
@@ -490,6 +400,61 @@
     "publisher": "OpenAI",
     "tier": "official",
     "published": "2026-11-16T17:00:00.000Z",
+    "score": 4.2,
+    "category_hint": "product",
+    "related": []
+  },
+  {
+    "id": "b1c71d0787",
+    "title": "Strengthening the fight against online child sexual abuse with new tools and support",
+    "url": "https://openai.com/index/strengthening-online-child-safety",
+    "publisher": "OpenAI",
+    "tier": "official",
+    "published": "2026-11-16T17:00:00.000Z",
+    "score": 4.2,
+    "category_hint": "product",
+    "related": []
+  },
+  {
+    "id": "f891bd93f3",
+    "title": "Science at the Frontier: How scientists use ChatGPT",
+    "url": "https://openai.com/index/science-at-the-frontier",
+    "publisher": "OpenAI",
+    "tier": "official",
+    "published": "2026-11-16T12:00:00.000Z",
+    "score": 4.2,
+    "category_hint": "product",
+    "related": []
+  },
+  {
+    "id": "f054a54f82",
+    "title": "How Revolut raises ambition without lowering the bar",
+    "url": "https://openai.com/business/customer-stories/revolut",
+    "publisher": "OpenAI",
+    "tier": "official",
+    "published": "2026-11-16T09:30:00.000Z",
+    "score": 4.2,
+    "category_hint": "product",
+    "related": []
+  },
+  {
+    "id": "ebd9eb9496",
+    "title": "Our first phase of embedded assessments",
+    "url": "https://openai.com/index/our-first-phase-of-embedded-assessments",
+    "publisher": "OpenAI",
+    "tier": "official",
+    "published": "2026-11-16T08:00:00.000Z",
+    "score": 4.2,
+    "category_hint": "product",
+    "related": []
+  },
+  {
+    "id": "cfcc7acb02",
+    "title": "More ways to move care forward with ChatGPT for Healthcare",
+    "url": "https://openai.com/index/more-ways-to-move-care-forward-with-chatgpt-for-healthcare",
+    "publisher": "OpenAI",
+    "tier": "official",
+    "published": "2026-11-16T06:00:00.000Z",
     "score": 4.2,
     "category_hint": "product",
     "related": []
