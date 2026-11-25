@@ -12,10 +12,10 @@ const paper = { ...base, slug: "p", category: "paper", status: "published", publ
   paper: { title: "Attention Is All You Need", url: "https://arxiv.org/abs/1706.03762", arxiv: "1706.03762", year: 2017, venue: "NIPS 2017" },
   sections: [...base.sections, { h: "公式和自测", blocks: [
     { callout: { kind: "intuition", title: "比喻", text: "像查资料，d_{model} 是 512" } },
-    { formula: { expr: "Attention(Q, K, V) = softmax(Q·Kᵀ / √dₖ)·V\nPE = sin(pos / 10000^{2i/d_{model}})", parts: [{ sym: "W^{Q}", desc: "查询投影" }] } },
+    { formula: { expr: "Attention(Q, K, V) = softmax(Q·Kᵀ / √dₖ)·V\nPE = sin(pos / 10000^{2i/d_{model}})\nE_{(x, y_{w}) ∼ D}", parts: [{ sym: "W^{Q}", desc: "查询投影" }] } },
     { quiz: { q: "为什么除以 √dₖ？", options: ["更快", "防止 softmax 饱和"], answer: 1, why: "方差等于 dₖ" } },
     { quiz: { q: "第二题", options: ["a", "b"], answer: 0, why: "因为" } },
-    { fig: { type: "heatmap", title: "热力图", subtitle: "示意", rows: ["猫", "它"], cols: ["猫", "它"], values: [[0.9, 0.1], [0.7, 0.3]], highlight: { row: 1 } } }] }] };
+    { fig: { type: "heatmap", title: "热力图", subtitle: "示意：r_{w} 是分数", rows: ["猫", "它"], cols: ["猫", "它"], values: [[0.9, 0.1], [0.7, 0.3]], highlight: { row: 1 } } }] }] };
 
 test("论文精读：提示框、公式（上下标）、自测题、热力图、论文信息卡都能渲染", () => {
   const h = renderArticleBody(paper);
@@ -23,6 +23,8 @@ test("论文精读：提示框、公式（上下标）、自测题、热力图�
   assert.match(h, /class="callout co-intuition"[\s\S]*d<sub>model<\/sub>/);
   assert.match(h, /10000<sup>2i\/d<sub>model<\/sub><\/sup>/);
   assert.match(h, /<dt>W<sup>Q<\/sup><\/dt>/);
+  assert.match(h, /E<sub>\(x, y<sub>w<\/sub>\) ∼ D<\/sub>/);   /* 嵌套下标 */
+  assert.match(h, /class="fig-s">示意：r<sub>w<\/sub>/);         /* 图的副标题也认上下标 */
   assert.match(h, /class="quiz" data-answer="1"/);
   assert.match(h, /class="fheat"[\s\S]*tr class="hr"/);
   assert.match(renderArticleBody(paper, { lang: "en" }), /Check yourself/);

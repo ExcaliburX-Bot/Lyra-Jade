@@ -150,13 +150,15 @@ FIGS.heatmap = f => {
 
 export function figure(f) {
   const body = (FIGS[f.type] || (() => ""))(f);
-  return `<figure class="fig" data-type="${esc(f.type)}">${f.title ? `<div class="fig-h">${esc(f.title)}</div>` : ""}${f.subtitle ? `<div class="fig-s">${esc(f.subtitle)}</div>` : ""}${body}${f.note ? `<figcaption>${math(esc(f.note))}</figcaption>` : ""}</figure>`;
+  return `<figure class="fig" data-type="${esc(f.type)}">${f.title ? `<div class="fig-h">${esc(f.title)}</div>` : ""}${f.subtitle ? `<div class="fig-s">${math(esc(f.subtitle))}</div>` : ""}${body}${f.note ? `<figcaption>${math(esc(f.note))}</figcaption>` : ""}</figure>`;
 }
 
 const num = i => String(i + 1).padStart(2, "0");
 /* 正文里的 `代码`、**加粗**（只认这两种，其余按纯文本转义） */
 /* 数学小标记：x_{下标}、x^{上标}（先处理下标，所以上标里可以再套下标），以及 W^Q 这种单字母上标 */
-const math = h => h.replace(/_\{([^{}]*)\}/g, "<sub>$1</sub>").replace(/\^\{([^{}]*)\}/g, "<sup>$1</sup>").replace(/\b([A-Za-z])\^([A-Za-z0-9])(?![A-Za-z0-9{])/g, "$1<sup>$2</sup>");
+/* 上下标可以嵌套（E_{(x, y_{w}) ∼ D}）：由内向外替换，最多三层 */
+const subsup = h => { for (let i = 0; i < 3; i++) { const n = h.replace(/_\{([^{}]*)\}/g, "<sub>$1</sub>").replace(/\^\{([^{}]*)\}/g, "<sup>$1</sup>"); if (n === h) break; h = n; } return h; };
+const math = h => subsup(h).replace(/\b([A-Za-z])\^([A-Za-z0-9])(?![A-Za-z0-9{])/g, "$1<sup>$2</sup>");
 const rich = s => math(esc(s)).replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>");
 
 function block(b) {
