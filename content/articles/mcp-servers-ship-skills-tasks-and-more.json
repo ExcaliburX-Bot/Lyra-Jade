@@ -1,0 +1,500 @@
+{
+  "slug": "mcp-servers-ship-skills-tasks-and-more",
+  "date": "2026-11-24",
+  "category": "product",
+  "publisher": "Anthropic",
+  "topics": [
+    "claude"
+  ],
+  "title": "MCP 服务器现在能带技能、跑长任务、要确认、收文件",
+  "summary": "以后你用 Claude 接 MCP 服务器，服务器不光能「报工具名」，还能把业务玩法一起发过来：技能按需加载、长任务后台跑、关键操作中途要你点头、文件直接传过去不占上下文。",
+  "ai_summary": "Anthropic 给 MCP 加了四类能力。核心是 Skills over MCP：技能随工具一起发布，Claude 按需加载、随服务器更新，已进入公开测试。Tasks 和 Elicitation 已正式可用：前者让服务器后台跑长任务，后者让花钱、删数据等操作中途要用户确认。File Uploads 即将上线：PDF、表格、图片直接传服务器，不经上下文窗口。生态上 MCP 月 SDK 下载超 7 亿次、连接器超 10,000 个；多服务器场景工具搜索按需加载可省超 85% 上下文。Pro、Max、Ultra 默认开放，Team 需管理员开，Enterprise 陆续跟上。",
+  "brief": [
+    "Skills over MCP 进入公开测试：技能随服务器一起发布、更新，Claude 用到才加载。",
+    "Tasks 和 Elicitation 正式可用：长任务后台跑，花钱、删数据前中途要确认。",
+    "File Uploads 即将上线：PDF、表格、图片直接传服务器，不占上下文。",
+    "规模：MCP 月 SDK 下载超 7 亿次；多服务器场景工具搜索按需加载可省超 85% 上下文。"
+  ],
+  "readMinutes": 8,
+  "cover": {
+    "headline": "MCP 服务器现在能带技能",
+    "highlight": "还能跑长任务、要确认、收文件",
+    "glyph": {
+      "kind": "hub",
+      "center": {
+        "label": "MCP 服务器",
+        "tone": "hi"
+      },
+      "nodes": [
+        {
+          "label": "技能",
+          "tone": "base"
+        },
+        {
+          "label": "任务",
+          "tone": "base"
+        },
+        {
+          "label": "确认",
+          "tone": "base"
+        },
+        {
+          "label": "文件",
+          "tone": "base"
+        }
+      ]
+    }
+  },
+  "sections": [
+    {
+      "h": "这是什么：MCP 服务器从「工具目录」变成「搭档」",
+      "blocks": [
+        {
+          "p": "MCP 是 Model Context Protocol 的缩写，可以理解成一套让 Claude 连上你公司数据和应用的标准接口。两年前 Anthropic 把它开放出来，现在它已经是 agent（智能体，能自己拆任务、调用工具、循环执行的 AI 程序）生态里相当常见的连接层。这次更新一句话概括：MCP 服务器不再只会「报工具名」，而是能像另一个 agent 一样，把技能教给 Claude、接长任务、中途要确认、直接收文件。"
+        },
+        {
+          "p": "落地状态分三档：Skills over MCP 进入公开测试（public beta）；Tasks 和 Elicitation 正式可用（GA，generally available）；File Uploads 即将推出。四项能力都属于开放的 MCP 规范和扩展，服务器支持之后，其他兼容客户端也能用，不只是 Claude。"
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "MCP 生态两年的规模",
+            "subtitle": "数字来自 Anthropic 官方公告",
+            "items": [
+              {
+                "value": 700,
+                "unit": "百万次/月",
+                "label": "MCP SDK 月下载",
+                "note": "原文：over 700 million"
+              },
+              {
+                "value": 10000,
+                "unit": "个",
+                "label": "Claude 的 MCP 连接器",
+                "note": "原文：over 10,000"
+              },
+              {
+                "value": 85,
+                "unit": "%",
+                "label": "多服务器上下文最多省",
+                "note": "工具搜索按需加载"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "四类新能力，分别补哪块短板",
+      "blocks": [
+        {
+          "p": "把这四样放到一起看，会发现它们都在补同一块短板：以前 Claude 和服务器之间基本只能来回传「工具调用和结果」，很多真实业务动作做不了。现在服务器能「教玩法」「接长活」「中途问人」「直接收文件」，更像一个可以长期协作的搭档。"
+        },
+        {
+          "fig": {
+            "type": "cards",
+            "title": "四类新能力，各有各的用武之地",
+            "subtitle": "示意：琥珀色是这次的主角——技能；其余同期开放或即将上线",
+            "note": "状态均为原文表述",
+            "items": [
+              {
+                "glyph": {
+                  "kind": "doc",
+                  "lines": 8,
+                  "select": [
+                    2,
+                    4
+                  ]
+                },
+                "title": "技能 Skills",
+                "desc": "服务器把最佳实践、分步工作流、定制 playbook 一起发；Claude 用到才加载，随服务器更新。",
+                "tags": [
+                  "public beta",
+                  "按需加载"
+                ],
+                "tone": "hi"
+              },
+              {
+                "glyph": {
+                  "kind": "clock",
+                  "segments": [
+                    {
+                      "from": 9,
+                      "to": 14,
+                      "tone": "base",
+                      "label": "后台任务"
+                    }
+                  ]
+                },
+                "title": "任务 Tasks",
+                "desc": "长任务在服务器后台跑，Claude 继续干活，结果好了再取。",
+                "tags": [
+                  "正式可用",
+                  "长任务"
+                ],
+                "tone": "base"
+              },
+              {
+                "glyph": {
+                  "kind": "chat",
+                  "turns": [
+                    {
+                      "role": "ai",
+                      "text": "要删数据吗？",
+                      "tone": "base"
+                    },
+                    {
+                      "role": "user",
+                      "text": "确认",
+                      "tone": "base"
+                    }
+                  ]
+                },
+                "title": "确认 Elicitation",
+                "desc": "花钱、删数据等动作中途暂停，通过表单或链接要用户同意，再继续。",
+                "tags": [
+                  "正式可用",
+                  "人工确认"
+                ],
+                "tone": "base"
+              },
+              {
+                "glyph": {
+                  "kind": "devices",
+                  "left": {
+                    "kind": "laptop",
+                    "label": "Claude",
+                    "tone": "def"
+                  },
+                  "right": {
+                    "kind": "server",
+                    "label": "MCP 服务器",
+                    "tone": "base"
+                  },
+                  "arrow": true
+                },
+                "title": "文件上传 File Uploads",
+                "desc": "PDF、表格、图片直接传给服务器，不经过上下文窗口。",
+                "tags": [
+                  "即将上线",
+                  "省上下文"
+                ],
+                "tone": "base"
+              }
+            ]
+          }
+        },
+        {
+          "fig": {
+            "type": "quote",
+            "title": "Anthropic 对这次更新的定位",
+            "text": "Claude can work with a server more like it works with another agent: learning from it, delegating to it, and exchanging input and files along the way.",
+            "zh": "Claude 现在和服务器协作，更像和另一个 agent 协作：向它学习、把事情交给它、沿途交换输入和文件。",
+            "who": "Anthropic",
+            "role": "官方公告",
+            "source_url": "https://claude.com/resources/articles/skills-over-mcp-tasks-and-more"
+          }
+        }
+      ]
+    },
+    {
+      "h": "技能：把「怎么干好」一起发过来",
+      "blocks": [
+        {
+          "p": "工具名和描述只告诉 Claude 服务器「有什么」，不告诉它「这件事该怎么做好」。比如一个 CRM 服务器有「查客户」工具，但「怎么给新客户做上手流程」这整套玩法，靠工具描述讲不清楚。"
+        },
+        {
+          "p": "Skills over MCP 让服务器把这些玩法打包成「技能」随工具一起发布。技能里可以放最佳实践、分步工作流，甚至针对某个账号或组织定制的 playbook（操作手册）。两个对用户友好的点：Claude 只在需要时加载技能，不把上下文窗口（模型一次能看到的输入量上限）塞满；技能随服务器更新，开发者把工具和指引一起发，用户不用单独装东西。"
+        },
+        {
+          "list": [
+            "已经在用的几家：",
+            "Shopify：帮 Claude 端到端设计和更新商家的网店。",
+            "HubSpot：给新客户做 onboarding（上手流程）并在 Claude 里设置好。",
+            "Atlassian：让 Claude 利用组织深层上下文做洞察和工作分析。",
+            "Carta：从上传的文件起草并发放股权（即将推出）。"
+          ]
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "以前只有工具，现在多了四类能力",
+            "subtitle": "琥珀色是这次新增的四类，蓝色是原有的工具",
+            "left": {
+              "label": "以前",
+              "sub": "服务器主要暴露工具",
+              "items": [
+                {
+                  "label": "工具（tools）",
+                  "tag": "名称 + 描述",
+                  "state": "def"
+                }
+              ]
+            },
+            "right": {
+              "label": "现在",
+              "sub": "工具之外多了四类",
+              "items": [
+                {
+                  "label": "工具（tools）",
+                  "tag": "名称 + 描述",
+                  "state": "def"
+                },
+                {
+                  "label": "技能（skills）",
+                  "tag": "最佳实践、工作流",
+                  "state": "hi"
+                },
+                {
+                  "label": "任务（tasks）",
+                  "tag": "长任务后台跑",
+                  "state": "hi"
+                },
+                {
+                  "label": "确认（elicitation）",
+                  "tag": "中途要用户同意",
+                  "state": "hi"
+                },
+                {
+                  "label": "文件上传（file uploads）",
+                  "tag": "文件不占上下文",
+                  "state": "hi"
+                }
+              ]
+            },
+            "footer": "服务器从「工具目录」变成更像一个搭档"
+          }
+        }
+      ]
+    },
+    {
+      "h": "任务和确认：长活后台跑，关键操作中途问",
+      "blocks": [
+        {
+          "p": "Tasks 解决「长任务」。以前工具调用必须先结束，Claude 才能继续下一步；现在服务器可以在后台跑耗时操作，甚至跑完整的 agent 循环（智能体反复「思考—调工具—看结果」的循环），Claude 继续做别的事，结果好了再取。ZoomInfo 用它跑更深的账号和联系人研究，之前需要好几次 prompt（提示）才能完成。"
+        },
+        {
+          "p": "Elicitation 解决「中途要人点头」。有些动作需要用户同意，比如花钱或删数据。服务器可以在调用中途暂停，通过表单或链接向用户要输入，然后从刚才的地方继续。"
+        },
+        {
+          "fig": {
+            "type": "route",
+            "title": "长任务交出去后，Claude 不用干等",
+            "subtitle": "示意：本机色是 Claude 这条主线，云端色是交给服务器的后台任务",
+            "root": {
+              "label": "Claude",
+              "sub": "发出一个长任务请求"
+            },
+            "branches": [
+              {
+                "tone": "cloud",
+                "label": "MCP 服务器",
+                "items": [
+                  "后台跑耗时操作",
+                  "或完整 agent 循环",
+                  "好了把结果送回"
+                ],
+                "note": "Tasks 扩展"
+              },
+              {
+                "tone": "local",
+                "label": "Claude 主线",
+                "items": [
+                  "不干等",
+                  "继续处理别的工作",
+                  "稍后取结果"
+                ],
+                "note": "以前的工具调用得先结束"
+              }
+            ]
+          }
+        },
+        {
+          "list": [
+            "已经在用的几家：",
+            "Supabase：创建付费项目、执行破坏性 SQL 之前，先确认成本。",
+            "Railway：做可能破坏性的变更（比如删服务）之前先问。",
+            "GitHub：agent 删仓库之前，让用户输入仓库名。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "文件上传：大文件不占上下文",
+      "blocks": [
+        {
+          "p": "File Uploads 让 Claude 能把文件传给 MCP 服务器，而不只是文本。关键点是：PDF、表格、图片直接传过去，不经过上下文窗口。这意味着大文件不再占模型有限的「注意力」，也让「文件交给服务器处理」的分工更顺。"
+        },
+        {
+          "p": "它和技能一样属于开放扩展，状态是「即将推出」，先覆盖 Pro、Max、Ultra 和符合条件的 Team、Enterprise 套餐。"
+        }
+      ]
+    },
+    {
+      "h": "底层这一年还改了什么",
+      "blocks": [
+        {
+          "p": "除了四项新能力，Anthropic 也顺带讲了 MCP 地基上的改进，重点都指向「生产环境更省、更好管」。"
+        },
+        {
+          "list": [
+            "更省 token：工具搜索只在需要时加载工具定义，多服务器场景下能把它们占用的上下文砍掉 85% 以上。",
+            "更好扩展：最新 MCP 规范是无状态的，跨 Claude 产品支持，服务器多了也更好维护。",
+            "更易授权：Enterprise Managed Auth 扩展让管理员一次授权受支持的服务器，用户自动连上。",
+            "更可交互：MCP Apps 扩展把完整界面带进 Claude，可以放在对话旁，也可以全屏。"
+          ]
+        },
+        {
+          "fig": {
+            "type": "illustration",
+            "title": "工具搜索按需加载，能砍掉 85% 以上上下文占用",
+            "subtitle": "示意：100 个点代表工具定义占用的上下文，琥珀色是省下的部分",
+            "glyph": {
+              "kind": "dots",
+              "total": 100,
+              "hi": 85
+            }
+          }
+        }
+      ]
+    },
+    {
+      "h": "谁能用、怎么开",
+      "blocks": [
+        {
+          "p": "可用范围按套餐分，而且四项能力的节奏不完全一样："
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "四项能力的状态和可用套餐",
+            "subtitle": "状态与范围均来自官方公告",
+            "columns": [
+              "能力",
+              "状态",
+              "可用范围"
+            ],
+            "rows": [
+              [
+                "Skills over MCP",
+                "公开测试",
+                "Pro / Max / Ultra 默认开；Team 管理员开启；Enterprise 即将推出"
+              ],
+              [
+                "Tasks",
+                "正式可用",
+                "Pro / Max / Ultra；Team / Enterprise 陆续推出"
+              ],
+              [
+                "Elicitation",
+                "正式可用",
+                "Pro / Max / Ultra；Team / Enterprise 陆续推出"
+              ],
+              [
+                "File Uploads",
+                "即将上线",
+                "Pro / Max / Ultra 及符合条件的 Team / Enterprise"
+              ]
+            ]
+          }
+        },
+        {
+          "p": "价格：原文没有给这些能力单独定价，也没有写套餐价格；只说明在哪些套餐可用。要确认企业版的费用，需要联系 Anthropic 销售。"
+        }
+      ]
+    },
+    {
+      "h": "官方还没说的",
+      "blocks": [
+        {
+          "list": [
+            "价格：四项能力没有单独定价，套餐价格也没写。",
+            "File Uploads 的具体上线日期没写，只说 rolling out soon。",
+            "Enterprise 版 Skills 的具体时间没写，只说 coming soon。",
+            "「85% 以上」是多服务器场景的数据，单服务器能省多少没写。",
+            "技能和工具在权限、token 计费上的区别没有细讲。",
+            "Carta 的股权功能只写了 coming soon，没有日期。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "适合谁",
+      "blocks": [
+        {
+          "p": "价值：对用 Claude 接业务系统的团队来说，这次更新降低了「把公司玩法教给 Claude」和「让 Claude 干长活」的成本；代价是团队版、企业版要么等管理员开启，要么还要再等等。"
+        },
+        {
+          "callout": {
+            "kind": "takeaway",
+            "title": "按角色对号入座",
+            "list": [
+              "Pro / Max / Ultra 用户：现在就能体验技能、任务、确认三项，找支持新能力的服务器接上即可。",
+              "Team 管理员：技能要你去后台开启；任务和确认在陆续铺开。",
+              "服务器开发者：按官方文档给服务器加技能、任务、确认、文件上传支持；因为是开放规范，做了之后其他兼容客户端也能用。",
+              "关心上下文和成本的人：优先看 File Uploads 和工具搜索按需加载，两项都指向「省上下文」。"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "MCP servers can now ship skills, run tasks, and more with Claude",
+      "publisher": "Anthropic",
+      "date": "2026-11-24",
+      "url": "https://claude.com/resources/articles/skills-over-mcp-tasks-and-more"
+    },
+    "more": [],
+    "note": "配图为示意；四项能力的状态、套餐范围和生态数字均来自这篇官方公告。「85% 以上」的上下文节省是 Anthropic 在多服务器场景下的说法。"
+  },
+  "claims": [
+    {
+      "text": "MCP 每月 SDK 下载量超过 7 亿次（厂商口径）。",
+      "value": "over 700 million",
+      "source_url": "https://claude.com/resources/articles/skills-over-mcp-tasks-and-more",
+      "as_written": "超过 7 亿",
+      "quote": "MCP now sees over 700 million monthly SDK downloads"
+    },
+    {
+      "text": "Claude 有超过 10,000 个 MCP 连接器（厂商口径）。",
+      "value": "over 10,000",
+      "source_url": "https://claude.com/resources/articles/skills-over-mcp-tasks-and-more",
+      "as_written": "超过 10,000 个",
+      "quote": "there are over 10,000 MCP connectors for Claude"
+    },
+    {
+      "text": "多服务器场景下，工具搜索按需加载能把工具定义占用的上下文砍掉 85% 以上（厂商口径）。",
+      "value": "over 85%",
+      "source_url": "https://claude.com/resources/articles/skills-over-mcp-tasks-and-more",
+      "as_written": "85% 以上",
+      "quote": "which can cut the context they use by over 85% in multi-server setups"
+    },
+    {
+      "text": "Anthropic 两年前发布 MCP。",
+      "value": "Two years ago",
+      "source_url": "https://claude.com/resources/articles/skills-over-mcp-tasks-and-more",
+      "as_written": "两年前",
+      "quote": "Two years ago, Anthropic launched the Model Context Protocol (MCP) as a new standard for connecting AI agents to the systems where data lives."
+    },
+    {
+      "text": "公告发布于 2026 年 11 月 24 日。",
+      "value": "Nov 24, 2026",
+      "source_url": "https://claude.com/resources/articles/skills-over-mcp-tasks-and-more",
+      "as_written": "2026 年 11 月 24 日",
+      "quote": "Article Nov 24, 2026"
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "origin": "auto",
+    "candidate": "44f76c8bfa",
+    "tier": "official",
+    "via": null,
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "generated_at": "2026-11-25T20:00:41.189Z"
+  }
+}
