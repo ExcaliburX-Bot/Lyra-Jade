@@ -1,0 +1,12 @@
+[
+  {
+    "title": "Freeze the web with Perplexity Time Machine",
+    "url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine",
+    "tier": "official",
+    "publisher": "Perplexity",
+    "source": "bot:x",
+    "published": "2026-11-25",
+    "summary": "Perplexity launched Time Machine for the Search API and Context API, adding a snapshot_as_of date cutoff (up to 365 days back) so agents search and read stored copies of the web as it was on a chosen date.",
+    "category": "product"
+  }
+]
