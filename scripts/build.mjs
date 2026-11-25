@@ -154,7 +154,7 @@ function buildLang(L) {
       return `<div class="lib-area"><h3>${esc(en ? ar.en : ar.zh)}<small>${items.length}</small></h3><ul>${items.map(p => {
         const name = en ? (p.name_en || p.name) : p.name, sub = p.title && p.title !== name ? p.title : "";
         const meta = [p.org || p.author, p.year].filter(Boolean).join(" · ");
-        const extra = p.extra ? `<i class="lib-x" title="${en ? "Added to round out the curriculum" : "站长收藏之外、为体系化学习补充的论文"}">${en ? "added" : "补充"}</i>` : "";
+        const extra = p.extra ? `<i class="lib-x" title="${en ? "Added to round out the curriculum" : "为体系化学习补充的论文"}">${en ? "added" : "补充"}</i>` : "";
         return `<li id="p-${esc(p.id)}" class="${p.art ? "done" : ""}">${p.art ? `<a href="a/${p.art.slug}.html">` : p.url ? `<a href="${esc(p.url)}" target="_blank" rel="noopener">` : "<div>"}<b>${esc(name)}${extra}</b>${sub ? `<span class="lib-t">${esc(sub)}</span>` : ""}<span class="lib-m">${esc(meta)}</span><em>${p.art ? (en ? "Read the deep dive →" : "已精读 →") : p.url ? (en ? "Coming up · original paper ↗" : "待精读 · 看原文 ↗") : (en ? "Coming up" : "待精读")}</em>${p.art || p.url ? "</a>" : "</div>"}</li>`; }).join("")}</ul></div>`; }).join("")}
   </section>`;
   /* 学习路线：几条按顺序读的主线，每条显示精读进度；书单是全集，路线是推荐的精读顺序 */

@@ -45,6 +45,6 @@
 
 ## 书单和学习路线
 
-- 书单在 `content/papers/library.json`：`papers` 是全集；`extra: true` 是站长收藏之外、为体系化学习补充的论文（原文需要站长另外下载）。
+- 书单在 `content/papers/library.json`：`papers` 是全集；`extra: true` 是为体系化学习补充的论文。学习主线上全部 69 篇和 5 篇补充论文的原文，站长整理在电脑上的 `AI_Papers_2025-main/PDFs` 文件夹（文件名“序号 - 年份 - 标题.pdf”）。
 - `tracks` 是学习主线：每条按顺序列出论文 id。**选下一篇精读时，优先按主线顺序**，论文页会显示每条主线的进度。
 - 精读完成后不用改书单：论文页按 `paper.arxiv` 或 `paper.url` 自动把书单条目和主线节点链到文章。
