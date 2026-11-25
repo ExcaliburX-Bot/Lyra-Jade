@@ -1,6 +1,6 @@
 {
   "slug": "claude-install-as-app-artifacts",
-  "date": "2026-11-25",
+  "date": "2026-11-24",
   "category": "product",
   "publisher": "Anthropic",
   "topics": [
@@ -336,7 +336,7 @@
     "main": {
       "title": "Turn artifacts into Mac and Windows apps | Claude by Anthropic",
       "publisher": "Anthropic",
-      "date": "2026-11-25",
+      "date": "2026-11-24",
       "url": "https://claude.com/resources/articles/install-as-app"
     },
     "more": [],
@@ -347,7 +347,7 @@
       "text": "安装后的应用权限分三档：默认（Default）、应用权限（App permissions）、完全访问（Full computer access）。",
       "value": "three levels",
       "source_url": "https://claude.com/resources/articles/install-as-app",
-      "as_written": "三档",
+      "as_written": "3 档",
       "quote": "There are three levels of permissions:"
     },
     {
@@ -359,7 +359,7 @@
     }
   ],
   "status": "published",
-  "verified": false,
+  "verified": true,
   "pipeline": {
     "origin": "auto",
     "candidate": "38f3d822d5",
