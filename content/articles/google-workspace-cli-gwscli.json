@@ -1,0 +1,588 @@
+{
+  "slug": "google-workspace-cli-gwscli",
+  "category": "product",
+  "date": "2026-11-25",
+  "publisher": "Google for Developers",
+  "title": "谷歌发布 gwscli：AI 代理一句话查日程、回邮件、改文档",
+  "summary": "想让 AI 助手直接翻你的邮箱、排你的日历、改你的表格？谷歌新出的 gwscli 命令行工具，把 Claude Code 这类 AI 代理接到了 Google Workspace 上。装好后，用一句话下指令就行。",
+  "ai_summary": "谷歌发布了一个给 AI 代理用的统一命令行工具 gwscli：装到本地、连上 Google 账号，Claude Code、Codex、Antigravity 这类编码代理就能用自然语言读写 Google Workspace。它覆盖日历、Gmail、Drive、Docs、Sheets、Slides、Chat、Tasks 和 People API，能查日程、搜邮件、改表格，也能建日程、发消息、传文件，并输出结构化 JSON。工具本身不收额外费用，请求计入你 Google Cloud 项目的用量层级和配额。安全上，敏感操作会停下来等人确认，也建议先从只读权限开始。最大门槛是上手要有 Google Cloud 项目并完成 OAuth 配置；",
+  "brief": [
+    "gwscli 是统一终端客户端，把 Claude Code、Codex、Antigravity 接到 Google Workspace 服务。",
+    "覆盖 Calendar、Chat、Docs、Drive、Gmail、People API、Sheets、Slides、Tasks 这些服务。",
+    "工具不收单独费用，请求计入你 Google Cloud 项目的用量层级和配额。",
+    "敏感操作内置人工确认；可 gwscli auth login --bundle=readonly 只读起步。"
+  ],
+  "readMinutes": 8,
+  "sections": [
+    {
+      "h": "gwscli 是什么？给 AI 代理用的 Workspace 操作层",
+      "blocks": [
+        {
+          "p": "Google Workspace 大家天天用：日历排会、Gmail 收邮件、Drive 存文件、Docs 写文档。以前想让 AI 助手帮你「查一下明天下午有没有会」「把这份文档的待办转成任务」，得自己写代码接一堆 API。谷歌现在给了一条更短的路：gwscli，全称 Google Workspace 命令行接口（CLI）。"
+        },
+        {
+          "p": "它是一个统一终端客户端，把 Claude Code、Codex、Antigravity 这些 AI 编码代理接到 Google Workspace 的服务上。装好之后，你用大白话提需求，代理自己会去跑对应的命令；它同样支持开发者在交互式终端里直接敲命令。"
+        },
+        {
+          "list": [
+            "运行时动态发现命令、参数和 schema（可以理解为命令和输出格式的结构说明），AI 代理能自己查有哪些可调用",
+            "结构化 JSON 输出，方便程序接着处理",
+            "打包好的 agent skills，给代理提供领域背景和安全提示",
+            "内置人工确认（human-in-the-loop），敏感操作会停下来等人拍板"
+          ]
+        },
+        {
+          "callout": {
+            "kind": "takeaway",
+            "title": "一句话理解",
+            "text": "gwscli 是 AI 代理和你的 Google 账号之间的通用转接头：代理说人话，它翻译成 API 调用。"
+          }
+        },
+        {
+          "p": "注意一个设计选择：命令和 schema 是运行时动态发现的，接口可能在不保证向后兼容的情况下变化。所以别把固定命令写死在静态脚本里，让脚本在运行时去查 --help 和 --schema。"
+        },
+        {
+          "p": "截至 2026-11-25，这篇官方指南是了解它的最全入口。"
+        }
+      ]
+    },
+    {
+      "h": "装好之后，AI 代理能帮你做什么？",
+      "blocks": [
+        {
+          "p": "覆盖的服务很全，先看全貌："
+        },
+        {
+          "list": [
+            "Calendar：列出日历和日程、搜日程、建议空闲时间，也能创建、更新、回复、删除日程",
+            "Chat：找空间、私聊、群聊，读消息、搜消息、发消息；发消息需要 Google Workspace 账号和一个配好的 Google Chat 应用",
+            "Docs：读文档的内容和结构，批量编辑",
+            "Drive：搜、列、读、下载文件，看元数据和分享权限，创建或复制文件，上传本地文件或新版本",
+            "Gmail：搜和读邮件线程，列和建草稿与回复，管理标签，把邮件移进或移出垃圾箱和垃圾邮件",
+            "People API（开发者预览）：看个人资料、搜个人联系人、搜组织目录；搜目录需要 Google Workspace 账号",
+            "Sheets：读表格和单元格范围，写值和公式，插入行或列，批量更新",
+            "Slides：读演示文稿和单页、取缩略图，批量编辑",
+            "Tasks：列任务列表和任务、建改任务、标记完成、删除或恢复"
+          ]
+        },
+        {
+          "fig": {
+            "type": "illustration",
+            "title": "一个 gwscli，把 AI 代理连到全部 Workspace 服务",
+            "subtitle": "示意：琥珀色是还在开发者预览的 People API",
+            "note": "People API 需要加入 Google Workspace Developer Preview Program，且搜组织目录需要 Workspace 账号。",
+            "glyph": {
+              "kind": "hub",
+              "center": {
+                "label": "gwscli",
+                "tone": "def"
+              },
+              "nodes": [
+                {
+                  "label": "Calendar",
+                  "tone": "base"
+                },
+                {
+                  "label": "Gmail",
+                  "tone": "base"
+                },
+                {
+                  "label": "Drive",
+                  "tone": "base"
+                },
+                {
+                  "label": "Docs",
+                  "tone": "base"
+                },
+                {
+                  "label": "Sheets",
+                  "tone": "base"
+                },
+                {
+                  "label": "Slides",
+                  "tone": "base"
+                },
+                {
+                  "label": "Chat",
+                  "tone": "base"
+                },
+                {
+                  "label": "Tasks",
+                  "tone": "base"
+                },
+                {
+                  "label": "People API",
+                  "tone": "hi"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "p": "官方给的几个示例指令，能看出日常用法："
+        },
+        {
+          "fig": {
+            "type": "cards",
+            "title": "装好之后，可以这样下指令",
+            "subtitle": "示例来自官方文档，中文为转述",
+            "items": [
+              {
+                "icon": "clock",
+                "title": "查日程",
+                "desc": "今天剩下的日程是什么？代理会调 Calendar 查询。",
+                "tags": [
+                  "Calendar"
+                ]
+              },
+              {
+                "icon": "chat",
+                "title": "处理邮件",
+                "desc": "总结本周未读邮件，并起草一封提议周二开会回复给经理。",
+                "tags": [
+                  "Gmail"
+                ]
+              },
+              {
+                "icon": "search",
+                "title": "找文档",
+                "desc": "找出 Q3 计划的文档，列出待办事项。",
+                "tags": [
+                  "Drive",
+                  "Docs"
+                ]
+              },
+              {
+                "icon": "table",
+                "title": "落到任务",
+                "desc": "把 Q3 文档里的待办写进 Tasks 列表。",
+                "tags": [
+                  "Tasks"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "怎么装：需要什么环境？",
+      "blocks": [
+        {
+          "p": "先确认条件：一台跑 Linux、macOS 或 Windows 的机器，CPU 是 x86_64 或 ARM64；一个 Google Cloud 项目（没有就新建，如果组织管理员禁止新建项目，就选现有项目或找管理员）。Linux/macOS 上要有 curl，Windows 上用 PowerShell。"
+        },
+        {
+          "p": "安装有两条路径。最快的是快速安装脚本：Linux/macOS 一条 curl 命令装到 ~/.local/bin，想改目录就设 GWSCLI_INSTALL_DIR；Windows 在 PowerShell 里跑一条命令，装到 $HOME\\bin 并自动加进用户 PATH，改目录用 $env:GWSCLI_INSTALL_DIR。"
+        },
+        {
+          "p": "也可以手动下载：按系统和 CPU 架构从 dl.google.com/workspace-cli 拿对应的二进制和文档，自己放到 PATH 里的目录（比如 ~/.local/bin 或 ~/bin）；Windows 记得确认 $HOME\\bin 在 PATH 里，macOS 下载完还要清一下 quarantine 属性。"
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "两种装法：一条命令搞定，或按 CPU 架构下载",
+            "subtitle": "琥珀色是官方先给的快速安装路径",
+            "left": {
+              "label": "快速安装",
+              "sub": "脚本一键",
+              "items": [
+                {
+                  "label": "Linux / macOS",
+                  "tag": "curl 一条命令",
+                  "state": "hi"
+                },
+                {
+                  "label": "装到 ~/.local/bin",
+                  "tag": "可用 GWSCLI_INSTALL_DIR 改",
+                  "state": "base"
+                },
+                {
+                  "label": "Windows",
+                  "tag": "PowerShell 一条命令",
+                  "state": "base"
+                },
+                {
+                  "label": "装到 $HOME\\bin",
+                  "tag": "自动加入用户 PATH",
+                  "state": "base"
+                }
+              ]
+            },
+            "right": {
+              "label": "手动下载",
+              "sub": "指定版本",
+              "items": [
+                {
+                  "label": "按 CPU 架构选包",
+                  "tag": "x86_64 / ARM64",
+                  "state": "base"
+                },
+                {
+                  "label": "Linux / macOS / Windows",
+                  "tag": "各平台对应二进制",
+                  "state": "base"
+                },
+                {
+                  "label": "自己指定安装目录",
+                  "tag": "如 ~/.local/bin 或 ~/bin",
+                  "state": "base"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "p": "装完验证：gwscli version。如果你本来就在 AI 编码代理里工作，还可以下载官方安装提示文件 INSTALL_PROMPT.md 让代理照着做；但交互式的登录和授权，最好还是自己在本地终端完成。"
+        },
+        {
+          "callout": {
+            "kind": "note",
+            "title": "权限提示",
+            "text": "如果 /usr/local/bin 需要提权，就把二进制下载到你有写权限、且在 PATH 里的目录，比如 ~/.local/bin 或 ~/bin。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "认证怎么配？先只读，再按需放权",
+      "blocks": [
+        {
+          "p": "gwscli 用 OAuth 2.0 认证。认证思路大致是：要么配置自己的 OAuth 客户端，让 gwscli 管理令牌和刷新；要么直接传一个已有的 OAuth 访问令牌。"
+        },
+        {
+          "p": "配置自己的客户端，有「个人模式」这条捷径：在 Google Cloud 控制台打开一个预选好的链接，它只为你自己的账号创建单用户 OAuth 2.0 客户端，自动启用核心 Workspace 服务，跳过同意屏幕（consent screen）和应用验证。下载 client secret JSON 后，跑 gwscli auth setup 注册，再 gwscli auth login --bundle=readonly 登录。"
+        },
+        {
+          "p": "不选个人模式，就手动完成 3 步设置再登录：第一，启用服务——每个命令组都要同时启用产品 API 和配套的 *mcp.googleapis.com 服务（People API 例外，只用 people.googleapis.com）；第二，创建凭据——应用类型选 Desktop app，并勾选「用于 AI 代理」；第三，gwscli auth setup 注册客户端。"
+        },
+        {
+          "fig": {
+            "type": "steps",
+            "title": "手动模式：先启服务，再建客户端，最后登录",
+            "subtitle": "示意：这是不选个人模式时的设置顺序",
+            "steps": [
+              {
+                "name": "启用服务",
+                "tool": "gcloud services enable",
+                "desc": "同时启用产品 API 和对应的 *mcp.googleapis.com 服务"
+              },
+              {
+                "name": "创建 OAuth 客户端",
+                "tool": "Google Cloud 控制台",
+                "desc": "类型选 Desktop app，并勾选用于 AI 代理"
+              },
+              {
+                "name": "注册凭据",
+                "tool": "gwscli auth setup",
+                "desc": "传入下载的 client secret JSON"
+              },
+              {
+                "name": "登录授权",
+                "tool": "gwscli auth login",
+                "desc": "可先用 --bundle=readonly 只读起步"
+              }
+            ]
+          }
+        },
+        {
+          "p": "登录授权是「增量」的：再跑 gwscli auth login 时，新授权的作用域会合并进现有的。最小权限原则很重要——先只读，再按需加写权限："
+        },
+        {
+          "list": [
+            "全部服务只读：gwscli auth login --bundle=readonly",
+            "单个服务只读：gwscli auth login chat --bundle=readonly",
+            "单个动作：gwscli auth login gmail search_threads",
+            "单个服务：gwscli auth login drive",
+            "多个服务：gwscli auth login chat gmail",
+            "多个具体命令：gwscli auth login \"chat search_messages\" \"gmail create_draft\"",
+            "全部服务：gwscli auth login"
+          ]
+        },
+        {
+          "p": "查看状态 gwscli auth status，手动刷新令牌 gwscli auth refresh，登出 gwscli auth logout，重置 gwscli auth reset。访问令牌通常 1 小时后过期，但 gwscli 会在运行命令时自动用缓存的刷新令牌换新的，不用你操心。"
+        },
+        {
+          "p": "另一种姿势是传现成令牌：任何命令加全局 --oauth_token=\"$ACCESS_TOKEN\"。注意别把字面令牌敲在命令行——它会出现在 ps、shell 历史或代理转写里，有泄露风险。传令牌时 gwscli 不弹同意页、也不自动刷新过期令牌，所以要自己保证令牌有命令所需的作用域、项目服务已启用、凭据类型是「AI 代理」客户端或带 domain-wide delegation 的服务账号。"
+        },
+        {
+          "callout": {
+            "kind": "note",
+            "title": "远程登录会卡住",
+            "text": "交互式登录会在本机 http://127.0.0.1:<port>/ 起一个临时本地服务器等浏览器跳回。无头环境、Cloud Shell、远程 SSH、容器里没有端口映射时，登录会卡住；要么做端口转发，要么改用 --oauth_token。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "给开发者：命令怎么用、输出是什么",
+      "blocks": [
+        {
+          "p": "命令格式统一：gwscli <service> <action> [flags]。关键是动态发现——服务、动作、参数、schema 都是运行时从后端拿的，版本更新后可能不兼容旧写法。所以别把命令写死在脚本里，让代理或脚本在运行时去查。"
+        },
+        {
+          "list": [
+            "gwscli --help：列出所有服务和工具命令",
+            "gwscli drive --help：列出 drive 的动作",
+            "gwscli drive list_recent_files --help：看参数、旗标和输出格式摘要；加 --show-scopes 看需要哪些最小 OAuth 作用域",
+            "gwscli drive search_files --schema：不执行，只打印完整 JSON schema 和字段定义"
+          ]
+        },
+        {
+          "p": "列表、文件、日程记录这类命令，直接输出合法 JSON，可以用 jq 继续过滤："
+        },
+        {
+          "fig": {
+            "type": "code",
+            "lang": "bash",
+            "title": "输出是结构化 JSON，可以直接用 jq 过滤",
+            "subtitle": "示例命令逐字取自官方文档",
+            "code": "gwscli drive search_files \\\n--query = \"title contains 'Quarterly'\" \\\n| jq '.files[] | {id: .id, title: .title}'",
+            "highlight": [
+              1
+            ]
+          }
+        },
+        {
+          "p": "文档内容也是 JSON：docs read_doc 返回文档的 JSON 表示（含文本和结构元素）；drive read_file_content 返回带 fileContent 字符串字段的 JSON，里面是格式化好的纯文本或 Markdown。"
+        },
+        {
+          "p": "二进制和导出用 drive download_file_content，--destinationPath 指定本地路径，--exportMimeType 指定导出格式；对 Google Workspace 文档，不写 --exportMimeType 默认导出纯文本（如 text/plain 或 text/csv），对 PDF、图片这类普通文件则忽略这个参数。上传本地文件用 drive create_file --filePath，给已有文件传新版本用 drive upload_file_revision --filePath。"
+        }
+      ]
+    },
+    {
+      "h": "安全与治理：敏感操作会等人，遥测默认开",
+      "blocks": [
+        {
+          "p": "让 AI 代理碰你的邮箱和文档，安全是绕不开的。官方给的几道闸："
+        },
+        {
+          "list": [
+            "防提示注入：只用你信任的代理和工作流；从只读开始；别把来路不明的文档或邮件喂给代理；检查代理做了什么，别让它把敏感内容外发",
+            "请求和响应筛查：可在 Google Cloud 项目级配安全过滤器，拦截提示注入、敏感数据或有害内容；项目上设的 MCP floor 设置同样作用于 gwscli",
+            "无头环境别跑交互命令：auth login / auth setup 会无限等待输入，别放进自动化后台任务；预先授权或改用 --oauth_token"
+          ]
+        },
+        {
+          "p": "最关键的是内置人工确认。像发消息、对外分享、删东西这类敏感动作会触发确认：CLI 暂停，往标准错误打印提示，然后在标准输入等你的选择："
+        },
+        {
+          "fig": {
+            "type": "code",
+            "lang": "text",
+            "title": "敏感操作会先停下来等人确认",
+            "subtitle": "提示语逐字取自官方文档",
+            "code": "Allow this app to use send_message?\n\napproval_choice\n(Options: Allow once, Always allow this tool, Don't allow):",
+            "highlight": [
+              1
+            ]
+          }
+        },
+        {
+          "p": "你可以输入 ALLOW_ONCE（允许一次）、ALLOW_TOOL_ALWAYS（一直允许这个工具）、DENY_ONCE（这次不允许）这类标识。粘性选项（比如「一直允许」）只在交互式终端、且策略允许时出现。AI 代理运行时，得把用户的选择写进标准输入。"
+        },
+        {
+          "p": "最后是遥测，默认开启。它只记录以下几样运营信号：命令元数据（目标服务和动作名、旗标名、位置参数个数）、环境元数据（CLI 版本、系统、CPU 架构）、执行诊断（状态、时长、HTTP 状态码、错误类型、崩溃堆栈）。可随时 gwscli logging off 关掉、gwscli logging status 查状态、gwscli logging on 再开；想只关一个会话，设环境变量 GWSCLI_TELEMETRY_ENABLED=0（false、off、no 也行）。"
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "遥测默认开，但记录的东西很有限",
+            "subtitle": "琥珀色是明确不会收集的敏感内容；可用 gwscli logging off 关闭",
+            "left": {
+              "label": "会记录",
+              "sub": "仅运营信号",
+              "items": [
+                {
+                  "label": "命令元数据",
+                  "tag": "服务、动作、旗标名、参数个数",
+                  "state": "base"
+                },
+                {
+                  "label": "环境元数据",
+                  "tag": "CLI 版本、系统、CPU 架构",
+                  "state": "base"
+                },
+                {
+                  "label": "执行诊断",
+                  "tag": "状态、时长、HTTP 状态码、错误类型",
+                  "state": "base"
+                }
+              ]
+            },
+            "right": {
+              "label": "绝不收集",
+              "sub": "敏感内容",
+              "items": [
+                {
+                  "label": "旗标的值",
+                  "tag": "不含参数内容",
+                  "state": "hi"
+                },
+                {
+                  "label": "OAuth 令牌",
+                  "tag": "登录凭据",
+                  "state": "hi"
+                },
+                {
+                  "label": "搜索词 / 文档 ID / 邮箱",
+                  "tag": "资源内容",
+                  "state": "hi"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "p": "官方明确说，CLI 绝不收集旗标的值、OAuth 令牌、搜索词、文档 ID、邮箱地址、资源内容。遥测事件在命令结束时直接发给 Google，不写本地日志文件；配置文件在 Linux 的 ~/.config/gwscli/config.json、macOS 的 ~/Library/Application Support/gwscli/config.json、Windows 的 %AppData%\\gwscli\\config.json。"
+        }
+      ]
+    },
+    {
+      "h": "价格：工具本身不另收费",
+      "blocks": [
+        {
+          "p": "官方明确：用 gwscli 不收单独的工具费用。真正的成本来自请求——它会计入你 Google Cloud 项目的 Google Workspace 用量层级和配额，超出的部分按你原有的 Workspace 订阅和配额算。"
+        },
+        {
+          "p": "但具体单价、每层配额是多少、超限怎么算，这篇文档没有给出数字，只指向「Google Workspace usage tiers and quotas」文档。在意成本的话，得去那边查你所在层级的额度。"
+        },
+        {
+          "p": "另外两个隐性门槛也算「成本」：Chat 发消息需要 Google Workspace 账号和配好的 Chat 应用，个人 Google 账号不支持；People API 要加入 Developer Preview Program。"
+        }
+      ]
+    },
+    {
+      "h": "官方还没说的",
+      "blocks": [
+        {
+          "p": "这篇指南没写的几个关键信息："
+        },
+        {
+          "list": [
+            "各用量层级的单价和配额上限——只说要去看另一个页面，这里没有数字",
+            "gwscli 当前版本号和发布节奏——没写版本号，只提到不会后台自动更新",
+            "除了 Claude Code、Codex、Antigravity，还支持哪些代理框架——没列",
+            "各服务对个人 Google 账号（非 Workspace）的支持边界——只明确了 Chat 发消息不支持个人账号",
+            "People API 什么时候离开开发者预览——没写时间",
+            "各平台安装包的大小和校验值——没写"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "适合谁",
+      "blocks": [
+        {
+          "p": "价值很直接：如果你已经在用 Claude Code、Codex 或 Antigravity，gwscli 省掉了自己接 Workspace API、写 MCP 配置的功夫；动态发现加 JSON 输出加打包好的 skills，让代理开箱就能读懂命令和结果；只读起步和人工确认，也比自己手搓更安全一点。"
+        },
+        {
+          "p": "代价也要想清楚：要先有 Google Cloud 项目、走一遍 OAuth 配置（个人模式能省事）；Chat 发消息要 Workspace 账号和 Chat 应用；People API 要申请预览；命令接口可能随版本变化，不适合写死脚本；数据在 Google 这边处理，遥测默认开（可关）。"
+        },
+        {
+          "list": [
+            "如果你天天用 Google Workspace、又常用 AI 编码代理：值得装来试，先 gwscli auth login --bundle=readonly，跑跑查日程、搜邮件这类只读任务",
+            "如果你只是想在终端手动操作：也能用，但它的主要设计目标是给 AI 代理当接口",
+            "如果你是团队或企业管理员：所有操作都遵循组织的管理员访问和安全策略，敏感动作有人工确认，可以先在小范围验证",
+            "如果你对遥测敏感：装完先 gwscli logging off，再决定要不要开"
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Use the Google Workspace command-line interface (CLI)",
+      "publisher": "Google for Developers",
+      "date": "2026-11-25",
+      "url": "https://developers.google.com/workspace/guides/workspace-cli"
+    },
+    "more": [],
+    "note": "图均为示意或直接取自官方文档；命令与提示语示例逐字摘自原文。文中对服务的列举来自官方 'What your agent can do' 表格。"
+  },
+  "claims": [
+    {
+      "text": "使用 gwscli 不产生单独的工具费用，请求计入 Google Cloud 项目的 Google Workspace 用量层级和配额。",
+      "value": "no separate tool charge",
+      "source_url": "https://developers.google.com/workspace/guides/workspace-cli",
+      "as_written": "不收单独的工具费用",
+      "quote": "Using gwscli incurs no separate tool charge."
+    },
+    {
+      "text": "不选个人模式时，需要手动完成 3 步设置（启用服务、创建凭据、注册客户端）后再登录。",
+      "value": "three",
+      "source_url": "https://developers.google.com/workspace/guides/workspace-cli",
+      "as_written": "3 步",
+      "quote": "complete all three manual setup steps in your Google Cloud project before signing in"
+    },
+    {
+      "text": "Google OAuth 2.0 访问令牌通常 1 小时后过期，gwscli 会自动用缓存的刷新令牌续期。",
+      "value": "1 hour",
+      "source_url": "https://developers.google.com/workspace/guides/workspace-cli",
+      "as_written": "1 小时",
+      "quote": "Google OAuth 2.0 access tokens typically expire after 1 hour."
+    },
+    {
+      "text": "这篇官方文档最后更新于 2026-11-25。",
+      "value": "2026-11-25",
+      "source_url": "https://developers.google.com/workspace/guides/workspace-cli",
+      "as_written": "2026-11-25",
+      "quote": "Last updated 2026-11-25 UTC."
+    },
+    {
+      "text": "把环境变量 GWSCLI_TELEMETRY_ENABLED 设为 0（或 false、off、no），可以只为当前终端会话关闭遥测。",
+      "value": "0",
+      "source_url": "https://developers.google.com/workspace/guides/workspace-cli",
+      "as_written": "0",
+      "quote": "set the GWSCLI_TELEMETRY_ENABLED environment variable to 0 , false , off , or no"
+    }
+  ],
+  "cover": {
+    "headline": "谷歌发布 gwscli",
+    "highlight": "一句话让 AI 代理操作 Workspace",
+    "glyph": {
+      "kind": "hub",
+      "center": {
+        "label": "gwscli",
+        "tone": "def"
+      },
+      "nodes": [
+        {
+          "label": "日历",
+          "tone": "base"
+        },
+        {
+          "label": "邮件",
+          "tone": "base"
+        },
+        {
+          "label": "Drive",
+          "tone": "base"
+        },
+        {
+          "label": "表格",
+          "tone": "base"
+        },
+        {
+          "label": "幻灯片",
+          "tone": "base"
+        },
+        {
+          "label": "任务",
+          "tone": "base"
+        }
+      ]
+    }
+  },
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "origin": "auto",
+    "candidate": "be6a10a698",
+    "tier": "official",
+    "via": "https://xiaohu.ai/article/google-workspace-mcp-gwscli/",
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "generated_at": "2026-11-25T20:12:12.855Z"
+  }
+}
