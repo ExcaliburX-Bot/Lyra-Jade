@@ -1,0 +1,1645 @@
+{
+  "slug": "gpt3-language-models-are-few-shot-learners",
+  "category": "paper",
+  "publisher": "Brown et al. · OpenAI",
+  "date": "2020-07-22",
+  "title": "How a 175-billion-parameter GPT-3 learns new tasks from just a few examples, with zero parameter changes",
+  "summary": "GPT-3 scales language models to 175 billion parameters, then drops task-specific fine-tuning: you give instructions and a few examples in the prompt. We unpack in-context learning, zero-shot to few-shot, the training data, and the compute formula—where it shines, where it still falls short, and how the paper grapples seriously with the 'benchmark memorization' problem.",
+  "ai_summary": "GPT-3 (OpenAI, 2020) is a 175-billion-parameter autoregressive language model that keeps the GPT-2 architecture and is trained on about 300 billion tokens. The paper's central idea is in-context learning: with no parameter updates, the prompt specifies the task and gives zero, one, or 10 to 100 examples. In the few-shot setting, it reaches 71.2% on closed-book TriviaQA, 86.4% on LAMBADA, and beats fine-tuned BERT-LARGE on SuperGLUE; humans can tell its short news stories apart from real ones only about 52% of the time. Weaknesses include comparison tasks such as WiC and ANLI, common-sense physics, and long-form coherence. The paper also systematically checks whether test questions leaked into the training data and discusses bias and energy use.",
+  "brief": [
+    "Problem: pre-training plus fine-tuning still requires thousands of labeled examples per task, while people can pick up a new task from one or two examples.",
+    "Method: scale up to 175 billion parameters and specify each task through instructions and examples in the prompt, with no parameter changes at all (zero-shot, one-shot, few-shot).",
+    "Result: larger models make better use of examples; closed-book QA, LAMBADA, and similar tasks match or beat fine-tuned models, and translating into English is strong too.",
+    "Limits: comparison tasks are near random, long-form output drifts, training takes about 3.14 × 10²³ floating-point operations, and the model inherits biases from its data."
+  ],
+  "paper": {
+    "title": "Language Models are Few-Shot Learners",
+    "authors": "Tom B. Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah, Jared Kaplan, Prafulla Dhariwal, et al. (31 authors)",
+    "org": "OpenAI",
+    "venue": "NeurIPS 2020",
+    "year": 2020,
+    "arxiv": "2005.14165",
+    "url": "https://arxiv.org/abs/2005.14165"
+  },
+  "cover": {
+    "headline": "A close reading of the GPT-3 paper",
+    "highlight": "No fine-tuning, just a few examples",
+    "big": {
+      "value": "1750",
+      "unit": "100M parameters",
+      "label": "10x larger than the previous largest"
+    }
+  },
+  "sections": [
+    {
+      "h": "The bottom line: what this paper actually did",
+      "blocks": [
+        {
+          "p": "In May 2020, 31 authors at OpenAI published this 75-page paper introducing **GPT-3**: a language model with 175 billion parameters, 10x larger than any previous non-sparse language model. The architecture itself isn't new—it's essentially GPT-2 scaled up. The real novelty is how they **use** it: no task-specific training, no parameter changes. You write the task in the input and add at most a few examples, and the model does it."
+        },
+        {
+          "p": "This approach is already competitive with purpose-built fine-tuned models on many tasks. On TriviaQA, for example, it answers closed-book questions without any external sources and scores 71.2% with a few examples, beating the best fine-tuned model under the same closed-book setting. Its roughly 200-word news articles are correctly identified as machine-written by ordinary readers only about 52% of the time—coin-flip territory. The paper is also upfront about the weaknesses: tasks that require judging the relation between two sentences, some reading comprehension, and common-sense physics questions all remain poor."
+        },
+        {
+          "p": "Our previous close reading of BERT established the 'pre-training plus fine-tuning' path. GPT-3 goes one step further: **fine-tuning can be skipped entirely**. When we talk to ChatGPT or Claude today and write instructions and examples into a prompt, the systematic evidence for that approach starts with this paper."
+        },
+        {
+          "callout": {
+            "kind": "takeaway",
+            "title": "One-sentence version",
+            "text": "GPT-3 = the GPT-2 architecture scaled to 175 billion parameters + training on 300 billion tokens + a radically different way of using it: change no parameters, write instructions in the input, and give zero, one, or dozens of examples (zero-shot, one-shot, few-shot), so the model 'picks up' the task on the spot. The paper calls this **in-context learning**."
+          }
+        },
+        {
+          "callout": {
+            "kind": "prereq",
+            "title": "Four quick concepts to know",
+            "text": "Don't worry if these are new; these four will get you through:",
+            "list": [
+              "**Autoregressive language model**: a model that predicts the next token left to right, one token at a time—the decoder branch of the Transformer that 'only looks left' (see our Transformer and BERT close readings).",
+              "**Token**: the basic unit the model reads and writes, a bit smaller than a word. The paper says the average token is about 0.7 English words under its encoding.",
+              "**Parameters**: all the trainable numbers in a model. More parameters mean more capacity to remember and express things, but also higher training and inference cost.",
+              "**Fine-tuning**: taking labeled data for a specific task and training an already pretrained model further, updating its parameters. This is the approach BERT uses."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "Before GPT-3: every task needed its own labeled dataset",
+      "blocks": [
+        {
+          "p": "After BERT, 'pre-training plus fine-tuning' became the standard recipe: you no longer had to design a specific architecture for each task, but each task still required **thousands of** labeled examples for fine-tuning. The paper gives three reasons this should change:"
+        },
+        {
+          "list": [
+            "**Practicality**: useful language tasks are extremely varied—correcting grammar, critiquing a short story—and most have no existing large labeled dataset, nor can you collect one for every task.",
+            "**High scores can be an illusion**: the larger the model and the narrower the fine-tuning distribution, the more likely it is to pick up accidental shortcuts in the data. Research cited by the paper shows that reaching 'human-level' on a benchmark after fine-tuning may overstate the model's real ability on the underlying task.",
+            "**That's not how people learn**: a one-sentence instruction ('tell me whether this sentence is happy or sad'), or at most a couple of examples, lets a person pick up a new task and switch between tasks mid-conversation."
+          ]
+        },
+        {
+          "p": "GPT-2 had already tried having the model learn a task directly from the prompt, but it fell far short of fine-tuning: on open-domain question answering, it got only 4% on Natural Questions, and its 55 F1 on CoQA was more than 35 points behind the state of the art."
+        },
+        {
+          "p": "But another trend gave the authors confidence: transformer language models had grown two orders of magnitude in a few years, and each scaling step brought improvements. A companion study (Scaling Laws, also in our reading list) found that loss declines **smoothly** with scale. Since in-context learning requires packing many skills into the model's parameters, it should plausibly improve with scale too. So they went straight to 175 billion parameters."
+        },
+        {
+          "fig": {
+            "type": "columns",
+            "title": "Language models grew more than 1,000x in a few years, and GPT-3 jumped another 10x over the previous largest",
+            "subtitle": "Unit: 100M parameters. The first six are models listed in the paper's introduction; amber is GPT-3.",
+            "items": [
+              {
+                "label": "GPT",
+                "sub": "2018",
+                "value": 1,
+                "display": "1"
+              },
+              {
+                "label": "BERT",
+                "sub": "2018",
+                "value": 3,
+                "display": "3"
+              },
+              {
+                "label": "GPT-2",
+                "sub": "2019",
+                "value": 15,
+                "display": "15"
+              },
+              {
+                "label": "Megatron",
+                "sub": "2019",
+                "value": 80,
+                "display": "80"
+              },
+              {
+                "label": "T5",
+                "sub": "2019",
+                "value": 110,
+                "display": "110"
+              },
+              {
+                "label": "Turing-NLG",
+                "sub": "2020",
+                "value": 170,
+                "display": "170"
+              },
+              {
+                "label": "GPT-3",
+                "sub": "2020",
+                "value": 1750,
+                "display": "1750",
+                "tone": "hi"
+              }
+            ],
+            "note": "The paper describes this growth line as 100M, 300M, 1.5B, 8B, 11B, and 17B parameters. Model names and years were added by us from the paper's references."
+          }
+        }
+      ]
+    },
+    {
+      "h": "Core idea: in-context learning, plus zero-shot, one-shot, and few-shot",
+      "blocks": [
+        {
+          "p": "The paper frames the whole process as a two-loop 'meta-learning' system. The outer loop is pretraining, where the model sees countless implicit tasks in a huge corpus and develops a broad set of skills and pattern-recognition abilities. The inner loop happens during **a single forward pass**: the model reads the instructions and examples in the prompt, recognizes what it's being asked to do, and continues writing. The paper calls the inner loop **in-context learning**."
+        },
+        {
+          "callout": {
+            "kind": "intuition",
+            "title": "Like a new colleague who has read a lot",
+            "text": "You hand a new colleague a spreadsheet and say, 'Fill in the rest using the format of the first three rows.' He hasn't been trained for this specific job, but because he's seen enough spreadsheets and tasks, a few example rows tell him what to do. That's what GPT-3's 'learning' means: not going back to school, but making sense of the examples you gave."
+          }
+        },
+        {
+          "p": "Depending on how many examples are in the prompt, the paper defines three settings and contrasts them with traditional fine-tuning:"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Four approaches: only fine-tuning changes parameters",
+            "subtitle": "Illustrative: examples are ours, based on the logic of Figure 2.1 in the paper. The arrow points to what the model should produce; amber highlights the paper's focus, few-shot.",
+            "columns": [
+              "Approach",
+              "What's in the prompt",
+              "Parameters updated?",
+              "Example"
+            ],
+            "rows": [
+              [
+                "Fine-tuning",
+                "A task; the model has already been trained on a large labeled dataset",
+                "Yes",
+                "(First trained on thousands of translation examples) cheese → ?"
+              ],
+              [
+                "Zero-shot",
+                "A task description only",
+                "No",
+                "Translate English into Chinese: cheese → ?"
+              ],
+              [
+                "One-shot",
+                "A task description + 1 example",
+                "No",
+                "Translate English into Chinese: apple → píngguǒ; cheese → ?"
+              ],
+              [
+                "Few-shot",
+                "A task description + typically 10 to 100 examples",
+                "No",
+                "Translate English into Chinese: apple → píngguǒ; bicycle → zìxíngchē; …; cheese → ?"
+              ]
+            ],
+            "highlight": {
+              "row": 3
+            }
+          }
+        },
+        {
+          "p": "How many examples fit in the few-shot setting depends on how much the model can read at once: GPT-3's context window is 2,048 tokens, typically enough for 10 to 100 examples. The paper also singles out one-shot because it's closest to how people actually assign tasks—for example on a crowdsourcing platform, where you usually include one demonstration."
+        },
+        {
+          "callout": {
+            "kind": "myth",
+            "title": "Few-shot isn't parameter learning",
+            "text": "The 'learning' in few-shot doesn't change a single parameter. The examples are just read as part of the input; once the answer is finished, the model has no memory of them on the next query. The paper stresses that the 'learning curves' that rise with more examples involve no gradient updates—they simply reflect more conditioning."
+          }
+        },
+        {
+          "p": "There is one question even the paper can't settle: at inference time, does the model **learn a new task from scratch** or just **recognize** a task it saw during pretraining? The paper suggests different tasks lie at different points on this spectrum: artificial tasks like unscrambling words are more like learned on the fly, while translation was clearly acquired during pretraining. It returns to this in the limitations section."
+        },
+        {
+          "quiz": {
+            "q": "You run GPT-3 through 1,000 translation questions in the few-shot setting. What happens to its parameters?",
+            "options": [
+              "They are fine-tuned on those 1,000 examples.",
+              "Nothing changes.",
+              "Only the last layer is updated.",
+              "They update after each question."
+            ],
+            "answer": 1,
+            "why": "Few-shot, one-shot, and zero-shot all do only a forward pass with no gradient updates. The examples are conditioning written into the input and are discarded afterward. The only way to change parameters is fine-tuning, and the paper explicitly says GPT-3 was not fine-tuned."
+          }
+        }
+      ]
+    },
+    {
+      "h": "How they scored it: compare probabilities for multiple choice, generate for open-ended answers",
+      "blocks": [
+        {
+          "p": "Without fine-tuning, the model has no dedicated 'classification head', so how do you answer multiple-choice questions? The paper's method: append each candidate answer to the question and see which one the model considers **most likely** to come next."
+        },
+        {
+          "p": "But directly comparing whole-answer probabilities has a catch: a longer answer multiplies more probabilities together, so its total probability is naturally smaller. That's why the paper compares **average token likelihood** on most tasks:"
+        },
+        {
+          "formula": {
+            "expr": "score(answer) = (1 / L) · Σᵢ log P( tokenᵢ | question, previous answer tokens )",
+            "parts": [
+              {
+                "sym": "L",
+                "desc": "The number of tokens in this candidate answer."
+              },
+              {
+                "sym": "log P(…)",
+                "desc": "The log probability the model assigns to token i appearing here; the closer to 0, the more confident it is."
+              },
+              {
+                "sym": "(1 / L) · Σ",
+                "desc": "Add up the log probabilities of all tokens and divide by length—that is, take the average, removing the effect of answer length."
+              }
+            ],
+            "note": "On ARC, OpenBookQA, and RACE, the paper additionally divides by the probability of the answer appearing after a generic prefix ('Answer: '), to cancel out the fact that some answers are just more common in general."
+          }
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Comparing total probability picks the wrong answer; averaging by length picks the right one",
+            "subtitle": "Illustrative: probabilities are invented, not from the paper. Question: 'At what temperature does water boil at standard atmospheric pressure?' Amber is the correct answer.",
+            "columns": [
+              "Candidate answer",
+              "Tokens",
+              "Probability per token",
+              "Total probability (product)",
+              "Average log probability per token"
+            ],
+            "rows": [
+              [
+                "100 °C",
+                "5",
+                "0.8 each",
+                "0.328",
+                "−0.22"
+              ],
+              [
+                "50 °C",
+                "2",
+                "0.7, 0.6",
+                "0.420",
+                "−0.43"
+              ]
+            ],
+            "highlight": {
+              "row": 0
+            },
+            "note": "The correct answer is smooth at every step (0.8) but longer; the wrong answer is shorter but less certain at each step. Comparing total probability, 0.420 beats 0.328—the wrong answer wins. Comparing average log probability, −0.22 beats −0.43—the right answer wins."
+          }
+        },
+        {
+          "p": "For tasks that need free-form output, such as translation or question answering, they let the model generate directly, using beam search with beam width 4 and length penalty α = 0.6, the same settings as in the original Transformer paper, then score with F1, BLEU, or exact match according to each dataset's convention. Few-shot examples are sampled randomly from the task's training set, separated by one or two newlines."
+        },
+        {
+          "quiz": {
+            "q": "Why compare average per-token likelihood, rather than total probability of the whole answer, on multiple-choice questions?",
+            "options": [
+              "Because the model can only compute averages",
+              "Because a longer answer multiplies together more probabilities below 1, making its total probability naturally smaller and the comparison unfair",
+              "Because short answers are usually wrong",
+              "Because it's faster"
+            ],
+            "answer": 1,
+            "why": "Every token probability is less than 1, so the more of them you multiply, the smaller the result. If you compared total probabilities directly, the model would systematically favor short answers. Averaging instead compares how natural each step is, independent of answer length."
+          }
+        }
+      ]
+    },
+    {
+      "h": "The model: scale up GPT-2 and train eight sizes",
+      "blocks": [
+        {
+          "p": "GPT-3 uses essentially the same architecture as GPT-2, including layer normalization moved before each sublayer (pre-normalization). The only change is that it alternates dense and locally banded sparse attention across layers, an idea from the Sparse Transformer. Feedforward layers are always 4x the model dimension, and every model has a context window of 2,048 tokens."
+        },
+        {
+          "p": "To study scaling, they trained eight sizes at once, from 125 million to 175 billion parameters—three orders of magnitude—and **trained every one on 300 billion tokens**."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Five of the eight sizes: larger models use larger batches and smaller learning rates",
+            "subtitle": "From Table 2.1 in the paper. Batch size is in tokens; amber is GPT-3 itself.",
+            "columns": [
+              "Model",
+              "Parameters",
+              "Layers",
+              "Dimension d_{model}",
+              "Heads × head dimension",
+              "Batch size",
+              "Learning rate"
+            ],
+            "rows": [
+              [
+                "GPT-3 Small",
+                "125M",
+                "12",
+                "768",
+                "12 × 64",
+                "500K",
+                "6.0 × 10⁻⁴"
+              ],
+              [
+                "GPT-3 XL",
+                "1.3B",
+                "24",
+                "2048",
+                "24 × 128",
+                "1M",
+                "2.0 × 10⁻⁴"
+              ],
+              [
+                "GPT-3 6.7B",
+                "6.7B",
+                "32",
+                "4096",
+                "32 × 128",
+                "2M",
+                "1.2 × 10⁻⁴"
+              ],
+              [
+                "GPT-3 13B",
+                "13B",
+                "40",
+                "5140",
+                "40 × 128",
+                "2M",
+                "1.0 × 10⁻⁴"
+              ],
+              [
+                "GPT-3 175B",
+                "175B",
+                "96",
+                "12288",
+                "96 × 128",
+                "3.2M",
+                "0.6 × 10⁻⁴"
+              ]
+            ],
+            "highlight": {
+              "row": 4
+            }
+          }
+        },
+        {
+          "p": "The table reveals a rule of thumb: larger models can use larger batches but need smaller learning rates. The paper sets batch size from the 'gradient noise scale' measured during training. All models were trained on V100 GPUs in a high-bandwidth cluster provided by Microsoft, with models split across GPUs by layer and by matrix so they fit."
+        },
+        {
+          "callout": {
+            "kind": "note",
+            "title": "A quick check that you actually read the table",
+            "text": "Normally, 'heads × head dimension' should exactly equal the model dimension: Small is 12 × 64 = 768, and 175B is 96 × 128 = 12,288; both check out. But the XL row is 24 × 128 = 3,072, which doesn't match 2,048, and the 13B row is 40 × 128 = 5,120, which is off by 20 from 5,140. The paper doesn't explain either discrepancy; they could be typos or deliberate implementation details. When reading papers, this habit of multiplying things yourself often uncovers things the text won't tell you."
+          }
+        }
+      ]
+    },
+    {
+      "h": "Data: from 45TB down to 570GB, and sampled by quality rather than size",
+      "blocks": [
+        {
+          "p": "The main training corpus is Common Crawl, a public dataset that continuously crawls web pages and is nearly a trillion words—large enough that even the biggest model would see most text only once. But the authors found that lightly filtered Common Crawl was clearly worse in quality than curated corpora, so they did three things:"
+        },
+        {
+          "list": [
+            "**Filtering**: treat a set of high-quality reference texts as the standard and keep only pages similar to them. They downloaded 41 monthly snapshots from 2016 to 2019; before filtering the text was 45TB compressed, and after filtering it was 570GB, or about 400 billion tokens.",
+            "**Deduplication**: fuzzy deduplication at the document level, both within and across datasets. They also ensured the held-out validation set didn't overlap with the training set.",
+            "**Add curated data**: an expanded WebText, two internet book corpora (Books1 and Books2), and English Wikipedia."
+          ]
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Sampling isn't proportional to dataset size: Wikipedia is read 3.4 times, Common Crawl less than once",
+            "subtitle": "From Table 2.2 in the paper. 'Passes' means how many times each dataset was traversed during 300B tokens of training; amber marks Wikipedia, the most-read dataset.",
+            "columns": [
+              "Dataset",
+              "Tokens",
+              "Share of training",
+              "Passes during training"
+            ],
+            "rows": [
+              [
+                "Common Crawl (filtered)",
+                "410B",
+                "60%",
+                "0.44"
+              ],
+              [
+                "WebText2",
+                "19B",
+                "22%",
+                "2.9"
+              ],
+              [
+                "Books1",
+                "12B",
+                "8%",
+                "1.9"
+              ],
+              [
+                "Books2",
+                "55B",
+                "8%",
+                "0.43"
+              ],
+              [
+                "Wikipedia",
+                "3B",
+                "3%",
+                "3.4"
+              ]
+            ],
+            "highlight": {
+              "row": 4
+            }
+          }
+        },
+        {
+          "p": "The authors deliberately let higher-quality data be sampled more often, accepting slight overfitting on it in exchange for better overall data quality. By word count, 93% of the training data is English and 7% is other languages, a fact they'll use later to explain translation results."
+        },
+        {
+          "quiz": {
+            "q": "Wikipedia has only 3B tokens but is read 3.4 times during training; Common Crawl has 410B tokens but is read only 0.44 times. Why?",
+            "options": [
+              "Wikipedia's data is updated more often",
+              "The authors allocate sampling by quality, not quantity, and are willing to let high-quality data repeat",
+              "Half of Common Crawl's data was corrupted.",
+              "It was a training error."
+            ],
+            "answer": 1,
+            "why": "The paper is explicit: sampling is not proportional to dataset size. It assumes higher-quality datasets will be sampled more often, trading a little overfitting for better overall data quality. Wikipedia takes a 3% training share, but its 3 billion tokens must supply 300 billion × 3% = 9 billion tokens of training volume, so it repeats about three times."
+          }
+        }
+      ]
+    },
+    {
+      "h": "Compute: one memorable formula yields 3.14 × 10²³",
+      "blocks": [
+        {
+          "p": "Appendix D of the paper gives a way to estimate training compute that is simple enough to do in your head. Ignoring the attention computation itself (the authors say it is usually under 10% of the total), for every parameter and every token processed:"
+        },
+        {
+          "formula": {
+            "expr": "Total training compute C ≈ 6 · N · D",
+            "parts": [
+              {
+                "sym": "N",
+                "desc": "Model parameter count: GPT-3 175B is actually 174.6 billion."
+              },
+              {
+                "sym": "D",
+                "desc": "Training tokens: 300 billion."
+              },
+              {
+                "sym": "6",
+                "desc": "Forward: each parameter does one multiplication and one addition, counted as 2 floating-point operations. Backpropagation is roughly 2x the forward pass, so add 4 more, for 6 total."
+              }
+            ],
+            "note": "Plugging in: 6 × 174.6 billion × 300 billion ≈ 3.14 × 10²³ floating-point operations, matching Table D.1 in the paper, or about 3,640 petaflop/s-day (a quadrillion operations per second for one day)."
+          }
+        },
+        {
+          "fig": {
+            "type": "columns",
+            "title": "GPT-3's training compute is roughly 600x that of BERT-LARGE",
+            "subtitle": "Unit: petaflop/s-day. From Table D.1 in the paper; amber is GPT-3 175B.",
+            "items": [
+              {
+                "label": "BERT-LARGE",
+                "value": 6.16,
+                "display": "6.16"
+              },
+              {
+                "label": "RoBERTa-LARGE",
+                "value": 49.3,
+                "display": "49.3"
+              },
+              {
+                "label": "GPT-3 13B",
+                "value": 268,
+                "display": "268"
+              },
+              {
+                "label": "T5-11B",
+                "value": 382,
+                "display": "382"
+              },
+              {
+                "label": "GPT-3 175B",
+                "value": 3640,
+                "display": "3640",
+                "tone": "hi"
+              }
+            ],
+            "note": "The 'roughly 600x' is our calculation from the table: 3,640 ÷ 6.16 ≈ 591."
+          }
+        },
+        {
+          "p": "The paper makes another interesting observation: following the Scaling Laws analysis, they trained the larger models on far fewer tokens than usual. As a result, GPT-3 3B (the paper calls it 3B, but it corresponds to 2.7B in the table), with nearly 10x the parameters of RoBERTa-LARGE, used about the same compute as RoBERTa-LARGE: about 50 petaflop/s-day each."
+        },
+        {
+          "p": "Training is expensive, but using it is not: the paper estimates that generating 100 pages of content with the trained 175B-parameter model costs about 0.4 kWh of electricity, just a few cents."
+        },
+        {
+          "quiz": {
+            "q": "Use 6·N·D to estimate: GPT-3 13B actually has 12.85 billion parameters and is also trained on 300 billion tokens. About how many floating-point operations does training take?",
+            "options": [
+              "About 2.3 × 10²⁰",
+              "About 2.3 × 10²²",
+              "About 2.3 × 10²⁴",
+              "About 3.9 × 10¹²"
+            ],
+            "answer": 1,
+            "why": "6 × 12.85 billion × 300 billion = 6 × 1.285 × 10¹⁰ × 3 × 10¹¹ ≈ 2.31 × 10²², matching the GPT-3 13B entry in Table D.1 (2.31E+22). Remember this formula—whenever you see a model's parameter count and training tokens, you can estimate its compute."
+          }
+        }
+      ]
+    },
+    {
+      "h": "Results: larger models and more examples show clearer gains",
+      "blocks": [
+        {
+          "p": "The paper evaluates all eight models in three settings on more than twenty datasets. Aggregating the 42 accuracy-denominated benchmarks (the paper cautions that this aggregate is not a rigorous benchmark itself), zero-shot performance improves steadily with scale, while few-shot improves **faster**: larger models make better use of the examples in the prompt. Here are a few representative results:"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "A few representative tasks: some already beat fine-tuned models, others are far behind",
+            "subtitle": "From Tables 3.1–3.3 and 3.8, GPT-3 175B. 'Previous best' is mostly fine-tuned models; blue columns are few-shot.",
+            "columns": [
+              "Task",
+              "Zero-shot",
+              "One-shot",
+              "Few-shot",
+              "Previous best"
+            ],
+            "rows": [
+              [
+                "LAMBADA (predict the last word of a passage, accuracy)",
+                "76.2",
+                "72.5",
+                "86.4",
+                "68.0"
+              ],
+              [
+                "TriviaQA (closed-book QA, accuracy)",
+                "64.3",
+                "68.0",
+                "71.2",
+                "60.5 (closed-book fine-tuning)"
+              ],
+              [
+                "Natural Questions (closed-book QA)",
+                "14.6",
+                "23.0",
+                "29.9",
+                "36.6 (closed-book fine-tuning)"
+              ],
+              [
+                "SuperGLUE (aggregate, test set)",
+                "—",
+                "—",
+                "71.8",
+                "89.0 (fine-tuned BERT-LARGE: 69.0)"
+              ],
+              [
+                "PTB (perplexity, lower is better)",
+                "20.5",
+                "—",
+                "—",
+                "35.8 (zero-shot)"
+              ]
+            ],
+            "highlight": {
+              "col": 3
+            }
+          }
+        },
+        {
+          "list": [
+            "**LAMBADA**: you need the whole passage to predict the final word. Some had argued that scaling brings diminishing returns here, but GPT-3's zero-shot is 8 percentage points above the previous best. Few-shot adds a clever twist: the examples tell the model to fill in only one word rather than continue with a long string, pushing accuracy to 86.4%.",
+            "**Closed-book QA**: no external sources, just knowledge stored in the parameters. On TriviaQA, zero-shot already beats all closed-book fine-tuned models (the best is 60.5); one-shot ties an open-book system that is both fine-tuned and able to retrieve 21 million documents, and few-shot adds another 3.2 percentage points. The paper takes this as evidence that larger models carry more knowledge in their parameters.",
+            "**SuperGLUE**: few-shot (32 examples per task) scores 71.8, beating fine-tuned BERT-LARGE (69.0) but still far from the best result of 89.0. The paper finds that fewer than 8 examples per task are enough to beat fine-tuned BERT-LARGE on overall score.",
+            "**Clear weaknesses**: WiC, which asks whether a word means the same thing in two sentences, reaches only 49.4% few-shot—random chance; on adversarial natural language inference (ANLI), models smaller than GPT-3 are near chance. The paper concludes that GPT-3 especially struggles on tasks that compare two pieces of text."
+          ]
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Translation: strong into English, weak out of English",
+            "subtitle": "Unit: BLEU. From Table 3.4; blue columns are directions into English.",
+            "columns": [
+              "Language pair",
+              "GPT-3 few-shot (→ English)",
+              "GPT-3 few-shot (English →)",
+              "Supervised best (→ English / English →)"
+            ],
+            "rows": [
+              [
+                "French",
+                "39.2",
+                "32.6",
+                "35.0 / 45.6"
+              ],
+              [
+                "German",
+                "40.6",
+                "29.7",
+                "40.2 / 41.2"
+              ],
+              [
+                "Romanian",
+                "39.5",
+                "21.0",
+                "39.9 / 38.5"
+              ]
+            ],
+            "highlight": {
+              "col": 1
+            },
+            "note": "When translating into English, few-shot GPT-3 beats earlier unsupervised translation methods by about 5 BLEU, and for French and German it even exceeds the supervised best results in the table. Translating out of English is clearly weaker. The likely reason: 93% of the training data is English, so it is a strong 'English writer.'"
+          }
+        }
+      ]
+    },
+    {
+      "h": "Purpose-built tasks: arithmetic, unscrambling words, news writing",
+      "blocks": [
+        {
+          "p": "To test whether the model merely recites things it saw during training, the authors designed tasks that almost certainly never appear verbatim online."
+        },
+        {
+          "fig": {
+            "type": "columns",
+            "title": "Few-shot arithmetic: two-digit addition and subtraction nearly perfect, five-digit only about 10%",
+            "subtitle": "Unit: accuracy %. GPT-3 175B, few-shot, 2,000 random problems per item; '1-digit mixed' means problems like 9×(7+5). From Table 3.9; amber is two-digit addition.",
+            "items": [
+              {
+                "label": "2-digit +",
+                "value": 100,
+                "tone": "hi"
+              },
+              {
+                "label": "2-digit −",
+                "value": 98.9
+              },
+              {
+                "label": "3-digit +",
+                "value": 80.4
+              },
+              {
+                "label": "3-digit −",
+                "value": 94.2
+              },
+              {
+                "label": "4-digit +",
+                "value": 25.5
+              },
+              {
+                "label": "4-digit −",
+                "value": 26.8
+              },
+              {
+                "label": "5-digit +",
+                "value": 9.3
+              },
+              {
+                "label": "5-digit −",
+                "value": 9.9
+              },
+              {
+                "label": "2-digit ×",
+                "value": 29.2
+              },
+              {
+                "label": "1-digit mixed",
+                "value": 21.3
+              }
+            ],
+            "note": "For three-digit addition, the main text says 80.2%, while Table 3.9 says 80.4%; the paper does not explain the discrepancy."
+          }
+        },
+        {
+          "p": "Arithmetic shows a sharp break: the second-largest model, at 13 billion parameters, gets only about half of two-digit addition and subtraction right, and below 10% on everything else. Reliability suddenly appears at 175 billion parameters. To rule out memorization, the authors searched the training data for three-digit problems: only 17 of 2,000 addition problems (0.8%) and 2 of 2,000 subtraction problems were found. The errors are also revealing: the model often **forgets to carry**, which indicates it is genuinely trying to compute rather than looking things up."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Word unscrambling: close to zero without examples, learns with examples, but reversed words stay out of reach",
+            "subtitle": "Unit: accuracy %. GPT-3 175B. From Table 3.10; amber is word reversal.",
+            "columns": [
+              "Task",
+              "Example",
+              "Zero-shot",
+              "One-shot",
+              "Few-shot"
+            ],
+            "rows": [
+              [
+                "Remove inserted symbols",
+                "s.u!c/c!e.s s i/o/n → succession",
+                "8.26",
+                "45.4",
+                "67.2"
+              ],
+              [
+                "Letter rotation",
+                "lyinevitab → inevitably",
+                "3.66",
+                "21.7",
+                "37.9"
+              ],
+              [
+                "Scramble middle letters (keep first and last 2)",
+                "opoepnnt → opponent",
+                "8.91",
+                "25.9",
+                "39.7"
+              ],
+              [
+                "Scramble middle letters (keep only first and last 1)",
+                "criroptuon → corruption",
+                "2.28",
+                "8.62",
+                "15.1"
+              ],
+              [
+                "Reverse word",
+                "stcejbo → objects",
+                "0.09",
+                "0.48",
+                "0.44"
+              ]
+            ],
+            "highlight": {
+              "row": 4
+            }
+          }
+        },
+        {
+          "callout": {
+            "kind": "intuition",
+            "title": "Why reversing words is so hard: the model does not see letters",
+            "text": "GPT-3 reads tokens, and the average token is about 0.7 English words; common words are often a single token. To the model, 'objects' may just be one chunk. To reverse it, it would first have to split that chunk back into letters and reassemble them, but the model is never taught which letters make up each token. The paper notes that these tasks test not just token manipulation but understanding the internal structure of tokens."
+          }
+        },
+        {
+          "p": "**News writing**: the authors took 25 headlines and subheadings from news sites, asked models of different sizes to continue with bodies of about 200 words, and then asked about 80 US participants to judge whether each article was written by a human or a machine. To check that participants were paying attention, they also included a deliberately bad 'control model.'"
+        },
+        {
+          "fig": {
+            "type": "columns",
+            "title": "The larger the model, the harder humans find it to tell: 175B sits just 2 percentage points above chance",
+            "subtitle": "Unit: % of human judgments correct (50% is chance). From Table 3.11; amber is GPT-3 175B.",
+            "items": [
+              {
+                "label": "Deliberately bad control",
+                "value": 86
+              },
+              {
+                "label": "Small",
+                "value": 76
+              },
+              {
+                "label": "Medium",
+                "value": 61
+              },
+              {
+                "label": "Large",
+                "value": 68
+              },
+              {
+                "label": "XL",
+                "value": 62
+              },
+              {
+                "label": "2.7B",
+                "value": 62
+              },
+              {
+                "label": "6.7B",
+                "value": 60
+              },
+              {
+                "label": "13B",
+                "value": 55
+              },
+              {
+                "label": "175B",
+                "value": 52,
+                "tone": "hi"
+              }
+            ],
+            "note": "The trend is generally downward, though not strictly monotonic (Large is easier to spot than Medium). For longer articles of about 500 words, human accuracy on GPT-3 remains only about 52%."
+          }
+        },
+        {
+          "p": "The paper also cautions that automated detectors may be better than people at spotting machine-written text; factual errors, repetition, and incoherence are common giveaways in machine output. On SAT analogies, GPT-3 few-shot scores 65.2%, compared with an average of 57% for college applicants that year (random guessing is 20%)."
+        },
+        {
+          "quiz": {
+            "q": "In the news experiment, human judgment accuracy on GPT-3 175B articles is about 52%. How should we interpret this number?",
+            "options": [
+              "52% of people were fooled, and 48% were not.",
+              "Human judgment is nearly a coin flip: people basically cannot tell.",
+              "52% of GPT-3's articles were better than human writing.",
+              "It means half the news was written by GPT-3."
+            ],
+            "answer": 1,
+            "why": "This measures the proportion of correct judgments, and chance is 50%. At 52%, it is only slightly above chance—ordinary readers basically cannot tell the difference. The paper also notes that the larger the model, the more time participants spent per article, yet the worse they got at telling them apart."
+          }
+        }
+      ]
+    },
+    {
+      "h": "Data contamination: the test questions may already be in the training data",
+      "blocks": [
+        {
+          "p": "One of the most instructive parts of the paper is how seriously it treats a problem many others ignored at the time: training data is scraped from the web, and many benchmark questions are themselves on the web. If the model saw the questions during training, high scores might just be memorized answers."
+        },
+        {
+          "p": "The authors originally intended to remove all test-set overlap before training, but a bug in the filtering removed only part of it, and retraining was too expensive. So they took a different approach: for each benchmark, they created a 'clean subset' by removing any example with a 13-word consecutive overlap with the training data (deliberately strict), then compared scores on the full set and the clean subset. If the scores were similar, contamination—even if present—did not affect results."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Benchmarks inspected individually: mostly false alarms, two flagged with asterisks",
+            "subtitle": "From Section 4 of the paper. Amber rows are results marked with an asterisk in the main text.",
+            "columns": [
+              "Benchmark",
+              "Flagged as possibly contaminated",
+              "Change on clean subset",
+              "Conclusion after manual review"
+            ],
+            "rows": [
+              [
+                "Reading comprehension (QuAC, SQuAD2, DROP)",
+                "Over 90%",
+                "Hard to measure",
+                "Only source passages appeared; the question–answer pairs did not, so the model could not memorize the answers."
+              ],
+              [
+                "German → English, WMT16",
+                "25%",
+                "Total impact 1–2 BLEU",
+                "Monolingual overlap from news events, not paired translation data"
+              ],
+              [
+                "PIQA (physical common sense)",
+                "29%",
+                "Drops 3 percentage points",
+                "Likely statistical bias rather than memorization, but cannot be strictly proven"
+              ],
+              [
+                "Winograd (coreference resolution)",
+                "45%",
+                "Drops 2.6%",
+                "Found 132 problems actually in the training set, just in different formats"
+              ],
+              [
+                "Wikipedia-style language modeling",
+                "Nearly all",
+                "Not measurable",
+                "They simply do not report these results"
+              ]
+            ],
+            "highlight": {
+              "row": 2
+            }
+          }
+        },
+        {
+          "p": "The overall conclusion: although many benchmarks have high 'potential contamination' rates (over 50% for a quarter of them), score changes are negligible in most cases, and there is no apparent relationship between contamination rate and score change. Language modeling results mainly use PTB precisely because it predates the modern internet and is uncontaminated."
+        },
+        {
+          "callout": {
+            "kind": "takeaway",
+            "title": "From now on, any time you see a 'record-breaking' large model, ask this question",
+            "text": "The model trains on web-scale data—could the test questions be in there too? What checks did the paper run? Do the clean-subset results still hold? This section of GPT-3 is a useful template: acknowledge the problem, quantify the impact, and flag suspicious results."
+          }
+        },
+        {
+          "quiz": {
+            "q": "If a model's scores on a benchmark's 'clean subset' and full set are almost the same, what is the most reasonable conclusion?",
+            "options": [
+              "The benchmark has no contamination at all.",
+              "Even if contamination exists, it has not clearly inflated the scores.",
+              "The model memorized all the questions.",
+              "The benchmark is too easy."
+            ],
+            "answer": 1,
+            "why": "The clean subset is what remains after removing all suspected leaked examples. Similar scores on both sides mean the suspicious problems did not help the model, so contamination—if any—has little effect. It does not prove there is no contamination; the paper also says its detection method is conservative and may overstate contamination."
+          }
+        }
+      ]
+    },
+    {
+      "h": "Limitations: the problems the paper itself acknowledges",
+      "blocks": [
+        {
+          "list": [
+            "**Long-form drift**: generated text repeats itself semantically at the document level; once long enough, it loses coherence, contradicts itself, and occasionally produces disjointed sentences.",
+            "**Common-sense physics**: GPT-3 clearly struggles with questions like 'If you put cheese in the fridge, will it melt?'",
+            "**Comparison tasks**: judging whether a word means the same thing in two sentences, or whether one sentence entails another, is only slightly better than chance under few-shot. The paper suggests this may be tied to its **left-to-right-only** reading, which highlights exactly the value of bidirectionality emphasized in our previous BERT reading. It also speculates that a bidirectional model of the same size would be stronger after fine-tuning.",
+            "**The limits of the pretraining objective**: the current objective treats every token equally, without knowing which ones matter more; the model also has not seen video, the physical world, or other non-linguistic experience. The paper argues that simply scaling up 'predict the next word' will eventually hit a wall, and suggests directions including **learning objectives from humans, fine-tuning with reinforcement learning**, and adding other modalities such as images.",
+            "**Data-hungry learning**: at inference it needs only a few examples, but during pretraining it reads far more text than a person sees in a lifetime.",
+            "**Expensive and unwieldy**: such a large model is costly at inference, so the paper suggests it could be 'distilled' into smaller task-specific models.",
+            "**Bias**: the model inherits biases from its training data. For example, after prompts like 'The {occupation} was a', 83% of the 388 occupations tested in the paper are more likely to be followed by male words, especially higher-education and physically demanding occupations."
+          ]
+        },
+        {
+          "p": "One of those suggestions—'learn objectives from humans, fine-tune with reinforcement learning'—became InstructGPT (2022) two years later: using human feedback to train GPT-3 to follow instructions, and eventually leading to ChatGPT. That paper is also in our reading list."
+        },
+        {
+          "callout": {
+            "kind": "note",
+            "title": "A few minor flaws in the paper",
+            "text": "If you read closely enough, you will notice: three-digit addition is given as 80.2% in the main text and 80.4% in the table; the evaluation notes say only 200B few-shot results were submitted, but there is no 200B model—it should mean 175B; and in Table 2.1, two rows' 'heads × head dimension' values do not match the model dimension. None of this changes the conclusions, but it is a reminder that papers are written by people and numbers should be cross-checked."
+          }
+        }
+      ]
+    },
+    {
+      "h": "Quick check: do you actually understand it?",
+      "blocks": [
+        {
+          "quiz": {
+            "q": "What distinguishes zero-shot, one-shot, and few-shot settings?",
+            "options": [
+              "They use different amounts of training data.",
+              "They differ in the number of examples in the prompt at inference: 0, 1, or typically 10 to 100.",
+              "They use different model sizes.",
+              "They use different numbers of fine-tuning epochs."
+            ],
+            "answer": 1,
+            "why": "All three use the same unmodified model. The only difference is how many demonstrations are in the prompt: zero-shot has only the task instruction, one-shot adds one example, and few-shot includes as many as the context window will hold (typically 10 to 100)."
+          }
+        },
+        {
+          "quiz": {
+            "q": "The paper suggests a possible structural reason GPT-3 does poorly on comparison tasks such as WiC and ANLI. What is it?",
+            "options": [
+              "The model has too few parameters.",
+              "It is a left-to-right autoregressive model; unlike a bidirectional model, it cannot see both sides at once from every position.",
+              "It has no English in its training data.",
+              "Its context window is too long."
+            ],
+            "answer": 1,
+            "why": "The paper states this hypothesis explicitly in the limitations section: they studied only autoregressive models, not bidirectional ones, which may hurt on tasks that require looking back to compare two passages or reading a long passage carefully before giving a short answer. This echoes the BERT paper's argument."
+          }
+        },
+        {
+          "callout": {
+            "kind": "takeaway",
+            "title": "After reading, you should be able to answer these five questions in your own words.",
+            "list": [
+              "What is 'in-context learning'? What is its most fundamental difference from fine-tuning?",
+              "Why did the authors believe in-context learning would improve with scale?",
+              "When estimating training compute with 6·N·D, what does each letter stand for?",
+              "Why is GPT-3 strong at translating into English but weak at translating out of English? Why can't it reverse words?",
+              "What is data contamination, and how does the paper check for it?"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Language Models are Few-Shot Learners (arXiv:2005.14165, v4)",
+      "publisher": "Brown et al. · OpenAI",
+      "date": "2020-07-22",
+      "url": "https://arxiv.org/abs/2005.14165"
+    },
+    "note": "This article is based on the fourth arXiv version of the paper (July 2020). Charts are redrawn by us from the paper's data; examples and figures marked 'Illustrative' explain the underlying idea and are not paper data. Ratios such as 'about 600x' are calculated by us from the paper's tables. Model names and years in the introduction were added by us from the paper's references."
+  },
+  "claims": [
+    {
+      "text": "GPT-3 has 175 billion parameters",
+      "value": "175 billion",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "an autoregressive language model with 175 billion parameters",
+      "as_written": "175 billion"
+    },
+    {
+      "text": "10x larger than any previous non-sparse language model",
+      "value": "10x",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "10x more than any previous non-sparse language model",
+      "as_written": "10x"
+    },
+    {
+      "text": "All models were trained on 300 billion tokens",
+      "value": "300 billion tokens",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "All models were trained for a total of 300 billion tokens",
+      "as_written": "300 billion"
+    },
+    {
+      "text": "TriviaQA zero-shot 64.3, one-shot 68.0, few-shot 71.2",
+      "value": "71.2%",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "68.0% in the one-shot setting, and 71.2% in the few-shot setting",
+      "as_written": "71.2%"
+    },
+    {
+      "text": "TriviaQA zero-shot 64.3",
+      "value": "64.3%",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "64.3% accuracy on TriviaQA",
+      "as_written": "64.3"
+    },
+    {
+      "text": "Human accuracy at judging 175B news articles: about 52%",
+      "value": "52%",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "barely above chance at ∼ 52%",
+      "as_written": "52%"
+    },
+    {
+      "text": "Control model: about 86%",
+      "value": "86%",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "intentionally bad articles were model generated was ∼ 86%",
+      "as_written": "86%"
+    },
+    {
+      "text": "Long-form control: about 88%; GPT-3 still about 52%",
+      "value": "88%",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "intentionally bad longer articles from the control model was ∼ 88%",
+      "as_written": "88%"
+    },
+    {
+      "text": "Each token is about 0.7 English words",
+      "value": "0.7 words per token",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "on average ∼ 0.7 words per token",
+      "as_written": "0.7"
+    },
+    {
+      "text": "GPT-2 scored only 4% on Natural Questions",
+      "value": "4%",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "achieves only 4% on Natural Questions",
+      "as_written": "4%"
+    },
+    {
+      "text": "CoQA 55 F1, more than 35 points behind",
+      "value": "35 points",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "its 55 F1 CoQa result is now more than 35 points behind",
+      "as_written": "35 points"
+    },
+    {
+      "text": "Scale growth line: 100 million, 300 million, 1.5 billion, 8 billion, 11 billion, 17 billion",
+      "value": "17 billion parameters",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "finally 17 billion parameters",
+      "as_written": "17 billion"
+    },
+    {
+      "text": "1.5 billion parameters (GPT-2)",
+      "value": "1.5 billion parameters",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "to 1.5 billion parameters",
+      "as_written": "1.5 billion"
+    },
+    {
+      "text": "8 billion, 11 billion",
+      "value": "8 billion parameters",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "to 8 billion parameters",
+      "as_written": "8 billion"
+    },
+    {
+      "text": "11 billion",
+      "value": "11 billion parameters",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "11 billion parameters",
+      "as_written": "11 billion"
+    },
+    {
+      "text": "100 million",
+      "value": "100 million parameters",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "from 100 million parameters",
+      "as_written": "100 million"
+    },
+    {
+      "text": "300 million",
+      "value": "300 million parameters",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "to 300 million parameters",
+      "as_written": "300 million"
+    },
+    {
+      "text": "Feedforward layers are 4x the model dimension",
+      "value": "four times",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "we always have the feedforward layer four times the size of the bottleneck layer",
+      "as_written": "4x"
+    },
+    {
+      "text": "Context window: 2,048 tokens",
+      "value": "2048",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "context window of nctx = 2048 tokens",
+      "as_written": "2048"
+    },
+    {
+      "text": "Few-shot typically uses 10 to 100 examples",
+      "value": "10 to 100",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "typically 10 to 100",
+      "as_written": "10 to 100"
+    },
+    {
+      "text": "Eight model sizes, from 125 million to 175 billion parameters",
+      "value": "125 million",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "from 125 million parameters to 13 billion",
+      "as_written": "125 million"
+    },
+    {
+      "text": "Common Crawl is nearly one trillion words",
+      "value": "a trillion words",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "nearly a trillion words",
+      "as_written": "one trillion"
+    },
+    {
+      "text": "41 monthly snapshots, 2016 to 2019",
+      "value": "41 shards",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "41 shards of monthly CommonCrawl covering 2016 to 2019",
+      "as_written": "41"
+    },
+    {
+      "text": "Before filtering: 45TB; after filtering: 570GB",
+      "value": "45TB",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "45TB of compressed plaintext before filtering",
+      "as_written": "45TB"
+    },
+    {
+      "text": "After filtering: 570GB",
+      "value": "570GB",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "570GB after filtering",
+      "as_written": "570GB"
+    },
+    {
+      "text": "About 400 billion tokens",
+      "value": "400 billion",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "roughly equivalent to 400 billion byte-pair-encoded tokens",
+      "as_written": "400 billion"
+    },
+    {
+      "text": "Common Crawl: 410 billion tokens, 60% of training, 0.44 passes",
+      "value": "410 billion",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "410 billion",
+      "as_written": "410 billion"
+    },
+    {
+      "text": "WebText2: 19 billion tokens",
+      "value": "19 billion",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "19 billion",
+      "as_written": "19 billion"
+    },
+    {
+      "text": "Books1: 12 billion tokens",
+      "value": "12 billion",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "12 billion",
+      "as_written": "12 billion"
+    },
+    {
+      "text": "Books2: 55 billion tokens",
+      "value": "55 billion",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "55 billion",
+      "as_written": "55 billion"
+    },
+    {
+      "text": "Wikipedia: 3 billion tokens, 3.4 passes",
+      "value": "3.4",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "some datasets are seen up to 3.4 times during training",
+      "as_written": "3.4 passes"
+    },
+    {
+      "text": "Share of training: 60%",
+      "value": "60%",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "60%",
+      "as_written": "60%"
+    },
+    {
+      "text": "Share of training: 22%",
+      "value": "22%",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "22%",
+      "as_written": "22%"
+    },
+    {
+      "text": "Share of training: 8%",
+      "value": "8%",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "8%",
+      "as_written": "8%"
+    },
+    {
+      "text": "Share of training: 3%",
+      "value": "3%",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "3%",
+      "as_written": "3%"
+    },
+    {
+      "text": "Training data: 93% English, 7% other languages",
+      "value": "93%",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "primarily English (93% by word count)",
+      "as_written": "93%"
+    },
+    {
+      "text": "Other languages: 7%",
+      "value": "7%",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "it also includes 7% of text in other languages",
+      "as_written": "7%"
+    },
+    {
+      "text": "Attention is typically under 10% of total compute",
+      "value": "10%",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "typically uses less than 10% of the total compute",
+      "as_written": "10%"
+    },
+    {
+      "text": "GPT-3 175B training compute: 3.14E+23",
+      "value": "3.14E+23",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "3.14E+23",
+      "as_written": "3.14 × 10²³"
+    },
+    {
+      "text": "GPT-3 175B training compute: 3,640 PF-days",
+      "value": "3.64E+03",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "3.64E+03",
+      "as_written": "3640"
+    },
+    {
+      "text": "GPT-3 175B parameters: 174,600M",
+      "value": "174,600",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "174,600",
+      "as_written": "174.6 billion"
+    },
+    {
+      "text": "GPT-3 13B parameters: 12,850M",
+      "value": "12,850",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "12,850",
+      "as_written": "12.85 billion"
+    },
+    {
+      "text": "GPT-3 13B compute: 2.31E+22",
+      "value": "2.31E+22",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "2.31E+22",
+      "as_written": "2.31 × 10²²"
+    },
+    {
+      "text": "BERT-LARGE compute: 6.16 PF-days",
+      "value": "6.16E+00",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "6.16E+00",
+      "as_written": "6.16"
+    },
+    {
+      "text": "About 50 petaflop/s-day",
+      "value": "50 petaflop/s-days",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "roughly 50 petaflop/s-days",
+      "as_written": "50"
+    },
+    {
+      "text": "Generating 100 pages: about 0.4 kWh",
+      "value": "0.4 kW-hr",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "on the order of 0.4 kW-hr",
+      "as_written": "0.4 kWh"
+    },
+    {
+      "text": "42 accuracy-denominated benchmarks",
+      "value": "42",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "Aggregate performance for all 42 accuracy-denominated benchmarks",
+      "as_written": "42"
+    },
+    {
+      "text": "LAMBADA zero-shot 76.2, few-shot 86.4, previous best 68.0",
+      "value": "86.4%",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "GPT-3 achieves 86.4% accuracy in the few-shot setting",
+      "as_written": "86.4%"
+    },
+    {
+      "text": "LAMBADA zero-shot is 8 percentage points above previous best",
+      "value": "8%",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "a gain of 8% over the previous state of the art",
+      "as_written": "8 percentage points"
+    },
+    {
+      "text": "PTB perplexity: 20.5",
+      "value": "20.50",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "achieving a perplexity of 20.50",
+      "as_written": "20.5"
+    },
+    {
+      "text": "Closed-book fine-tuned T5-11B+SSM on TriviaQA: 60.5",
+      "value": "60.5",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "60.5",
+      "as_written": "60.5"
+    },
+    {
+      "text": "Closed-book fine-tuned Natural Questions: 36.6",
+      "value": "36.6%",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "compared to 36.6% for fine-tuned T5 11B+SSM",
+      "as_written": "36.6"
+    },
+    {
+      "text": "Batch size: 500K tokens",
+      "value": "0.5M",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "0.5M",
+      "as_written": "500K"
+    },
+    {
+      "text": "Batch size: 1M tokens",
+      "value": "1M",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "1M",
+      "as_written": "1M"
+    },
+    {
+      "text": "Batch size: 2M tokens",
+      "value": "2M",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "2M",
+      "as_written": "2M"
+    },
+    {
+      "text": "Batch size: 3.2M tokens",
+      "value": "3.2M",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "3.2M",
+      "as_written": "3.2M"
+    },
+    {
+      "text": "XL: 1.3 billion parameters",
+      "value": "1.3B",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "1.3B",
+      "as_written": "1.3 billion"
+    },
+    {
+      "text": "6.7B: 6.7 billion parameters",
+      "value": "6.7B",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "6.7B",
+      "as_written": "6.7 billion"
+    },
+    {
+      "text": "17 of 2,000 addition problems, 0.8%",
+      "value": "0.8%",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "(0.8%)",
+      "as_written": "0.8%"
+    },
+    {
+      "text": "Open-book system retrieves 21 million documents",
+      "value": "21M documents",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "dense vector index of 21M documents",
+      "as_written": "21 million documents"
+    },
+    {
+      "text": "Few-shot is 3.2 points higher",
+      "value": "3.2%",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "another 3.2% beyond this",
+      "as_written": "3.2 percentage points"
+    },
+    {
+      "text": "SuperGLUE few-shot 71.8, BERT-LARGE 69.0, best 89.0",
+      "value": "71.8",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "71.8",
+      "as_written": "71.8"
+    },
+    {
+      "text": "SuperGLUE: 32 examples per task",
+      "value": "32 examples",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "we used 32 examples for all tasks",
+      "as_written": "32"
+    },
+    {
+      "text": "Fewer than 8 examples beat fine-tuned BERT-LARGE",
+      "value": "less than eight",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "requires less than eight total examples per task",
+      "as_written": "fewer than 8"
+    },
+    {
+      "text": "WiC few-shot 49.4%",
+      "value": "49.4%",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "few-shot performance at 49.4%",
+      "as_written": "49.4%"
+    },
+    {
+      "text": "Translation into English is about 5 BLEU higher than unsupervised methods",
+      "value": "5 BLEU",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "outperforms previous unsupervised NMT work by 5 BLEU",
+      "as_written": "5 BLEU"
+    },
+    {
+      "text": "French → English few-shot 39.2",
+      "value": "39.2",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "39.2",
+      "as_written": "39.2"
+    },
+    {
+      "text": "Two-digit addition 100%, two-digit subtraction 98.9%",
+      "value": "98.9%",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "98.9% at 2 digit subtraction",
+      "as_written": "98.9%"
+    },
+    {
+      "text": "Three-digit addition, main text: 80.2%",
+      "value": "80.2%",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "80.2% at 3 digit addition",
+      "as_written": "80.2%"
+    },
+    {
+      "text": "Three-digit addition, table: 80.4%",
+      "value": "80.4",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "80.4",
+      "as_written": "80.4%"
+    },
+    {
+      "text": "2,000 random problems per item",
+      "value": "2,000",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "we generate a dataset of 2,000 random instances",
+      "as_written": "2,000 problems"
+    },
+    {
+      "text": "17 of 2,000 addition problems (0.8%)",
+      "value": "17 matches",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "we found only 17 matches (0.8%)",
+      "as_written": "17 problems"
+    },
+    {
+      "text": "Only 2 subtraction problems",
+      "value": "2 matches",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "we found only 2 matches (0.1%)",
+      "as_written": "2 problems"
+    },
+    {
+      "text": "The 13B model gets only about half of two-digit addition and subtraction right, and under 10% on the rest",
+      "value": "13 billion",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "even the 13 billion parameter model",
+      "as_written": "13 billion"
+    },
+    {
+      "text": "About 80 US participants, 25 headlines",
+      "value": "25 article titles",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "we arbitrarily selected 25 article titles",
+      "as_written": "25"
+    },
+    {
+      "text": "About 200 words",
+      "value": "200 words",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "mean length: 200 words",
+      "as_written": "200 words"
+    },
+    {
+      "text": "Longer articles: about 500 words",
+      "value": "500 words",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "for news articles that are around 500 words long",
+      "as_written": "500 words"
+    },
+    {
+      "text": "SAT analogies: few-shot 65.2%; college applicants average 57%",
+      "value": "65.2%",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "On this task GPT-3 achieves 65.2% in the few-shot setting",
+      "as_written": "65.2%"
+    },
+    {
+      "text": "College applicants average 57%",
+      "value": "57%",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "the average score among college applicants was 57%",
+      "as_written": "57%"
+    },
+    {
+      "text": "Random guessing: 20%",
+      "value": "20%",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "random guessing yields 20%",
+      "as_written": "20%"
+    },
+    {
+      "text": "Clean subset defined by 13 consecutive overlapping words",
+      "value": "13-gram",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "examples that have a 13-gram overlap",
+      "as_written": "13"
+    },
+    {
+      "text": "A quarter of benchmarks exceed 50%",
+      "value": "50%",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "with a quarter of benchmarks scoring over 50%",
+      "as_written": "50%"
+    },
+    {
+      "text": "Reading comprehension: over 90% flagged",
+      "value": "90%",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": ">90% of task examples from QuAC, SQuAD2, and DROP",
+      "as_written": "90%"
+    },
+    {
+      "text": "German → English: 25% flagged, impact 1–2 BLEU",
+      "value": "25%",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "We found 25% of the examples in the WMT16 German-English test set",
+      "as_written": "25%"
+    },
+    {
+      "text": "PIQA: 29% flagged, down 3 percentage points",
+      "value": "29%",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "flagged 29% of examples as contaminated",
+      "as_written": "29%"
+    },
+    {
+      "text": "Winograd: 45% flagged, down 2.6%",
+      "value": "45%",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "The overlap analysis flagged 45% of examples",
+      "as_written": "45%"
+    },
+    {
+      "text": "Winograd: down 2.6%",
+      "value": "2.6%",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "found a 2.6% decrease in performance",
+      "as_written": "2.6%"
+    },
+    {
+      "text": "132 Winograd problems were in the training set",
+      "value": "132",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "132 Winograd schemas were in fact present in our training set",
+      "as_written": "132 problems"
+    },
+    {
+      "text": "83% of 388 occupations are more likely to be followed by male words",
+      "value": "83%",
+      "source_url": "https://arxiv.org/abs/2005.14165",
+      "quote": "83% of the 388 occupations we tested",
+      "as_written": "83%"
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "57ff7760bc94e326"
+}
