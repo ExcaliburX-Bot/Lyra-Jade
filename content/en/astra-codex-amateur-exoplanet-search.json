@@ -1,0 +1,586 @@
+{
+  "slug": "astra-codex-amateur-exoplanet-search",
+  "date": "2026-11-24",
+  "category": "product",
+  "publisher": "OpenAI",
+  "topics": [
+    "openai"
+  ],
+  "readMinutes": 6,
+  "title": "Two amateur astronomers use Astra and Codex to search for exoplanets and surface dozens of candidates",
+  "summary": "You don't need an observatory to join the search. Two amateur astronomers separately used OpenAI's Astra and Codex to comb NASA's public telescope data for signs of exoplanets, then handed their candidates to professional astronomers for follow-up.",
+  "ai_summary": "OpenAI has published a science case: two amateur astronomers separately used Codex and Astra to search NASA public data for exoplanets. Kevin Bond used Codex to analyze about 100,000 Kepler stars, flagging more than 200 signals, 10 of which are known planets; he narrowed to two priority candidates, one of which dims every 13.8 days and, if caused by a planet, would be about 2.4 times Earth's diameter. Ethan Byrd used Astra to analyze about 19 million stars, surfacing 49 candidates in a first pass; the strongest was sent to TESS for analysis. An astronomer at the SETI Institute independently reviewed the results and found two of the same signals. For now these are candidates only; confirming them as planets could take months or even years.",
+  "brief": [
+    "Two amateur astronomers, separately using Codex and Astra, found exoplanet candidates in public telescope data and have passed them to professional astronomers for review.",
+    "Bond searched about 100,000 Kepler stars; the program flagged more than 200 signals, including 10 known planets.",
+    "Byrd searched about 19 million stars, surfaced 49 candidates in a first pass, and sent one to the TESS team for analysis.",
+    "None of these candidates is confirmed as a planet yet: an independent SETI Institute search found two of Bond's signals, and confirmation could take months or years."
+  ],
+  "sections": [
+    {
+      "h": "What this is: two amateurs use AI to find planet candidates in public data",
+      "blocks": [
+        {
+          "p": "Since the first exoplanets were announced in 1992, astronomers have confirmed more than 6,400 planets beyond our solar system. Amateur astronomers around the world have long been part of that effort: some dig through public telescope data looking for periodic dips in starlight, while others use their own telescopes to watch for the next transit and share what they see with researchers."
+        },
+        {
+          "p": "OpenAI's case study focuses on two amateurs: Kevin Bond, an OpenAI engineer, and Ethan Byrd, founder of the email infrastructure startup Primitive. Working independently, they used different AI tools — Bond used Codex, Byrd used Astra — to analyze public NASA data, found exoplanet candidates, and have handed those leads to professional astronomers for independent assessment."
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "The scale of these searches, next to all confirmed exoplanets",
+            "subtitle": "Data from OpenAI and the NASA Exoplanet Archive (through 2026)",
+            "items": [
+              {
+                "value": 6400,
+                "unit": "planets",
+                "label": "Confirmed exoplanets",
+                "note": "Cumulative since 1992"
+              },
+              {
+                "value": 100000,
+                "unit": "stars",
+                "label": "Kepler stars Bond searched",
+                "note": "Using Codex"
+              },
+              {
+                "value": 19000000,
+                "unit": "stars",
+                "label": "Stars Byrd searched",
+                "note": "TESS and other public archives, using Astra"
+              },
+              {
+                "value": 200,
+                "unit": "signals",
+                "label": "Signals Bond flagged",
+                "note": "10 are known planets"
+              },
+              {
+                "value": 49,
+                "unit": "candidates",
+                "label": "Byrd's first-pass candidates",
+                "note": "One sent to TESS for analysis"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "Looking for planets means watching for periodic dips in starlight",
+      "blocks": [
+        {
+          "p": "The most common way to find exoplanets is the transit method. When a planet passes in front of its star from our point of view, it blocks a little starlight. On a graph of the star's brightness over time — a light curve — that crossing appears as a dip. If the dip repeats at regular intervals, astronomers know when to look again."
+        },
+        {
+          "fig": {
+            "type": "illustration",
+            "title": "A planet passing in front of its star creates a dip in the light curve",
+            "subtitle": "Illustrative: amber boxes mark the repeated dips — the candidate signal",
+            "note": "The transit method is one of the most common ways to find exoplanets.",
+            "glyph": {
+              "kind": "wave",
+              "select": [
+                0.45,
+                0.62
+              ]
+            },
+            "legend": [
+              {
+                "tone": "hi",
+                "label": "Boxed dips"
+              }
+            ]
+          }
+        },
+        {
+          "p": "Using AI for this search isn't new. In 2017, researchers trained a neural network on 15,000 signals from NASA's Kepler Space Telescope that astronomers had already examined, teaching it to recognize which starlight patterns were most likely to come from a planet. That model later helped find an eighth planet around the star Kepler-90. The difference here: Bond and Byrd used large models — Codex and Astra — to read the literature, write search programs, and do initial screening, lowering the barrier to entry."
+        }
+      ]
+    },
+    {
+      "h": "Bond's search: two priority candidates from about 100,000 stars",
+      "blocks": [
+        {
+          "p": "Bond used Codex to search about 100,000 stars observed by the Kepler telescope, a planet-hunting mission that ran from 2009 to 2018. He asked Codex to compare published search methods, combine them into a search program, and test whether changes to the code improved results. One AI agent scanned light curves for promising signals; another ran more detailed checks on the candidates the first flagged."
+        },
+        {
+          "fig": {
+            "type": "illustration",
+            "title": "Bond's search: from about 100,000 stars down to 2 priority candidates",
+            "subtitle": "Illustrative: amber marks the final priority candidates",
+            "note": "Ten of the flagged signals come from known planets, used to validate the search method.",
+            "glyph": {
+              "kind": "funnel",
+              "stages": [
+                {
+                  "label": "Stars searched",
+                  "value": 100000,
+                  "display": "About 100,000",
+                  "tone": "base"
+                },
+                {
+                  "label": "Signals flagged",
+                  "value": 200,
+                  "display": "More than 200",
+                  "tone": "base"
+                },
+                {
+                  "label": "Priority candidates",
+                  "value": 2,
+                  "display": "2 candidates",
+                  "tone": "hi"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "p": "The program flagged more than 200 signals, including 10 from previously confirmed planets — finding known planets gave Bond confidence the method could pick out the kinds of signals he was after. Two stars stood out. KIC 5689121 is a relatively cool star about half the size of the Sun in the constellation Lyra; its light curve shows a dip every 13.8 days. If a planet is causing the dip, the blocked light suggests a planet about 2.4 times Earth's diameter. KIC 6691030 is faint in the northern sky and dims every 4.8 days, consistent with a planet smaller than Neptune."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Two priority candidates: one about 2.4 times Earth's diameter, one smaller than Neptune",
+            "subtitle": "Data from Bond's Kepler search using Codex",
+            "columns": [
+              "Star",
+              "Location",
+              "Dimming period",
+              "If caused by a planet"
+            ],
+            "rows": [
+              [
+                "KIC 5689121",
+                "Lyra; about half the Sun's size",
+                "About 13.8 days",
+                "About 2.4 times Earth's diameter"
+              ],
+              [
+                "KIC 6691030",
+                "Northern sky; faint",
+                "About 4.8 days",
+                "Smaller than Neptune"
+              ]
+            ],
+            "note": "The article's four light curves show the same Kepler observations aligned on a 13.77-day cycle."
+          }
+        },
+        {
+          "p": "An astronomer at the SETI Institute ran an independent search and found the same two signals in the Kepler data. That gives Bond's candidates an external check — but the check only shows the signals are real, not that they are planets."
+        },
+        {
+          "fig": {
+            "type": "quote",
+            "title": "Professional astronomer: this approach can surface candidates traditional searches miss",
+            "text": "Kevin's work shows how citizen scientists, equipped with AI, can help astronomers explore the Kepler Bonus Catalog—a vast collection of stars beyond Kepler's original targets. His pipeline has surfaced promising candidates in data traditional searches may have missed. Our initial checks are encouraging, and follow-up observations will tell us more.",
+            "who": "Vishal Gajjar",
+            "role": "Associate director for international SETI programs, SETI Institute",
+            "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra"
+          }
+        }
+      ]
+    },
+    {
+      "h": "Byrd's search: 49 candidates from about 19 million stars",
+      "blocks": [
+        {
+          "p": "Byrd took a different path. He tried several AI models before choosing Astra to help him analyze telescope data from about 19 million stars. He used Astra to design two searches: one broad sweep for exoplanet candidates, and another focused on the habitable zone — the range of distances from a star where a planet with a suitable atmosphere could support liquid water on its surface."
+        },
+        {
+          "p": "The data came from TESS — launched by NASA in 2018 — and other public telescope archives. TESS surveyed both hemispheres in its first 26 sectors, from 2018 to 2020; Kepler watched one field for four years. Byrd asked Astra to read published methods, build the search software, and run initial checks on promising signals. The first pass surfaced 49 candidates: the strongest has been sent to researchers on the TESS mission for follow-up analysis, two more are awaiting submission, and the search is still running."
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "Two independent searches, each with candidates",
+            "subtitle": "Amber highlights the key numbers on each side",
+            "left": {
+              "label": "Kevin Bond",
+              "sub": "OpenAI engineer",
+              "items": [
+                {
+                  "label": "Tool",
+                  "tag": "Codex",
+                  "state": "base"
+                },
+                {
+                  "label": "Data",
+                  "tag": "Kepler, about 100,000 stars",
+                  "state": "base"
+                },
+                {
+                  "label": "Results",
+                  "tag": "More than 200 signals",
+                  "state": "hi"
+                },
+                {
+                  "label": "Priority candidates",
+                  "tag": "2",
+                  "state": "hi"
+                },
+                {
+                  "label": "External check",
+                  "tag": "SETI found 2 matching signals",
+                  "state": "base"
+                }
+              ]
+            },
+            "right": {
+              "label": "Ethan Byrd",
+              "sub": "Primitive founder",
+              "items": [
+                {
+                  "label": "Tool",
+                  "tag": "Astra",
+                  "state": "base"
+                },
+                {
+                  "label": "Data",
+                  "tag": "TESS and others, about 19 million stars",
+                  "state": "hi"
+                },
+                {
+                  "label": "Results",
+                  "tag": "49 first-pass candidates",
+                  "state": "base"
+                },
+                {
+                  "label": "Where they went",
+                  "tag": "1 sent to TESS, 2 awaiting submission",
+                  "state": "base"
+                },
+                {
+                  "label": "Status",
+                  "tag": "Search still running",
+                  "state": "base"
+                }
+              ]
+            },
+            "footer": "Different tools and different data, but both handed candidates to professional astronomers for independent assessment."
+          }
+        }
+      ]
+    },
+    {
+      "h": "From signal to planet: what's in between",
+      "blocks": [
+        {
+          "p": "When astronomers see a star dim, they first have to rule out other explanations: two stars passing in front of each other can produce a similar dip, and even temperature changes in a telescope's instruments can make a star appear dimmer. Confirmation requires statistics showing that a planet is the most likely explanation, or follow-up observations with a different method — such as radial velocity, where a planet's gravity tugs on its star, moving it slightly toward and away from us and causing tiny shifts in the color of the star's light."
+        },
+        {
+          "fig": {
+            "type": "steps",
+            "title": "From candidate to confirmed planet: several hurdles remain",
+            "subtitle": "Illustrative: the typical process astronomers use to confirm an exoplanet",
+            "steps": [
+              {
+                "name": "See periodic dips",
+                "tool": "Light curve",
+                "desc": "The star dims at regular intervals; log it as a candidate."
+              },
+              {
+                "name": "Rule out other causes",
+                "tool": "Statistical tests",
+                "desc": "Eclipsing binary stars or telescope temperature changes can cause similar dips."
+              },
+              {
+                "name": "Follow up with another method",
+                "tool": "Radial velocity",
+                "desc": "The planet's gravity makes the star wobble slightly, shifting the color of its light."
+              },
+              {
+                "name": "Publish peer-reviewed findings",
+                "tool": "Peer-reviewed journal",
+                "desc": "Share the evidence so other researchers can check it."
+              }
+            ]
+          }
+        },
+        {
+          "p": "For Bond and Byrd, each candidate is a testable question. If a planet really is passing in front of the star in Lyra every 13.8 days, astronomers can schedule follow-up for the next transit. More observations can confirm whether the dip repeats on schedule, and additional checks can determine what is actually causing it. OpenAI's article notes that confirming the cause could take months or even years."
+        }
+      ]
+    },
+    {
+      "h": "You can help search for planets without a telescope",
+      "blocks": [
+        {
+          "list": [
+            "No telescope: NASA's Exoplanet Watch lets you request data and learn to plot light curves yourself; its citizen science programs offer other ways to participate.",
+            "Have a telescope: Exoplanet Watch walks you through collecting transit data and joining observation campaigns.",
+            "AAVSO's Exoplanet Observing Program teaches you how to measure a dip in starlight and share your observations with the researchers studying that planet.",
+            "The Unistellar Network Investigating TESS Exoplanets coordinates volunteers around the world who have a certain type of telescope to observe the same star, helping astronomers catch transits that can last longer than a single night."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "What OpenAI hasn't said",
+      "blocks": [
+        {
+          "list": [
+            "Price or cost: the article mentions no fees. The searches used NASA public data and OpenAI tools, but it doesn't say what Astra or Codex cost to use, or whether they're free for researchers.",
+            "Whether or when the candidates will be confirmed as planets: no answer, only that confirmation could take months or even years.",
+            "Other parameters for the planets around the two candidate stars (mass, orbit, atmosphere, whether any is actually in a habitable zone): not provided; the article gives only the period and inferred diameter.",
+            "Whether Bond's and Byrd's search programs or code are public: not stated.",
+            "How the candidates compare with full professional survey catalogs: it only notes that some signals match known planets, with no full deduplicated list.",
+            "How much time the two spent, or how many rounds of AI conversation they used: not stated."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Who it's for",
+      "blocks": [
+        {
+          "p": "The value of this case study is that it lets AI tools handle part of a job that used to require programming and astronomical training: reading the literature, writing search programs, and doing initial screening. Two amateurs without professional astronomy backgrounds could produce candidates from real public data that professional astronomers can check."
+        },
+        {
+          "p": "The caveat is just as clear: candidates are not discoveries. Going from a signal to a confirmed planet still involves statistical tests, follow-up observations, and peer review, and could take months or years. This is more like handing leads to professional researchers than announcing a new planet."
+        },
+        {
+          "list": [
+            "If you're an astronomy enthusiast who wants to move from stargazing to finding planets in data, start with NASA Exoplanet Watch's public data.",
+            "If you can use AI to write code and want a real dataset to practice on, public light-curve archives are an obvious place to start.",
+            "If you're introducing students to research, this case is a good way to explain the candidate–verification–confirmation process."
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Searching for distant planets with Astra",
+      "publisher": "OpenAI",
+      "date": "2026-11-24",
+      "url": "https://openai.com/index/searching-for-distant-planets-with-astra"
+    },
+    "more": [],
+    "note": "Charts and diagrams (light curves, funnels, process flows) are illustrative; key figures come from OpenAI's article and the NASA Exoplanet Archive it cites. The opening animation's planet names and star positions are from the NASA Exoplanet Archive, operated by Caltech for NASA, with a catalog snapshot retrieved on November 19, 2026."
+  },
+  "claims": [
+    {
+      "text": "Since 1992, astronomers have confirmed more than 6,400 planets beyond our solar system.",
+      "value": "6,400",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "more than 6,400",
+      "quote": "Astronomers have confirmed more than 6,400 planets beyond our solar system"
+    },
+    {
+      "text": "The first exoplanets were announced in 1992.",
+      "value": "1992",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "1992",
+      "quote": "since the first ones were announced in 1992"
+    },
+    {
+      "text": "In 2017, researchers trained a neural network to recognize planet signals.",
+      "value": "2017",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "2017",
+      "quote": "In 2017, researchers trained a neural network on 15,000 signals from NASA's Kepler Space Telescope"
+    },
+    {
+      "text": "The 2017 neural network was trained on 15,000 signals from Kepler.",
+      "value": "15,000",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "15,000",
+      "quote": "researchers trained a neural network on 15,000 signals from NASA's Kepler Space Telescope"
+    },
+    {
+      "text": "The model later helped find an eighth planet around the star Kepler-90.",
+      "value": "eighth planet",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "eighth planet",
+      "quote": "one led them to an eighth planet orbiting a star called Kepler-90"
+    },
+    {
+      "text": "Bond used Codex to search about 100,000 stars observed by the Kepler telescope.",
+      "value": "100,000",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "about 100,000",
+      "quote": "He used Codex to search observations of about 100,000 stars from the Kepler telescope"
+    },
+    {
+      "text": "The Kepler planet-hunting mission ran from 2009 to 2018.",
+      "value": "2009 to 2018",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "2009 to 2018",
+      "quote": "a planet-hunting mission that ran from 2009 to 2018"
+    },
+    {
+      "text": "Byrd used Astra to analyze telescope data from about 19 million stars.",
+      "value": "19 million",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "about 19 million",
+      "quote": "he tried several AI models before choosing Astra to help him analyze telescope data from about 19 million stars"
+    },
+    {
+      "text": "Bond's program flagged more than 200 signals.",
+      "value": "200",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "more than 200",
+      "quote": "The search flagged more than 200 signals, including 10 from previously confirmed planets"
+    },
+    {
+      "text": "Ten of the more than 200 signals came from previously confirmed planets.",
+      "value": "10",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "10",
+      "quote": "including 10 from previously confirmed planets"
+    },
+    {
+      "text": "Two stars stood out in Bond's search and became priority candidates.",
+      "value": "Two",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "two",
+      "quote": "Two stars stood out."
+    },
+    {
+      "text": "KIC 5689121 shows a dip in brightness every 13.8 days.",
+      "value": "13.8",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "13.8 days",
+      "quote": "The Codex search found a dip in brightness every 13.8 days"
+    },
+    {
+      "text": "If caused by a planet, the planet around KIC 5689121 would be about 2.4 times Earth's diameter.",
+      "value": "2.4",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "2.4 times",
+      "quote": "the amount of light it blocks suggests it could be about 2.4 times Earth's diameter"
+    },
+    {
+      "text": "The four light curves in the article are aligned on a 13.77-day cycle.",
+      "value": "13.77",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "13.77 days",
+      "quote": "These four curves show the same Kepler observations aligned on a 13.77-day cycle"
+    },
+    {
+      "text": "KIC 6691030 dims every 4.8 days, consistent with a planet smaller than Neptune.",
+      "value": "4.8",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "4.8 days",
+      "quote": "The Codex search found a dip in its brightness every 4.8 days, consistent with a planet smaller than Neptune"
+    },
+    {
+      "text": "KIC 5689121 is a relatively cool star about half the size of the Sun.",
+      "value": "half",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "about half",
+      "quote": "a relatively cool star about half the size of our sun in the constellation Lyra"
+    },
+    {
+      "text": "An astronomer at the SETI Institute independently found two of the same signals.",
+      "value": "two",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "two",
+      "quote": "ran an independent search and found two of the same signals in the Kepler data"
+    },
+    {
+      "text": "Byrd used Astra to design two searches.",
+      "value": "two",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "two",
+      "quote": "Byrd used Astra to design two searches"
+    },
+    {
+      "text": "Byrd's search surfaced 49 candidates in its first pass.",
+      "value": "49",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "49",
+      "quote": "The first pass through the data turned up 49 candidates"
+    },
+    {
+      "text": "Byrd sent his strongest candidate to researchers on the TESS mission.",
+      "value": "one",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "one",
+      "quote": "Byrd sent one of his strongest candidates to researchers working on NASA's Transiting Exoplanet Survey Satellite (TESS) mission"
+    },
+    {
+      "text": "Two more candidates await submission.",
+      "value": "two",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "two",
+      "quote": "and two more candidates are awaiting submission"
+    },
+    {
+      "text": "Kepler watched one field for four years.",
+      "value": "four years",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "four years",
+      "quote": "Kepler watched one field for four years"
+    },
+    {
+      "text": "TESS surveyed both hemispheres in its first 26 sectors.",
+      "value": "26",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "26",
+      "quote": "TESS surveyed both hemispheres in its first 26 sectors, from 2018 to 2020"
+    },
+    {
+      "text": "TESS's first 26 sectors were observed from 2018 to 2020.",
+      "value": "2018 to 2020",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "2018 to 2020",
+      "quote": "TESS surveyed both hemispheres in its first 26 sectors, from 2018 to 2020"
+    },
+    {
+      "text": "NASA launched TESS in 2018.",
+      "value": "2018",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "2018",
+      "quote": "observations from TESS, which NASA launched in 2018"
+    },
+    {
+      "text": "The catalog snapshot used in the opening animation was retrieved on November 19, 2026.",
+      "value": "November 19, 2026",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "November 19, 2026",
+      "quote": "The catalog snapshot was retrieved on November 19, 2026"
+    },
+    {
+      "text": "The article was published on November 24, 2026.",
+      "value": "November 24, 2026",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "November 24, 2026",
+      "quote": "November 24, 2026"
+    },
+    {
+      "text": "Two amateur astronomers used Codex and Astra to search for signs of exoplanets.",
+      "value": "Two",
+      "source_url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "as_written": "two",
+      "quote": "Two amateur astronomers used Codex and Astra to look for signs of planets in public telescope data"
+    }
+  ],
+  "cover": {
+    "headline": "AI helps amateurs hunt exoplanets",
+    "highlight": "Candidates surfaced from public data, sent to professionals for review",
+    "glyph": {
+      "kind": "funnel",
+      "stages": [
+        {
+          "label": "Stellar data",
+          "value": 19000000,
+          "display": "19 million",
+          "tone": "base"
+        },
+        {
+          "label": "Candidate signals",
+          "value": 49,
+          "display": "49",
+          "tone": "hi"
+        }
+      ]
+    }
+  },
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "12387f2eb410aa53"
+}
