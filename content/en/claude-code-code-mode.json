@@ -1,0 +1,452 @@
+{
+  "slug": "claude-code-code-mode",
+  "date": "2026-11-18",
+  "category": "product",
+  "publisher": "Claude Code Docs",
+  "topics": [
+    "claude"
+  ],
+  "title": "Claude Code adds experimental Code Mode that packs tool calls into one script, off by default",
+  "summary": "Normally, when you ask Claude Code to edit several files or run a sequence of commands, it works one step at a time, stopping to read the result after each. With the new Code Mode, Claude writes a piece of JavaScript that chains those tool calls, runs them in parallel, and returns only the output it needs to read.",
+  "ai_summary": "Claude Code has introduced an experimental Code Mode, off by default. The core change: before, Claude requested tools such as Bash, Read, and Edit one step at a time and read each result before deciding the next step. With Code Mode on, Claude writes a piece of JavaScript that chains multiple tool calls, runs some in parallel, feeds one result into the next, and returns only the output it needs to read. It suits tasks that repeat an edit across many files, need search results filtered before Claude reads them, or run several independent commands at once. Requirements: Claude Code v2.1.323 or later (v2.1.331 or later on cloud providers); a Claude subscription, Console account, or cloud provider such as Amazon Bedrock; and one of the models Claude Opus 5.5, Sonnet 5.5, Haiku 5.5, or Fable 5.2.",
+  "brief": [
+    "Code Mode lets Claude write a piece of JavaScript that calls tools in batch: it can run calls in parallel, chain results, and return only the output Claude needs to read.",
+    "Experimental and off by default; waiting-mode code is capped at 10 minutes, and background-mode code can run for up to 2 hours.",
+    "Requirements: Claude Code v2.1.323 or later, cloud providers v2.1.331 or later, and models limited to Claude Opus 5.5, Sonnet 5.5, Haiku 5.5, and Fable 5.2.",
+    "To try it: set CLAUDE_CODE_EXPERIMENTAL_CODE_MODE to 1, start claude, and confirm that you want it on."
+  ],
+  "readMinutes": 8,
+  "sections": [
+    {
+      "h": "What it is: Claude calls tools by writing code",
+      "blocks": [
+        {
+          "p": "Code Mode is a new way for Claude Code to work. Before, Claude requested tool calls such as Bash, Read, and Edit one step at a time, and after each call it read the result before deciding what to do next. With Code Mode on, Claude instead writes a piece of JavaScript, and Claude Code runs that code in your session to make those tool calls."
+        },
+        {
+          "p": "It is still experimental and off by default, and Anthropic explicitly says it may change or be removed in any release. To share feedback, run /feedback. Treat the usage and requirements below as based on the current docs."
+        }
+      ]
+    },
+    {
+      "h": "How it differs: parallel calls, chained results, and only the needed output",
+      "blocks": [
+        {
+          "p": "The changes come down to a few things: one piece of code can run several commands in parallel, feed the result of one call into the next, and return only the part of the output Claude needs to read. Before, Claude had to wait through all of that round by round."
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "Without Code Mode: step by step; with Code Mode: one piece of code does the work",
+            "subtitle": "Amber marks the new capabilities Code Mode adds.",
+            "left": {
+              "label": "Without Code Mode",
+              "sub": "Claude makes tool calls directly",
+              "items": [
+                {
+                  "label": "Requests Bash / Read / Edit one at a time",
+                  "state": "base"
+                },
+                {
+                  "label": "Reads each result before deciding the next step",
+                  "state": "base"
+                },
+                {
+                  "label": "Commands run one after another",
+                  "state": "base"
+                }
+              ]
+            },
+            "right": {
+              "label": "With Code Mode",
+              "sub": "Claude writes JavaScript to call tools",
+              "items": [
+                {
+                  "label": "One piece of code runs multiple commands in parallel",
+                  "state": "hi"
+                },
+                {
+                  "label": "Feeds each result into the next call",
+                  "state": "hi"
+                },
+                {
+                  "label": "Returns only the output Claude needs to read",
+                  "state": "hi"
+                }
+              ]
+            },
+            "footer": "In the session you still see tool calls, such as the edit's diff; press Ctrl+O to expand the underlying code.",
+            "note": "Illustrative: compares the two ways of working."
+          }
+        },
+        {
+          "p": "Anthropic gives an example: ask Claude to raise a retry limit. It might write code like the following — use `rg` to find files containing `retryPolicy`, take the first one, change `maxAttempts` from 3 to 5, then run `npm test`. The last line returns both the file path and the test output."
+        },
+        {
+          "fig": {
+            "type": "code",
+            "lang": "javascript",
+            "title": "One piece of code chains: find file, change limit, run tests, return results",
+            "subtitle": "Example code from the Claude Code docs",
+            "highlight": [
+              3,
+              4
+            ],
+            "code": "const files = await $`rg -l \"function retryPolicy\" src`.text();\nconst target = files.trim().split(\"\\n\")[0];\nawait edit(target, \"maxAttempts: 3\", \"maxAttempts: 5\");\n({ edited: target, tests: $`npm test -- retryPolicy`.nothrow() });"
+          }
+        },
+        {
+          "p": "What you see in the conversation is not this code but the tool-call results, such as the edit's diff. To read the underlying code, press Ctrl+O to open the transcript viewer; each piece of code appears as a collapsed Code row that you can expand."
+        }
+      ]
+    },
+    {
+      "h": "When Code Mode is worth using",
+      "blocks": [
+        {
+          "p": "Anthropic suggests trying it on tasks that need many related tool calls; a one-off small edit doesn't need it."
+        },
+        {
+          "fig": {
+            "type": "cards",
+            "title": "The use cases Anthropic names all share one thing: many related tool calls.",
+            "subtitle": "Amber marks the tasks Anthropic suggests trying first.",
+            "items": [
+              {
+                "icon": "layers",
+                "title": "A change repeated across many files",
+                "desc": "One script can chain the same edit across many files and finish them in one pass.",
+                "tags": [
+                  "Many files"
+                ],
+                "tone": "hi"
+              },
+              {
+                "icon": "search",
+                "title": "Search results filtered before Claude reads them",
+                "desc": "Filter a large result set before Claude reads it, so it doesn't have to read a pile of noise.",
+                "tags": [
+                  "Filtering"
+                ],
+                "tone": "hi"
+              },
+              {
+                "icon": "bolt",
+                "title": "Independent commands run in parallel",
+                "desc": "Commands with no dependencies run at the same time instead of waiting one after another.",
+                "tags": [
+                  "Parallel"
+                ],
+                "tone": "hi"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "Requirements: version, account, model, and surface",
+      "blocks": [
+        {
+          "p": "The first requirement is version. Different setups need different minimum versions: the baseline is v2.1.323, and cloud providers, agent teams, mods, and telemetry settings each have a higher threshold."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Minimum versions vary by setup",
+            "subtitle": "Use the Claude Code docs as the source of truth for version numbers; run claude update before starting.",
+            "columns": [
+              "Setup",
+              "Minimum version"
+            ],
+            "rows": [
+              [
+                "Standard terminal interactive session",
+                "v2.1.323"
+              ],
+              [
+                "Cloud providers (Amazon Bedrock, etc.)",
+                "v2.1.331"
+              ],
+              [
+                "agent teams",
+                "v2.1.326"
+              ],
+              [
+                "With mods / plugins",
+                "v2.1.327"
+              ],
+              [
+                "Telemetry settings",
+                "v2.1.329"
+              ]
+            ],
+            "highlight": {
+              "row": 0
+            }
+          }
+        },
+        {
+          "p": "Account or provider: a Claude subscription, a Console account, or a cloud provider such as Amazon Bedrock, Google Cloud's Agent Platform, or Microsoft Foundry. It can't be used through a gateway, or with Claude for Government."
+        },
+        {
+          "p": "Model: limited to Claude Opus 5.5, Sonnet 5.5, Haiku 5.5, and Fable 5.2. If you select the model by a deployment name or an application inference profile, ask whoever manages that name which model it actually points to."
+        },
+        {
+          "p": "Surface: it must be an interactive claude session in a terminal. The VS Code panel, the Desktop app, and cloud sessions won't work. At the organization level, you can't use the HIPAA configuration or zero data retention; on Windows, install Git for Windows first."
+        }
+      ]
+    },
+    {
+      "h": "How to turn it on, turn it off, and block it",
+      "blocks": [
+        {
+          "p": "Turning it on is simple: set the CLAUDE_CODE_EXPERIMENTAL_CODE_MODE environment variable to 1, then start claude. The first time, it asks you to confirm; after the restart, a message near the top shows that Code Mode is on."
+        },
+        {
+          "fig": {
+            "type": "steps",
+            "title": "Steps to turn on Code Mode",
+            "subtitle": "Illustrative: flow from the Try Code Mode section of the Claude Code docs.",
+            "steps": [
+              {
+                "name": "Check your version",
+                "tool": "claude --version",
+                "desc": "If it's too old, run claude update first"
+              },
+              {
+                "name": "Set the environment variable",
+                "tool": "shell / settings.json",
+                "desc": "Set CLAUDE_CODE_EXPERIMENTAL_CODE_MODE to 1"
+              },
+              {
+                "name": "Confirm you want it on",
+                "tool": "Yes, turn on Code Mode",
+                "desc": "Claude Code asks once; after the restart, the session shows a confirmation near the top"
+              },
+              {
+                "name": "Give Claude a task",
+                "tool": "prompt",
+                "desc": "Choose a task that involves multiple tool calls"
+              },
+              {
+                "name": "Read the code",
+                "tool": "Ctrl+O",
+                "desc": "Expand the Code row to see the JavaScript behind the calls"
+              }
+            ]
+          }
+        },
+        {
+          "p": "To turn it off: remove the variable from your shell, ~/.claude/settings.json, or any --settings file, or change its value to 0. If any one place has 0, Code Mode stays off."
+        },
+        {
+          "p": "To block it for your organization, add this variable with a value of 0 to managed settings. People already in a Code Mode session stay in it until they exit or restart Claude Code; after that, they can't resume those sessions."
+        },
+        {
+          "p": "One security detail: Claude Code ignores this variable in project settings files, so a repository you clone can't quietly turn on Code Mode for you."
+        }
+      ]
+    },
+    {
+      "h": "How permissions work: the classifier reviews each piece of code",
+      "blocks": [
+        {
+          "p": "Your permission mode decides how the code is checked. In auto and bypassPermissions modes, code can run from start to finish without a permission prompt. In auto mode, the classifier reviews each piece of code before it runs, not each tool call."
+        },
+        {
+          "fig": {
+            "type": "illustration",
+            "title": "The review target is the whole piece of code, not each tool call",
+            "subtitle": "Illustrative: the amber REPL runs the code; Bash, Edit, and MCP calls originate from it.",
+            "glyph": {
+              "kind": "hub",
+              "center": {
+                "label": "REPL runs the code",
+                "tone": "hi"
+              },
+              "nodes": [
+                {
+                  "label": "Bash",
+                  "tone": "base"
+                },
+                {
+                  "label": "Edit",
+                  "tone": "base"
+                },
+                {
+                  "label": "MCP tools",
+                  "tone": "base"
+                }
+              ]
+            },
+            "note": "In auto mode, the classifier reviews each piece of code; a PreToolUse hook matching REPL can read the JavaScript in tool_input.code."
+          }
+        },
+        {
+          "p": "Note: the classifier can't see values computed at runtime, such as a path taken from search output, so critical commands still depend on rules and hooks as a backstop. To control calls one by one, write deny / ask rules and PreToolUse hooks under the tool's usual name, such as Bash or an MCP tool name."
+        },
+        {
+          "p": "To review the code itself, write a PreToolUse hook that matches REPL and read the JavaScript from tool_input.code. Or add an ask rule for REPL so every piece of code waits for your approval."
+        },
+        {
+          "p": "Sandboxing: sandbox settings apply only to the shell commands the code runs. The JavaScript itself, plus its file, web, and MCP calls, runs outside the sandbox. To isolate those too, run Claude Code in a container or virtual machine."
+        },
+        {
+          "p": "One more detail: when no IDE is connected, a permission prompt may include a 1 minute 59 second countdown. If you don't answer in time, the call is automatically refused."
+        }
+      ]
+    },
+    {
+      "h": "Limitations: time, resuming, and unavailable features",
+      "blocks": [
+        {
+          "p": "First, runtime. In waiting mode, Claude waits for the code to finish before answering, and the code stops after 10 minutes. In background mode, you can keep talking while the code runs for up to 2 hours. Background mode must start from an auto or bypassPermissions session."
+        },
+        {
+          "fig": {
+            "type": "capacity",
+            "title": "Waiting mode code stops at 10 minutes; background mode can run up to 2 hours",
+            "subtitle": "Units: minutes; blue is the default waiting mode, amber is background mode",
+            "unit": "Minutes",
+            "max": 120,
+            "thresholds": [
+              {
+                "value": 10,
+                "label": "Waiting mode cap"
+              }
+            ],
+            "items": [
+              {
+                "label": "Waiting mode",
+                "sub": "Claude replies only after the code finishes",
+                "value": 10,
+                "display": "10 minutes",
+                "tone": "def"
+              },
+              {
+                "label": "Background mode",
+                "sub": "You can keep chatting while code runs for up to 2 hours",
+                "value": 120,
+                "display": "2 hours",
+                "tone": "hi",
+                "calc": "2 × 60"
+              }
+            ]
+          }
+        },
+        {
+          "list": [
+            "Resuming: a Code Mode session can be resumed only with Code Mode on. A session that ran with a Claude subscription or Console account can't be resumed on a cloud provider such as Amazon Bedrock.",
+            "Unavailable features: Remote Control, Claude in Chrome, and computer use can't be used at the same time.",
+            "You can't move the session to the Desktop app or turn it into a background session, and /fork can't start a background copy.",
+            "By default, if a PreToolUse hook doesn't finish, the tool call is refused."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "What Anthropic hasn't said",
+      "blocks": [
+        {
+          "list": [
+            "Pricing or billing: the docs don't say whether this JavaScript is token-metered separately or how it is billed.",
+            "Timeline: when it leaves experimental status or becomes a stable feature isn't stated.",
+            "Performance: there are no published quantitative comparisons between Code Mode and normal mode on speed or token consumption.",
+            "Model coverage: whether more models will be supported later isn't stated.",
+            "Surface coverage: whether the VS Code panel or Desktop app will be supported isn't stated.",
+            "Time limits: whether the 10-minute and 2-hour caps will change later isn't stated."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Who it's for",
+      "blocks": [
+        {
+          "p": "The value: it compresses many related tool calls into one piece of code, reducing back-and-forth. It's especially useful for repetitive, batch, or parallelizable work."
+        },
+        {
+          "p": "The cost: it's an experimental feature that may change, with several requirements (version, account, model, terminal UI), and the permission-review logic changes, so you may need to reconfigure rules and hooks."
+        },
+        {
+          "p": "If you often have Claude Code edit code across many files and then run tests, it's worth trying. If you only make one-off small changes or rely on the VS Code panel or Desktop app, you can skip it for now. Team administrators can block it by setting 0 in managed settings and open it up once it stabilizes."
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Run tool calls from code with Code Mode - Claude Code Docs",
+      "publisher": "Claude Code Docs",
+      "date": "2026-11-18",
+      "url": "https://code.claude.com/docs/en/code-mode"
+    },
+    "more": [],
+    "note": "The code example and step diagrams are based on the Claude Code docs; the runtime limits, countdown, and on/off values all come from the same page. Version numbers are treated as product version identifiers and are not listed separately in the number list."
+  },
+  "claims": [
+    {
+      "text": "Waiting mode: Claude replies only after the code finishes, and the code stops after 10 minutes.",
+      "value": "ten minutes",
+      "source_url": "https://code.claude.com/docs/en/code-mode",
+      "as_written": "10 minutes",
+      "quote": "unless code can run in the background, you wait for it to finish, and it stops after ten minutes"
+    },
+    {
+      "text": "Background mode: the code can run for up to 2 hours.",
+      "value": "two hours",
+      "source_url": "https://code.claude.com/docs/en/code-mode",
+      "as_written": "2 hours",
+      "quote": "you can keep talking to Claude, and the code can run for up to two hours"
+    },
+    {
+      "text": "When no IDE is connected, a permission prompt may show a 1 minute 59 second countdown and automatically refuse the call at zero.",
+      "value": "1:59",
+      "source_url": "https://code.claude.com/docs/en/code-mode",
+      "as_written": "1 minute 59 seconds",
+      "quote": "Claude Code will automatically block this request in 1:59, to avoid holding up an unattended session"
+    },
+    {
+      "text": "To turn on Code Mode, set the environment variable CLAUDE_CODE_EXPERIMENTAL_CODE_MODE to 1.",
+      "value": "1",
+      "source_url": "https://code.claude.com/docs/en/code-mode",
+      "as_written": "1",
+      "quote": "Set the CLAUDE_CODE_EXPERIMENTAL_CODE_MODE environment variable to 1"
+    },
+    {
+      "text": "To turn it off or block it for an organization, set that environment variable to 0.",
+      "value": "0",
+      "source_url": "https://code.claude.com/docs/en/code-mode",
+      "as_written": "0",
+      "quote": "Add CLAUDE_CODE_EXPERIMENTAL_CODE_MODE with the value 0 to your managed settings"
+    },
+    {
+      "text": "In the docs example, the retry limit maxAttempts is changed from 3 to 5.",
+      "value": "3",
+      "source_url": "https://code.claude.com/docs/en/code-mode",
+      "as_written": "3",
+      "quote": "await edit(target, \"maxAttempts: 3\", \"maxAttempts: 5\");"
+    },
+    {
+      "text": "In the docs example, the retry limit maxAttempts is changed from 3 to 5.",
+      "value": "5",
+      "source_url": "https://code.claude.com/docs/en/code-mode",
+      "as_written": "5",
+      "quote": "await edit(target, \"maxAttempts: 3\", \"maxAttempts: 5\");"
+    }
+  ],
+  "cover": {
+    "headline": "Code Mode arrives",
+    "highlight": "Tool calls packed into one piece of code",
+    "big": {
+      "value": "2",
+      "unit": "hours",
+      "label": "Maximum background code runtime"
+    }
+  },
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "c181fd5d01ec252c"
+}
