@@ -1,14 +1,11 @@
-# 候选清单（2026-11-25 11:56 UTC）
+# 候选清单（2026-11-25 20:59 UTC）
 
 | 分数 | 标题 | 发布方 | 层级 | 相关报道 |
 | --- | --- | --- | --- | --- |
-| 6.3 | [MCP servers can now ship skills, run tasks, and more with Claude](https://claude.com/resources/articles/skills-over-mcp-tasks-and-more) | Anthropic | official | 1 |
-| 5.9 | [Sand.ai 发布 MAGI-2 视频模型：平替 Seedance，价格仅为其 1/10，即将开源](https://sand.ai/blog/magi-2) | sand.ai | official | 0 |
-| 5.9 | [Midjourney 发布 Niji 8：历代最快的 Niji，编辑功能接替角色参考 cref](https://nijijourney.com/ja/blog/niji-8) | nijijourney.com | official | 0 |
-| 5.9 | [Anthropic 推出 Claude「安装为应用」：对话生成的工具直接变 Mac 和 Windows 桌面软件，能进菜单栏和读写文件](https://claude.com/resources/articles/install-as-app) | claude.com | official | 0 |
-| 5.1 | [Google 正式开放 Workspace MCP 与命令行工具 gwscli：8 款应用免费日调用 5000 次，个人模式一键免审核](https://developers.google.com/workspace/guides/workspace-cli) | developers.google.com | official | 0 |
+| 4.9 | [Where scientists draw the line on AI agents](https://huggingface.co/blog/allenai/where-scientists-draw-the-line-on-ai-agents) | Hugging Face | primary | 0 |
 | 4.9 | [An Indic Voice Agent with CUGA](https://huggingface.co/blog/ibm-research/an-indic-voice-agent-with-cuga) | Hugging Face | primary | 0 |
-| 4.4 | [Anthropic 发布 58 家企业 AI 访谈报告：三分之二缩减招聘，高回报靠改分工与流程](https://www.anthropic.com/research/working-with-ai) | Anthropic | official | 0 |
+| 4.7 | [From spectrum to structure: Identifying molecules with Mass Spec Skills for Google Antigravity](https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/) | Google DeepMind | official | 0 |
+| 4.6 | [Claude Ship 指南：自动完成从代码检查、自动改错到按规则放行的全流程](https://claude.dev/blog/the-work-after-you-open-a-pr/) | claude.dev | official | 0 |
 | 4.4 | [Mirelo 发布 Sound Agent：一句话给视频加音效、去配乐、拆人声，还能配成 32 种语言](https://mirelo.ai/blog/mirelo-sound-agent) | mirelo.ai | official | 0 |
 | 4.4 | [Higgsfield 发布 AI 品牌吉祥物教程：不训练模型，靠固定描述和三张参考表画同一只熊](https://higgsfield.ai/zh/blog/consistent-brand-mascot-ai) | higgsfield.ai | official | 0 |
 | 4.2 | [Perplexity and Intelligence](https://openai.com/index/perplexity-and-intelligence) | OpenAI | official | 0 |
@@ -35,12 +32,15 @@
 | 4.2 | [More ways to move care forward with ChatGPT for Healthcare](https://openai.com/index/more-ways-to-move-care-forward-with-chatgpt-for-healthcare) | OpenAI | official | 0 |
 | 4.2 | [At Holiday Extras, dots get to work before anyone asks](https://openai.com/business/customer-stories/holiday-extras-dots) | OpenAI | official | 0 |
 | 4.2 | [Our new blog for science](https://openai.com/index/our-new-blog-for-science) | OpenAI | official | 0 |
-| 4.2 | [AlphaGenome 2: Deciphering how cells read DNA to better understand disease](https://deepmind.google/blog/alphagenome-2-deciphering-how-cells-read-dna-to-better-understand-disease/) | Google DeepMind | official | 0 |
 | 4.1 | [Connectors and skills come together as plugins](https://x.com/claudeai/status/2124970294523945328) | @claudeai | official | 0 |
 | 4.1 | [If you’re in Europe, you get a month of Vibe Pro for free](https://x.com/MistralAI/status/2124905610386780451) | @MistralAI | official | 0 |
 | 4.1 | [Returning to the Neuron Basis for Interpretability, Part 1: Answering Three Objections](https://alignment.anthropic.com/2026/neuron-basis-theory/) | Anthropic | official | 1 |
 | 4.1 | [Zero data retention with Enterprise Frontier Safeguards is now in beta](https://claude.com/resources/articles/zero-data-retention-with-enterprise-frontier-safeguards) | Anthropic | official | 0 |
 | 4.1 | [Into the Omniverse: How Developers Turn Ideas Into Simulations With Frontier AI Agents](https://blogs.nvidia.com/blog/developers-simulation-frontier-ai-agents/) | NVIDIA | official | 0 |
 | 4.1 | [We’re partnering with Blue Origin on our first heavy-lift Project Suncatcher launch.](https://blog.google/innovation-and-ai/models-and-research/google-research/blue-origin-project-suncatcher-partnership/) | Google | official | 0 |
+| 4.1 | [Ian Buck Kicks Off NVIDIA’s Week at SC26 as Science Enters the Age of Agents](https://blogs.nvidia.com/blog/ian-buck-sc26/) | NVIDIA | official | 0 |
+| 4.1 | [NVIDIA CUDA-X Libraries Give Agents the Tools to Accelerate Scientific Discovery](https://blogs.nvidia.com/blog/cuda-x-libraries-agents-accelerate-scientific-discovery/) | NVIDIA | official | 0 |
+| 4.1 | [NVIDIA Announces Rubin HPC — A New GPU to Accelerate Agents for Science, Engineering and Analytics](https://blogs.nvidia.com/blog/rubin-hpc/) | NVIDIA | official | 0 |
+| 3.9 | [Anthropic 发布 58 家企业 AI 访谈报告：三分之二缩减招聘，高回报靠改分工与流程](https://www.anthropic.com/research/working-with-ai) | Anthropic | official | 0 |
 
 **超过 30 天没有新内容的源**：Mistral 新闻、Kimi 博客

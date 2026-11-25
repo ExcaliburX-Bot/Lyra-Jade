@@ -461,20 +461,6 @@
     "category_hint": "product",
     "fetched_at": "2026-11-20T07:04:20.911Z"
   },
-  "e879c6fc35d4": {
-    "id": "e879c6fc35d4",
-    "key": "https://deepmind.google/blog/alphagenome-2-deciphering-how-cells-read-dna-to-better-understand-disease",
-    "title": "AlphaGenome 2: Deciphering how cells read DNA to better understand disease",
-    "url": "https://deepmind.google/blog/alphagenome-2-deciphering-how-cells-read-dna-to-better-understand-disease/",
-    "published": "2026-11-11T15:00:15.000Z",
-    "summary": "Predicting how DNA sequences and their variations impact specific human cell types and disease.",
-    "source": "deepmind-blog",
-    "publisher": "Google DeepMind",
-    "tier": "official",
-    "weight": 1.2,
-    "category_hint": "product",
-    "fetched_at": "2026-11-20T07:04:20.911Z"
-  },
   "b4c1c8bf4549": {
     "id": "b4c1c8bf4549",
     "key": "https://blog.google/innovation-and-ai/models-and-research/google-research/blue-origin-project-suncatcher-partnership",
@@ -3280,5 +3266,63 @@
     "weight": 1,
     "category_hint": "product",
     "fetched_at": "2026-11-25T11:56:29.970Z"
+  },
+  "f14a6f6dfd19": {
+    "id": "f14a6f6dfd19",
+    "key": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity",
+    "title": "From spectrum to structure: Identifying molecules with Mass Spec Skills for Google Antigravity",
+    "url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+    "published": "2026-11-24T13:07:53.000Z",
+    "summary": "Mass Spec Skills empowers scientists using Google Antigravity to interpret tandem mass spectra.",
+    "source": "deepmind-blog",
+    "publisher": "Google DeepMind",
+    "tier": "official",
+    "weight": 1.2,
+    "category_hint": "product",
+    "fetched_at": "2026-11-25T20:59:09.179Z"
+  },
+  "37b5c9ba9326": {
+    "id": "37b5c9ba9326",
+    "key": "https://huggingface.co/blog/allenai/where-scientists-draw-the-line-on-ai-agents",
+    "title": "Where scientists draw the line on AI agents",
+    "url": "https://huggingface.co/blog/allenai/where-scientists-draw-the-line-on-ai-agents",
+    "published": "2026-11-25T18:52:55.000Z",
+    "summary": "",
+    "source": "hf-blog",
+    "publisher": "Hugging Face",
+    "tier": "primary",
+    "weight": 0.8,
+    "category_hint": null,
+    "fetched_at": "2026-11-25T20:59:09.179Z"
+  },
+  "d8d6777ecf09": {
+    "id": "d8d6777ecf09",
+    "key": "https://huggingface.co/blog/inkling-2-mini-inference-hillclimb",
+    "title": "Hill-climbing Inkling 2 Mini inference on one RTX PRO 6000",
+    "url": "https://huggingface.co/blog/inkling-2-mini-inference-hillclimb",
+    "published": "2026-11-25T00:00:00.000Z",
+    "summary": "",
+    "source": "hf-blog",
+    "publisher": "Hugging Face",
+    "tier": "primary",
+    "weight": 0.8,
+    "category_hint": null,
+    "fetched_at": "2026-11-25T20:59:09.179Z"
+  },
+  "d149becbad00": {
+    "id": "d149becbad00",
+    "key": "https://claude.dev/blog/the-work-after-you-open-a-pr",
+    "title": "Claude Ship 指南：自动完成从代码检查、自动改错到按规则放行的全流程",
+    "url": "https://claude.dev/blog/the-work-after-you-open-a-pr/",
+    "published": "2026-11-25T00:00:00.000Z",
+    "summary": "",
+    "source": "xiaohu",
+    "publisher": "claude.dev",
+    "tier": "official",
+    "weight": 1,
+    "category_hint": null,
+    "fetched_at": "2026-11-25T20:59:09.179Z",
+    "via": "https://xiaohu.ai/article/claude-code-ship/",
+    "discovered_by": "xiaohu"
   }
 }

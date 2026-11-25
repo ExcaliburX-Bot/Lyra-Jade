@@ -1,72 +1,13 @@
 [
   {
-    "id": "44f76c8bfa",
-    "title": "MCP servers can now ship skills, run tasks, and more with Claude",
-    "url": "https://claude.com/resources/articles/skills-over-mcp-tasks-and-more",
-    "publisher": "Anthropic",
-    "tier": "official",
-    "published": "2026-11-24T18:05:47.000Z",
-    "score": 6.3,
-    "category_hint": "product",
-    "related": [
-      {
-        "title": "Anthropic 为 Claude 推出 Skills over MCP，并全面开放 Tasks 与 Elicitation：工具自带业务流程、后台跑长任务、操作前先确认",
-        "url": "https://claude.com/resources/articles/skills-over-mcp-tasks-and-more",
-        "publisher": "claude.com",
-        "tier": "official"
-      }
-    ]
-  },
-  {
-    "id": "0dd093458c",
-    "title": "Sand.ai 发布 MAGI-2 视频模型：平替 Seedance，价格仅为其 1/10，即将开源",
-    "url": "https://sand.ai/blog/magi-2",
-    "publisher": "sand.ai",
-    "tier": "official",
-    "published": "2026-11-25T00:00:00.000Z",
-    "score": 5.9,
+    "id": "37b5c9ba93",
+    "title": "Where scientists draw the line on AI agents",
+    "url": "https://huggingface.co/blog/allenai/where-scientists-draw-the-line-on-ai-agents",
+    "publisher": "Hugging Face",
+    "tier": "primary",
+    "published": "2026-11-25T18:52:55.000Z",
+    "score": 4.9,
     "category_hint": null,
-    "via": "https://xiaohu.ai/article/sand-ai-magi-2/",
-    "discovered_by": "xiaohu",
-    "related": []
-  },
-  {
-    "id": "0678ca8e40",
-    "title": "Midjourney 发布 Niji 8：历代最快的 Niji，编辑功能接替角色参考 cref",
-    "url": "https://nijijourney.com/ja/blog/niji-8",
-    "publisher": "nijijourney.com",
-    "tier": "official",
-    "published": "2026-11-25T00:00:00.000Z",
-    "score": 5.9,
-    "category_hint": null,
-    "via": "https://xiaohu.ai/article/niji-8/",
-    "discovered_by": "xiaohu",
-    "related": []
-  },
-  {
-    "id": "38f3d822d5",
-    "title": "Anthropic 推出 Claude「安装为应用」：对话生成的工具直接变 Mac 和 Windows 桌面软件，能进菜单栏和读写文件",
-    "url": "https://claude.com/resources/articles/install-as-app",
-    "publisher": "claude.com",
-    "tier": "official",
-    "published": "2026-11-25T00:00:00.000Z",
-    "score": 5.9,
-    "category_hint": null,
-    "via": "https://xiaohu.ai/article/claude-install-as-app/",
-    "discovered_by": "xiaohu",
-    "related": []
-  },
-  {
-    "id": "be6a10a698",
-    "title": "Google 正式开放 Workspace MCP 与命令行工具 gwscli：8 款应用免费日调用 5000 次，个人模式一键免审核",
-    "url": "https://developers.google.com/workspace/guides/workspace-cli",
-    "publisher": "developers.google.com",
-    "tier": "official",
-    "published": "2026-11-25T00:00:00.000Z",
-    "score": 5.1,
-    "category_hint": null,
-    "via": "https://xiaohu.ai/article/google-workspace-mcp-gwscli/",
-    "discovered_by": "xiaohu",
     "related": []
   },
   {
@@ -81,15 +22,26 @@
     "related": []
   },
   {
-    "id": "86a9211921",
-    "title": "Anthropic 发布 58 家企业 AI 访谈报告：三分之二缩减招聘，高回报靠改分工与流程",
-    "url": "https://www.anthropic.com/research/working-with-ai",
-    "publisher": "Anthropic",
+    "id": "f14a6f6dfd",
+    "title": "From spectrum to structure: Identifying molecules with Mass Spec Skills for Google Antigravity",
+    "url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+    "publisher": "Google DeepMind",
+    "tier": "official",
+    "published": "2026-11-24T13:07:53.000Z",
+    "score": 4.7,
+    "category_hint": "product",
+    "related": []
+  },
+  {
+    "id": "a2040dd8e4",
+    "title": "Claude Ship 指南：自动完成从代码检查、自动改错到按规则放行的全流程",
+    "url": "https://claude.dev/blog/the-work-after-you-open-a-pr/",
+    "publisher": "claude.dev",
     "tier": "official",
     "published": "2026-11-25T00:00:00.000Z",
-    "score": 4.4,
+    "score": 4.6,
     "category_hint": null,
-    "via": "https://xiaohu.ai/article/anthropic-working-with-ai/",
+    "via": "https://xiaohu.ai/article/claude-code-ship/",
     "discovered_by": "xiaohu",
     "related": []
   },
@@ -384,17 +336,6 @@
     "related": []
   },
   {
-    "id": "e879c6fc35",
-    "title": "AlphaGenome 2: Deciphering how cells read DNA to better understand disease",
-    "url": "https://deepmind.google/blog/alphagenome-2-deciphering-how-cells-read-dna-to-better-understand-disease/",
-    "publisher": "Google DeepMind",
-    "tier": "official",
-    "published": "2026-11-11T15:00:15.000Z",
-    "score": 4.2,
-    "category_hint": "product",
-    "related": []
-  },
-  {
     "id": "d1e1fa1ba8",
     "title": "Connectors and skills come together as plugins",
     "url": "https://x.com/claudeai/status/2124970294523945328",
@@ -465,6 +406,52 @@
     "published": "2026-11-19T13:00:00.000Z",
     "score": 4.1,
     "category_hint": null,
+    "related": []
+  },
+  {
+    "id": "dec0868225",
+    "title": "Ian Buck Kicks Off NVIDIA’s Week at SC26 as Science Enters the Age of Agents",
+    "url": "https://blogs.nvidia.com/blog/ian-buck-sc26/",
+    "publisher": "NVIDIA",
+    "tier": "official",
+    "published": "2026-11-17T14:00:10.000Z",
+    "score": 4.1,
+    "category_hint": null,
+    "related": []
+  },
+  {
+    "id": "8192f10949",
+    "title": "NVIDIA CUDA-X Libraries Give Agents the Tools to Accelerate Scientific Discovery",
+    "url": "https://blogs.nvidia.com/blog/cuda-x-libraries-agents-accelerate-scientific-discovery/",
+    "publisher": "NVIDIA",
+    "tier": "official",
+    "published": "2026-11-16T16:00:16.000Z",
+    "score": 4.1,
+    "category_hint": null,
+    "related": []
+  },
+  {
+    "id": "6cab091c05",
+    "title": "NVIDIA Announces Rubin HPC — A New GPU to Accelerate Agents for Science, Engineering and Analytics",
+    "url": "https://blogs.nvidia.com/blog/rubin-hpc/",
+    "publisher": "NVIDIA",
+    "tier": "official",
+    "published": "2026-11-16T16:00:01.000Z",
+    "score": 4.1,
+    "category_hint": null,
+    "related": []
+  },
+  {
+    "id": "86a9211921",
+    "title": "Anthropic 发布 58 家企业 AI 访谈报告：三分之二缩减招聘，高回报靠改分工与流程",
+    "url": "https://www.anthropic.com/research/working-with-ai",
+    "publisher": "Anthropic",
+    "tier": "official",
+    "published": "2026-11-25T00:00:00.000Z",
+    "score": 3.9,
+    "category_hint": null,
+    "via": "https://xiaohu.ai/article/anthropic-working-with-ai/",
+    "discovered_by": "xiaohu",
     "related": []
   }
 ]
