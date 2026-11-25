@@ -1,10 +1,10 @@
 [
   {
-    "slug": "b2a-economy-how-agents-buy",
-    "title": "11,307 次测试拆解：AI 代理替你买东西时的 5 条规律",
-    "file": "content/articles/b2a-economy-how-agents-buy.json",
-    "errors": 1,
-    "warnings": 1,
+    "slug": "gpt6-intrinsic-protein-design",
+    "title": "GPT-6 只用推理和代码就能设计蛋白质，实验室里 5 个靶点出现结合迹象",
+    "file": "content/articles/gpt6-intrinsic-protein-design.json",
+    "errors": 0,
+    "warnings": 6,
     "provider": "deepseek",
     "model": "deepseek-v4-pro"
   }
