@@ -1,0 +1,469 @@
+{
+  "slug": "gemini-google-ai-studio-full-stack-android",
+  "date": "2026-11-17",
+  "category": "product",
+  "publisher": "Google Developers Blog",
+  "topics": [
+    "gemini"
+  ],
+  "readMinutes": 6,
+  "title": "Google AI Studio 用 Gemini 生成带登录和存储的 Android 应用，可直接装进手机",
+  "summary": "想做一个能登录、能存数据、还带 AI 功能的安卓应用，以前得自己搭后端、管密钥、连数据线装包；现在在 Google AI Studio 里描述需求，其余交给 Build 代理，做完能直接装进自己手机。",
+  "ai_summary": "Google AI Studio 的 Build 代理现在能用 Gemini 4 Carbon 和 Hydrogen 生成完整 Android 应用：你描述想法，它自动配好 Cloud Firestore 数据库、Google 登录，把调用 Gemini 的密钥留在服务端，再发布到你的个人 Google Play 库装进手机。新版模拟器支持 1200p 高清流、实时音频和截图回传改 UI。官方称几分钟可发布、Play 上构建测试免费。适合想快速做原型并验真机的人；目前讲的都是 Google 自家 Firebase 和 Play 生态，价格与时间表原文没细说。",
+  "brief": [
+    "Build 代理会自动配 Cloud Firestore、Google 登录和 Firebase AI Logic，调用 Gemini 的密钥不再打包进 APK。",
+    "模拟器升级：1200p 高清流、实时音频，工具条能截图回传给代理改 UI。",
+    "可直接发布到个人 Google Play 库，官方称几分钟完成、构建测试免费。",
+    "背后改用官方 Android CLI 搭脚手架、查文档、跑 Gradle 构建。"
+  ],
+  "sections": [
+    {
+      "h": "这是什么：一个会做全栈安卓应用的 Build 代理",
+      "blocks": [
+        {
+          "p": "Google AI Studio 是谷歌给开发者的一个网页工作台，用来和 Gemini 对话、生成并调试代码。它里面的 Build agent 是一个会自己拆解任务、一步步执行的多步智能体。"
+        },
+        {
+          "p": "这次更新把它的能力从「生成代码片段」推到「生成能上架的完整安卓应用」：用 Gemini 4 Carbon 和 Hydrogen，你描述一个应用想法，它就能自动配好数据存储、用户登录和 AI 功能，生成生产级的 Kotlin 代码，并发布到你的个人 Google Play 库。"
+        },
+        {
+          "callout": {
+            "kind": "note",
+            "title": "这不是只画界面",
+            "text": "它连后端配置、密钥安全、签名发布都一起包了，生成的是带数据层和 AI 层的 Kotlin 代码。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "从想法到手机，代理替你走哪些步骤？",
+      "blocks": [
+        {
+          "p": "过去 AI Studio 生成的安卓应用，数据只能存在本地会话里，应用一关就没了。现在 Build agent 会先读你的提示词，判断这个应用要不要长期保存数据、要不要用户登录、要不要生成式 AI 能力。"
+        },
+        {
+          "p": "你确认之后，它自动做这几件事：开一个 Cloud Firestore 数据库并写好安全规则；配上 Google 登录；把调用 Gemini 的凭证藏到服务端；生成干净、符合习惯的 Kotlin 代码。"
+        },
+        {
+          "fig": {
+            "type": "steps",
+            "title": "从描述想法到装进手机，Build agent 替你走完这些步骤",
+            "subtitle": "示意：步骤按官方说明的顺序整理",
+            "steps": [
+              {
+                "name": "写提示词",
+                "tool": "Google AI Studio Build",
+                "desc": "选择 Android，描述应用；代理识别需要存储、登录和 AI"
+              },
+              {
+                "name": "配后端",
+                "tool": "Cloud Firestore + Authentication",
+                "desc": "开数据库、生成安全规则、配 Google 登录"
+              },
+              {
+                "name": "接 AI 与数据层",
+                "tool": "Firebase AI Logic + Firestore SDK",
+                "desc": "服务端保管凭证，生成 Kotlin 数据与 AI 代码"
+              },
+              {
+                "name": "模拟器调试",
+                "tool": "Android 模拟器",
+                "desc": "1200p 高清、实时音频、截图回传改 UI"
+              },
+              {
+                "name": "发布到手机",
+                "tool": "Google Play",
+                "desc": "构建并签名 .aab，发布到个人 Play 库后安装"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "以前要绕的路，现在省在哪？",
+      "blocks": [
+        {
+          "p": "把应用装到自己手机这件事，以前比想象中麻烦：要么开 USB 调试连数据线，要么在本地管理签名用的 keystore，要么注册完整的开发者控制台账号。"
+        },
+        {
+          "p": "现在 Google Play 直接接进了 Google AI Studio：在发布面板里点几下建好 Play 账号，AI Studio 在后台帮你构建并签名安卓的发布包格式 .aab（Android App Bundle），然后你直接从 Play 下载装到手机。官方说整个过程几分钟就能完成，在 Play 上构建和测试不花钱。"
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "以前和现在，从生成到装机的差距",
+            "subtitle": "琥珀色是这次新增的能力",
+            "left": {
+              "label": "以前",
+              "sub": "本地存储 + 手动装包",
+              "items": [
+                {
+                  "label": "数据存储",
+                  "tag": "本地会话，关掉就没了",
+                  "state": "dim"
+                },
+                {
+                  "label": "装到手机",
+                  "tag": "USB 调试 / keystore / 开发者账号",
+                  "state": "dim"
+                },
+                {
+                  "label": "API 密钥",
+                  "tag": "硬编码在 APK",
+                  "state": "dim"
+                },
+                {
+                  "label": "签名发布",
+                  "tag": "手动管理",
+                  "state": "dim"
+                }
+              ]
+            },
+            "right": {
+              "label": "现在",
+              "sub": "全栈 + 直连 Play",
+              "items": [
+                {
+                  "label": "数据存储",
+                  "tag": "Cloud Firestore 跨设备同步",
+                  "state": "hi"
+                },
+                {
+                  "label": "装到手机",
+                  "tag": "个人 Play 库直接装",
+                  "state": "hi"
+                },
+                {
+                  "label": "API 密钥",
+                  "tag": "服务端保管 + App Check",
+                  "state": "hi"
+                },
+                {
+                  "label": "签名发布",
+                  "tag": "AI Studio 自动构建签名 .aab",
+                  "state": "hi"
+                }
+              ]
+            },
+            "footer": "省掉的是手动配置和密钥暴露风险"
+          }
+        }
+      ]
+    },
+    {
+      "h": "数据、登录和密钥，三块后端怎么自动接好？",
+      "blocks": [
+        {
+          "p": "跨设备同步：代理会开一个 Cloud Firestore 数据库，配置好 Firebase 安卓 SDK，并按你的数据模型生成安全规则。用户可以在平板上开始一段记录，换到手机上接着用；没有网时会用离线缓存，恢复连接后自动同步。"
+        },
+        {
+          "p": "登录：需要用户资料或私有空间时，代理配置 Firebase Authentication 和 Google 登录，并加上按用户隔离的授权规则，让每个人只能读写自己的文档。"
+        },
+        {
+          "p": "密钥安全：把 API key 写死在客户端 APK 里，有被提取的风险。现在代理自动配置 Firebase AI Logic，并用 App Check（背后是 Google Fraud Defense，前身叫 reCAPTCHA Enterprise）做强制校验——凭证留在服务端，App Check 验证请求确实来自你没被篡改的正版应用，浏览器模拟器和 Play 上都生效。"
+        },
+        {
+          "fig": {
+            "type": "route",
+            "title": "调用 Gemini 的密钥改走服务端，不再塞进安装包",
+            "subtitle": "示意：云端分支是这次新增的服务端路径，本机分支是旧做法",
+            "root": {
+              "label": "安卓应用调用 Gemini",
+              "sub": "请求的凭证放哪里"
+            },
+            "branches": [
+              {
+                "tone": "cloud",
+                "label": "现在：服务端保管",
+                "items": [
+                  "Firebase AI Logic 托管凭证",
+                  "App Check 验证请求来自正版应用"
+                ]
+              },
+              {
+                "tone": "local",
+                "label": "以前：本机硬编码",
+                "items": [
+                  "API key 写进 APK",
+                  "有被提取风险"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "模拟器到底好用在哪？",
+      "blocks": [
+        {
+          "p": "移动端界面很吃「看和试」的反馈循环，这次模拟器和调试环节有几处变化。启动延迟明显更低；工具条上有 HD 开关，能把视频流切到 1200p 高清，方便检查 Jetpack Compose 的间距、动画和密集布局。"
+        },
+        {
+          "p": "声音也能听了：浏览器里实时播放模拟器的音频，不用离开 Google AI Studio 就能测试 Gemini Live API 语音陪伴、文字转语音（TTS）教练、带声音的游戏和媒体应用。"
+        },
+        {
+          "p": "改 UI 不用打一大段字：工具条上的 Take a screenshot 能把当前画面截图并附到提示词，让 Gemini 看着图改 Kotlin UI，比如收紧卡片间距、修对比度、重新对齐工具栏。"
+        },
+        {
+          "fig": {
+            "type": "schematic",
+            "title": "模拟器工具条新增的三类能力",
+            "subtitle": "示意：分别对应高清、声音和截图回传",
+            "items": [
+              {
+                "glyph": {
+                  "kind": "frames",
+                  "count": 6,
+                  "select": [
+                    1,
+                    2
+                  ]
+                },
+                "title": "高清视频流",
+                "sub": "HD 开关",
+                "rows": [
+                  {
+                    "k": "分辨率",
+                    "v": "`1200p` 高清流"
+                  },
+                  {
+                    "k": "作用",
+                    "v": "看清间距、动画、密集布局"
+                  }
+                ]
+              },
+              {
+                "glyph": {
+                  "kind": "wave",
+                  "select": [
+                    0.1,
+                    0.6
+                  ]
+                },
+                "title": "实时音频",
+                "sub": "浏览器直接听",
+                "rows": [
+                  {
+                    "k": "测试对象",
+                    "v": "Gemini Live 语音、TTS、声音游戏"
+                  }
+                ]
+              },
+              {
+                "glyph": {
+                  "kind": "window",
+                  "title": "模拟器",
+                  "items": [
+                    {
+                      "label": "应用画面",
+                      "tone": "base"
+                    },
+                    {
+                      "label": "Take a screenshot",
+                      "tone": "base"
+                    },
+                    {
+                      "label": "附到提示词",
+                      "tone": "base"
+                    }
+                  ]
+                },
+                "title": "截图回传",
+                "sub": "把画面交给代理",
+                "rows": [
+                  {
+                    "k": "用法",
+                    "v": "截图后描述改动，代理改 Kotlin UI"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "能做出什么应用？",
+      "blocks": [
+        {
+          "p": "官方给了几个可以直接试的提示词，也列了几类适合用新能力做的应用。"
+        },
+        {
+          "fig": {
+            "type": "cards",
+            "title": "官方提示词和适用场景",
+            "subtitle": "示例来自官方博客",
+            "items": [
+              {
+                "icon": "bolt",
+                "title": "健身教练",
+                "desc": "用 Gemini API 生成个性化每日训练，朗读提示音，并用 Firestore 和 Google 登录跨设备保存历史",
+                "tags": [
+                  "Cloud Firestore",
+                  "Google Sign-In",
+                  "音频"
+                ]
+              },
+              {
+                "icon": "image",
+                "title": "家庭食谱",
+                "desc": "用户 Google 登录，拍食材照片生成菜谱，共享购物清单在 Firestore 同步，自定义衬线字体",
+                "tags": [
+                  "登录",
+                  "图像生成",
+                  "自定义字体"
+                ]
+              },
+              {
+                "icon": "audio",
+                "title": "语音陪伴 / TTS 教练",
+                "desc": "用模拟器实时音频直接测 Gemini Live API 语音和文字转语音",
+                "tags": [
+                  "Gemini Live",
+                  "TTS"
+                ]
+              },
+              {
+                "icon": "video",
+                "title": "声音游戏 / 媒体应用",
+                "desc": "带声音的游戏和媒体类应用，不用离开浏览器就能边改边听",
+                "tags": [
+                  "音频",
+                  "媒体"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "fig": {
+            "type": "code",
+            "title": "生成的 Kotlin 代码长这样：数据层和 AI 层接在一起",
+            "subtitle": "原文提供的生成代码示例，展示 Firebase AI Logic 和 Cloud Firestore 的接线方式",
+            "note": "高亮行是服务端模型调用和写入 Firestore 的关键两句",
+            "lang": "kotlin",
+            "code": "// Generated by Google AI Studio Build agent using Firebase AI Logic & Cloud Firestore\nclass WorkoutRepository(context: Context) {\n private val generativeModel by lazy {\n Firebase.ai(backend = GenerativeBackend.googleAI())\n .generativeModel(\"gemini-4-hydrogen\")\n }\n\n private val db = FirebaseFirestore.getInstance( context.applicationContext.getString(R.string.firestore_database_id))\n\n suspend fun generateAndSaveWorkout(goal: String, uid: String) {\n val response = generativeModel.generateContent(\"Create a 20-minute workout for: $goal\")\n val workout = hashMapOf(\n \"ownerId\" to uid,\n \"goal\" to goal,\n \"plan\" to (response.text ?: \"\"),\n \"createdAt\" to FieldValue.serverTimestamp()\n )\n db.collection(\"workouts\").add(workout).await()\n }\n}",
+            "highlight": [
+              4,
+              5,
+              18
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "官方还没说的",
+      "blocks": [
+        {
+          "list": [
+            "价格：原文只说在 Play 上构建和测试免费，没说 Firestore、Authentication、AI Logic 超出免费额度后的计费，也没说 Gemini 4 Carbon 和 Hydrogen 的调用单价。",
+            "上线时间表：说「今天推出」，但没说按地区或账号分批开放的具体时间。",
+            "登录方式范围：只提到 Google Sign-In，没说是否支持邮箱密码、手机号或第三方登录。",
+            "量化提升：模拟器「延迟更低」没有给具体数字，也没和旧版做量化对比。",
+            "生成质量边界：没说多大项目、多少屏、多复杂业务逻辑时，生成代码会开始需要人工修正。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "适合谁",
+      "blocks": [
+        {
+          "p": "最大价值是省掉「后端 + 安全 + 签名发布」这段最磨人的工程活，让想法更快落到真机。代价是深度绑定 Google 生态：数据在 Firebase，发布走 Play，模型用 Gemini。"
+        },
+        {
+          "list": [
+            "如果你经常做快速原型、demo、个人小工具，想跳过配数据库和签名，值得开一个 Android 项目试。",
+            "如果你已经有成熟后端或不在 Google 生态，把它当作快速出 Kotlin 代码和 UI 的生成器，再自己接自己的服务。",
+            "如果你要正式发布，记得核对 Firestore 安全规则和 App Check 的配置是否满足自己的数据合规要求。"
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Build full-stack Android apps with Gemini in Google AI Studio",
+      "publisher": "Google Developers Blog",
+      "date": "2026-11-17",
+      "url": "https://developers.googleblog.com/build-full-stack-android-apps-with-gemini-in-google-ai-studio/"
+    },
+    "note": "本文事实全部来自 Google Developers Blog 2026 年 11 月 17 日的这篇发布说明。steps、compare、route、schematic 四张图为示意，code 图直接取自原文示例代码；『几分钟』『免费』等为官方口径，原文未给出量化上限。"
+  },
+  "claims": [
+    {
+      "text": "模拟器支持切到 1200p 高清视频流",
+      "value": "1200p",
+      "source_url": "https://developers.googleblog.com/build-full-stack-android-apps-with-gemini-in-google-ai-studio/",
+      "as_written": "1200p",
+      "quote": "switch the stream to 1200p high definition"
+    },
+    {
+      "text": "官方示例代码里生成一段 20 分钟的健身计划",
+      "value": "20-minute",
+      "source_url": "https://developers.googleblog.com/build-full-stack-android-apps-with-gemini-in-google-ai-studio/",
+      "as_written": "20 分钟",
+      "quote": "Create a 20-minute workout for: $goal"
+    },
+    {
+      "text": "原文发布于 2026 年 11 月 17 日",
+      "value": "NOV. 17, 2026",
+      "source_url": "https://developers.googleblog.com/build-full-stack-android-apps-with-gemini-in-google-ai-studio/",
+      "as_written": "2026 年 11 月 17 日",
+      "quote": "NOV. 17, 2026"
+    },
+    {
+      "text": "官方称可在 Play 商店免费构建和测试应用",
+      "value": "no cost",
+      "source_url": "https://developers.googleblog.com/build-full-stack-android-apps-with-gemini-in-google-ai-studio/",
+      "as_written": "免费",
+      "quote": "build and test on your own device directly from the Play Store at no cost"
+    },
+    {
+      "text": "官方称几分钟内可发布到 Play 商店",
+      "value": "minutes",
+      "source_url": "https://developers.googleblog.com/build-full-stack-android-apps-with-gemini-in-google-ai-studio/",
+      "as_written": "几分钟",
+      "quote": "publish to the Play Store in minutes"
+    }
+  ],
+  "cover": {
+    "headline": "描述想法做出安卓应用",
+    "highlight": "数据库、登录、上架全包",
+    "glyph": {
+      "kind": "hub",
+      "center": {
+        "label": "Build agent",
+        "tone": "hi"
+      },
+      "nodes": [
+        {
+          "label": "Firestore"
+        },
+        {
+          "label": "登录"
+        },
+        {
+          "label": "AI Logic"
+        },
+        {
+          "label": "Play 上架"
+        }
+      ]
+    }
+  },
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "origin": "auto",
+    "candidate": "a0ad6f8b6a",
+    "tier": "official",
+    "via": "https://xiaohu.ai/article/gemini-android-ai-studio/",
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "generated_at": "2026-11-25T08:58:48.531Z"
+  }
+}
