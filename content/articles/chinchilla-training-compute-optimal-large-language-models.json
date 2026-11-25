@@ -50,7 +50,7 @@
           "callout": {
             "kind": "takeaway",
             "title": "一句话版本",
-            "text": "固定算力下，最优的模型大小 N 和训练 token 数 D 都约按算力的 0.5 次方增长：模型大 1 倍，数据也多 1 倍，大约每个参数配 20 个 token。三种独立的估计方法得出同样结论，700 亿参数的 Chinchilla 用同样算力打败了 2800 亿参数的 Gopher。"
+            "text": "固定算力下，最优的模型大小 N 和训练 token 数 D 都约按算力的 0.5 次方增长：模型翻一倍，数据也翻一倍，大约每个参数配 20 个 token。三种独立的估计方法得出同样结论，700 亿参数的 Chinchilla 用同样算力打败了 2800 亿参数的 Gopher。"
           }
         },
         {
@@ -859,7 +859,7 @@
       "value": "doubling",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "for every doubling of model size the number of training tokens should also be doubled",
-      "as_written": "大 1 倍"
+      "as_written": "翻一倍"
     },
     {
       "text": "Chinchilla 70B、4 倍数据",

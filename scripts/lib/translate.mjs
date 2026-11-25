@@ -82,7 +82,8 @@ const key = n => String(+n.toPrecision(9));
 
 export function numbersZh(s) {
   const out = [];
-  for (const m of String(s).matchAll(/(\d[\d,]*(?:\.\d+)?)(?:\s*(万亿|百万|亿|万|千(?![瓦米克字卡赫焦]))|([KMBT])(?![A-Za-z]))?/g)) {
+  for (const m of String(s).matchAll(/(\d[\d,]*(?:\.\d+)?)(?:\s*(?:多|余)?\s*(万亿|百万|亿|万|千(?![瓦米克字卡赫焦]))|([KMBT])(?![A-Za-z]))?/g)) {
+    /* 「100 多亿」「50 余万」：多 / 余 夹在数字和数量级之间，仍按 100 亿、50 万算 */
     /* 「千」后面跟单位时是单位的一部分（千瓦时、千米、千克），不是数量级 */
     const n = parseFloat(m[1].replace(/,/g, "")) * (m[2] ? ZH_MULT[m[2]] : m[3] ? EN_MULT[m[3].toLowerCase()] : 1);
     if (Number.isFinite(n)) out.push(key(n));

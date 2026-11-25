@@ -163,3 +163,9 @@ test("翻译：千瓦时、千米里的「千」是单位，不是数量级", ()
   assert.deepEqual(numbersZh("耗电大约 0.4 千瓦时，跑了 5 千米"), ["0.4", "5"]);
   assert.deepEqual(numbersZh("3 千人"), ["3000"]);
 });
+
+test("翻译：「100 多亿」「50 余万」按数量级算，英文写 over 10 billion 也能对上", () => {
+  assert.deepEqual(numbersZh("7000 万到 160 多亿参数，50 余万条"), ["70000000", "16000000000", "500000"]);
+  const segs = [{ id: "s1", text: "模型从 7000 万到 100 多亿参数" }];
+  assert.deepEqual(checkTranslation(segs, { s1: "Models ranged from 70 million to over 10 billion parameters" }), []);
+});
