@@ -1,0 +1,835 @@
+{
+  "slug": "b2a-economy-how-agents-buy",
+  "date": "2026-11-23",
+  "category": "research",
+  "publisher": "a16z.news",
+  "title": "a16z runs 11,307 agent shopping tests: 5 rules for when AI agents buy",
+  "summary": "Next time an AI agent picks your headphones, chooses your software, or books your hotel, how do merchants get picked? a16z partnered with The Prompting Company to run 11,307 agent tests and pulled out five rules for selling to AI agents.",
+  "ai_summary": "a16z and The Prompting Company ran 11,307 shopping tests across four personal agents using 1,270 prompts, plus 2,619 comparison requests on ChatGPT, Gemini, and Perplexity. The findings: agents' default recommendations overlap heavily—a product picked by one agent had a 73% chance of being picked by another; at the same price, agents chose the better return policy 86% of the time; discounts under 10% had no effect and discounts over 50% made agents steer clear. Best for brand, e-commerce, and SaaS practitioners; caveats are that the sample covers only a specific test window and four agents, the YipitData panel excludes Amazon, and a16z discloses that it and its partner may have commercial or investment interests.",
+  "brief": [
+    "A product picked by one agent had a 73% chance of being picked by another; in nearly a quarter of cases, all four agents chose the same product.",
+    "At the same price, agents chose the better return policy 86% of the time; discounts under 10% didn't matter and anything over 50% made them steer clear.",
+    "Specific needs flip the default: in a broad comparison the Shark won 91% of the time; for fine or color-treated hair, Dyson won 51%; for daily use, Dyson won 88%.",
+    "On stores with guest checkout, agents made it through checkout 81% of the time; on stores requiring login, every run stalled early."
+  ],
+  "readMinutes": 8,
+  "sections": [
+    {
+      "h": "What this is: testing AI agents as customers",
+      "blocks": [
+        {
+          "p": "This is the second piece on the B2A economy by a16z (Andreessen Horowitz) partners Olivia Moore and Justine Moore. B2A stands for Business-to-Agent: merchants no longer sell only to people, but also to AI agents that pick products and prepare purchases for users."
+        },
+        {
+          "p": "This time they worked with The Prompting Company, an agent testing firm whose customers include NVIDIA, Google, and Databricks, to run 11,307 completed agent runs across 1,270 prompts from October 22 to November 8, 2026, using four shopping agents: Grok Bot, Muse, Instinct, and Dots. They also ran 2,619 shopping requests on ChatGPT, Gemini, and Perplexity as a comparison. The tests covered physical products and software, and sample sizes varied by experiment."
+        },
+        {
+          "p": "For real-world spending, they cite YipitData card-panel analysis through November 11, 2026, tracing where purchases facilitated by Muse and other consumer agents went, and they share the top 50 merchants by agent spend. Note that YipitData's tracking does not distinguish Muse from Instinct and excludes Amazon, so the rankings and dollar amounts represent only that sample, not total merchant revenue."
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "The scale of this test",
+            "subtitle": "Run by The Prompting Company; sample sizes vary by experiment",
+            "items": [
+              {
+                "value": "11,307",
+                "unit": "runs",
+                "label": "Completed agent runs",
+                "note": "from 1,270 prompts"
+              },
+              {
+                "value": "1,270",
+                "unit": "prompts",
+                "label": "Prompts",
+                "note": "covering physical products and software"
+              },
+              {
+                "value": "2,619",
+                "unit": "runs",
+                "label": "Comparison shopping requests",
+                "note": "ChatGPT, Gemini, Perplexity"
+              },
+              {
+                "value": "50",
+                "unit": "merchants",
+                "label": "Top merchants by agent spend",
+                "note": "list shared for your own analysis"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "Why default picks decide everything: agents converge on the same products",
+      "blocks": [
+        {
+          "p": "Takeaway one: for broad requests, agents often converge on a shared set of default picks. In the tests, a product picked by one agent had a 73% chance of being picked by at least one other agent; in nearly a quarter of cases, all four agents picked the same top product. In other words, whether you make the default list largely determines whether a product gets seen."
+        },
+        {
+          "p": "And that list is short. Muse is the only one of the four that fully exposes its research logs, and they show it almost always starts with its own Meta catalog and pulls at most 50 candidates. When it also searches via browser—not every time—it looks at only three product pages on average. The high overlap among other agents suggests their search sets are similarly small."
+        },
+        {
+          "fig": {
+            "type": "illustration",
+            "title": "Muse's candidate pool: up to 50 options and just 3 pages on average",
+            "subtitle": "Illustrative: blue is the default starting point (Meta catalog), amber is closer review and final selection",
+            "note": "Based on Muse's public research logs; the 1 final recommendation is illustrative",
+            "glyph": {
+              "kind": "funnel",
+              "stages": [
+                {
+                  "label": "Meta catalog",
+                  "value": 50,
+                  "display": "Up to 50",
+                  "tone": "def"
+                },
+                {
+                  "label": "Browser review",
+                  "value": 3,
+                  "display": "Average of 3",
+                  "tone": "hi"
+                },
+                {
+                  "label": "Final recommendation",
+                  "value": 1,
+                  "display": "1 product",
+                  "tone": "hi"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "p": "How do you get onto that shortlist? Lean into spike use cases: prove you're stronger for more specific people or scenarios. The hairdryer test is the clearest example—agents were asked to choose between the Shark FlexStyle and Dyson Airwrap. In a broad comparison, the cheaper Shark won 91% of the time. But as soon as the user said 'fine or color-treated hair,' Dyson won 51%; when they said 'daily use,' Dyson's win rate jumped to 88%. Specific needs force agents to weigh features like weight, maximum temperature, and noise, making Dyson's premium easier to justify."
+        },
+        {
+          "fig": {
+            "type": "columns",
+            "title": "Specific needs flip the default recommendation",
+            "subtitle": "Amber marks scenarios where a specific condition flips the pick; values are the share of runs won by that product",
+            "note": "Shark's 91% means the cheaper Shark was selected; the other two figures are Dyson's win rates",
+            "items": [
+              {
+                "label": "Broad comparison",
+                "sub": "Shark FlexStyle",
+                "value": 91,
+                "display": "91%",
+                "tone": "base"
+              },
+              {
+                "label": "Fine or color-treated hair",
+                "sub": "Dyson Airwrap",
+                "value": 51,
+                "display": "51%",
+                "tone": "hi"
+              },
+              {
+                "label": "Daily use",
+                "sub": "Dyson Airwrap",
+                "value": 88,
+                "display": "88%",
+                "tone": "hi"
+              }
+            ]
+          }
+        },
+        {
+          "p": "Software follows the same logic. Asked broadly for 'graphic design software,' agents nominated Canva 78% of the time and Adobe never made the list. But when a user mentioned 'team templates,' Adobe appeared frequently; when they said they needed 'professional-level output,' Adobe was picked every time. So don't fight the default answer on broad requests—win the requests with a specific context."
+        }
+      ]
+    },
+    {
+      "h": "Agents aren't normal search: memory first, then your product page",
+      "blocks": [
+        {
+          "p": "Traditional LLMs find products through training data and web search, and tend to surface a few good options from review sites, news, and forums—not necessarily products you can buy. Agents are different: they check user memory first (stored preferences), then their own connectors and catalogs, and only then do external research. Muse and Dots use proprietary search systems; Grok Bot and Instinct use Exa."
+        },
+        {
+          "fig": {
+            "type": "illustration",
+            "title": "Agents check memory and their own catalogs before searching the web",
+            "subtitle": "Illustrative: blue is the central 'agent' actor, amber is what agents do that traditional models don't",
+            "glyph": {
+              "kind": "hub",
+              "center": {
+                "label": "Agent",
+                "tone": "def"
+              },
+              "nodes": [
+                {
+                  "label": "User memory",
+                  "tone": "hi"
+                },
+                {
+                  "label": "Own catalogs / connectors",
+                  "tone": "hi"
+                },
+                {
+                  "label": "Web search",
+                  "tone": "base"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "p": "Key difference: agents are more likely than traditional LLMs to visit direct or third-party product pages. So whether an agent can read your website determines whether it can figure out what your product does, what it costs, and what limits apply—and whether you make the final list."
+        },
+        {
+          "p": "Software works the same way. The authors asked Dots to generate 10 ads from a product photo and let the agent pick its own image-generation tool. It checked Midjourney first, found the official guidance says there is no general API and automated use is almost always prohibited, and gave up. It then went to Ideogram, where it traced a path from the product page to an API and an official MCP (a protocol for connecting software tools) integration—the docs even include code to generate and download an image—and easily made the choice. Giving agents a clear path beats a polished landing page built for humans."
+        }
+      ]
+    },
+    {
+      "h": "Agents do the math: returns, discounts, and trust all factor in",
+      "blocks": [
+        {
+          "p": "Agents are ruthless optimizers: they calculate the fully loaded cost of a product, including shipping, subscription lengths, return or refund policies, and even warranties. The starkest number: at the same price, agents chose the retailer with the better return policy 86% of the time (free returns, longer return window, refund to the original payment method)."
+        },
+        {
+          "p": "Quince is the poster child: it ranks in the top 15 retailers by observed agent spend, yet it isn't a top 15 global retailer. Its page for a $50 cashmere sweater puts price, free shipping, inventory, and reviews near the top, and compares directly against traditional retail prices. Software is similar: domain registration tool Porkbun ranks #9 by observed agent transactions and #1 in the technology category, beating Cloudflare (#17) and GoDaddy (#112)—even though the latter two register 2.6x and 4.8x as many domains per month. Muse and Dots both favor its transparent pricing and lack of the discounted first-year price that jumps later."
+        },
+        {
+          "p": "But price has a breaking point. In one run, Grok Bot passed over a $200 Sonos speaker for a $250 option from an authorized dealer, citing warranty coverage. Across 275 real-store comparisons, agents chose the more expensive but more trusted seller 72% of the time. On discounts: under 10% did nothing; 10%–50% helped, but agents still picked the cheaper, less trusted option only 24% of the time; once a discount exceeded 50%, agents steered clear—if it looked too good to be true, they dismissed it."
+        },
+        {
+          "fig": {
+            "type": "bars",
+            "title": "Same price: better returns win; the discount sweet spot is 10%–50%",
+            "subtitle": "Amber = share where agents preferred to choose; gray = steered clear",
+            "note": "The 0% for 'under 10%' and 'over 50%' is illustrative, based on the source's 'no effect' and 'steered clear'; the source gives no precise percentage",
+            "legend": [
+              {
+                "tone": "hi",
+                "label": "Agents preferred"
+              },
+              {
+                "tone": "base",
+                "label": "No effect"
+              },
+              {
+                "tone": "dim",
+                "label": "Steered clear"
+              }
+            ],
+            "groups": [
+              {
+                "label": "Same price, two options",
+                "items": [
+                  {
+                    "label": "Chose the better return policy",
+                    "value": 86,
+                    "display": "86%",
+                    "tone": "hi"
+                  }
+                ]
+              },
+              {
+                "label": "Discount range: share choosing the 'cheaper but less trusted' option",
+                "items": [
+                  {
+                    "label": "Under 10%",
+                    "value": 0,
+                    "display": "0%",
+                    "tone": "base"
+                  },
+                  {
+                    "label": "10%–50%",
+                    "value": 24,
+                    "display": "24%",
+                    "tone": "hi"
+                  },
+                  {
+                    "label": "Over 50%",
+                    "value": 0,
+                    "display": "Steered clear",
+                    "tone": "dim"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "Each agent has its own taste: channels, evidence, and presentation vary",
+      "blocks": [
+        {
+          "p": "The four agents behave like four different people. Some differences come from bot-blocking: in Amazon checkout tests, Grok Bot reached the cart every time, while Muse, Instinct, and Dots got stuck every time. Channel preferences are strong too: Grok Bot linked to Amazon in 17.5% of runs, while no other agent topped 1.6%; Muse linked to Walmart in 26% of answers and Best Buy in 22%."
+        },
+        {
+          "p": "They also trust different evidence. Muse rarely cites reviews, mentioning them in just 10% of its recommendations versus 30%–41% for the others; Dots cites professional product tests in 11.4% of runs, while no other agent tops 3.7%; Instinct doesn't take ratings at face value—in 26 tiebreaker tests, 'better reviews' won only 4 times, while returns and cancellation terms mattered more to it."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Four agents, four sets of tastes and channels",
+            "subtitle": "All values are shares observed in testing",
+            "note": "Dots also cites professional product tests in 11.4% of runs; Instinct won only 4 of 26 tiebreakers on 'better reviews'; Grok Bot reached the cart in every Amazon checkout test (not completed payment); the source gives only an aggregate 30%–41% range for the three agents other than Muse.",
+            "columns": [
+              "Agent",
+              "Frequently linked channels",
+              "Cites reviews",
+              "Amazon checkout"
+            ],
+            "rows": [
+              [
+                "Grok Bot",
+                "Amazon 17.5%",
+                "30–41%",
+                "Reaches cart every time"
+              ],
+              [
+                "Muse",
+                "Walmart 26%, Best Buy 22%",
+                "10%",
+                "Blocked every time"
+              ],
+              [
+                "Instinct",
+                "Prefers brand direct",
+                "30–41%",
+                "Blocked every time"
+              ],
+              [
+                "Dots",
+                "—",
+                "30–41%",
+                "Blocked every time"
+              ]
+            ],
+            "highlight": {
+              "col": 1
+            }
+          }
+        },
+        {
+          "p": "Presentation differs too. Asked for an AI notes tool for in-person meetings, Grok Bot and Instinct both ended up recommending Granola, with similar reasons (works on existing devices, privacy, convenience), but Instinct created a polished presentation page while Grok Bot gave a straight answer and even offered to take the notes itself first. So the same product can be 'sold' very differently depending on the agent."
+        }
+      ]
+    },
+    {
+      "h": "Go where agents already are: marketplaces, aggregators, and checkout",
+      "blocks": [
+        {
+          "p": "Agents like to begin and end searches on aggregators and marketplaces, where candidates are dense and easy to compare in one pass. Among the top 50 merchants by agent spend, nearly one-third of observed spend went to marketplaces and aggregators; add retailers that operate third-party marketplaces and the share rises to 46%; add conventional multi-brand retailers and it reaches 55%."
+        },
+        {
+          "fig": {
+            "type": "columns",
+            "title": "Nearly one-third of top 50 merchant agent spend goes to marketplaces and aggregators",
+            "subtitle": "Amber is the narrowest, most direct measure; the next two add categories cumulatively",
+            "note": "The source says 'nearly one-third'; the chart uses 33% as an illustrative conversion",
+            "items": [
+              {
+                "label": "Marketplaces + aggregators",
+                "value": 33,
+                "display": "Nearly one-third",
+                "tone": "hi",
+                "calc": "100 ÷ 3 ≈ 33"
+              },
+              {
+                "label": "Retailers operating third-party marketplaces included",
+                "value": 46,
+                "display": "46%",
+                "tone": "base"
+              },
+              {
+                "label": "Conventional multi-brand retailers included",
+                "value": 55,
+                "display": "55%",
+                "tone": "base"
+              }
+            ]
+          }
+        },
+        {
+          "p": "That share is clearly lifted by travel—the largest category of observed agent spend so far. In YipitData's sample, Expedia and Booking.com were the top two merchants by spend, with American Airlines #4 and United #6. In one live example, Hotel Zelos's refundable king room for December 4–6, 2026, cost $476.20 direct and $476 on Expedia, which also gave the agent a choice to pay now or at the property plus a PayPal option. (That example was a browser walkthrough; no reservation was submitted.) Unless the user explicitly asks to book direct, the agent's preference is clear."
+        },
+        {
+          "p": "For now, agents mostly rely on their own product catalogs and browser use to choose; external connectors are still rare. In tests from October 22 to November 8, Grok Bot offered to connect an app in only 5% of prompts, while the other three each did so in under 1%. But that's changing quickly: OpenAI's Businesses in ChatGPT lets merchants update their details and add product feeds with pricing and inventory; Meta connects its existing product catalog into Muse's search starting point; Shopify Catalog lets products be bought directly with Shop Pay."
+        },
+        {
+          "p": "Checkout is the final hurdle. On stores offering guest checkout, agents reached the last step of the checkout form 81% of the time; on stores requiring a logged-in account, every run stalled early—sometimes to ask the user for credentials, sometimes to switch merchants. For payments, Muse, Grok Bot, and Instinct all use Stripe's Link wallet. Muse can check out instantly at more than a million merchants that accept Link and issues a single-use virtual card elsewhere, with the user approving purchases in chat without giving the agent their real card number. After testing ended, OpenAI launched ChatGPT Wallet for Dots on November 13, starting with U.S. Pro users."
+        }
+      ]
+    },
+    {
+      "h": "Method limitations and disclosures: what the original doesn't spell out",
+      "blocks": [
+        {
+          "p": "If you're treating this as empirical research, several methodological limits and boundaries need to be understood:"
+        },
+        {
+          "list": [
+            "Sub-experiment sample sizes and extrapolation limits: the methodology notes that 'samples vary by experiment,' but the body does not disclose the specific denominator or full prompt set for each comparison. The tests cover only four specific personal agents from October 22 to November 8 and cannot be treated as equivalent to real users' natural shopping behavior or projected onto the whole consumer market.",
+            "YipitData panel limits: the spending panel runs through November 11, 2026; its tracking does not distinguish Muse from Instinct and excludes Amazon (even though 17.5% of Grok Bot's runs linked to Amazon in testing). Merchant rankings and dollar amounts refer only to that sample, not total merchant revenue, and travel accounts for the largest share.",
+            "Demo flows and timing changes: the Amazon checkout test only recorded whether agents reached the cart, and the Hotel Zelos example was a browser walkthrough with no reservation submitted. After testing, OpenAI launched ChatGPT Wallet for Dots on November 13 for U.S. Pro users, and external connectors and retailer partnerships are changing quickly.",
+            "Identity of the four agents and Top 50 details: the original only clearly states that Muse connects to Meta's product catalog and Dots connects to ChatGPT Wallet; the full ownership and configuration of the other agents are not spelled out. The body also does not list all Top 50 merchants with their individual amounts.",
+            "Researcher and test partner disclosures: the article was written by partners at venture firm a16z, and the endnotes state that its funds' portfolio may include companies mentioned in the piece (investment list at a16z.com/investment-list/; disclosures at a16z.com/disclosures). Partner The Prompting Company itself sells AI agent discovery and purchase optimization services to businesses, and the authors close by soliciting startups in the same space."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Who it's for",
+      "blocks": [
+        {
+          "p": "The value: if you sell anything—physical products, SaaS, domains, hotels—these tests are the first to quantify how agents choose, and can directly guide product pages, pricing, and channels."
+        },
+        {
+          "p": "The cost: acting on these findings means maintaining an agent-readable website, publishing transparent pricing and return policies, getting products into aggregators and marketplaces, supporting guest checkout, and dealing with each agent's different tastes."
+        },
+        {
+          "list": [
+            "If you're a brand or e-commerce seller: test how your site looks to an agent, and put price, shipping, inventory, reviews, and return policies near the top of the page.",
+            "If you build software or SaaS: give agents an API or MCP path—don't make them hit a wall the way Midjourney does.",
+            "If you run channel operations: don't focus only on people—claim space in the marketplaces and aggregators where agents already gather.",
+            "If you're just curious: the most counterintuitive finding is that your return policy is now marketing copy—it decided 86% of same-price, two-option choices."
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Welcome to the B2A Economy: How Agents Buy",
+      "publisher": "a16z.news",
+      "date": "2026-11-23",
+      "url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents"
+    },
+    "note": "Figures 2 and 3 are schematic structures; Figure 7's \"nearly one-third\" is shown as an illustrative 33%; in Figure 5, 0% is an illustrative value for \"no effect\" and \"steered clear.\" Merchant rankings and dollar amounts represent only the YipitData sample, exclude Amazon, and do not distinguish Muse from Instinct.",
+    "more": [
+      {
+        "label": "The original piece is published on a16z's website.",
+        "url": "https://a16z.com/welcome-to-the-b2a-economy-how-agents-buy/"
+      }
+    ]
+  },
+  "claims": [
+    {
+      "text": "The tests completed 11,307 agent runs.",
+      "value": "11,307",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "11,307 runs",
+      "quote": "across 1,270 prompts and 11,307 completed agent runs"
+    },
+    {
+      "text": "These runs came from 1,270 prompts.",
+      "value": "1,270",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "1,270 prompts",
+      "quote": "across 1,270 prompts and 11,307 completed agent runs"
+    },
+    {
+      "text": "An additional 2,619 shopping requests were run on ChatGPT, Gemini, and Perplexity as a comparison.",
+      "value": "2,619",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "2,619 requests",
+      "quote": "plus 2,619 shopping-request runs on ChatGPT, Gemini, and Perplexity"
+    },
+    {
+      "text": "The article shares a list of the top 50 merchants by agent spend.",
+      "value": "50",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "Top 50 merchants",
+      "quote": "We've shared the top 50 merchants by agent spend"
+    },
+    {
+      "text": "The article distills five takeaways for winning over agents.",
+      "value": "five",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "5 takeaways",
+      "quote": "with five takeaways on how to win them over"
+    },
+    {
+      "text": "The tests used four shopping agents.",
+      "value": "four",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "four agents",
+      "quote": "all four agents picked the same top product"
+    },
+    {
+      "text": "A product picked by one agent had a 73% chance of being picked by another agent.",
+      "value": "73%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "73%",
+      "quote": "a product picked by one agent had a 73% chance of being picked by at least one other agent"
+    },
+    {
+      "text": "In nearly a quarter of cases, all four agents picked the same product.",
+      "value": "a quarter",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "Nearly a quarter",
+      "quote": "in nearly a quarter of cases, all four agents picked the same top product"
+    },
+    {
+      "text": "Muse pulls up to 50 candidates.",
+      "value": "50",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "Up to 50",
+      "quote": "and pulls a maximum of 50 options"
+    },
+    {
+      "text": "When Muse searches via browser, it looks at an average of 3 product pages.",
+      "value": "three",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "3 on average",
+      "quote": "the agent only looks at three product pages on average"
+    },
+    {
+      "text": "In a broad hairdryer comparison, agents picked the cheaper Shark 91% of the time.",
+      "value": "91%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "91%",
+      "quote": "chose the cheaper Shark in 91% of cases"
+    },
+    {
+      "text": "For fine or color-treated hair, Dyson won 51%.",
+      "value": "51%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "51%",
+      "quote": "Dyson won in 51% of runs"
+    },
+    {
+      "text": "For daily use, Dyson's win rate was 88%.",
+      "value": "88%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "88%",
+      "quote": "Dyson's victory margin increased to 88%"
+    },
+    {
+      "text": "Asked broadly about graphic design software, agents nominated Canva 78% of the time.",
+      "value": "78%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "78%",
+      "quote": "agents nominated Canva in 78% of runs"
+    },
+    {
+      "text": "Dots was asked to generate 10 ads and choose its own tool.",
+      "value": "ten",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "10 ads",
+      "quote": "We asked Dots to generate ten ads based on a product photo"
+    },
+    {
+      "text": "At the same price, agents chose the better return policy 86% of the time.",
+      "value": "86%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "86%",
+      "quote": "agents chose the retailer with the better return policy (free returns, longer return window, refund to original payment method) in 86% of tests"
+    },
+    {
+      "text": "Quince ranks in the top 15 retailers by agent spend.",
+      "value": "15",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "Top 15",
+      "quote": "Quince ranks in the top 15 retailers by consumer agent spend"
+    },
+    {
+      "text": "Quince's cashmere sweater product page is priced at $50.",
+      "value": "$50",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "$50",
+      "quote": "The product page for Quince's $50 cashmere sweater shows why"
+    },
+    {
+      "text": "Porkbun ranks #9 by agent transactions.",
+      "value": "#9",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "#9",
+      "quote": "#9 in the number of agent transactions"
+    },
+    {
+      "text": "Porkbun ranks #1 in the technology category.",
+      "value": "#1",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "#1",
+      "quote": "#1 in the technology category"
+    },
+    {
+      "text": "Cloudflare ranks #17.",
+      "value": "#17",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "#17",
+      "quote": "Cloudflare (ranked #17)"
+    },
+    {
+      "text": "GoDaddy ranks #112.",
+      "value": "#112",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "#112",
+      "quote": "GoDaddy (ranked #112)"
+    },
+    {
+      "text": "Cloudflare registers 2.6x as many domains per month as Porkbun.",
+      "value": "2.6x",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "2.6x",
+      "quote": "both register significantly more domains per month than Porkbun (2.6x for Cloudflare, 4.8x for GoDaddy)"
+    },
+    {
+      "text": "GoDaddy registers 4.8x as many domains per month as Porkbun.",
+      "value": "4.8x",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "4.8x",
+      "quote": "both register significantly more domains per month than Porkbun (2.6x for Cloudflare, 4.8x for GoDaddy)"
+    },
+    {
+      "text": "Grok Bot passed over a $200 Sonos speaker.",
+      "value": "$200",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "$200",
+      "quote": "Grok Bot passed over a $200 Sonos speaker listing"
+    },
+    {
+      "text": "It chose a $250 option from an authorized dealer instead.",
+      "value": "$250",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "$250",
+      "quote": "in favor of a $250 option from an authorized dealer"
+    },
+    {
+      "text": "There were 275 real-store comparisons.",
+      "value": "275",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "275",
+      "quote": "across 275 real-store comparisons"
+    },
+    {
+      "text": "Across 275 real-store comparisons, agents chose the more expensive but more trusted seller 72% of the time.",
+      "value": "72%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "72%",
+      "quote": "agents recommended the trusted option 72% of the time"
+    },
+    {
+      "text": "Discounts under 10% had no effect.",
+      "value": "10%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "Under 10%",
+      "quote": "a discount less than 10% did not sway the agent at all"
+    },
+    {
+      "text": "Discounts of 10%-50% were more compelling.",
+      "value": "10-50%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "10%–50%",
+      "quote": "Discounts between 10-50% were more compelling"
+    },
+    {
+      "text": "At 10%-50% discounts, agents picked the cheaper but less trusted option only 24% of the time.",
+      "value": "24%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "24%",
+      "quote": "agents still only took a less expensive, less trusted option 24% of the time"
+    },
+    {
+      "text": "Once a discount exceeded 50%, agents steered clear.",
+      "value": "50%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "Over 50%",
+      "quote": "Once the discount exceeded 50%, the agent steered clear"
+    },
+    {
+      "text": "Grok Bot linked to Amazon in 17.5% of runs.",
+      "value": "17.5%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "17.5%",
+      "quote": "Grok Bot linked to Amazon in 17.5% of runs"
+    },
+    {
+      "text": "No other agent linked to Amazon more than 1.6% of the time.",
+      "value": "1.6%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "1.6%",
+      "quote": "while no other agent topped 1.6%"
+    },
+    {
+      "text": "Muse linked to Walmart in 26% of its responses.",
+      "value": "26%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "26%",
+      "quote": "Muse linked to Walmart in 26% of answers"
+    },
+    {
+      "text": "Muse linked to Best Buy in 22% of its responses.",
+      "value": "22%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "22%",
+      "quote": "and Best Buy in 22%"
+    },
+    {
+      "text": "Muse cited reviews in only 10% of its recommendations.",
+      "value": "10%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "10%",
+      "quote": "it mentions them in just 10% of its picks"
+    },
+    {
+      "text": "Other agents cited reviews 30%-41% of the time.",
+      "value": "30-41%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "30%–41%",
+      "quote": "compared to 30-41% for the other agents"
+    },
+    {
+      "text": "Dots cited professional product tests in 11.4% of its recommendations.",
+      "value": "11.4%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "11.4%",
+      "quote": "Dots cites professional product tests in 11.4% of runs"
+    },
+    {
+      "text": "No other agent cited professional tests more than 3.7% of the time.",
+      "value": "3.7%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "3.7%",
+      "quote": "while no other agent tops 3.7%"
+    },
+    {
+      "text": "In Instinct's 26 tiebreakers, \"better reviews\" won only 4 times.",
+      "value": "4 of its 26",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "Won 4 of 26",
+      "quote": "“better reviews” won only 4 of its 26 tiebreakers"
+    },
+    {
+      "text": "Among the top 50 merchants, nearly one-third of spend went to marketplaces and aggregators (shown as 33% in the chart).",
+      "value": "one-third",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "Nearly one-third (shown as 33% in the chart)",
+      "quote": "Nearly one-third of observed spend among the top 50 merchants by agent spend went to marketplaces and aggregators"
+    },
+    {
+      "text": "Include retailers operating third-party marketplaces and the share rises to 46%.",
+      "value": "46%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "46%",
+      "quote": "This rises to 46% if you include retailers that operate third-party marketplaces"
+    },
+    {
+      "text": "Add conventional multi-brand retailers and it reaches 55%.",
+      "value": "55%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "55%",
+      "quote": "and 55% if you include conventional multi-brand retailers"
+    },
+    {
+      "text": "American Airlines ranked #4 and United #6.",
+      "value": "#4 and #6",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "#4, #6",
+      "quote": "American Airlines and United ranked #4 and #6, respectively"
+    },
+    {
+      "text": "The same room cost $476.20 direct.",
+      "value": "$476.20",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "$476.20",
+      "quote": "the same hotel's refundable king room was available for $476.20 direct"
+    },
+    {
+      "text": "Expedia price: $476.",
+      "value": "$476",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "$476",
+      "quote": "and $476 on Expedia"
+    },
+    {
+      "text": "The hotel example was for December 4-6, 2026.",
+      "value": "December 4–6, 2026",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "December 4-6, 2026",
+      "quote": "Hotel Zelos, December 4–6, 2026"
+    },
+    {
+      "text": "The test period ran from October 22 to November 8, 2026.",
+      "value": "October 22–November 8, 2026",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "October 22 to November 8, 2026",
+      "quote": "October 22–November 8, 2026"
+    },
+    {
+      "text": "Grok Bot offered to connect an app in only 5% of prompts.",
+      "value": "5%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "5%",
+      "quote": "Grok Bot offered to connect an app in 5% of runs"
+    },
+    {
+      "text": "The other three agents each offered to connect an app in under 1% of prompts.",
+      "value": "1%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "Under 1%",
+      "quote": "while Instinct, Muse, and Dots each did so in fewer than 1%"
+    },
+    {
+      "text": "On stores with guest checkout, agents reached the final checkout step 81% of the time.",
+      "value": "81%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "81%",
+      "quote": "agents reached the end of the checkout form in 81% of runs….on stores that offer guest checkout"
+    },
+    {
+      "text": "Link supports instant checkout at more than 1 million merchants.",
+      "value": "more than a million",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "Over 1 million",
+      "quote": "Link enables instant checkout at more than a million businesses"
+    },
+    {
+      "text": "ChatGPT Wallet launched for Dots on November 13.",
+      "value": "November 13",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "November 13",
+      "quote": "OpenAI launched ChatGPT Wallet for Dots on November 13"
+    },
+    {
+      "text": "The YipitData sample covers through November 11, 2026.",
+      "value": "November 11, 2026",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "November 11, 2026",
+      "quote": "covers agent-facilitated purchases through November 11, 2026"
+    }
+  ],
+  "cover": {
+    "headline": "B2A economy: how agents buy",
+    "highlight": "11,307 tests, 5 rules",
+    "big": {
+      "value": "11,307",
+      "unit": "tests",
+      "label": "Agent shopping tests"
+    },
+    "glyph": {
+      "kind": "funnel",
+      "stages": [
+        {
+          "label": "Candidates",
+          "value": 50,
+          "display": "50",
+          "tone": "def"
+        },
+        {
+          "label": "Review",
+          "value": 3,
+          "display": "3",
+          "tone": "hi"
+        },
+        {
+          "label": "Selected",
+          "value": 1,
+          "display": "1",
+          "tone": "hi"
+        }
+      ]
+    }
+  },
+  "status": "published",
+  "verified": true,
+  "lang": "en",
+  "translated_from": "003769c1810467a0"
+}
