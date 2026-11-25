@@ -1,0 +1,666 @@
+{
+  "slug": "not-everything-needs-an-llm-decision-models",
+  "date": "2026-11-09",
+  "category": "deep",
+  "publisher": "PostHog",
+  "title": "PostHog 用决策模型先筛一道，98.7% 的请求不用调大模型",
+  "summary": "大模型爱说车轱辘话，问一句能回几百字「看情况」。PostHog 给简单任务换上了决策模型：结构化提问，直接吐带概率的答案。本文讲透什么时候该用它、怎么用，以及别踩的坑。",
+  "ai_summary": "决策模型（decision model）是一种更小更快的模型：你问一个结构化的 yes/no 或选择题，它返回一个带概率的确定答案，而不是大模型那种长篇自由文本。PostHog 把它当作大模型调用前的「守门员」：在 Replay Vision 的产品里，每条会话摘要先过两道决策模型提问，生产环境中 98.7% 的摘要直接判定为干净、完全跳过大模型调用；只有触发阈值的那一小部分才交给 Gemini 改写。按 TypeSafe AI 的对比，决策模型比前沿模型便宜最高 444.6 倍、快 193.6 倍。文章最关键的一条经验是：阈值要看哪种错误更贵——Replay Vision 里漏掉个人信息更危险，所以设低到 0.4；",
+  "brief": [
+    "按 TypeSafe AI 对比，决策模型比前沿模型便宜最高 444.6 倍、快 193.6 倍。",
+    "Replay Vision 的 PII 闸门用两道 yes/no 问题、阈值 0.4，让 98.7% 的会话摘要跳过大模型调用。",
+    "阈值看成本：误判个人信息更贵就设低（0.4），误答烦到用户就设高（0.85）。",
+    "PR 评审用决策模型评分只拿到 AUC 0.52，基本等于抛硬币，说明复杂判断做不了。"
+  ],
+  "readMinutes": 9,
+  "sections": [
+    {
+      "h": "决策模型是什么，和 LLM 差在哪？",
+      "blocks": [
+        {
+          "p": "大模型喜欢「碎碎念」：问一个简单问题，它会回你几百字的「看情况」。决策模型走的是另一条路——你问结构化问题，它回一个带类型、带概率的确定答案。PostHog 把这类模型用在更简单的任务上，并给常见问题分成了三种形态。"
+        },
+        {
+          "p": "关键区别在于不确定性是否被摊开。大模型往往给出过度自信的自由文本，而决策模型直接报概率。在一个校准良好的模型里，得分 0.8 的答案大约有 80% 的概率是对的；得分 0.5 就是抛硬币。这个性质让「该不该相信这个结果」变成可以直接写进代码的判断。"
+        },
+        {
+          "fig": {
+            "type": "schematic",
+            "title": "三类结构化问答：回答类型固定，概率明说",
+            "subtitle": "示意：琥珀色是模型给出的概率。示例来自原文关于刺猬的提问",
+            "items": [
+              {
+                "glyph": {
+                  "kind": "ring",
+                  "value": 0.99,
+                  "max": 1,
+                  "label": "Yes",
+                  "display": "0.99"
+                },
+                "title": "Noul：是非题",
+                "sub": "问「刺猬是哺乳动物吗」",
+                "rows": [
+                  {
+                    "k": "输出",
+                    "v": "`Yes, 0.99`"
+                  },
+                  {
+                    "k": "特点",
+                    "v": "只回是/否加概率"
+                  }
+                ]
+              },
+              {
+                "glyph": {
+                  "kind": "chat",
+                  "turns": [
+                    {
+                      "role": "user",
+                      "text": "刺猬属于哪个动物科？",
+                      "tone": "base"
+                    },
+                    {
+                      "role": "ai",
+                      "text": "Mammal, 0.99",
+                      "tone": "def"
+                    }
+                  ]
+                },
+                "title": "Choice：选择题",
+                "sub": "从固定选项里挑一个",
+                "rows": [
+                  {
+                    "k": "输出",
+                    "v": "`Mammal, 0.99`"
+                  },
+                  {
+                    "k": "特点",
+                    "v": "选项封闭，答案带概率"
+                  }
+                ]
+              },
+              {
+                "glyph": {
+                  "kind": "ring",
+                  "value": 0.77,
+                  "max": 1,
+                  "label": "Least Concern",
+                  "display": "0.77"
+                },
+                "title": "Score：评分题",
+                "sub": "给一个答案打置信度",
+                "rows": [
+                  {
+                    "k": "输出",
+                    "v": "`Least Concern, 0.77`"
+                  },
+                  {
+                    "k": "特点",
+                    "v": "一个分数衡量可信度"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "callout": {
+            "kind": "takeaway",
+            "title": "把不确定性命明说",
+            "text": "0.8 分大约等于 80% 正确，0.5 分就是抛硬币。做产品时，这个分数能直接当成阈值来用。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "它为什么便宜又快？",
+      "blocks": [
+        {
+          "p": "决策模型最大的实用价值是省钱省时间。PostHog 引用 TypeSafe AI 的对比：决策模型比前沿模型便宜最高 444.6 倍、快 193.6 倍。注意这是厂商给的对比数字，具体差距取决于任务、模型和供应商。"
+        },
+        {
+          "p": "这意味着，你可以把决策模型放在大模型前面做「预检」：大多数简单请求在便宜的这层就处理掉，只有真正需要大模型的少数请求才往贵的走。"
+        },
+        {
+          "fig": {
+            "type": "bars",
+            "title": "决策模型对比前沿模型：便宜一个数量级还快很多",
+            "subtitle": "倍数对比，基准是前沿模型为 1。琥珀色是成本，蓝色是速度。数据来自 TypeSafe AI",
+            "legend": [
+              {
+                "tone": "hi",
+                "label": "成本便宜倍数"
+              },
+              {
+                "tone": "def",
+                "label": "速度提升倍数"
+              }
+            ],
+            "groups": [
+              {
+                "label": "决策模型 vs 前沿模型",
+                "items": [
+                  {
+                    "label": "便宜",
+                    "value": 444.6,
+                    "display": "444.6 倍",
+                    "tone": "hi",
+                    "calc": "444.6 ÷ 1"
+                  },
+                  {
+                    "label": "快",
+                    "value": 193.6,
+                    "display": "193.6 倍",
+                    "tone": "def",
+                    "calc": "193.6 ÷ 1"
+                  }
+                ]
+              }
+            ],
+            "note": "原文脚注注明数字出自 TypeSafe AI，属于厂商对比"
+          }
+        }
+      ]
+    },
+    {
+      "h": "用法一：守在大模型前面，把贵的调用挡下来",
+      "blocks": [
+        {
+          "p": "最典型的用法是「闸门」。Replay Vision 是 PostHog 里负责观看并总结用户会话录像的产品，其中有个任务是把总结里的个人信息先洗掉。过去要么靠提示词和正则表达式硬抠（总漏），要么把每条总结都发给 Gemini 去处理（太贵）。"
+        },
+        {
+          "p": "现在的做法是：每条会话摘要先过决策模型的两道 yes/no 问题——「这是不是提到一个真实的人？」「这是不是露出联系方式或证件？」把一个大问题拆成两个窄问题，误报能降到单问一道时的十分之一左右。"
+        },
+        {
+          "p": "如果任一题得分达到 0.4 或更高，就交给 Gemini 重写摘要、去掉个人信息，再检查一遍；否则判定为干净，直接放行。生产环境里，98.7% 的摘要完全跳过了大模型调用。没有这层预检，要么持续和漏报的提示词搏斗，要么把每一条都发给 Gemini，只为抓住那 1% 真正需要处理的。"
+        },
+        {
+          "fig": {
+            "type": "funnel",
+            "title": "两道决策题放行 98.7%，只有一小撮需要大模型",
+            "subtitle": "示意：98.7% 为原文生产数据，其余 1.3% 为差额",
+            "stages": [
+              {
+                "label": "会话摘要",
+                "value": 100,
+                "display": "100",
+                "tone": "base"
+              },
+              {
+                "label": "过两道 yes/no 检查",
+                "value": 100,
+                "display": "100",
+                "tone": "hi"
+              },
+              {
+                "label": "干净，跳过大模型",
+                "value": 98.7,
+                "display": "98.7",
+                "tone": "hi"
+              },
+              {
+                "label": "触发阈值，交 Gemini 重写",
+                "value": 1.3,
+                "display": "1.3",
+                "tone": "dim"
+              }
+            ]
+          }
+        },
+        {
+          "callout": {
+            "kind": "takeaway",
+            "title": "阈值怎么定",
+            "text": "在 PII 场景，漏报（把含个人信息的摘要当干净存下来）比误报（多调一次大模型）严重得多，所以阈值设得低：0.4。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "阈值背后是「哪种错更贵」",
+      "blocks": [
+        {
+          "p": "决策模型也会错。得分 0.85 不代表 100% 对，大约每 1,000 次检查里还是会有 150 次左右答错。所以不能只看分数，得想清楚哪类错误更承受不起。"
+        },
+        {
+          "p": "PII 场景漏报更贵，阈值就低到 0.4。反过来，PostHog 的 Slack 机器人是另一个极端：现在它可以不被 @ 也能回答问题，但它会检查频道里每条消息是不是在问信息、PostHog 能不能答；只有两题都达到 0.85 以上才介入。这里误报的代价是「烦到用户」，所以阈值拉高到 0.85。"
+        },
+        {
+          "fig": {
+            "type": "bars",
+            "title": "同一个分数，两个相反阈值：看哪种错更贵",
+            "subtitle": "琥珀色是低阈值，蓝色是高阈值。数字为各场景门槛",
+            "legend": [
+              {
+                "tone": "hi",
+                "label": "漏报更贵，阈值放低"
+              },
+              {
+                "tone": "def",
+                "label": "误报更贵，阈值抬高"
+              }
+            ],
+            "groups": [
+              {
+                "label": "场景阈值",
+                "items": [
+                  {
+                    "label": "Replay Vision PII 闸门",
+                    "value": 0.4,
+                    "display": "0.4",
+                    "tone": "hi"
+                  },
+                  {
+                    "label": "Slack 机器人消息检查",
+                    "value": 0.85,
+                    "display": "0.85",
+                    "tone": "def"
+                  }
+                ]
+              }
+            ],
+            "note": "0.85 仍意味着约每 1,000 次有 150 次左右答错"
+          }
+        },
+        {
+          "callout": {
+            "kind": "takeaway",
+            "title": "记住它会犯错",
+            "text": "概率 0.85 也还是每 1,000 次大约 150 次错。把阈值设在哪，取决于哪种错误对你更贵。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "用法二：当模型路由器，挑最便宜够用的那个",
+      "blocks": [
+        {
+          "p": "同一个 Slack 机器人还用决策模型做「模型路由」。当它被 @ 时，先判断消息是否指定了某个具体模型；没有的话，就用一道选择题从候选模型里挑。题目是：「选出最可能一次就正确完成任务的最便宜选项，失败重跑的代价比选聪明模型更大。」"
+        },
+        {
+          "p": "每个候选项都带一句说明，比如 GPT Luna 被描述为「很轻、很便宜的模型，适合短回答、查资料、摘要和很小的编辑」。决策模型拿请求去和每个选项的描述文本打分，选出最便宜够用的那个。"
+        },
+        {
+          "fig": {
+            "type": "route",
+            "title": "没指定模型时，路由层挑最便宜够用的",
+            "subtitle": "示意：琥珀色是路由判断，蓝色是已有的指定路径",
+            "root": {
+              "label": "消息来了",
+              "sub": "被 @ 的请求"
+            },
+            "branches": [
+              {
+                "tone": "dim",
+                "label": "指定了模型",
+                "items": [
+                  "直接交给指定模型"
+                ],
+                "note": "用户已点名"
+              },
+              {
+                "tone": "hi",
+                "label": "没指定模型",
+                "items": [
+                  "决策模型逐项打分",
+                  "选最便宜且大概率一次成功的"
+                ],
+                "note": "失败重跑比聪明模型更贵"
+              }
+            ]
+          }
+        },
+        {
+          "p": "但要记住：阈值不能搬运。不同任务、不同模型、不同供应商的阈值都不一样。PostHog 在 Error Tracking 里尝试用决策模型自动合并相似日志，结果同一个模型从 v1 到 v2，阈值就变了。他们后来把阈值做成每个项目可配置，并在用人工标注数据重新校准期间让「裁判」跑在 shadow mode（影子模式，只观察不生效）里。"
+        },
+        {
+          "p": "这也是他们早早推动「模型无关接口」的原因之一：现在内部有个 AI 网关，用来换模型、测模型，包括自托管的那些。"
+        }
+      ]
+    },
+    {
+      "h": "用法三：先压平输入，再做表面判断",
+      "blocks": [
+        {
+          "p": "如果一个问题需要更多上下文或推理链，就交给大模型。但只要你先把输入「压平」成一眼可判的样子，决策模型就能用。PostHog 的搜索重排和图表选择都是这个思路。"
+        },
+        {
+          "p": "在 Replay Vision 里，用户搜「onboarding friction」这类主题时，嵌入距离的算法可能返回意外结果。决策模型没法直接做「给这 10 条会话按匹配度排序」这种复杂判断；正确姿势是：先用嵌入拿到一份初始列表，剩下的唯一任务就是逐条判断「这条摘要描述的内容，是否匹配用户搜索词」。然后把结果按概率重排。在 20 个测试查询上，这个做法把排序质量提高了约 25%。"
+        },
+        {
+          "p": "图表选择也类似。以前 PostHog 用确定性规则选可视化：有日期列、数字列、多行就给折线图；两列以上文本加一列数字给热力图；任一数字列给柱状图。现在，如果组织选择开启，决策模型会同时看 SQL 本身和结果的前三行，来建议更合适的图表。原文给了一个按浏览器统计浏览量的例子：老规则选的是聚合折线图，用 Jev 后改成了按浏览器拆分的柱状图。"
+        },
+        {
+          "fig": {
+            "type": "beforeafter",
+            "title": "同一句 SQL，从折线图换成按浏览器拆分的柱状图",
+            "subtitle": "示意：左边是老规则，右边是决策模型。琥珀色是变化后的选择",
+            "left": {
+              "label": "老规则",
+              "items": [
+                "日期列 + 数字列 + 多行",
+                "→ 折线图",
+                "聚合页浏览数"
+              ]
+            },
+            "right": {
+              "label": "决策模型 Jev",
+              "note": "看 SQL + 前三行结果",
+              "items": [
+                "→ 柱状图",
+                "按浏览器拆分"
+              ]
+            }
+          },
+          "note": "示例来自原文关于「按浏览器统计浏览量」的简单查询"
+        }
+      ]
+    },
+    {
+      "h": "哪些活别交给它：多步推理和大请求",
+      "blocks": [
+        {
+          "p": "决策模型擅长「一眼判断眼前的东西」，但别让它做多步推理。PostHog 试过在嵌入就绪前，用决策模型给一个「值得人工看」的会话 Highlights 信息流排序。问题有两步：先问这条会话值不值得看，再问为什么值得（错误在屏幕上、卡住、用户困惑、用户放弃等选项）。"
+        },
+        {
+          "p": "这两步串起来，需要跑每小时任务、发大请求——一次最多 32 条会话、每个请求 12,000 到 38,000 个 token——把模型服务器打满，堵了其他产品的调用好几个小时。技术上能做，但运营上不划算。多步推理留给大模型，或者像搜索重排那样，在决策模型看到数据之前就先把重活干完。"
+        },
+        {
+          "p": "开放型判断也不太行。PostHog 好奇试过用五道 noul 问题，给内部 PR 评审 agent 的发现打分，大致是问「这个改动值不值得开发者关注」。结果 AUC 只有 0.52——和抛硬币差不多。如果是大模型，还能靠塞更多上下文补救，但 Jev 处理不了大请求：默认每次请求 64k token、每题 32k，TypeSafe 虽然加了可选的请求头把两个上限都提到 262k，但仍提醒长上下文模式更慢、更不准。"
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "一眼判断可以，链条推理和开放题不行",
+            "subtitle": "示意：琥珀色是适合的场景，蓝色是不适合的场景",
+            "left": {
+              "label": "适合交给决策模型",
+              "items": [
+                {
+                  "label": "单遍判断",
+                  "tag": "yes/no、choice",
+                  "state": "hi"
+                },
+                {
+                  "label": "便宜预检",
+                  "tag": "闸门、路由",
+                  "state": "hi"
+                },
+                {
+                  "label": "压平后表面判断",
+                  "tag": "搜索重排、图表选择",
+                  "state": "hi"
+                }
+              ]
+            },
+            "right": {
+              "label": "还是交给大模型",
+              "items": [
+                {
+                  "label": "多步推理",
+                  "tag": "会打满服务器",
+                  "state": "def"
+                },
+                {
+                  "label": "大上下文",
+                  "tag": "默认 64k/题",
+                  "state": "def"
+                },
+                {
+                  "label": "开放评分",
+                  "tag": "PR 评审 AUC 0.52",
+                  "state": "def"
+                }
+              ]
+            }
+          },
+          "footer": "混合模型 Jeeves 可以在不确定时先推理再决定，用来补这个缺口"
+        }
+      ]
+    },
+    {
+      "h": "官方还没说的",
+      "blocks": [
+        {
+          "list": [
+            "决策模型的具体价格：原文只给了 444.6 倍便宜这个相对倍数，没有单价。",
+            "AI 网关和 Jeeves 的对外发布时间、是否开源：只说了内部在用。",
+            "图表选择功能覆盖了多大范围的用户：只说「组织选择开启」时可用，没给比例。",
+            "PII 闸门的漏报率：只给了跳过率 98.7% 和阈值 0.4，没给漏掉多少含个人信息摘要。",
+            "搜索重排的 25% 提升是基于 20 个测试查询的小样本，不代表所有主题都这样。",
+            "作者自己也说，这篇文章预计两个月后就过时了。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "适合谁",
+      "blocks": [
+        {
+          "p": "如果你在跑一条带大模型调用的流水线，又有大量简单判断（是不是 PII、该不该回、选哪个模型），决策模型值得一试：便宜、快、还能把不确定性明说。代价是要为每个任务、每个模型重新校准阈值，必要时先跑影子模式。"
+        },
+        {
+          "p": "给三类人的建议：如果你手里是高频的 yes/no 或选择题，直接用决策模型当前置闸门；如果你想给大模型调用加一层省钱预检，先想清楚漏报和误报哪个更贵，再定阈值；如果你的任务需要多步推理、大上下文或开放评分，别硬塞给决策模型，老实用大模型，或者看看 Jeeves 这类混合模型。"
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Not everything needs an LLM",
+      "publisher": "PostHog (newsletter)",
+      "date": "2026-11-09",
+      "url": "https://newsletter.posthog.com/p/decision-models"
+    },
+    "more": [
+      {
+        "label": "TypeSafe AI（对比数据的原始出处）",
+        "url": "https://newsletter.posthog.com/p/decision-models"
+      },
+      {
+        "label": "TypeSafe Docs（Jev token 上限与长上下文模式）",
+        "url": "https://newsletter.posthog.com/p/decision-models"
+      }
+    ],
+    "note": "对比倍数和 Jev 的 token 上限来自原文脚注转述的 TypeSafe AI / TypeSafe Docs，属二手数字。漏斗图中的 1.3% 由 100 减 98.7 得出，原文只给了 98.7%。所有含「示意」字样的图为辅助理解绘制。"
+  },
+  "claims": [
+    {
+      "text": "决策模型比前沿模型便宜最高 444.6 倍",
+      "value": "444.6x",
+      "source_url": "https://newsletter.posthog.com/p/decision-models",
+      "as_written": "444.6 倍",
+      "quote": "Decision models are up to 444.6x cheaper and 193.6x faster than frontier models"
+    },
+    {
+      "text": "决策模型比前沿模型快最高 193.6 倍",
+      "value": "193.6x",
+      "source_url": "https://newsletter.posthog.com/p/decision-models",
+      "as_written": "193.6 倍",
+      "quote": "Decision models are up to 444.6x cheaper and 193.6x faster than frontier models"
+    },
+    {
+      "text": "每条会话摘要经过决策模型的 2 道 yes/no 问题",
+      "value": "2",
+      "source_url": "https://newsletter.posthog.com/p/decision-models",
+      "as_written": "2 道",
+      "quote": "Each session summary goes through 2 yes/no questions from a decision model."
+    },
+    {
+      "text": "把一个大问题拆成两个窄问题，误报降到单问一道时的约十分之一",
+      "value": "a tenth",
+      "source_url": "https://newsletter.posthog.com/p/decision-models",
+      "as_written": "十分之一左右",
+      "quote": "Using narrow questions like this cuts false flags to about a tenth of what a single question produced."
+    },
+    {
+      "text": "任一题得分达到 0.4 或更高就交给 Gemini 重写",
+      "value": "0.4",
+      "source_url": "https://newsletter.posthog.com/p/decision-models",
+      "as_written": "0.4",
+      "quote": "If either scores 0.4 or above, Gemini rewrites the summary without the personal info"
+    },
+    {
+      "text": "生产环境里 98.7% 的摘要完全跳过大模型调用",
+      "value": "98.7%",
+      "source_url": "https://newsletter.posthog.com/p/decision-models",
+      "as_written": "98.7%",
+      "quote": "In production, 98.7% skip the LLM call entirely."
+    },
+    {
+      "text": "没有决策模型时，要把每条摘要都发给 Gemini 才能抓住那 1% 真正需要的",
+      "value": "1%",
+      "source_url": "https://newsletter.posthog.com/p/decision-models",
+      "as_written": "1%",
+      "quote": "or sending every summary to Gemini to catch the 1% that need it."
+    },
+    {
+      "text": "得分 0.85 仍意味着每 1,000 次检查约 150 次答错",
+      "value": "150",
+      "source_url": "https://newsletter.posthog.com/p/decision-models",
+      "as_written": "150 次左右",
+      "quote": "A probability score of 0.85 still means ~150 wrong answers per 1,000 checks"
+    },
+    {
+      "text": "Slack 机器人的消息检查阈值是 0.85 以上才介入",
+      "value": "0.85",
+      "source_url": "https://newsletter.posthog.com/p/decision-models",
+      "as_written": "0.85",
+      "quote": "Only messages that pass both at 0.85+ go through."
+    },
+    {
+      "text": "校准良好的模型里得分 0.8 的答案大约 80% 是对的",
+      "value": "0.8",
+      "source_url": "https://newsletter.posthog.com/p/decision-models",
+      "as_written": "0.8",
+      "quote": "In a calibrated model, answers that score 0.8 are right about 80% of the time."
+    },
+    {
+      "text": "得分 0.5 就是抛硬币",
+      "value": "0.5",
+      "source_url": "https://newsletter.posthog.com/p/decision-models",
+      "as_written": "0.5",
+      "quote": "That means a score of 0.5 is a coin flip."
+    },
+    {
+      "text": "在 20 个测试查询上，搜索重排把排序质量提高了约 25%",
+      "value": "25%",
+      "source_url": "https://newsletter.posthog.com/p/decision-models",
+      "as_written": "约 25%",
+      "quote": "On 20 test queries, this improved ranking quality by about 25%."
+    },
+    {
+      "text": "多步推理试验一次最多发 32 条会话",
+      "value": "32",
+      "source_url": "https://newsletter.posthog.com/p/decision-models",
+      "as_written": "32 条",
+      "quote": "up to 32 sessions and 12-38k tokens each"
+    },
+    {
+      "text": "多步推理试验每个请求 12k 到 38k 个 token",
+      "value": "12-38k",
+      "source_url": "https://newsletter.posthog.com/p/decision-models",
+      "as_written": "12,000 到 38,000 个",
+      "quote": "up to 32 sessions and 12-38k tokens each"
+    },
+    {
+      "text": "PR 评审 agent 的发现用五道 noul 问题打分，AUC 只有 0.52",
+      "value": "0.52",
+      "source_url": "https://newsletter.posthog.com/p/decision-models",
+      "as_written": "0.52",
+      "quote": "The results were inconclusive with an AUC of 0.52."
+    },
+    {
+      "text": "Jev 默认每次请求 64k token、每题 32k",
+      "value": "64k",
+      "source_url": "https://newsletter.posthog.com/p/decision-models",
+      "as_written": "64k",
+      "quote": "Jev takes 64k tokens per request and 32k per question by default."
+    },
+    {
+      "text": "TypeSafe 加了可选请求头把两个上限都提到 262k",
+      "value": "262k",
+      "source_url": "https://newsletter.posthog.com/p/decision-models",
+      "as_written": "262k",
+      "quote": "TypeSafe added an opt-in header that raises both to 262k"
+    },
+    {
+      "text": "图表选择的新做法会看结果的前三行",
+      "value": "first three rows",
+      "source_url": "https://newsletter.posthog.com/p/decision-models",
+      "as_written": "前三行",
+      "quote": "the SQL itself if your org opts in, and the first three rows of the results"
+    },
+    {
+      "text": "老规则里两列以上文本加一列数字给热力图",
+      "value": "Two or more",
+      "source_url": "https://newsletter.posthog.com/p/decision-models",
+      "as_written": "两列以上",
+      "quote": "Two or more text columns plus a number → Heatmap"
+    },
+    {
+      "text": "刺猬是哺乳动物吗：Yes，概率 0.99",
+      "value": "0.99",
+      "source_url": "https://newsletter.posthog.com/p/decision-models",
+      "as_written": "0.99",
+      "quote": "Noul. Are hedgehogs mammals? → Yes, 0.99"
+    },
+    {
+      "text": "刺猬的保护现状评分是 Least Concern、概率 0.77",
+      "value": "0.77",
+      "source_url": "https://newsletter.posthog.com/p/decision-models",
+      "as_written": "0.77",
+      "quote": "Score. What is the current conservation status of hedgehogs? → Least Concern, 0.77"
+    },
+    {
+      "text": "作者预计这篇文章两个月后过时",
+      "value": "two months",
+      "source_url": "https://newsletter.posthog.com/p/decision-models",
+      "as_written": "两个月",
+      "quote": "Words by Jina Yoon, who expects this article to be obsolete in two months."
+    }
+  ],
+  "cover": {
+    "headline": "98.7% 不用调大模型",
+    "highlight": "决策模型先筛一道",
+    "big": {
+      "value": "98.7",
+      "unit": "%",
+      "label": "请求跳过大模型"
+    },
+    "glyph": {
+      "kind": "funnel",
+      "stages": [
+        {
+          "label": "会话摘要",
+          "value": 100,
+          "display": "100",
+          "tone": "base"
+        },
+        {
+          "label": "两道决策题",
+          "value": 98.7,
+          "display": "98.7",
+          "tone": "hi"
+        },
+        {
+          "label": "交 Gemini",
+          "value": 1.3,
+          "display": "1.3",
+          "tone": "dim"
+        }
+      ]
+    }
+  },
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "origin": "auto",
+    "candidate": "b8930a9a56",
+    "tier": "official",
+    "via": "https://xiaohu.ai/article/posthog-decision-models/",
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "generated_at": "2026-11-25T09:05:18.963Z"
+  }
+}
