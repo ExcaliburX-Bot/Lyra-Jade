@@ -1,0 +1,492 @@
+{
+  "slug": "mcp-servers-ship-skills-tasks-and-more",
+  "date": "2026-11-24",
+  "category": "product",
+  "publisher": "Anthropic",
+  "topics": [
+    "claude"
+  ],
+  "title": "MCP servers can now ship skills, run long tasks, request sign-off, and receive files",
+  "summary": "Connect Claude to an MCP server and the server no longer just lists its tools. It can send over its playbook too: skills load only when needed, long tasks run in the background, critical actions pause for your approval, and files go straight through without touching the context window.",
+  "ai_summary": "Anthropic has added four capabilities to MCP. The centerpiece is Skills over MCP: servers publish skills alongside their tools, Claude loads them only when needed, and they update with the server; it is now in public beta. Tasks and Elicitation are generally available: Tasks lets servers run long jobs in the background, while Elicitation pauses actions such as spending money or deleting data for user confirmation. File Uploads is rolling out soon: PDFs, spreadsheets, and images go directly to a server, bypassing the context window. On the ecosystem side, monthly MCP SDK downloads top 700 million and there are more than 10,000 connectors; on-demand tool search can cut context use by over 85% in multi-server setups. Pro, Max, and Ultra plans get Skills by default, Team admins can enable it, and Enterprise support is coming soon.",
+  "brief": [
+    "Skills over MCP is now in public beta: skills ship and update with the server, and Claude loads them only when needed.",
+    "Tasks and Elicitation are generally available: long tasks run in the background, and actions like spending money or deleting data pause for confirmation.",
+    "File Uploads is rolling out soon: PDFs, spreadsheets, and images go straight to the server without passing through the context window.",
+    "Scale: MCP sees more than 700 million SDK downloads per month; on-demand tool search in multi-server setups can cut context use by over 85%."
+  ],
+  "readMinutes": 8,
+  "cover": {
+    "headline": "MCP servers can now ship skills",
+    "highlight": "Plus run long tasks, ask for confirmation, and accept files",
+    "glyph": {
+      "kind": "hub",
+      "center": {
+        "label": "MCP server",
+        "tone": "hi"
+      },
+      "nodes": [
+        {
+          "label": "Skills",
+          "tone": "base"
+        },
+        {
+          "label": "Tasks",
+          "tone": "base"
+        },
+        {
+          "label": "Confirmation",
+          "tone": "base"
+        },
+        {
+          "label": "Files",
+          "tone": "base"
+        }
+      ]
+    }
+  },
+  "sections": [
+    {
+      "h": "What it is: MCP servers go from tool catalogs to partners",
+      "blocks": [
+        {
+          "p": "MCP stands for Model Context Protocol, a standard interface that lets Claude connect to your company's data and applications. Anthropic released it two years ago, and it has become a common connectivity layer in the agent ecosystem. In one sentence: MCP servers no longer just list tool names; they can now behave more like another agent, sharing skills with Claude, taking on long tasks, pausing for confirmation, and receiving files directly."
+        },
+        {
+          "p": "Rollout status comes in three tiers: Skills over MCP is in public beta; Tasks and Elicitation are generally available (GA); File Uploads is coming soon. All four capabilities are part of the open MCP spec and its extensions, so once a server supports them, any compatible client can use them, not just Claude."
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "Two years of MCP ecosystem scale",
+            "subtitle": "Figures from Anthropic's announcement",
+            "items": [
+              {
+                "value": 700,
+                "unit": "million per month",
+                "label": "Monthly MCP SDK downloads",
+                "note": "Source wording: over 700 million"
+              },
+              {
+                "value": 10000,
+                "unit": "connectors",
+                "label": "MCP connectors for Claude",
+                "note": "Source wording: over 10,000"
+              },
+              {
+                "value": 85,
+                "unit": "%",
+                "label": "Context saved in multi-server setups",
+                "note": "On-demand tool search"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "Four new capabilities, and the gaps they fill",
+      "blocks": [
+        {
+          "p": "Taken together, they close the same gap: before, Claude and a server mostly exchanged tool calls and results, which ruled out many real business actions. Now a server can share its playbook, take on long-running work, ask a human mid-task, and accept files directly, making it more like a long-term partner."
+        },
+        {
+          "fig": {
+            "type": "cards",
+            "title": "Four new capabilities, each with a role to play",
+            "subtitle": "Illustrative: amber marks the centerpiece, skills; the others are generally available or coming soon.",
+            "note": "Status labels are from the announcement.",
+            "items": [
+              {
+                "glyph": {
+                  "kind": "doc",
+                  "lines": 8,
+                  "select": [
+                    2,
+                    4
+                  ]
+                },
+                "title": "Skills",
+                "desc": "Servers publish best practices, step-by-step workflows, and custom playbooks; Claude loads them only when needed, and they update with the server.",
+                "tags": [
+                  "public beta",
+                  "On-demand loading"
+                ],
+                "tone": "hi"
+              },
+              {
+                "glyph": {
+                  "kind": "clock",
+                  "segments": [
+                    {
+                      "from": 9,
+                      "to": 14,
+                      "tone": "base",
+                      "label": "Background task"
+                    }
+                  ]
+                },
+                "title": "Tasks",
+                "desc": "Long tasks run on the server in the background; Claude keeps working and picks up the result when it's ready.",
+                "tags": [
+                  "Generally available",
+                  "Long-running"
+                ],
+                "tone": "base"
+              },
+              {
+                "glyph": {
+                  "kind": "chat",
+                  "turns": [
+                    {
+                      "role": "ai",
+                      "text": "Delete this data?",
+                      "tone": "base"
+                    },
+                    {
+                      "role": "user",
+                      "text": "Confirm",
+                      "tone": "base"
+                    }
+                  ]
+                },
+                "title": "Elicitation",
+                "desc": "Pauses actions such as payments or data deletion mid-call, asks for user consent through a form or link, then resumes.",
+                "tags": [
+                  "Generally available",
+                  "Human approval"
+                ],
+                "tone": "base"
+              },
+              {
+                "glyph": {
+                  "kind": "devices",
+                  "left": {
+                    "kind": "laptop",
+                    "label": "Claude",
+                    "tone": "def"
+                  },
+                  "right": {
+                    "kind": "server",
+                    "label": "MCP server",
+                    "tone": "base"
+                  },
+                  "arrow": true
+                },
+                "title": "File Uploads",
+                "desc": "Sends PDFs, spreadsheets, and images directly to the server, bypassing the context window.",
+                "tags": [
+                  "Coming soon",
+                  "Saves context"
+                ],
+                "tone": "base"
+              }
+            ]
+          }
+        },
+        {
+          "fig": {
+            "type": "quote",
+            "title": "How Anthropic frames this update",
+            "text": "Claude can work with a server more like it works with another agent: learning from it, delegating to it, and exchanging input and files along the way.",
+            "who": "Anthropic",
+            "role": "Official announcement",
+            "source_url": "https://claude.com/resources/articles/skills-over-mcp-tasks-and-more"
+          }
+        }
+      ]
+    },
+    {
+      "h": "Skills: shipping the how-to, not just the tool",
+      "blocks": [
+        {
+          "p": "Tool names and descriptions tell Claude what a server has, not how to handle a job well. A CRM server may expose a 'look up customer' tool, but a full onboarding flow for new customers is hard to explain through tool descriptions alone."
+        },
+        {
+          "p": "Skills over MCP lets servers package that know-how into skills and publish them alongside tools. A skill can contain best practices, step-by-step workflows, or even playbooks tailored to a specific account or organization. Two user-friendly details: Claude loads a skill only when it's needed, so the context window doesn't fill up; and skills update with the server, so developers ship tools and guidance together and users have nothing extra to install."
+        },
+        {
+          "list": [
+            "Already using it:",
+            "Shopify: lets Claude design and update a merchant's online store end to end.",
+            "HubSpot: onboards new customers and gets them set up inside Claude.",
+            "Atlassian: lets Claude draw on deep organizational context for insights and work analysis.",
+            "Carta: will draft and issue equity from an uploaded document (coming soon)."
+          ]
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "Before: tools only. Now: four more capabilities.",
+            "subtitle": "Amber marks the four new capabilities; blue marks the existing tools.",
+            "left": {
+              "label": "Before",
+              "sub": "Servers mostly exposed tools",
+              "items": [
+                {
+                  "label": "Tools",
+                  "tag": "Name + description",
+                  "state": "def"
+                }
+              ]
+            },
+            "right": {
+              "label": "Now",
+              "sub": "Four more beyond tools",
+              "items": [
+                {
+                  "label": "Tools",
+                  "tag": "Name + description",
+                  "state": "def"
+                },
+                {
+                  "label": "Skills",
+                  "tag": "Best practices, workflows",
+                  "state": "hi"
+                },
+                {
+                  "label": "Tasks",
+                  "tag": "Long tasks in the background",
+                  "state": "hi"
+                },
+                {
+                  "label": "Elicitation",
+                  "tag": "User consent mid-call",
+                  "state": "hi"
+                },
+                {
+                  "label": "File Uploads",
+                  "tag": "Files skip context",
+                  "state": "hi"
+                }
+              ]
+            },
+            "footer": "Servers go from tool catalogs to something more like a partner."
+          }
+        }
+      ]
+    },
+    {
+      "h": "Tasks and Elicitation: long jobs in the background, confirmation for critical actions",
+      "blocks": [
+        {
+          "p": "Tasks is for long-running work. Before, a tool call had to finish before Claude could move on. Now servers can run time-consuming operations in the background, even full agent loops, while Claude keeps working and picks up the result when it's ready. ZoomInfo uses it for deeper account and contact research that previously required several prompts."
+        },
+        {
+          "p": "Elicitation is for the mid-call human sign-off. Some actions need user consent, such as spending money or deleting data. A server can pause mid-call, ask for input through a form or link, then continue where it left off."
+        },
+        {
+          "fig": {
+            "type": "route",
+            "title": "Hand off a long task and Claude doesn't wait around",
+            "subtitle": "Illustrative: local color shows Claude's main thread; cloud color shows the background task on the server.",
+            "root": {
+              "label": "Claude",
+              "sub": "Sends a long task request"
+            },
+            "branches": [
+              {
+                "tone": "cloud",
+                "label": "MCP server",
+                "items": [
+                  "Runs time-consuming work in the background",
+                  "or full agent loops",
+                  "Returns the result when ready"
+                ],
+                "note": "Tasks extension"
+              },
+              {
+                "tone": "local",
+                "label": "Claude's main thread",
+                "items": [
+                  "Doesn't wait",
+                  "Keeps working on other things",
+                  "Picks up the result later"
+                ],
+                "note": "Before, tool calls had to finish first"
+              }
+            ]
+          }
+        },
+        {
+          "list": [
+            "Already using it:",
+            "Supabase: confirms costs before creating a paid project or running destructive SQL.",
+            "Railway: asks before potentially destructive changes, such as deleting a service.",
+            "GitHub: has users enter the repository name before an agent deletes it."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "File Uploads: large files without the context hit",
+      "blocks": [
+        {
+          "p": "File Uploads lets Claude pass files to MCP servers, not just text. The key point: PDFs, spreadsheets, and images go directly to the server, bypassing the context window. That means large files no longer eat into the model's limited attention, and it makes handing files to the server for processing much smoother."
+        },
+        {
+          "p": "Like Skills, it's part of the open extensions. It is rolling out soon, starting with Pro, Max, and Ultra plans and eligible Team and Enterprise plans."
+        }
+      ]
+    },
+    {
+      "h": "What else changed under the hood this year",
+      "blocks": [
+        {
+          "p": "Beyond the four new capabilities, Anthropic also outlined improvements to MCP's foundations, all aimed at making production use cheaper and easier to manage."
+        },
+        {
+          "list": [
+            "More token-efficient: tool search loads tool definitions only when needed, which can cut the context they use by more than 85% in multi-server setups.",
+            "Easier to scale: the latest MCP spec is stateless and supported across Claude products, so servers are easier to maintain as they grow.",
+            "Simpler to authorize: the Enterprise Managed Auth extension lets admins authorize supported servers once, so users connect automatically.",
+            "More interactive: the MCP Apps extension brings full interfaces into Claude, beside the conversation or in full screen."
+          ]
+        },
+        {
+          "fig": {
+            "type": "illustration",
+            "title": "On-demand tool search can cut context use by over 85%",
+            "subtitle": "Illustrative: 100 dots represent the context used by tool definitions; amber marks the saved portion.",
+            "glyph": {
+              "kind": "dots",
+              "total": 100,
+              "hi": 85
+            }
+          }
+        }
+      ]
+    },
+    {
+      "h": "Who can use it and how to enable it",
+      "blocks": [
+        {
+          "p": "Availability varies by plan, and the four capabilities are not all at the same stage:"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Status and plan availability for the four capabilities",
+            "subtitle": "Status and availability from the official announcement",
+            "columns": [
+              "Capability",
+              "Status",
+              "Availability"
+            ],
+            "rows": [
+              [
+                "Skills over MCP",
+                "Public beta",
+                "Pro / Max / Ultra on by default; Team via admin enablement; Enterprise coming soon"
+              ],
+              [
+                "Tasks",
+                "Generally available",
+                "Pro / Max / Ultra; rolling out to Team / Enterprise"
+              ],
+              [
+                "Elicitation",
+                "Generally available",
+                "Pro / Max / Ultra; rolling out to Team / Enterprise"
+              ],
+              [
+                "File Uploads",
+                "Coming soon",
+                "Pro / Max / Ultra and eligible Team / Enterprise plans"
+              ]
+            ]
+          }
+        },
+        {
+          "p": "Pricing: the announcement doesn't list separate pricing for these capabilities or plan prices; it only says which plans include them. Enterprise pricing requires contacting Anthropic sales."
+        }
+      ]
+    },
+    {
+      "h": "What Anthropic hasn't said",
+      "blocks": [
+        {
+          "list": [
+            "Pricing: no separate pricing for the four capabilities, and no plan prices.",
+            "File Uploads has no specific launch date, just 'rolling out soon.'",
+            "No specific date for Skills on Enterprise, just 'coming soon.'",
+            "The 'over 85%' figure is for multi-server setups; the announcement doesn't say how much a single server saves.",
+            "The announcement doesn't detail how skills differ from tools on permissions or token billing.",
+            "Carta's equity feature is only marked 'coming soon,' with no date."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Who it's for",
+      "blocks": [
+        {
+          "p": "Value: for teams that connect Claude to business systems, this update lowers the cost of teaching Claude how your company works and handing it long-running jobs. The tradeoff: Team and Enterprise plans either need an admin to enable features or have to wait longer."
+        },
+        {
+          "callout": {
+            "kind": "takeaway",
+            "title": "By role",
+            "list": [
+              "Pro / Max / Ultra users: you can try Skills, Tasks, and Elicitation now; just connect to servers that support them.",
+              "Team admins: enable Skills from the admin console; Tasks and Elicitation are rolling out gradually.",
+              "Server developers: follow the official docs to add Skills, Tasks, Elicitation, and File Uploads support. Because these are open specs, other compatible clients can use them once you do.",
+              "If context and cost are your focus: look first at File Uploads and on-demand tool search; both are about saving context."
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "MCP servers can now ship skills, run tasks, and more with Claude",
+      "publisher": "Anthropic",
+      "date": "2026-11-24",
+      "url": "https://claude.com/resources/articles/skills-over-mcp-tasks-and-more"
+    },
+    "more": [],
+    "note": "Images are illustrative. Capability status, plan availability, and ecosystem figures come from the official announcement. The 'over 85%' context savings is Anthropic's figure for multi-server setups."
+  },
+  "claims": [
+    {
+      "text": "MCP sees more than 700 million SDK downloads per month (vendor figure).",
+      "value": "over 700 million",
+      "source_url": "https://claude.com/resources/articles/skills-over-mcp-tasks-and-more",
+      "as_written": "over 700 million",
+      "quote": "MCP now sees over 700 million monthly SDK downloads"
+    },
+    {
+      "text": "Claude has more than 10,000 MCP connectors (vendor figure).",
+      "value": "over 10,000",
+      "source_url": "https://claude.com/resources/articles/skills-over-mcp-tasks-and-more",
+      "as_written": "over 10,000",
+      "quote": "there are over 10,000 MCP connectors for Claude"
+    },
+    {
+      "text": "In multi-server setups, on-demand tool search can cut the context used by tool definitions by more than 85% (vendor figure).",
+      "value": "over 85%",
+      "source_url": "https://claude.com/resources/articles/skills-over-mcp-tasks-and-more",
+      "as_written": "over 85%",
+      "quote": "which can cut the context they use by over 85% in multi-server setups"
+    },
+    {
+      "text": "Anthropic released MCP two years ago.",
+      "value": "Two years ago",
+      "source_url": "https://claude.com/resources/articles/skills-over-mcp-tasks-and-more",
+      "as_written": "two years ago",
+      "quote": "Two years ago, Anthropic launched the Model Context Protocol (MCP) as a new standard for connecting AI agents to the systems where data lives."
+    },
+    {
+      "text": "The announcement was published on November 24, 2026.",
+      "value": "Nov 24, 2026",
+      "source_url": "https://claude.com/resources/articles/skills-over-mcp-tasks-and-more",
+      "as_written": "November 24, 2026",
+      "quote": "Article Nov 24, 2026"
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "97844b8638476fc5"
+}
