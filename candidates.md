@@ -1,23 +1,14 @@
-# 候选清单（2026-11-25 02:52 UTC）
+# 候选清单（2026-11-25 11:56 UTC）
 
 | 分数 | 标题 | 发布方 | 层级 | 相关报道 |
 | --- | --- | --- | --- | --- |
-| 6 | [GPT-6 models demonstrate intrinsic protein-design capabilities](https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities) | OpenAI | official | 0 |
-| 5.9 | [Measuring and mitigating agent sandbox escape with Siren](https://safeguards.anthropic.com/2026/siren/) | Anthropic | official | 0 |
-| 5.2 | [Searching for distant planets with Astra](https://openai.com/index/searching-for-distant-planets-with-astra) | OpenAI | official | 0 |
-| 5.1 | [Slide decks you create in Perplexity Computer now have a native viewer](https://x.com/AravSrinivas/status/2125364190802227680) | @AravSrinivas | official | 0 |
-| 5.1 | [Our new Spanish voices have arrived](https://x.com/inworld/status/2125292918697050196) | @inworld | official | 0 |
-| 4.7 | [How Intentful uses dots to make more time for growth](https://openai.com/business/customer-stories/intentful-dots) | OpenAI | official | 0 |
-| 4.7 | [Clay helps sales teams win with Codex and ChatGPT](https://openai.com/business/customer-stories/clay-plugins-openai) | OpenAI | official | 0 |
-| 4.6 | [The Google DeepMind Easy Read Co-Creator Tool](https://www.mencap.org.uk/what-we-do/accessibility/google-deepmind-easy-read-co-creator-tool) | Google DeepMind | official | 0 |
-| 4.4 | [Pika 发布了一个全新的 AI视频工具Enact：能模仿片场当导演现场实时导戏 视频一边播一边改，能拖人摆位、还能给 AI 演员说戏](https://pika.art/blog/pika-enact) | pika.art | official | 0 |
-| 4.4 | [Ideogram 发布了 Ideogram 4.6 模型：原生 4K 出图 宣称为迄今最精确的改图模型](https://ideogram.ai/models/4.6) | ideogram.ai | official | 0 |
-| 4.4 | [Microsoft launched Canvas, a new workspace powered by MAI Image 2.7 Flash](https://labs.microsoft.ai/?model=canvas) | @MicrosoftAI | official | 0 |
-| 4.4 | [Inworld 开源两款语音模型：降噪时留下笑声和呼吸，能智能判断你「说完了」笔记本就能跑](https://inworld.ai/blog/introducing-voice-isolator) | inworld.ai | official | 0 |
-| 4.4 | [Google 发布 Gemini 4 Neon 模型：由旗舰 Carbon 蒸馏而来 编程 Agent 榜第一 智能指数 61 分排总榜第 3](https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/) | Google | official | 0 |
-| 4.4 | [Google AI Studio 推出全栈安卓开发：一句话做出带云数据库、Google 登录和 Gemini 的 App，直接装进自己手机](https://developers.googleblog.com/build-full-stack-android-apps-with-gemini-in-google-ai-studio/) | developers.googleblog.com | official | 0 |
-| 4.4 | [PostHog 分享决策模型的四种用法：拦在大模型前面、给模型派活、给搜索重排、替规则挑图表](https://newsletter.posthog.com/p/decision-models) | newsletter.posthog.com | official | 0 |
-| 4.4 | [Anthropic 推出 Claude Code 实验功能 Code Mode：写一段代码串起多次工具调用，能并行跑命令、只读需要的结果](https://code.claude.com/docs/en/code-mode) | code.claude.com | official | 0 |
+| 6.3 | [MCP servers can now ship skills, run tasks, and more with Claude](https://claude.com/resources/articles/skills-over-mcp-tasks-and-more) | Anthropic | official | 1 |
+| 5.9 | [Sand.ai 发布 MAGI-2 视频模型：平替 Seedance，价格仅为其 1/10，即将开源](https://sand.ai/blog/magi-2) | sand.ai | official | 0 |
+| 5.9 | [Midjourney 发布 Niji 8：历代最快的 Niji，编辑功能接替角色参考 cref](https://nijijourney.com/ja/blog/niji-8) | nijijourney.com | official | 0 |
+| 5.9 | [Anthropic 推出 Claude「安装为应用」：对话生成的工具直接变 Mac 和 Windows 桌面软件，能进菜单栏和读写文件](https://claude.com/resources/articles/install-as-app) | claude.com | official | 0 |
+| 5.1 | [Google 正式开放 Workspace MCP 与命令行工具 gwscli：8 款应用免费日调用 5000 次，个人模式一键免审核](https://developers.google.com/workspace/guides/workspace-cli) | developers.google.com | official | 0 |
+| 4.9 | [An Indic Voice Agent with CUGA](https://huggingface.co/blog/ibm-research/an-indic-voice-agent-with-cuga) | Hugging Face | primary | 0 |
+| 4.4 | [Anthropic 发布 58 家企业 AI 访谈报告：三分之二缩减招聘，高回报靠改分工与流程](https://www.anthropic.com/research/working-with-ai) | Anthropic | official | 0 |
 | 4.4 | [Mirelo 发布 Sound Agent：一句话给视频加音效、去配乐、拆人声，还能配成 32 种语言](https://mirelo.ai/blog/mirelo-sound-agent) | mirelo.ai | official | 0 |
 | 4.4 | [Higgsfield 发布 AI 品牌吉祥物教程：不训练模型，靠固定描述和三张参考表画同一只熊](https://higgsfield.ai/zh/blog/consistent-brand-mascot-ai) | higgsfield.ai | official | 0 |
 | 4.2 | [Perplexity and Intelligence](https://openai.com/index/perplexity-and-intelligence) | OpenAI | official | 0 |
@@ -42,5 +33,14 @@
 | 4.2 | [How Revolut raises ambition without lowering the bar](https://openai.com/business/customer-stories/revolut) | OpenAI | official | 0 |
 | 4.2 | [Our first phase of embedded assessments](https://openai.com/index/our-first-phase-of-embedded-assessments) | OpenAI | official | 0 |
 | 4.2 | [More ways to move care forward with ChatGPT for Healthcare](https://openai.com/index/more-ways-to-move-care-forward-with-chatgpt-for-healthcare) | OpenAI | official | 0 |
+| 4.2 | [At Holiday Extras, dots get to work before anyone asks](https://openai.com/business/customer-stories/holiday-extras-dots) | OpenAI | official | 0 |
+| 4.2 | [Our new blog for science](https://openai.com/index/our-new-blog-for-science) | OpenAI | official | 0 |
+| 4.2 | [AlphaGenome 2: Deciphering how cells read DNA to better understand disease](https://deepmind.google/blog/alphagenome-2-deciphering-how-cells-read-dna-to-better-understand-disease/) | Google DeepMind | official | 0 |
+| 4.1 | [Connectors and skills come together as plugins](https://x.com/claudeai/status/2124970294523945328) | @claudeai | official | 0 |
+| 4.1 | [If you’re in Europe, you get a month of Vibe Pro for free](https://x.com/MistralAI/status/2124905610386780451) | @MistralAI | official | 0 |
+| 4.1 | [Returning to the Neuron Basis for Interpretability, Part 1: Answering Three Objections](https://alignment.anthropic.com/2026/neuron-basis-theory/) | Anthropic | official | 1 |
+| 4.1 | [Zero data retention with Enterprise Frontier Safeguards is now in beta](https://claude.com/resources/articles/zero-data-retention-with-enterprise-frontier-safeguards) | Anthropic | official | 0 |
+| 4.1 | [Into the Omniverse: How Developers Turn Ideas Into Simulations With Frontier AI Agents](https://blogs.nvidia.com/blog/developers-simulation-frontier-ai-agents/) | NVIDIA | official | 0 |
+| 4.1 | [We’re partnering with Blue Origin on our first heavy-lift Project Suncatcher launch.](https://blog.google/innovation-and-ai/models-and-research/google-research/blue-origin-project-suncatcher-partnership/) | Google | official | 0 |
 
 **超过 30 天没有新内容的源**：Mistral 新闻、Kimi 博客
