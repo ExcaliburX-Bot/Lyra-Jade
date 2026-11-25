@@ -70,5 +70,65 @@
     "reason": "材料太短（0 字），自动跳过",
     "title": "智谱发布 GLM-5.4：一款基于 Loop Transformer（循环架构） 的 750B 旗舰 AI 模型 编码能力增强",
     "at": "2026-11-24T20:42:55.830Z"
+  },
+  {
+    "id": "71996d9786",
+    "reason": "OpenAI 客户案例（Customer stories：iFood 如何规模化使用编程智能体），按规范不写",
+    "title": "How iFood scales coding agents across 15,000 repositories",
+    "at": "2026-11-25T01:52:27.879Z"
+  },
+  {
+    "id": "c76ecea55a",
+    "reason": "a16z 的 Agent 购物测试分析文章，不是厂商发布的新产品、功能、开源或论文",
+    "title": "a16z 公开 1.1 万多次 Agent 购物测试：流量入口正在从“人眼搜索”转向“机器读取 + 交易闭环”",
+    "at": "2026-11-25T01:52:27.926Z"
+  },
+  {
+    "id": "1c3eaf246b",
+    "reason": "同一事件已写过（rtx-spark-compact-desktops，主材料同一篇 NVIDIA 博客），且发布于 2026-11-18，已超过 72 小时",
+    "title": "NVIDIA RTX Spark Compact Desktops Out Now",
+    "at": "2026-11-25T01:52:27.966Z"
+  },
+  {
+    "id": "d3bf659ccf",
+    "reason": "官方页面日期 2026-11-17，已超过 72 小时",
+    "title": "MAI Image 2.7: Frontier quality at a fraction of the cost",
+    "at": "2026-11-25T01:52:28.002Z"
+  },
+  {
+    "id": "e793852d37",
+    "reason": "官方页面日期 2026-11-17，已超过 72 小时",
+    "title": "MAI Realtime 1: Leading voice AI at $0.01 per audio minute",
+    "at": "2026-11-25T01:52:28.051Z"
+  },
+  {
+    "id": "63ca2eddd0",
+    "reason": "Gemini 4 Neon 发布稿已于 11 月 18 日写过，这条是 Workspace 开通的后续消息，属同一事件",
+    "title": "Gemini 4 Neon is now rolled out to @GoogleWorkspace customers through the Gemini App!",
+    "at": "2026-11-25T01:52:28.089Z"
+  },
+  {
+    "id": "74d5169d80",
+    "reason": "论文首发于 2026-10-19（arXiv:2610.26825），11-23 只是 v5 修订，已超过 72 小时",
+    "title": "MemOS 与 NVIDIA 发布 MemT-1.0-Pro：554B 记忆原生大模型 将历史信息存储在原生记忆中 可随时直接使用",
+    "at": "2026-11-25T01:52:28.132Z"
+  },
+  {
+    "id": "a5b77eee49",
+    "reason": "GPT-6.2 提示指南，候选标注 2026-11-21，已超过 72 小时；该系列发布稿已写过",
+    "title": "OpenAI 发布 GPT-6.2 提示指南：能拆开的活交给子 Agent，精简AGENTS.md 只写代码里推不出来的事",
+    "at": "2026-11-25T01:52:28.169Z"
+  },
+  {
+    "id": "4bd6f0b210",
+    "reason": "候选标注 2026-11-21，已超过 72 小时",
+    "title": "OpenAI 公开其个人 Agent Dot 背后的时间感知技术：Bot 如何能在特定状态下感知并提醒你",
+    "at": "2026-11-25T01:52:28.209Z"
+  },
+  {
+    "id": "a0ebc9ee45",
+    "reason": "官方页面日期为 2026-11-20，已超过 72 小时",
+    "title": "Thinking Machines 发布 Inkling 2 Mini 模型：32GB 内存的 Mac 就能本地跑 在断网的 MacBook 上几分钟写出能玩的飞行模拟器",
+    "at": "2026-11-25T01:52:28.249Z"
   }
 ]
