@@ -1,0 +1,1648 @@
+{
+  "slug": "chinchilla-training-compute-optimal-large-language-models",
+  "category": "paper",
+  "publisher": "Hoffmann 等 · DeepMind",
+  "date": "2022-03-29",
+  "title": "精读《Chinchilla》：同样的算力，700 亿参数为什么赢了 2800 亿？",
+  "summary": "Chinchilla 推翻了“算力多了主要加参数”的旧结论：模型和数据应该同步增长，大约每个参数配 20 个 token。我们拆开旧实验的学习率偏差、三种估计方法和损失的三项分解，手算一条 IsoFLOP 山谷，再列出论文里对不上的数字和 LLaMA 之后的新考虑。",
+  "ai_summary": "《Training Compute-Optimal Large Language Models》（DeepMind，2022）训练了 400 多个模型，用三种方法估计固定算力下的最优分配，结论一致：模型大小和训练数据都约按算力的 0.5 次方增长，约每个参数 20 个 token，而不是 Kaplan 等人的 0.73 和 0.27。差异主要来自旧实验对所有模型用同一个学习率计划。按此训练的 700 亿参数 Chinchilla 用 Gopher 的算力看了 1.4 万亿 token，MMLU 达到 67.6%，几乎全面超过 2800 亿参数的 Gopher。论文多处数字前后不一；后来 LLaMA 把推理成本也算进来，选择训练得更久的小模型。",
+  "brief": [
+    "问题：算力固定时模型该多大、数据该多少？当时的大模型都在加参数，训练数据停在约 3000 亿 token。",
+    "方法：训练 400 多个模型，用训练曲线下包络、IsoFLOP 山谷、损失三项分解三种方法独立估计。",
+    "结果：模型和数据应同步增长，约每参数 20 个 token；700 亿参数的 Chinchilla 用同样算力打败 2800 亿的 Gopher。",
+    "局限：大规模验证只有一对模型，还混有优化器等差异；没有考虑推理成本，多处数字前后不一。"
+  ],
+  "paper": {
+    "title": "Training Compute-Optimal Large Language Models",
+    "authors": "Jordan Hoffmann, Sebastian Borgeaud, Arthur Mensch, Elena Buchatskaya, Trevor Cai, Eliza Rutherford 等 22 位作者",
+    "org": "DeepMind",
+    "venue": "NeurIPS 2022",
+    "year": 2022,
+    "arxiv": "2203.15556",
+    "url": "https://arxiv.org/abs/2203.15556"
+  },
+  "cover": {
+    "headline": "Chinchilla 原论文精读",
+    "highlight": "模型和数据要同步长大",
+    "big": {
+      "value": "20",
+      "unit": "个 token",
+      "label": "算力最优时，每个参数大约配的训练数据"
+    }
+  },
+  "sections": [
+    {
+      "h": "先说结论：这篇论文到底做了什么",
+      "blocks": [
+        {
+          "p": "2022 年 3 月，DeepMind 的 22 位作者发布了这篇 36 页的论文。它重新回答了上一篇精读《Scaling Laws》问过的问题：**算力预算固定时，模型该做多大、该喂多少数据？**"
+        },
+        {
+          "p": "两年前 OpenAI 的结论是：算力多了，主要该放大模型，数据只需慢慢加。这篇论文用 400 多个模型重做实验，得出了截然不同的答案：**模型大小和训练数据应该同比例增长**，模型每大一倍，数据也该多一倍。按他们的估算，算力最优时，每个参数大约要配 20 个训练 token。"
+        },
+        {
+          "p": "照这个标准，当时的大模型都“喂得太少”了：GPT-3、Gopher、MT-NLG 这些上千亿参数的模型，大多只训练了约 3000 亿个 token。为了验证，作者用和 Gopher（2800 亿参数）**完全相同的算力**，训练了一个只有 700 亿参数、但看了 1.4 万亿 token 的模型，起名 Chinchilla（龙猫）。结果它在几乎所有评测上都超过了 Gopher，在 MMLU 上从 60.0% 提到 67.6%。模型小了 4 倍，用起来也便宜得多。"
+        },
+        {
+          "p": "这篇论文改变了整个行业训练大模型的方式。此后各家不再一味堆参数，而是把训练数据推到上万亿 token；再往后，大家甚至有意把模型训练得比“算力最优”更久，因为模型小一点，部署时省下的钱更多。"
+        },
+        {
+          "callout": {
+            "kind": "takeaway",
+            "title": "一句话版本",
+            "text": "固定算力下，最优的模型大小 N 和训练 token 数 D 都约按算力的 0.5 次方增长：模型大 1 倍，数据也多 1 倍，大约每个参数配 20 个 token。三种独立的估计方法得出同样结论，700 亿参数的 Chinchilla 用同样算力打败了 2800 亿参数的 Gopher。"
+          }
+        },
+        {
+          "callout": {
+            "kind": "prereq",
+            "title": "读这篇需要的四个小概念",
+            "text": "不懂也没关系，这四条够用了：",
+            "list": [
+              "**损失和幂律**：损失衡量模型猜下一个词有多不准；它随模型大小、数据量按幂律下降。详见我们的《Scaling Laws》精读。",
+              "**训练算力 ≈ 6ND**：训练一个 N 参数的模型看 D 个 token，大约需要 6 × N × D 次浮点运算。所以算力固定时，N 和 D 是此消彼长的。",
+              "**IsoFLOP**：“等算力”的意思。一条 IsoFLOP 曲线就是：算力相同，换不同的模型大小（数据量随之变化），看哪种组合损失最低。",
+              "**余弦学习率计划**：学习率从高处按余弦曲线慢慢降低。它的“周期长度”要事先定好，这一点是本文的关键。"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "问题：大家都在加参数，却没加数据",
+      "blocks": [
+        {
+          "p": "2020 年《Scaling Laws》给出的建议是：算力每多 10 倍，模型放大约 5.5 倍，数据只多约 1.8 倍（这是本文转述的数字）。之后两年的大模型基本照此执行，参数从 1750 亿涨到 5300 亿，训练数据却几乎停在 3000 亿 token 左右："
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "当时最大的几个模型：参数越来越多，数据几乎没动",
+            "subtitle": "来自论文表 1；“每参数 token 数”由本站计算。琥珀色是 Chinchilla",
+            "columns": [
+              "模型",
+              "参数",
+              "训练 token",
+              "每个参数配多少 token"
+            ],
+            "rows": [
+              [
+                "LaMDA",
+                "1370 亿",
+                "1680 亿",
+                "约 1.2"
+              ],
+              [
+                "GPT-3",
+                "1750 亿",
+                "3000 亿",
+                "约 1.7"
+              ],
+              [
+                "Jurassic",
+                "1780 亿",
+                "3000 亿",
+                "约 1.7"
+              ],
+              [
+                "Gopher",
+                "2800 亿",
+                "3000 亿",
+                "约 1.1"
+              ],
+              [
+                "MT-NLG 530B",
+                "5300 亿",
+                "2700 亿",
+                "约 0.5"
+              ],
+              [
+                "Chinchilla",
+                "700 亿",
+                "1.4 万亿",
+                "20"
+              ]
+            ],
+            "highlight": {
+              "row": 5
+            }
+          }
+        },
+        {
+          "p": "这件事为什么要紧？训练一个大模型的算力预算通常事先就定了：有多少加速器、能用多久。而且这么大的模型通常只训练得起一次，模型大小和训练时长一旦定错，就没有重来的机会。"
+        }
+      ]
+    },
+    {
+      "h": "关键发现：上一篇论文的实验里藏着一个偏差",
+      "blocks": [
+        {
+          "p": "论文指出了《Scaling Laws》实验设计上的一个问题：它给所有模型用了**同样的训练长度和学习率计划**（余弦衰减到某个固定的 token 数），然后用训练**中途**的损失来代表“只训练这么多 token 会怎样”。"
+        },
+        {
+          "p": "问题在于，余弦学习率要走完一整个周期，模型才会“收尾”，损失在周期末尾下降得最快。如果计划是按 1300 亿 token 设计的，那么在第 200 亿 token 时停下来看，学习率还很高、模型还没收尾，损失比“专门为 200 亿 token 设计计划、训练完”的模型要高。于是，“少数据训练”的效果被系统性地低估了，结论就会偏向“多加参数、少加数据”。"
+        },
+        {
+          "callout": {
+            "kind": "intuition",
+            "title": "像用马拉松的配速测 10 公里成绩",
+            "text": "一个人按跑全马的节奏出发，你在第 10 公里掐表，得到的成绩一定比他专门跑 10 公里慢：他在保存体力，没有冲刺。如果你据此认为“这个人跑短距离不行”，那就冤枉他了。旧实验用中途的损失代表短训练，犯的就是这个错。"
+          }
+        },
+        {
+          "p": "论文验证了这一点：余弦周期比实际训练步数长出 25% 以上，模型就会明显变差。所以本文的每个实验都把学习率周期设成和训练长度匹配（学习率在整个训练中降低 10 倍）。另外两个不同：本文用了更大的模型，大部分超过 5 亿参数，最大到 160 亿；而旧实验里大部分模型很小，很多不到 1 亿参数。本文还发现，算力和最优模型大小的关系在大模型处略有弯曲，用小模型外推会有偏差。"
+        },
+        {
+          "quiz": {
+            "q": "为什么用一个“为长训练设计”的学习率计划在中途测损失，会让人低估少数据训练的价值？",
+            "options": [
+              "因为中途测量的噪声更大",
+              "因为学习率周期还没走完，模型没有“收尾”，中途的损失比专门训练到这个长度的模型更高",
+              "因为中途的模型参数更少",
+              "因为中途还没看到测试集"
+            ],
+            "answer": 1,
+            "why": "余弦计划在周期末段把学习率降低，损失在这时下降最多。中途停下时学习率还高，损失偏高。如果把它当作“只用这么多数据能达到的水平”，就高估了少数据训练的损失，也就低估了它的价值。参数量在训练中不变，测试集和训练进度无关。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "方法一：画出所有训练曲线的“下包络线”",
+      "blocks": [
+        {
+          "p": "第一种方法最直接。取一批模型（7000 万到 100 多亿参数），每个大小训练 4 次，学习率周期分别对应 4 种不同的训练长度，最长和最短相差 16 倍。把所有训练曲线画在“算力 – 损失”图上，对每一个算力值，找出当时损失最低的是哪条曲线，记下它的模型大小和已训练的 token 数。"
+        },
+        {
+          "callout": {
+            "kind": "intuition",
+            "title": "下包络线是什么",
+            "text": "把几十条从左上往右下走的训练曲线叠在一起，沿着最底下描一条线，这条线就是“每个算力下能达到的最低损失”。线上每一点都对应一个具体的模型大小和数据量，也就是这个算力下的最优组合。"
+          }
+        },
+        {
+          "p": "在 1500 个按对数均匀分布的算力值上取点后，用幂律拟合最优模型大小和最优 token 数随算力的变化：N_{opt} ∝ C^{a}，D_{opt} ∝ C^{b}。结果 **a ＝ 0.50，b ＝ 0.50**：两者完全同步增长。论文还注意到，被选中的点全部落在各自训练的最后 15% 里，这再次说明学习率周期要和训练长度匹配。"
+        }
+      ]
+    },
+    {
+      "h": "方法二：固定算力，找损失的“山谷”",
+      "blocks": [
+        {
+          "p": "第二种方法更直观。选定 9 个算力预算（从 6 × 10^{18} 到 3 × 10^{21} 次浮点运算），在每个预算下训练一系列大小不同的模型：模型越大，能看的 token 就越少，正好把预算用完。然后看最终损失和模型大小的关系。"
+        },
+        {
+          "p": "每个预算下，损失都呈现一个清楚的“山谷”：模型太小，学不下；模型太大，数据太少，没训练够。山谷底部就是这个预算下的最优模型。论文对每条曲线拟合一条抛物线来定位谷底，再用幂律连起各个谷底，得到 **a ＝ 0.49，b ＝ 0.51**。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "同样是 Gopher 的算力，怎么分配：中间最好，两头都差",
+            "subtitle": "示意：由本站按论文方法三的拟合公式和四舍五入后的参数计算，算力取 5.76 × 10^{23}，D ＝ C / 6N。不是实测数据。琥珀色是谷底附近",
+            "columns": [
+              "模型大小 N",
+              "训练 token D",
+              "预测损失",
+              "其中“模型太小”的部分",
+              "其中“数据不够”的部分"
+            ],
+            "rows": [
+              [
+                "100 亿",
+                "9.6 万亿",
+                "1.947",
+                "0.162",
+                "0.095"
+              ],
+              [
+                "200 亿",
+                "4.8 万亿",
+                "1.933",
+                "0.128",
+                "0.116"
+              ],
+              [
+                "400 亿",
+                "2.4 万亿",
+                "1.931",
+                "0.101",
+                "0.140"
+              ],
+              [
+                "700 亿（Chinchilla）",
+                "1.37 万亿",
+                "1.938",
+                "0.084",
+                "0.164"
+              ],
+              [
+                "1400 亿",
+                "0.69 万亿",
+                "1.955",
+                "0.066",
+                "0.199"
+              ],
+              [
+                "2800 亿（Gopher 的大小）",
+                "0.34 万亿",
+                "1.984",
+                "0.052",
+                "0.242"
+              ]
+            ],
+            "highlight": {
+              "row": 2
+            },
+            "note": "谷底相当平坦：200 亿到 700 亿之间差别很小，但 2800 亿明显更差。用四舍五入后的参数算，谷底约在 320 亿；论文用未取整的参数得到约 400 亿。“预测损失”里还包含一个不可约的常数 1.69，下面方法三会讲。"
+          }
+        },
+        {
+          "quiz": {
+            "q": "在一条 IsoFLOP 曲线上，为什么模型太大反而损失更高？",
+            "options": [
+              "因为大模型更容易过拟合测试集",
+              "因为算力固定，模型越大能训练的 token 越少，模型没有训练够",
+              "因为大模型的学习率太小",
+              "因为大模型的结构不同"
+            ],
+            "answer": 1,
+            "why": "算力 ≈ 6ND 固定，N 变大，D 就得按比例变小。模型虽然容量大，但看的数据太少，第二项“训练不足”的损失迅速变大，盖过了容量带来的好处。这些实验每个数据都只看一遍，不存在背下测试集的问题。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "方法三：把损失拆成三项，直接求最优解",
+      "blocks": [
+        {
+          "p": "第三种方法把前两种方法的所有实验结果放在一起，拟合一个有明确含义的公式："
+        },
+        {
+          "formula": {
+            "expr": "L(N, D) ＝ E ＋ A / N^{α} ＋ B / D^{β}\nE ＝ 1.69，A ＝ 406.4，B ＝ 410.7，α ＝ 0.34，β ＝ 0.28",
+            "parts": [
+              {
+                "sym": "E",
+                "desc": "数据本身的“熵”：即使有完美的模型、无限的数据，也消不掉的损失。语言本身就有不确定性"
+              },
+              {
+                "sym": "A / N^{α}",
+                "desc": "模型太小造成的损失：一个 N 参数的 Transformer，即使训练得完美，也比理想模型差这么多"
+              },
+              {
+                "sym": "B / D^{β}",
+                "desc": "没训练够造成的损失：只看了 D 个 token、每个只看一遍，离完美训练还差这么多"
+              },
+              {
+                "sym": "α, β",
+                "desc": "两个指数，分别决定加参数和加数据的回报有多快"
+              }
+            ],
+            "note": "拟合用的是对异常值不敏感的 Huber 损失（δ ＝ 10^{−3}）和 L-BFGS 优化器，并从一组初始值里挑最好的结果，避免陷入局部最优。论文说，δ 再大一些，拟合就会过分迁就小算力的实验，对大实验的预测变差。"
+          }
+        },
+        {
+          "p": "这三项来自一个经典的拆分：总损失 ＝ 理想下限 ＋ “模型能力有限”的差距 ＋ “训练不完美”的差距。有了这个公式，就可以手算两个模型的预测损失了："
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "按公式手算：同样的算力，Chinchilla 的预测损失更低",
+            "subtitle": "示意：由本站按论文附录 D.2 的拟合公式计算，不是实测数据。蓝色列是总预测损失",
+            "columns": [
+              "模型",
+              "参数 N",
+              "token D",
+              "E",
+              "A / N^{0.34}",
+              "B / D^{0.28}",
+              "预测损失"
+            ],
+            "rows": [
+              [
+                "Gopher",
+                "2800 亿",
+                "3000 亿",
+                "1.69",
+                "0.052",
+                "0.251",
+                "1.993"
+              ],
+              [
+                "Chinchilla",
+                "700 亿",
+                "1.4 万亿",
+                "1.69",
+                "0.084",
+                "0.163",
+                "1.937"
+              ]
+            ],
+            "highlight": {
+              "col": 6
+            },
+            "note": "Gopher 的“模型能力”这一项已经很小（0.052），再加参数收效甚微；而“没训练够”这一项高达 0.251。Chinchilla 把一部分预算从参数挪到数据，前一项只多了 0.03，后一项却少了将近 0.09。"
+          }
+        },
+        {
+          "p": "**最优分配的条件**。在算力 6ND 固定时求损失最小，可以推出一个漂亮的结果：最优点上，两项可减少的损失之比等于 β : α，即 A/N^{α} : B/D^{β} ＝ 0.28 : 0.34。直白地说：**把下一份算力花在加参数上，和花在加数据上，带来的损失下降必须一样多**，否则就该往回报高的那边挪。由此还能直接写出最优指数："
+        },
+        {
+          "formula": {
+            "expr": "N_{opt} ∝ C^{a}，D_{opt} ∝ C^{b}，  a ＝ β / (α ＋ β)，  b ＝ α / (α ＋ β)",
+            "parts": [
+              {
+                "sym": "a",
+                "desc": "最优模型大小随算力增长的指数"
+              },
+              {
+                "sym": "b",
+                "desc": "最优数据量随算力增长的指数。a ＋ b ＝ 1，因为 N × D 正比于算力"
+              },
+              {
+                "sym": "α ≈ β",
+                "desc": "两个指数差不多大，所以 a 和 b 都接近 0.5：模型和数据同步增长"
+              }
+            ],
+            "note": "论文报告方法三得到 a ＝ 0.46、b ＝ 0.54，并预测 Gopher 的算力下最优模型约 400 亿参数。用论文给的四舍五入后的参数算，a ＝ 0.28 / 0.62 ≈ 0.45（见后文“对不上的地方”）。"
+          }
+        },
+        {
+          "p": "顺便一提，E ＝ 1.69 和上一篇论文猜测的“语言的熵”约 1.7 nats 非常接近。但两篇论文的数据集和分词方式都不同，这个数值不能直接比较，只能算是有趣的巧合。"
+        },
+        {
+          "quiz": {
+            "q": "在 L(N, D) ＝ E ＋ A/N^{α} ＋ B/D^{β} 里，哪一项是无论怎么加模型和数据都消不掉的？",
+            "options": [
+              "A/N^{α}",
+              "B/D^{β}",
+              "E",
+              "三项都能消掉"
+            ],
+            "answer": 2,
+            "why": "E 代表文本本身的不确定性（同一个上文后面可以接很多合理的词），即使模型和数据都无限大也消不掉。A/N^{α} 随模型变大趋于 0，B/D^{β} 随数据变多趋于 0。"
+          }
+        },
+        {
+          "quiz": {
+            "q": "最优分配时，为什么“加参数”和“加数据”带来的边际损失下降必须相等？",
+            "options": [
+              "因为公式规定 α ＝ β",
+              "如果其中一边回报更高，把一点算力从回报低的一边挪过去，总损失还能再降，那就说明原来不是最优",
+              "因为模型和数据的单价相同",
+              "因为 6ND 是常数"
+            ],
+            "answer": 1,
+            "why": "这是所有“预算分配”问题的通用道理：只要两种花法的边际回报不同，就还有改进空间，直到两边相等为止。α 和 β 并不相等（0.34 和 0.28），所以最优点上两项损失的比例是 β : α，而不是 1 : 1。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "三种方法，一个结论：模型和数据同步增长",
+      "blocks": [
+        {
+          "fig": {
+            "type": "table",
+            "title": "三种方法都得出 a ≈ b ≈ 0.5，和旧结论差很多",
+            "subtitle": "来自论文表 2，括号里是用自助法估计的 10% 和 90% 分位数。蓝色列是数据的指数 b",
+            "columns": [
+              "方法",
+              "模型指数 a（N_{opt} ∝ C^{a}）",
+              "数据指数 b（D_{opt} ∝ C^{b}）"
+            ],
+            "rows": [
+              [
+                "方法一：训练曲线的下包络",
+                "0.50（0.488，0.502）",
+                "0.50（0.501，0.512）"
+              ],
+              [
+                "方法二：IsoFLOP 山谷",
+                "0.49（0.462，0.534）",
+                "0.51（0.483，0.529）"
+              ],
+              [
+                "方法三：参数化损失公式",
+                "0.46（0.454，0.455）",
+                "0.54（0.542，0.543）"
+              ],
+              [
+                "Kaplan 等（2020）",
+                "0.73",
+                "0.27"
+              ]
+            ],
+            "highlight": {
+              "col": 2
+            },
+            "note": "论文还在 C4 和 GitHub 代码两个数据集上重做了方法二，分别得到 0.50 / 0.50 和 0.53 / 0.47，结论一致。"
+          }
+        },
+        {
+          "p": "三种方法用了不同的拟合方式、不同的模型，结论却几乎一样。方法三预测的最优模型更小一些，论文解释说：它的 Huber 损失会自动把小算力的实验当作异常值、更看重大算力的点，而算力和最优模型大小的关系在大规模处略往下弯。"
+        },
+        {
+          "p": "**大约每个参数 20 个 token**。论文表 3 按方法一列出了不同大小的模型要“算力最优”需要多少数据：10 亿参数需要约 202 亿 token，100 亿参数需要约 2051 亿，670 亿参数需要约 1.5 万亿。算一下比值，都在 20 左右（这个经验值由本站从表中计算，论文正文没有这样表述）。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "要让模型“算力最优”，需要多少数据和算力",
+            "subtitle": "来自论文表 3（方法一）。“每参数 token”由本站计算；“Gopher 单位”指相当于训练 Gopher 的多少倍算力。琥珀色是 Gopher 算力下的最优点",
+            "columns": [
+              "参数",
+              "训练算力（FLOPs）",
+              "相当于 Gopher 的",
+              "需要的 token",
+              "每参数 token"
+            ],
+            "rows": [
+              [
+                "10 亿",
+                "1.21 × 10^{20}",
+                "1/4761",
+                "202 亿",
+                "约 20"
+              ],
+              [
+                "100 亿",
+                "1.23 × 10^{22}",
+                "1/46",
+                "2051 亿",
+                "约 21"
+              ],
+              [
+                "670 亿",
+                "5.76 × 10^{23}",
+                "1",
+                "1.5 万亿",
+                "约 22"
+              ],
+              [
+                "1750 亿",
+                "3.85 × 10^{24}",
+                "6.7",
+                "3.7 万亿",
+                "约 21"
+              ],
+              [
+                "2800 亿",
+                "9.90 × 10^{24}",
+                "17.2",
+                "5.9 万亿",
+                "约 21"
+              ],
+              [
+                "1 万亿",
+                "1.27 × 10^{26}",
+                "221.3",
+                "21.2 万亿",
+                "约 21"
+              ]
+            ],
+            "highlight": {
+              "row": 2
+            }
+          }
+        },
+        {
+          "p": "这张表的含义很尖锐：一个 1750 亿参数的模型，要训练得“值”，需要几万亿 token，而 GPT-3 只用了 3000 亿；想训练一个“算力最优”的 1 万亿参数模型，除非有超过 Gopher 250 倍的算力，否则不划算。论文由此强调：**更大、更高质量的数据集**会是继续扩大语言模型的关键。"
+        },
+        {
+          "quiz": {
+            "q": "按“每参数约 20 个 token”的经验值，一个 70 亿参数的模型算力最优时大约要训练多少 token？",
+            "options": [
+              "约 70 亿",
+              "约 1400 亿",
+              "约 1.4 万亿",
+              "约 3000 亿"
+            ],
+            "answer": 1,
+            "why": "70 亿 × 20 ＝ 1400 亿个 token。约 1.4 万亿是 Chinchilla（700 亿参数）的数据量；约 3000 亿是当年大模型的“标准”训练量。后来很多 70 亿参数级别的模型实际训练了远多于 1400 亿 token，原因见文末。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "验证：用 Gopher 的算力训练 Chinchilla",
+      "blocks": [
+        {
+          "p": "按三种方法，Gopher 的算力下最优模型在 400 亿到 700 亿参数之间。出于数据集和计算效率的考虑，作者选了范围的上端：**700 亿参数、1.4 万亿 token**，和 Gopher 用的算力相同。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Chinchilla 和 Gopher：层数一样，宽度减半",
+            "subtitle": "来自论文表 4；批大小在训练中途翻倍。琥珀色是 Chinchilla",
+            "columns": [
+              "模型",
+              "层数",
+              "注意力头数",
+              "每头维度",
+              "d_{model}",
+              "最大学习率",
+              "批大小（token）"
+            ],
+            "rows": [
+              [
+                "Gopher 280B",
+                "80",
+                "128",
+                "128",
+                "16,384",
+                "4 × 10^{−5}",
+                "300 万 → 600 万"
+              ],
+              [
+                "Chinchilla 70B",
+                "80",
+                "64",
+                "128",
+                "8,192",
+                "1 × 10^{−4}",
+                "150 万 → 300 万"
+              ]
+            ],
+            "highlight": {
+              "row": 1
+            }
+          }
+        },
+        {
+          "p": "除了大小和数据量，两者还有几处不同，论文都列了出来："
+        },
+        {
+          "list": [
+            "**数据配比**：同样用 MassiveText 数据集，但因为要训练更多 token，各子集的抽样比例略有调整，网页和维基百科部分被看了不止一遍。",
+            "**优化器**：Chinchilla 用 AdamW，Gopher 用 Adam。论文发现 AdamW 能改善语言建模损失和下游任务成绩。",
+            "**分词器**：去掉了一个文本规范化步骤（NFKC），词表和 Gopher 有 94.15% 相同，这对数学和化学符号的表示有帮助。",
+            "**数值精度**：前向和反向计算用 bfloat16，但在优化器状态里保存一份 float32 的权重。"
+          ]
+        },
+        {
+          "callout": {
+            "kind": "note",
+            "title": "这不是一个“只改一个变量”的对照实验",
+            "text": "优化器、分词器、数值精度的差异，都可能让 Chinchilla 更强。论文在附录里单独比较了 Adam 和 AdamW，确认 AdamW 本身就更好。所以严格地说，Chinchilla 胜过 Gopher 的幅度里，有一部分不能归功于“更好的算力分配”。论文在小规模上做了更干净的对照：算力 10^{21} 时，旧方法建议用 46.8 亿参数，新方法建议 28.6 亿，两者用相同的设置训练，新方法预测的模型更好。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "成绩：几乎全面超过 Gopher",
+      "blocks": [
+        {
+          "p": "论文在语言建模、阅读理解、问答、常识、MMLU、BIG-bench 等一大批任务上比较了 Chinchilla 和 Gopher，以及 GPT-3、MT-NLG 530B 等模型。最受关注的是 MMLU，一个覆盖 57 个学科的考试型基准："
+        },
+        {
+          "fig": {
+            "type": "columns",
+            "title": "MMLU 五样本平均准确率：700 亿参数的 Chinchilla 第一次超过 60%",
+            "subtitle": "单位：%，来自论文表 6。琥珀色是 Chinchilla；“2023 年预测”是一批职业预测者在 2021 年对 2023 年 6 月最好成绩的平均预测",
+            "items": [
+              {
+                "label": "随机猜",
+                "value": 25.0,
+                "display": "25.0"
+              },
+              {
+                "label": "GPT-3",
+                "value": 43.9,
+                "display": "43.9"
+              },
+              {
+                "label": "Gopher",
+                "value": 60.0,
+                "display": "60.0"
+              },
+              {
+                "label": "2023 年预测",
+                "value": 63.4,
+                "display": "63.4"
+              },
+              {
+                "label": "Chinchilla",
+                "value": 67.6,
+                "display": "67.6",
+                "tone": "hi"
+              },
+              {
+                "label": "人类专家平均",
+                "value": 89.8,
+                "display": "89.8"
+              }
+            ]
+          }
+        },
+        {
+          "p": "Chinchilla 比 Gopher 高 7.6 个百分点，甚至超过了预测者们对 2023 年 6 月的平均预期。在 57 个学科里，它在 51 个上更好，2 个持平，只有 4 个更差（大学数学、计量经济学、道德情景、形式逻辑）。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "其他代表性任务：大多明显领先",
+            "subtitle": "来自论文表 7–9 和正文，单位：准确率 %。蓝色列是 Chinchilla",
+            "columns": [
+              "任务",
+              "Chinchilla",
+              "Gopher",
+              "GPT-3"
+            ],
+            "rows": [
+              [
+                "BIG-bench（62 个任务平均）",
+                "65.1",
+                "54.4",
+                "—"
+              ],
+              [
+                "LAMBADA（零样本）",
+                "77.4",
+                "74.5",
+                "76.2"
+              ],
+              [
+                "RACE-h（少样本）",
+                "82.3",
+                "71.6",
+                "格式不同，不可比"
+              ],
+              [
+                "Winogrande（零样本）",
+                "74.9",
+                "70.1",
+                "70.2"
+              ],
+              [
+                "BoolQ（零样本）",
+                "83.7",
+                "79.3",
+                "60.5"
+              ],
+              [
+                "Natural Questions（闭卷，64 样本）",
+                "35.5",
+                "28.2",
+                "29.9"
+              ],
+              [
+                "TruthfulQA（零样本）",
+                "43.6",
+                "29.5",
+                "—"
+              ]
+            ],
+            "highlight": {
+              "col": 1
+            },
+            "note": "常识类任务里 PIQA 两者同为 81.8%。RACE 上 GPT-3 和 MT-NLG 用的提示格式不同，论文特别注明不能直接比较。"
+          }
+        },
+        {
+          "p": "两个值得留意的细节。第一，在 The Pile 等语言建模测试上 Chinchilla 也全面领先，但论文主动提醒：它多看了 4 倍的数据，测试集内容混进训练数据的风险更大，所以更看重 MMLU、BIG-bench 这类泄漏风险较小的任务。第二，TruthfulQA 零样本提高了 14.1 个百分点，此前有研究认为模型越大越不真实，论文认为这说明**仅仅把预训练数据学得更好**，就能明显改善真实性。"
+        },
+        {
+          "p": "**偏见和毒性**。在 Winogender（测代词指代是否受性别刻板印象影响）上，Chinchilla 各组都比 Gopher 准，但男性代词只提高 3.2 个百分点，女性和中性代词分别提高 8.3 和 9.2 个百分点，提升并不均匀。毒性方面，2.5 万条无提示生成的平均毒性分是 0.087，Gopher 是 0.081，差别可以忽略：更好的语言模型并不一定更毒，也不一定更不毒。"
+        }
+      ]
+    },
+    {
+      "h": "论文里对不上的地方",
+      "blocks": [
+        {
+          "p": "这篇论文的结论很扎实，但细节里有不少数字前后不一。逐一列出，读原文时可以留意："
+        },
+        {
+          "list": [
+            "**MMLU 成绩**：摘要写 67.5%、“超过 7 个百分点”，正文和表 6 写 67.6%、高 7.6 个百分点。",
+            "**1750 亿参数模型需要多少算力和数据**：正文说 4.41 × 10^{24} 次运算、超过 4.2 万亿 token；而正文说依据的表 3 写的是 3.85 × 10^{24} 和 3.7 万亿。2800 亿参数的模型，正文说约 10^{25} 次运算、6.8 万亿 token，表 3 写的是 9.90 × 10^{24} 和 5.9 万亿。正文的数字也对不上附录里方法二、方法三的表。",
+            "**附录表 A3 疑似少了一个数量级**：方法三一栏里，1750 亿参数模型的算力写成 1.26 × 10^{24}，比上一行 670 亿参数的 1.71 × 10^{24} 还小。按 6ND 验算，1750 亿参数 × 12 万亿 token × 6 ≈ 1.26 × 10^{25}，应该是笔误。",
+            "**方法三的指数**：表 2 写 a ＝ 0.46，括号里的 10%–90% 区间却是 (0.454, 0.455)，点估计不在自己的区间里。按论文给出的 α ＝ 0.34、β ＝ 0.28 计算，a ＝ 0.28 / 0.62 ≈ 0.45，与区间相符。",
+            "**训练数据范围**：摘要说模型训练了 50 亿到 5000 亿 token，引言说 50 亿到 4000 多亿。",
+            "**GPT-3 的大小**：讨论部分把 GPT-3 写成 1700 亿参数，全文其他地方都是 1750 亿。",
+            "**Gopher 的算力**：正文按旧数据用 5.76 × 10^{23}，附录用更精确的算法得到 6.3 × 10^{23}。"
+          ]
+        },
+        {
+          "callout": {
+            "kind": "note",
+            "title": "后来有人专门复核了这篇论文",
+            "text": "2024 年，Epoch AI 的研究者尝试复现方法三，指出原文报告的参数和前两种方法不一致、置信区间窄得不合理。这和上面看到的 a 值和区间对不上是同一类问题。但方法一、方法二的核心结论，也就是模型和数据大致同比例增长，至今仍被广泛接受。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "局限，以及之后的故事",
+      "blocks": [
+        {
+          "p": "论文自己列出的局限："
+        },
+        {
+          "list": [
+            "**大规模验证只有一对**：受成本限制，只有 Chinchilla 和 Gopher 两个大模型可以对比，中间规模没有更多验证。",
+            "**假设了幂律**：实际观察到最优模型大小在大算力处略往下弯，这意味着论文可能**仍然高估了**大算力下的最优模型大小。",
+            "**只看了一遍数据**：所有实验都训练不到一轮（不重复使用数据），多轮训练的情况没有研究。",
+            "**数据质量**：论文推测，只有数据质量高，扩大数据集才有用；万亿级的网页数据里有更多有毒内容、偏见和隐私信息，测试集泄漏也更难排查。"
+          ]
+        },
+        {
+          "p": "**之后的故事**。Chinchilla 的结论很快被行业采纳，但随后出现了一个新的考虑：**推理成本**。2023 年 2 月，Meta 发布 LLaMA，论文开头就说，Chinchilla 的目标只考虑了训练预算、忽略了推理预算；如果模型要大规模部署，更小、训练更久的模型最终更便宜。按 Chinchilla 的建议，100 亿参数的模型训练 2000 亿 token 就够了，但 LLaMA 发现 70 亿参数的模型训练到 1 万亿 token 之后还在进步。从那以后，“远超算力最优地训练小模型”成了开源模型的常态。"
+        },
+        {
+          "p": "所以 Chinchilla 回答的是“训练预算固定时怎样最优”，而真实世界里还要算上模型被使用无数次的成本。理解这个区别，是理解今天各种“小而强”的模型的关键。"
+        }
+      ]
+    },
+    {
+      "h": "检验一下：你吃透了吗",
+      "blocks": [
+        {
+          "quiz": {
+            "q": "Kaplan 的结论是 N ∝ C^{0.73}，Chinchilla 是 N ∝ C^{0.5}。如果算力增加 100 倍，按两种结论，最优模型分别放大约多少倍？",
+            "options": [
+              "约 29 倍和 10 倍",
+              "约 73 倍和 50 倍",
+              "约 100 倍和 100 倍",
+              "约 5 倍和 3 倍"
+            ],
+            "answer": 0,
+            "why": "100^{0.73} ≈ 29，100^{0.5} ＝ 10。按 Chinchilla，剩下的 10 倍要用来增加数据；按 Kaplan，数据只增加 100^{0.27} ≈ 3.5 倍。指数不能直接当倍数乘，要算幂。"
+          }
+        },
+        {
+          "quiz": {
+            "q": "Chinchilla 的作者为什么认为 MMLU、BIG-bench 比 The Pile 上的语言建模成绩更能说明问题？",
+            "options": [
+              "因为 The Pile 太简单",
+              "因为 Chinchilla 看了 4 倍的数据，测试内容混进训练数据的风险更大，语言建模成绩可能被夸大",
+              "因为 Gopher 没有测 The Pile",
+              "因为 MMLU 的题更多"
+            ],
+            "answer": 1,
+            "why": "数据越多，训练集里越可能包含和测试集相同的文本，语言建模成绩就会被“背答案”抬高。考试型的任务受这种泄漏的影响相对小，所以论文更看重它们。这是论文在正文里主动给出的提醒。"
+          }
+        },
+        {
+          "p": "读完这篇，你应该能回答下面这些问题："
+        },
+        {
+          "list": [
+            "Chinchilla 和 Kaplan 的结论差在哪里？差异的主要来源是什么？",
+            "为什么用“为长训练设计的学习率计划”在中途测损失，会低估少数据训练？",
+            "三种方法分别怎么估计最优分配？IsoFLOP 曲线为什么是个山谷？",
+            "L(N, D) ＝ E ＋ A/N^{α} ＋ B/D^{β} 的三项分别代表什么？",
+            "最优分配时，为什么两项可减少的损失之比是 β : α？",
+            "“每个参数约 20 个 token”是怎么来的？它在什么前提下成立？",
+            "Chinchilla 胜过 Gopher，有哪些因素不能归功于算力分配？",
+            "为什么后来的 LLaMA 有意训练得比“算力最优”更久？"
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Training Compute-Optimal Large Language Models（arXiv:2203.15556 第 1 版）",
+      "publisher": "Hoffmann 等 · DeepMind",
+      "date": "2022-03-29",
+      "url": "https://arxiv.org/abs/2203.15556"
+    },
+    "note": "本文依据论文 arXiv 第 1 版（2022 年 3 月）。标注「示意」的表格由本站按论文附录 D.2 的拟合公式（参数为论文给出的四舍五入值）计算，不是实测数据；“每参数约 20 个 token”由本站从论文表 3 计算。LLaMA 的内容来自其 2023 年的论文；Epoch AI 2024 年的复核来自其公开发表的复现研究，不在这篇论文里。"
+  },
+  "claims": [
+    {
+      "text": "arXiv 编号与日期",
+      "value": "2203.15556",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "arXiv:2203.15556v1 [cs.CL] 29 Mar 2022",
+      "as_written": "2022 年 3 月"
+    },
+    {
+      "text": "训练了 400 多个模型",
+      "value": "over 400",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "By training over 400 language models",
+      "as_written": "400 多个"
+    },
+    {
+      "text": "7000 万到 160 多亿参数",
+      "value": "16 billion",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "ranging from 70 million to over 16 billion parameters",
+      "as_written": "160 亿"
+    },
+    {
+      "text": "模型从 7000 万起",
+      "value": "70 million",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "ranging from 70 million to over 16 billion parameters",
+      "as_written": "7000 万"
+    },
+    {
+      "text": "摘要：50 亿到 5000 亿 token",
+      "value": "5 to 500 billion tokens",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "on 5 to 500 billion tokens",
+      "as_written": "5000 亿"
+    },
+    {
+      "text": "引言：5B 到 400B 以上",
+      "value": "5B to over 400B tokens",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "trained on 5B to over 400B tokens",
+      "as_written": "4000 多亿"
+    },
+    {
+      "text": "模型翻倍数据也翻倍",
+      "value": "doubling",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "for every doubling of model size the number of training tokens should also be doubled",
+      "as_written": "大 1 倍"
+    },
+    {
+      "text": "Chinchilla 70B、4 倍数据",
+      "value": "70B",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "Chinchilla, that uses the same compute budget as Gopher but with 70B parameters and 4× more more data",
+      "as_written": "700 亿"
+    },
+    {
+      "text": "Gopher 280B",
+      "value": "280B",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "outperforms Gopher (280B)",
+      "as_written": "2800 亿"
+    },
+    {
+      "text": "1.4 万亿 token",
+      "value": "1.4 trillion",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "called Chinchilla, on 1.4 trillion tokens",
+      "as_written": "1.4 万亿"
+    },
+    {
+      "text": "摘要 MMLU 67.5%、超过 7%",
+      "value": "67.5%",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "reaches a state-of-the-art average accuracy of 67.5% on the MMLU benchmark, greater than a 7% improvement over Gopher",
+      "as_written": "67.5%"
+    },
+    {
+      "text": "超过 7%",
+      "value": "7%",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "greater than a 7% improvement over Gopher",
+      "as_written": "7 个百分点"
+    },
+    {
+      "text": "正文 MMLU 67.6%、高 7.6%",
+      "value": "67.6%",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "with an average accuracy of 67.6% (improving upon Gopher by 7.6%)",
+      "as_written": "67.6%"
+    },
+    {
+      "text": "高 7.6 个百分点",
+      "value": "7.6%",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "improving upon Gopher by 7.6%",
+      "as_written": "7.6 个百分点"
+    },
+    {
+      "text": "Gopher MMLU 60.0%",
+      "value": "60.0%",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "60.0%",
+      "as_written": "60.0%"
+    },
+    {
+      "text": "GPT-3 MMLU 43.9%",
+      "value": "43.9%",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "43.9%",
+      "as_written": "43.9"
+    },
+    {
+      "text": "随机 25.0%",
+      "value": "25.0%",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "25.0%",
+      "as_written": "25.0"
+    },
+    {
+      "text": "专家 89.8%",
+      "value": "89.8%",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "89.8%",
+      "as_written": "89.8"
+    },
+    {
+      "text": "2023 预测 63.4%",
+      "value": "63.4%",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "the expert forecast for June 2023 of 63.4% accuracy",
+      "as_written": "63.4"
+    },
+    {
+      "text": "51/57 更好、4/57 更差",
+      "value": "51/57",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "performing better on 51/57 individual tasks, the same on 2/57, and worse on only 4/57 tasks",
+      "as_written": "51 个"
+    },
+    {
+      "text": "Kaplan：10 倍算力模型 5.5 倍、数据 1.8 倍",
+      "value": "5.5×",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "they suggests that the size of the model should increase 5.5× while the number of training tokens should only increase 1.8×",
+      "as_written": "5.5 倍"
+    },
+    {
+      "text": "数据 1.8 倍",
+      "value": "1.8×",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "should only increase 1.8×",
+      "as_written": "1.8 倍"
+    },
+    {
+      "text": "当时模型约 3000 亿 token",
+      "value": "300 billion tokens",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "trained for approximately 300 billion tokens",
+      "as_written": "3000 亿"
+    },
+    {
+      "text": "最大稠密模型超过 5000 亿参数",
+      "value": "500 billion",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "the largest dense language models now having over 500 billion parameters",
+      "as_written": "5000 亿"
+    },
+    {
+      "text": "LaMDA 137B / 168B",
+      "value": "137 Billion",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "137 Billion",
+      "as_written": "1370 亿"
+    },
+    {
+      "text": "LaMDA 168B",
+      "value": "168 Billion",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "168 Billion",
+      "as_written": "1680 亿"
+    },
+    {
+      "text": "GPT-3 175B",
+      "value": "175 Billion",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "175 Billion",
+      "as_written": "1750 亿"
+    },
+    {
+      "text": "Jurassic 178B",
+      "value": "178 Billion",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "178 Billion",
+      "as_written": "1780 亿"
+    },
+    {
+      "text": "MT-NLG 530B / 270B",
+      "value": "530 Billion",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "530 Billion",
+      "as_written": "5300 亿"
+    },
+    {
+      "text": "MT-NLG 270B",
+      "value": "270 Billion",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "270 Billion",
+      "as_written": "2700 亿"
+    },
+    {
+      "text": "Chinchilla 70B / 1.4T",
+      "value": "70 Billion",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "70 Billion",
+      "as_written": "700 亿"
+    },
+    {
+      "text": "余弦周期 1300 亿 token",
+      "value": "130B",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "For a fixed learning rate cosine schedule to 130B tokens",
+      "as_written": "1300 亿"
+    },
+    {
+      "text": "超过 25% 明显变差",
+      "value": "25%",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "when the cosine cycle overshoots the number of training steps by more than 25%, performance is noticeably degraded",
+      "as_written": "25%"
+    },
+    {
+      "text": "学习率降低 10 倍",
+      "value": "10×",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "the learning rate drops by a factor of 10× during training",
+      "as_written": "10 倍"
+    },
+    {
+      "text": "大部分模型超过 5 亿参数",
+      "value": "500 million",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "the majority of the models used in our analysis have more than 500 million parameters",
+      "as_written": "5 亿"
+    },
+    {
+      "text": "旧实验很多不到 1 亿",
+      "value": "100M",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "many being less than 100M parameters",
+      "as_written": "1 亿"
+    },
+    {
+      "text": "方法一：每个大小 4 次、相差 16 倍",
+      "value": "16×",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "over a horizon (measured in number of training tokens) that ranges by a factor of 16×",
+      "as_written": "16 倍"
+    },
+    {
+      "text": "方法一模型到 100 多亿",
+      "value": "10B",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "ranging from 70M to over 10B parameters",
+      "as_written": "100 多亿"
+    },
+    {
+      "text": "1500 个算力值",
+      "value": "1500",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "At 1500 logarithmically spaced FLOP values",
+      "as_written": "1500 个"
+    },
+    {
+      "text": "方法一 a=b=0.50",
+      "value": "0.50",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "We find that 𝑎 = 0.50 and 𝑏 = 0.50",
+      "as_written": "0.50"
+    },
+    {
+      "text": "选中的点都在最后 15%",
+      "value": "15%",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "all selected points are within the last 15% of training",
+      "as_written": "15%"
+    },
+    {
+      "text": "方法二 9 个预算",
+      "value": "9",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "for a fixed set of 9 different training FLOP counts",
+      "as_written": "9 个"
+    },
+    {
+      "text": "方法二 6e18–3e21",
+      "value": "6 × 1018",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "ranging from 6 × 1018 to 3 × 1021 FLOPs",
+      "as_written": "6 × 10^{18}"
+    },
+    {
+      "text": "方法二 a=0.49 b=0.51",
+      "value": "0.49",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "𝑎 = 0.49 and 𝑏 = 0.51",
+      "as_written": "0.49"
+    },
+    {
+      "text": "方法三 a=0.46 b=0.54",
+      "value": "0.46",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "we find that 𝑎 = 0.46 and 𝑏 = 0.54",
+      "as_written": "0.46"
+    },
+    {
+      "text": "方法三区间 0.454–0.455",
+      "value": "0.455",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "0.46 (0.454, 0.455)",
+      "as_written": "0.455"
+    },
+    {
+      "text": "E=1.69, A=406.4, B=410.7",
+      "value": "406.4",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "with 𝐸 = 1.69, 𝐴 = 406.4, 𝐵 = 410.7",
+      "as_written": "406.4"
+    },
+    {
+      "text": "E=1.69",
+      "value": "1.69",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "𝐸 = 1.69",
+      "as_written": "1.69"
+    },
+    {
+      "text": "α=0.34 β=0.28",
+      "value": "0.34",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "𝑁 0.34",
+      "as_written": "0.34"
+    },
+    {
+      "text": "β=0.28",
+      "value": "0.28",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "𝐷0.28",
+      "as_written": "0.28"
+    },
+    {
+      "text": "Huber δ=10^-3",
+      "value": "10−3",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "The Huber loss (𝛿 = 10−3 ) is robust to outliers",
+      "as_written": "10^{−3}"
+    },
+    {
+      "text": "方法三 Gopher 算力最优 40B",
+      "value": "40B",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "We project the optimal model size given the Gopher FLOP budget to be 40B parameters",
+      "as_written": "400 亿"
+    },
+    {
+      "text": "Gopher 算力 5.76e23",
+      "value": "5.76 × 1023",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "the number of FLOPs used to train Gopher (5.76 × 1023 )",
+      "as_written": "5.76 × 10^{23}"
+    },
+    {
+      "text": "精确算力 6.3e23",
+      "value": "6.3 × 1023",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "(6.3 × 1023 compared to 5.76 × 1023 )",
+      "as_written": "6.3 × 10^{23}"
+    },
+    {
+      "text": "C4 0.50/0.50、GitHub 0.53/0.47",
+      "value": "0.53",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "0.53",
+      "as_written": "0.53"
+    },
+    {
+      "text": "表 3：1B 1.21e20、20.2B（约每参数 20 token）",
+      "value": "20.2 Billion",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "20.2 Billion",
+      "as_written": "20"
+    },
+    {
+      "text": "表 3：1B",
+      "value": "1 Billion",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "1 Billion",
+      "as_written": "10 亿"
+    },
+    {
+      "text": "表 3：67B 1.5 万亿",
+      "value": "1.5 Trillion",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "1.5 Trillion",
+      "as_written": "1.5 万亿"
+    },
+    {
+      "text": "10% 与 90% 分位数",
+      "value": "10th and 90th percentiles",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "The 10th and 90th percentiles are estimated via bootstrapping data",
+      "as_written": "10%"
+    },
+    {
+      "text": "表 3：10B 205.1B",
+      "value": "205.1 Billion",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "205.1 Billion",
+      "as_written": "2051 亿"
+    },
+    {
+      "text": "表 3：67B 1.5T",
+      "value": "67 Billion",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "67 Billion",
+      "as_written": "670 亿"
+    },
+    {
+      "text": "表 3：175B 3.85e24 3.7T",
+      "value": "3.85e+24",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "3.85e+24",
+      "as_written": "3.85 × 10^{24}"
+    },
+    {
+      "text": "表 3：3.7 万亿",
+      "value": "3.7 Trillion",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "3.7 Trillion",
+      "as_written": "3.7 万亿"
+    },
+    {
+      "text": "表 3：280B 9.90e24 5.9T",
+      "value": "9.90e+24",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "9.90e+24",
+      "as_written": "9.90 × 10^{24}"
+    },
+    {
+      "text": "5.9 万亿",
+      "value": "5.9 Trillion",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "5.9 Trillion",
+      "as_written": "5.9 万亿"
+    },
+    {
+      "text": "表 3：1T 1.27e26 21.2T",
+      "value": "1.27e+26",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "1.27e+26",
+      "as_written": "1.27 × 10^{26}"
+    },
+    {
+      "text": "21.2 万亿",
+      "value": "21.2 Trillion",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "21.2 Trillion",
+      "as_written": "21.2 万亿"
+    },
+    {
+      "text": "1 万亿参数",
+      "value": "1 Trillion",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "1 Trillion",
+      "as_written": "1 万亿"
+    },
+    {
+      "text": "正文：175B 4.41e24、4.2T",
+      "value": "4.41 × 1024",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "should be trained with a compute budget of 4.41 × 1024 FLOPs and on over 4.2 trillion tokens",
+      "as_written": "4.41 × 10^{24}"
+    },
+    {
+      "text": "4.2 万亿",
+      "value": "4.2 trillion",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "on over 4.2 trillion tokens",
+      "as_written": "4.2 万亿"
+    },
+    {
+      "text": "正文：280B 约 1e25、6.8T",
+      "value": "6.8 trillion",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "should be trained on 6.8 trillion tokens",
+      "as_written": "6.8 万亿"
+    },
+    {
+      "text": "超过 Gopher 250 倍",
+      "value": "250×",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "over 250× the compute used to train Gopher",
+      "as_written": "250 倍"
+    },
+    {
+      "text": "表 A3 方法三 175B 1.26e+24",
+      "value": "1.26e+24",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "1.26e+24",
+      "as_written": "1.26 × 10^{24}"
+    },
+    {
+      "text": "表 A3 方法三 67B 1.71e+24",
+      "value": "1.71e+24",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "1.71e+24",
+      "as_written": "1.71 × 10^{24}"
+    },
+    {
+      "text": "表 A3 方法三 175B 12.0T",
+      "value": "12.0 Trillion",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "12.0 Trillion",
+      "as_written": "12 万亿"
+    },
+    {
+      "text": "GPT-3 写成 170B",
+      "value": "170 billion",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "over 3× larger than GPT-3’s 170 billion parameters",
+      "as_written": "1700 亿"
+    },
+    {
+      "text": "最优在 400 亿到 700 亿",
+      "value": "40 and 70 billion",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "somewhere between 40 and 70 billion parameters",
+      "as_written": "400 亿到 700 亿"
+    },
+    {
+      "text": "小规模对照 4.68B vs 2.86B",
+      "value": "4.68",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "the optimal model size should be 4.68 billion parameters",
+      "as_written": "46.8 亿"
+    },
+    {
+      "text": "新方法 2.86B",
+      "value": "2.86",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "we estimate a 2.86 billion parameter model should be optimal",
+      "as_written": "28.6 亿"
+    },
+    {
+      "text": "词表 94.15% 相同",
+      "value": "94.15%",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "94.15% of tokens are the same as those used for training Gopher",
+      "as_written": "94.15%"
+    },
+    {
+      "text": "表 4：Gopher 80 层 128 头 16384 4e-5",
+      "value": "16,384",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "16,384",
+      "as_written": "16,384"
+    },
+    {
+      "text": "表 4：Chinchilla 64 头 8192 1e-4",
+      "value": "8,192",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "8,192",
+      "as_written": "8,192"
+    },
+    {
+      "text": "批大小 3M→6M",
+      "value": "3M → 6M",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "3M → 6M",
+      "as_written": "300 万"
+    },
+    {
+      "text": "批大小 1.5M→3M",
+      "value": "1.5M → 3M",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "1.5M → 3M",
+      "as_written": "150 万"
+    },
+    {
+      "text": "BIG-bench 65.1 vs 54.4",
+      "value": "65.1%",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "reaching an accuracy of 65.1% versus 54.4% for Gopher",
+      "as_written": "65.1"
+    },
+    {
+      "text": "BIG-bench Gopher 54.4",
+      "value": "54.4%",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "versus 54.4% for Gopher",
+      "as_written": "54.4"
+    },
+    {
+      "text": "BIG-bench 62 个任务",
+      "value": "62 tasks",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "Of the 62 tasks we consider",
+      "as_written": "62 个"
+    },
+    {
+      "text": "LAMBADA 77.4 / 74.5",
+      "value": "77.4%",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "Chinchilla achieves 77.4% accuracy, compared to 74.5% accuracy from Gopher",
+      "as_written": "77.4"
+    },
+    {
+      "text": "LAMBADA Gopher 74.5",
+      "value": "74.5%",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "compared to 74.5% accuracy from Gopher",
+      "as_written": "74.5"
+    },
+    {
+      "text": "LAMBADA GPT-3 76.2",
+      "value": "76.2",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "76.2",
+      "as_written": "76.2"
+    },
+    {
+      "text": "RACE-h 82.3 / 71.6",
+      "value": "82.3",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "82.3",
+      "as_written": "82.3"
+    },
+    {
+      "text": "RACE-h Gopher 71.6",
+      "value": "71.6",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "71.6",
+      "as_written": "71.6"
+    },
+    {
+      "text": "Winogrande 74.9 / 70.1 / 70.2",
+      "value": "74.9%",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "74.9%",
+      "as_written": "74.9"
+    },
+    {
+      "text": "Winogrande Gopher 70.1",
+      "value": "70.1%",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "70.1%",
+      "as_written": "70.1"
+    },
+    {
+      "text": "Winogrande GPT-3 70.2",
+      "value": "70.2%",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "70.2%",
+      "as_written": "70.2"
+    },
+    {
+      "text": "BoolQ 83.7 / 79.3 / 60.5",
+      "value": "83.7%",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "83.7%",
+      "as_written": "83.7"
+    },
+    {
+      "text": "BoolQ Gopher 79.3",
+      "value": "79.3%",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "79.3%",
+      "as_written": "79.3"
+    },
+    {
+      "text": "BoolQ GPT-3 60.5",
+      "value": "60.5%",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "60.5%",
+      "as_written": "60.5"
+    },
+    {
+      "text": "PIQA 都是 81.8%",
+      "value": "81.8%",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "81.8%",
+      "as_written": "81.8%"
+    },
+    {
+      "text": "NQ 64 样本 35.5 / 28.2 / 29.9",
+      "value": "35.5%",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "35.5%",
+      "as_written": "35.5"
+    },
+    {
+      "text": "NQ Gopher 28.2",
+      "value": "28.2%",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "28.2%",
+      "as_written": "28.2"
+    },
+    {
+      "text": "NQ GPT-3 29.9",
+      "value": "29.9%",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "29.9%",
+      "as_written": "29.9"
+    },
+    {
+      "text": "TruthfulQA 43.6 / 29.5",
+      "value": "43.6%",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "Chinchilla reaches 43.6%, 58.5%, and 66.7% accuracy",
+      "as_written": "43.6"
+    },
+    {
+      "text": "TruthfulQA Gopher 29.5",
+      "value": "29.5%",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "Gopher achieved only 29.5% 0-shot",
+      "as_written": "29.5"
+    },
+    {
+      "text": "TruthfulQA 提高 14.1",
+      "value": "14.1%",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "(14.1% in 0-shot accuracy)",
+      "as_written": "14.1 个百分点"
+    },
+    {
+      "text": "Winogender 男 3.2、女 8.3、中性 9.2",
+      "value": "3.2%",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "(increase of 3.2%) than for female or neutral pronouns (increases of 8.3% and 9.2% respectively)",
+      "as_written": "3.2 个百分点"
+    },
+    {
+      "text": "女 8.3",
+      "value": "8.3%",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "increases of 8.3% and 9.2% respectively",
+      "as_written": "8.3"
+    },
+    {
+      "text": "中性 9.2",
+      "value": "9.2%",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "increases of 8.3% and 9.2% respectively",
+      "as_written": "9.2"
+    },
+    {
+      "text": "2.5 万条样本",
+      "value": "25,000",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "we generate 25,000 unprompted samples from Chinchilla",
+      "as_written": "2.5 万"
+    },
+    {
+      "text": "毒性 0.087 vs 0.081",
+      "value": "0.087",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "the mean (median) toxicity score for Gopher is 0.081 (0.064), compared to 0.087 (0.066) for Chinchilla",
+      "as_written": "0.087"
+    },
+    {
+      "text": "Gopher 毒性 0.081",
+      "value": "0.081",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "Gopher is 0.081 (0.064)",
+      "as_written": "0.081"
+    },
+    {
+      "text": "小 4 倍",
+      "value": "4×",
+      "source_url": "https://arxiv.org/abs/2203.15556",
+      "quote": "Due to being 4× smaller than Gopher",
+      "as_written": "4 倍"
+    },
+    {
+      "text": "LLaMA：Chinchilla 忽略推理预算",
+      "value": "inference budget",
+      "source_url": "https://arxiv.org/abs/2302.13971",
+      "quote": "this objective disregards the inference budget",
+      "as_written": "推理预算"
+    },
+    {
+      "text": "LLaMA：10B 模型 200B token",
+      "value": "200B tokens",
+      "source_url": "https://arxiv.org/abs/2302.13971",
+      "quote": "recommends training a 10B model on 200B tokens",
+      "as_written": "2000 亿"
+    },
+    {
+      "text": "LLaMA：100 亿参数",
+      "value": "10B",
+      "source_url": "https://arxiv.org/abs/2302.13971",
+      "quote": "training a 10B model on 200B tokens",
+      "as_written": "100 亿"
+    },
+    {
+      "text": "LLaMA：7B 模型 1T token 后仍在进步",
+      "value": "1T tokens",
+      "source_url": "https://arxiv.org/abs/2302.13971",
+      "quote": "the performance of a 7B model continues to improve even after 1T tokens",
+      "as_written": "1 万亿"
+    },
+    {
+      "text": "LLaMA：70 亿参数",
+      "value": "7B",
+      "source_url": "https://arxiv.org/abs/2302.13971",
+      "quote": "a 7B model continues to improve",
+      "as_written": "70 亿"
+    },
+    {
+      "text": "LLaMA 发布日期",
+      "value": "2302.13971",
+      "source_url": "https://arxiv.org/abs/2302.13971",
+      "quote": "arXiv:2302.13971v1 [cs.CL] 27 Feb 2023",
+      "as_written": "2023 年 2 月"
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "tier": "primary",
+    "writer": "论文精读"
+  }
+}
