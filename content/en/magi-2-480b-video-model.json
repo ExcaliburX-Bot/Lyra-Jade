@@ -1,0 +1,686 @@
+{
+  "slug": "magi-2-480b-video-model",
+  "date": "2026-11-25",
+  "category": "research",
+  "publisher": "Sand.ai",
+  "title": "Sand.ai launches MAGI-2: a 480B model that natively generates 30 seconds of 1080p audio-video",
+  "summary": "Want a short film with lip-sync, music, and foley? Sand.ai's new flagship model MAGI-2, announced today, scales to 480B parameters and natively generates up to 30 seconds of 1080p, 25 fps audio-video. The company says its four-task average Elo on the Artificial Analysis Video Arena is 151.8 points above the preview.",
+  "ai_summary": "Sand.ai today launched MAGI-2, its flagship video model, scaling up the preview: total parameters 114B→480B, active parameters ~6B→~28B, pre-training data expanded to 4T tokens. It natively generates up to 30 seconds of 1080p, 25 fps audio-video, accepts up to 20 references per request, and supports timelines and video editing. Sand.ai says its four-task average Elo on Artificial Analysis Video Arena v2.1 rose from 998.5 to 1150.3; Multi-Head Latent MoE trains about 22% faster than LatentMoE. The 480B pre-training checkpoint showed Sudoku solving, implicit narrative, and cross-lingual abilities, which became harder to elicit after post-training. Pricing and release timing were not announced.",
+  "brief": [
+    "More than 4x more parameters: total parameters 114B → 480B, active parameters ~6B → ~28B, and about 3x the pre-training data at 4T tokens.",
+    "Natively generates up to 30 seconds of 1080p, 25 fps audio-video; up to 20 references per request (10 images, 5 videos, 5 audio clips).",
+    "Sand.ai says its four-task average Elo on Artificial Analysis Video Arena v2.1 rose 151.8 points, from 998.5 to 1150.3 — but only against its own preview model.",
+    "Sand.ai says Multi-Head Latent MoE trains about 22% faster than LatentMoE under matched compute, and a chart notes about 23% lower compute."
+  ],
+  "readMinutes": 8,
+  "sections": [
+    {
+      "h": "What it is: one backbone that generates video and audio together",
+      "blocks": [
+        {
+          "p": "Sand.ai builds video generation models, and MAGI is its flagship line. In August, the team released a research preview, MAGI-2 Preview (~114B total parameters, ~6B active). Today's release is the full flagship MAGI-2, scaled up across the board."
+        },
+        {
+          "p": "The key difference: MAGI-2 generates video and audio together in a single backbone, rather than producing visuals and then dubbing them later. Sand.ai says it can directly generate dialogue with lip-sync, plus foley (footsteps, door slams, and similar effects), ambient sound, and music."
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "MAGI-2 flagship in five numbers",
+            "subtitle": "Data from the Sand.ai blog",
+            "items": [
+              {
+                "value": 480,
+                "unit": "B",
+                "label": "Total parameters",
+                "note": "114B in preview, more than 4x larger"
+              },
+              {
+                "value": 28,
+                "unit": "B",
+                "label": "Active parameters",
+                "note": "~28B; ~6B in preview"
+              },
+              {
+                "value": 4,
+                "unit": "T token",
+                "label": "Pre-training data",
+                "note": "About 3x the preview"
+              },
+              {
+                "value": 30,
+                "unit": "seconds",
+                "label": "Maximum length",
+                "note": "1080p, 25 fps native audio-video"
+              },
+              {
+                "value": 151.8,
+                "unit": "points",
+                "label": "Elo gain",
+                "note": "Four-task average on AA Video Arena v2.1, vs. its own preview"
+              }
+            ]
+          }
+        },
+        {
+          "p": "For creators, it also supports six aspect ratios, up to 20 references (10 images, 5 videos, and 5 audio clips used together as conditioning), precise timeline and shot-cut control, and targeted edits to existing video."
+        },
+        {
+          "fig": {
+            "type": "cards",
+            "title": "Six out-of-the-box capabilities",
+            "subtitle": "Capability list (the site gives no pricing)",
+            "items": [
+              {
+                "icon": "audio",
+                "title": "Native audio-video sync",
+                "desc": "One backbone generates dialogue, lip-sync, foley, ambient sound, and music together",
+                "tags": [
+                  "Audio",
+                  "Video"
+                ]
+              },
+              {
+                "icon": "image",
+                "title": "Six aspect ratios",
+                "desc": "Supports six aspect ratios",
+                "tags": [
+                  "6 ratios"
+                ]
+              },
+              {
+                "icon": "clock",
+                "title": "Up to 30 seconds",
+                "desc": "1080p, 25 fps native audio-video",
+                "tags": [
+                  "1080p",
+                  "25fps"
+                ]
+              },
+              {
+                "icon": "layers",
+                "title": "Up to 20 references",
+                "desc": "10 images, 5 videos, and 5 audio clips as conditioning",
+                "tags": [
+                  "omni-reference"
+                ]
+              },
+              {
+                "icon": "table",
+                "title": "Timeline control",
+                "desc": "Precise timeline and shot-cut control",
+                "tags": [
+                  "timeline"
+                ]
+              },
+              {
+                "icon": "video",
+                "title": "Video editing",
+                "desc": "Targeted edits to existing video",
+                "tags": [
+                  "editing"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "From preview to flagship: scaling four things at once",
+      "blocks": [
+        {
+          "p": "This isn't just adding parameters. Sand.ai stresses that model capacity, systems, and data were scaled together, then paired with targeted post-training and 1080p upscaling. The four easiest numbers to compare are below."
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "From Preview to flagship: four things scale together",
+            "subtitle": "Amber is the new flagship; Elo is the four-task average on AA Video Arena v2.1",
+            "left": {
+              "label": "MAGI-2 Preview",
+              "sub": "Released August 2026",
+              "items": [
+                {
+                  "label": "Total parameters",
+                  "tag": "114B",
+                  "state": "base"
+                },
+                {
+                  "label": "Active parameters",
+                  "tag": "~6B",
+                  "state": "base"
+                },
+                {
+                  "label": "Pre-training data",
+                  "tag": "Baseline",
+                  "state": "base"
+                },
+                {
+                  "label": "AA four-task average Elo",
+                  "tag": "998.5",
+                  "state": "base"
+                }
+              ]
+            },
+            "right": {
+              "label": "MAGI-2 flagship",
+              "sub": "Released today",
+              "items": [
+                {
+                  "label": "Total parameters",
+                  "tag": "480B",
+                  "state": "hi"
+                },
+                {
+                  "label": "Active parameters",
+                  "tag": "~28B",
+                  "state": "hi"
+                },
+                {
+                  "label": "Pre-training data",
+                  "tag": "4T token",
+                  "state": "hi"
+                },
+                {
+                  "label": "AA four-task average Elo",
+                  "tag": "1150.3",
+                  "state": "hi"
+                }
+              ]
+            },
+            "footer": "All four move in the same direction: parameters, active parameters, data, and Elo."
+          }
+        },
+        {
+          "p": "What is Elo? Artificial Analysis Video Arena v2.1 ranks videos through human blind-test votes. Elo borrows the chess-rating system: a higher score means the model was chosen more often in blind comparisons. Sand.ai reports the average across four tasks: I2V (image-to-video), I2V-Silent (image-to-video, silent), T2V-Silent (text-to-video, silent), and T2V (text-to-video)."
+        },
+        {
+          "callout": {
+            "kind": "note",
+            "title": "Before you read the Elo, check the baseline.",
+            "text": "That +151.8 points is against its own August preview, not against other companies' flagship models. The source gives no direct Elo comparison with competitors; the Elo bars are plotted from a 950 baseline."
+          }
+        }
+      ]
+    },
+    {
+      "h": "Why split a token into eight parts? The communication math behind Multi-Head Latent MoE",
+      "blocks": [
+        {
+          "p": "Some background first. A 480B-parameter model can't run if every forward pass activates all of it, so sparsity is essential: each step uses only part of the parameters. The preview validated this approach, and MAGI-2 scales the backbone more than 4x, from 114B total (~6B active) to 480B (~28B active)."
+        },
+        {
+          "p": "But a conventional MoE (Mixture-of-Experts) doesn't scale up cleanly because it gets stuck on distributed-systems communication. It routes first and dispatches later: each token is routed to the top-k experts (the k with the highest probabilities), then the full token is sent to the corresponding devices. Two problems follow. Cross-device communication grows linearly with top-k. And the number of tokens each device receives fluctuates with routing decisions — even more unevenly on multimodal sequences mixing video, audio, and reference images — causing stragglers, pipeline bubbles, and memory spikes."
+        },
+        {
+          "fig": {
+            "type": "illustration",
+            "title": "One token split into eight independent heads",
+            "subtitle": "Schematic: each head has its own router and expert pool; communication is only a static exchange by head",
+            "glyph": {
+              "kind": "context",
+              "total": 8,
+              "segments": [
+                {
+                  "size": 1,
+                  "tone": "base",
+                  "label": "Head 1"
+                },
+                {
+                  "size": 1,
+                  "tone": "base",
+                  "label": "Head 2"
+                },
+                {
+                  "size": 1,
+                  "tone": "base",
+                  "label": "Head 3"
+                },
+                {
+                  "size": 1,
+                  "tone": "base",
+                  "label": "Head 4"
+                },
+                {
+                  "size": 1,
+                  "tone": "base",
+                  "label": "Head 5"
+                },
+                {
+                  "size": 1,
+                  "tone": "base",
+                  "label": "Head 6"
+                },
+                {
+                  "size": 1,
+                  "tone": "base",
+                  "label": "Head 7"
+                },
+                {
+                  "size": 1,
+                  "tone": "base",
+                  "label": "Head 8"
+                }
+              ]
+            },
+            "note": "In a conventional MoE, a full token is dynamically routed to remote experts; here the token is split into heads first, then top-k routing happens locally."
+          }
+        },
+        {
+          "p": "Multi-Head Latent MoE solves this by splitting first, exchanging, then routing locally. Each token is divided into independent heads, and each head has its own router and expert pool. Activation slices are first exchanged statically by head ownership; the data-dependent top-k routing then happens entirely on the local device. Cross-device communication no longer depends on top-k, tensor shapes are known in advance, and the communication unpredictability of large-scale sparse training disappears."
+        },
+        {
+          "p": "The training stack is built around it: Head Parallel and MagiFSDP decouple static slice exchange from sharded expert parameters, gradients, and optimizer states; MagiMoE optimizes thousands of narrow experts per layer locally and overlaps shared-expert computation, activation recomputation, weight-gradient computation, and communication; MagiMuon extends the Muon optimizer efficiently to sharded expert matrices."
+        },
+        {
+          "p": "Sand.ai gives two numbers: under matched total FLOPs (floating-point operations) and each architecture's optimal configuration, Multi-Head Latent MoE trains about 22% faster than LatentMoE; and on the validation-loss-vs-training-compute curve, the 8-head version reaches the same loss with about 23% less compute, according to the chart annotation."
+        }
+      ]
+    },
+    {
+      "h": "How the 4T tokens were built, and why not over-filter them",
+      "blocks": [
+        {
+          "p": "Start with raw scale: about 3x the preview, 4T tokens in total. That volume demands a throughput-first data pipeline. Sand.ai says annotation was completed across roughly 1 billion samples, averaging about 4k tokens per sample, in three weeks."
+        },
+        {
+          "p": "More important than volume is what the team kept. Sand.ai carried over the lesson from the preview: don't aggressively filter complex footage as dirty data. It preserves multi-character interactions, rapid cuts, on-screen text, and dense real-world soundscapes."
+        },
+        {
+          "p": "Why this matters: when model capacity and data scale together to 480B × 4T, many low-level structural errors — extra fingers, motion collapse — mostly recede during pre-training. At smaller model sizes, these needed heavy post-training patches."
+        }
+      ]
+    },
+    {
+      "h": "Post-training and 1080p upscaling: from fixing flaws to refining texture",
+      "blocks": [
+        {
+          "p": "Once pre-training has established structural coherence and motion stability, post-training no longer needs to spend reinforcement learning (RL) budget on anatomical errors and continuity breaks. It focuses on visual and acoustic richness instead: lighting depth, surface micro-texture, fur, and material realism across long sequences."
+        },
+        {
+          "p": "How does 1080p happen? A latent spatiotemporal upscaler lifts the base-model output to full 1080p at 25 fps and re-injects the original reference images during upscaling. Because the base generation already anchors where faces and text move across frames, giving the upscaler the raw references lets it reuse the original appearance cues when reconstructing fine detail. Sand.ai says this significantly improves small-face identity and text legibility."
+        },
+        {
+          "p": "The site provides three 1080p, 25 fps before-and-after RL comparisons (a lunar cave, an attic workshop, and an alpine lake) with a draggable divider for side-by-side playback. The source gives no quantitative metrics for these three pairs."
+        }
+      ]
+    },
+    {
+      "h": "Abilities that emerged in pre-training, then became harder to elicit after post-training",
+      "blocks": [
+        {
+          "p": "While evaluating the 480B pre-training checkpoint, Sand.ai noticed behaviors beyond visual quality and camera control. To rule out help from an external large model rewriting prompts (Prompt Enhancement, or PE), the team re-tested with PE turned off — and the behaviors remained."
+        },
+        {
+          "list": [
+            "Visual reasoning puzzles: shape marking, symmetry completion, mazes, Sudoku. On 9×9 Sudoku probes, for example, the model preserves all given digits and fills the rest so that every row, column, and 3×3 subgrid satisfies 1–9.",
+            "Implicit narrative completion and autonomous directing: given only character/scene references and three story beats — no framing, camera angles, or cut points specified — the model plans shot composition, perspective changes, and close-ups on its own.",
+            "Cross-lingual understanding and translation: when asked to make a character speak another language, the model generates dialogue in the target language directly, without an external LLM rewriting the script first."
+          ]
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "Three emergent pre-training abilities that are harder to elicit after post-training",
+            "subtitle": "Amber indicates the three abilities that were stronger in pre-training; gray indicates they became harder after post-training",
+            "left": {
+              "label": "480B pre-trained checkpoint",
+              "sub": "PE off",
+              "items": [
+                {
+                  "label": "Visual reasoning (Sudoku etc.)",
+                  "tag": "Present",
+                  "state": "hi"
+                },
+                {
+                  "label": "Implicit narrative completion",
+                  "tag": "Present",
+                  "state": "hi"
+                },
+                {
+                  "label": "Cross-lingual understanding",
+                  "tag": "Present",
+                  "state": "hi"
+                }
+              ]
+            },
+            "right": {
+              "label": "After post-training",
+              "sub": "Fine-tuned on several thousand curated clips",
+              "items": [
+                {
+                  "label": "Visual polish",
+                  "tag": "Clearly improved",
+                  "state": "base"
+                },
+                {
+                  "label": "Visual reasoning",
+                  "tag": "Harder to elicit",
+                  "state": "dim"
+                },
+                {
+                  "label": "Implicit narrative",
+                  "tag": "Harder to elicit",
+                  "state": "dim"
+                },
+                {
+                  "label": "Cross-lingual understanding",
+                  "tag": "Harder to elicit",
+                  "state": "dim"
+                }
+              ]
+            },
+            "footer": "Sand.ai compares this to the LLM \"alignment tax\""
+          }
+        },
+        {
+          "p": "After post-training, though, those three behaviors shift noticeably. After fine-tuning on several thousand curated clips, visual polish clearly improves, but the reasoning, implicit narrative, and cross-lingual behaviors seen in pre-training become harder to elicit. Sand.ai's hypothesis: fine-tuning on a small, aesthetics-focused dataset narrows the output distribution toward cinematic polish, at the cost of broader pre-trained generalization — similar to the \"alignment tax\" observed in LLMs."
+        },
+        {
+          "callout": {
+            "kind": "takeaway",
+            "title": "Sand.ai's self-correction",
+            "text": "Visual polish is no longer the only metric. Following rules, organizing causal events, and integrating cross-modal cues matter just as much. The next generation of training data will be designed around this."
+          }
+        }
+      ]
+    },
+    {
+      "h": "What Sand.ai hasn't said",
+      "blocks": [
+        {
+          "list": [
+            "Pricing and API billing: not mentioned anywhere in the post.",
+            "Release timing and rollout scope: not specified; the company only says open-source releases and a technical report are coming soon.",
+            "Specific open-source date and license: not stated.",
+            "Specific technical report release date: not stated.",
+            "Direct comparison with other flagship video models: Elo is only compared with its own Preview, with no third-party reference.",
+            "Inference cost and latency for generating 30 seconds of 1080p video: not given."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Who it's for",
+      "blocks": [
+        {
+          "p": "Value: if you want an end-to-end workflow where one backbone handles synchronized audio and video — dialogue with lip-sync, foley, ambient sound, and music together, plus multi-reference control and timeline editing — MAGI-2 is built for exactly that."
+        },
+        {
+          "p": "Cost: there's no pricing or release date yet. Sand.ai also lists its own limitations: extreme high-speed motion can occasionally produce trajectory or continuity artifacts; medium- and wide-shot 2D animation can look overly smooth in fine local motion; complex soundscapes still have room for richer layering and physical realism; and preserving pre-trained generalization through post-training remains an open research problem."
+        },
+        {
+          "list": [
+            "If you're a video creator who wants audio-video sync, multi-reference control, and timeline editing: wait for open-source and API news before deciding whether to build on it.",
+            "If you work on large-scale sparse training or video model research: the Multi-Head Latent MoE architecture plus Head Parallel, MagiFSDP, MagiMoE, and MagiMuon are worth a close read. Wait for the technical report.",
+            "If you only care about benchmarks: note that the Elo gain is against its own preview, not a cross-vendor comparison. And when judging capabilities, factor in that the emergent abilities became harder to elicit after post-training."
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "MAGI-2: A 480B Frontier Video Generation Model",
+      "publisher": "Sand.ai",
+      "date": "2026-11-25",
+      "url": "https://sand.ai/blog/magi-2"
+    },
+    "more": [],
+    "note": "All figures in this article come from the Sand.ai blog (November 25, 2026); Elo values are cited by Sand.ai from Artificial Analysis Video Arena v2.1. Diagrams such as the token-splitting schematic were drawn based on the source description."
+  },
+  "claims": [
+    {
+      "text": "MAGI-2 flagship has 480B total parameters",
+      "value": "480B",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "480B",
+      "quote": "MAGI-2 scales the base model more than 4× to 480B total parameters and ~28B active parameters"
+    },
+    {
+      "text": "MAGI-2 flagship has about 28B active parameters",
+      "value": "~28B",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "~28B",
+      "quote": "MAGI-2 scales the base model more than 4× to 480B total parameters and ~28B active parameters"
+    },
+    {
+      "text": "MAGI-2 Preview has about 114B total parameters",
+      "value": "~114B",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "114B",
+      "quote": "In August 2026, we released MAGI-2 Preview [1] (~114B total parameters, ~6B active)"
+    },
+    {
+      "text": "The preview has about 6B active parameters",
+      "value": "~6B",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "~6B",
+      "quote": "In August 2026, we released MAGI-2 Preview [1] (~114B total parameters, ~6B active)"
+    },
+    {
+      "text": "MAGI-2 scales the base model more than 4x",
+      "value": "more than 4×",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "more than 4x",
+      "quote": "MAGI-2 scales the base model more than 4× to 480B total parameters and ~28B active parameters"
+    },
+    {
+      "text": "MAGI-2 was pre-trained on 4T tokens",
+      "value": "4T tokens",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "4T token",
+      "quote": "For MAGI-2, we expanded pre-training data roughly 3× over Preview to 4T tokens."
+    },
+    {
+      "text": "Pre-training data is about 3x the preview",
+      "value": "roughly 3×",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "about 3x",
+      "quote": "For MAGI-2, we expanded pre-training data roughly 3× over Preview to 4T tokens."
+    },
+    {
+      "text": "MAGI-2 generates up to 30 seconds of video",
+      "value": "30 seconds",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "up to 30 seconds",
+      "quote": "It generates up to 30 seconds of 1080p, 25 fps native audio-video"
+    },
+    {
+      "text": "MAGI-2 supports 1080p resolution",
+      "value": "1080p",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "1080p",
+      "quote": "It generates up to 30 seconds of 1080p, 25 fps native audio-video"
+    },
+    {
+      "text": "MAGI-2 supports 25 fps",
+      "value": "25 fps",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "25 fps",
+      "quote": "It generates up to 30 seconds of 1080p, 25 fps native audio-video"
+    },
+    {
+      "text": "One native request can use up to 20 references",
+      "value": "20 media items",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "up to 20 references",
+      "quote": "supports omni-reference across images, video, and audio (up to 20 media items per native request)"
+    },
+    {
+      "text": "Up to 10 images among the references",
+      "value": "10 images",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "up to 10 images",
+      "quote": "combines up to 20 references (up to 10 images, 5 videos, and 5 audio clips) via omni-reference"
+    },
+    {
+      "text": "Up to 5 videos among the references",
+      "value": "5 videos",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "5 videos",
+      "quote": "combines up to 20 references (up to 10 images, 5 videos, and 5 audio clips) via omni-reference"
+    },
+    {
+      "text": "Up to 5 audio clips among the references",
+      "value": "5 audio clips",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "5 audio clips",
+      "quote": "combines up to 20 references (up to 10 images, 5 videos, and 5 audio clips) via omni-reference"
+    },
+    {
+      "text": "MAGI-2 supports six aspect ratios",
+      "value": "six aspect ratios",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "six aspect ratios",
+      "quote": "It supports six aspect ratios"
+    },
+    {
+      "text": "Four-task average Elo on AA Video Arena v2.1 is 151.8 points above the preview",
+      "value": "+151.8",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "151.8 points",
+      "quote": "raising our 4-task average Elo on Artificial Analysis Video Arena v2.1 by +151.8 points over MAGI-2 Preview"
+    },
+    {
+      "text": "The preview's four-task average Elo is 998.5",
+      "value": "998.5",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "998.5",
+      "quote": "raising our 4-task average Elo on Artificial Analysis Video Arena v2.1 by +151.8 points over MAGI-2 Preview (998.5 → 1150.3)"
+    },
+    {
+      "text": "MAGI-2 flagship's four-task average Elo is 1150.3",
+      "value": "1150.3",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "1150.3",
+      "quote": "raising our 4-task average Elo on Artificial Analysis Video Arena v2.1 by +151.8 points over MAGI-2 Preview (998.5 → 1150.3)"
+    },
+    {
+      "text": "Elo is the average of four tasks",
+      "value": "4-task",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "four-task average",
+      "quote": "raising our 4-task average Elo on Artificial Analysis Video Arena v2.1"
+    },
+    {
+      "text": "Elo bars are plotted from a 950 baseline",
+      "value": "950 baseline",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "950 baseline",
+      "quote": "Elo bars plotted from a 950 baseline"
+    },
+    {
+      "text": "Multi-Head Latent MoE trains about 22% faster than LatentMoE",
+      "value": "22%",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "about 22%",
+      "quote": "Multi-Head Latent MoE achieves roughly a 22% training speedup over LatentMoE."
+    },
+    {
+      "text": "8-head Multi-Head Latent MoE has lower validation loss than Standard MoE",
+      "value": "8-head",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "8 heads",
+      "quote": "an 8-head Multi-Head Latent MoE achieves consistently lower validation loss than Standard MoE"
+    },
+    {
+      "text": "The chart notes about 23% less compute for Multi-Head Latent MoE",
+      "value": "~23%",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "about 23%",
+      "quote": "~ 23 % less compute"
+    },
+    {
+      "text": "4T tokens span roughly 1 billion samples",
+      "value": "1 billion samples",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "roughly 1 billion samples",
+      "quote": "annotating 4T tokens across roughly 1 billion samples (averaging ~4k tokens per sample) in three weeks"
+    },
+    {
+      "text": "Average of about 4k tokens per sample",
+      "value": "~4k tokens per sample",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "about 4k tokens",
+      "quote": "annotating 4T tokens across roughly 1 billion samples (averaging ~4k tokens per sample) in three weeks"
+    },
+    {
+      "text": "Data annotation was completed in three weeks",
+      "value": "three weeks",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "three weeks",
+      "quote": "annotating 4T tokens across roughly 1 billion samples (averaging ~4k tokens per sample) in three weeks"
+    },
+    {
+      "text": "Post-training fine-tuned on several thousand curated clips",
+      "value": "several thousand",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "several thousand",
+      "quote": "Fine-tuning on several thousand curated clips delivers a clear jump in visual polish"
+    },
+    {
+      "text": "Emergent capability probes used 9×9 Sudoku",
+      "value": "9×9",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "9×9 Sudoku",
+      "quote": "On 9×9 Sudoku probes, for example, the model preserves all given digits"
+    },
+    {
+      "text": "Each 3×3 Sudoku subgrid must satisfy 1–9",
+      "value": "3×3",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "3×3 subgrid",
+      "quote": "every row, column, and 3×3 subgrid satisfies 1–9"
+    },
+    {
+      "text": "Every row, column, and 3×3 subgrid satisfies 1–9",
+      "value": "1–9",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "1–9",
+      "quote": "every row, column, and 3×3 subgrid satisfies 1–9"
+    },
+    {
+      "text": "The narrative probe provided only three story beats",
+      "value": "three story beats",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "three story beats",
+      "quote": "providing only character/scene references and three story beats"
+    },
+    {
+      "text": "The preview was released in August 2026",
+      "value": "August 2026",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "August 2026",
+      "quote": "In August 2026, we released MAGI-2 Preview"
+    },
+    {
+      "text": "The site provides three 1080p, 25 fps before-and-after RL comparisons",
+      "value": "three",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "three pairs",
+      "quote": "The three 1080p, 25 fps comparisons below show full upscaled outputs before and after RL."
+    },
+    {
+      "text": "MagiMoE optimizes thousands of narrow experts per layer",
+      "value": "thousands",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "thousands of narrow experts",
+      "quote": "optimizes local execution across thousands of narrow experts per layer"
+    }
+  ],
+  "cover": {
+    "headline": "MAGI-2 flagship launches",
+    "highlight": "480B parameters, 30 seconds of 1080p audio-video",
+    "big": {
+      "value": "480",
+      "unit": "B",
+      "label": "Total parameters"
+    }
+  },
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "0fef16e946b56bbe"
+}

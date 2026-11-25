@@ -1,0 +1,581 @@
+{
+  "slug": "google-workspace-cli-gwscli",
+  "category": "product",
+  "date": "2026-11-25",
+  "publisher": "Google for Developers",
+  "title": "Google launches gwscli to let AI agents check calendars, reply to email, and edit docs with a single prompt",
+  "summary": "Want an AI assistant that can go through your inbox, manage your calendar, and edit your spreadsheets? Google's new gwscli command-line tool connects AI agents like Claude Code to Google Workspace—install it, and you give the orders in plain language.",
+  "ai_summary": "Google has released gwscli, a unified command-line tool for AI agents. Once installed locally and connected to a Google account, coding agents like Claude Code, Codex, and Antigravity can read from and write to Google Workspace using natural language. It covers Calendar, Gmail, Drive, Docs, Sheets, Slides, Chat, Tasks, and the People API; you can check schedules, search email, edit spreadsheets, create events, send messages, upload files, and get structured JSON output. The tool itself costs nothing extra—requests count toward your Google Cloud project's usage tier and quotas. For safety, sensitive actions pause for human confirmation, and Google recommends starting with read-only permissions. The biggest hurdle is upfront: you need a Google Cloud project and OAuth configuration before you can begin.",
+  "brief": [
+    "gwscli is a unified terminal client that connects Claude Code, Codex, and Antigravity to Google Workspace services.",
+    "Covers Calendar, Chat, Docs, Drive, Gmail, People API, Sheets, Slides, and Tasks.",
+    "No separate tool charge; requests count toward your Google Cloud project's usage tier and quotas.",
+    "Sensitive actions include built-in human confirmation; start read-only with `gwscli auth login --bundle=readonly`."
+  ],
+  "readMinutes": 8,
+  "sections": [
+    {
+      "h": "What is gwscli? A Workspace operations layer for AI agents",
+      "blocks": [
+        {
+          "p": "Google Workspace is part of everyday work: Calendar for meetings, Gmail for email, Drive for files, Docs for documents. Until now, if you wanted an AI assistant to “check whether I have a meeting tomorrow afternoon” or “turn the action items in this document into tasks,” you had to write code against several APIs yourself. Google now offers a shorter path: gwscli, short for the Google Workspace command-line interface (CLI)."
+        },
+        {
+          "p": "It's a unified terminal client that connects AI coding agents such as Claude Code, Codex, and Antigravity to Google Workspace services. Once installed, you describe what you want in plain language and the agent runs the corresponding commands. Developers can also type commands directly in an interactive terminal."
+        },
+        {
+          "list": [
+            "Commands, parameters, and schemas (the structural descriptions that define commands and output formats) are discovered dynamically at runtime, so AI agents can inspect what's available to call.",
+            "Structured JSON output that's easy for programs to process downstream.",
+            "Packaged agent skills that give agents domain context and safety prompts.",
+            "Built-in human-in-the-loop confirmation: sensitive operations pause and wait for a person to decide."
+          ]
+        },
+        {
+          "callout": {
+            "kind": "takeaway",
+            "title": "The short version",
+            "text": "gwscli is a universal adapter between AI agents and your Google account: the agent speaks plain language, and gwscli turns that into API calls."
+          }
+        },
+        {
+          "p": "One design choice to note: commands and schemas are discovered dynamically at runtime, and interfaces may change without backward-compatibility guarantees. So don't hard-code fixed command signatures into static scripts—have your script inspect `--help` and `--schema` at runtime instead."
+        },
+        {
+          "p": "As of November 25, 2026, this official guide is the most complete starting point for learning about it."
+        }
+      ]
+    },
+    {
+      "h": "Once installed, what can AI agents do for you?",
+      "blocks": [
+        {
+          "p": "It covers a broad range of services. Here's the full picture:"
+        },
+        {
+          "list": [
+            "Calendar: list calendars and events, search events, suggest free meeting times, and create, update, respond to, or delete events.",
+            "Chat: find spaces, direct messages, and group chats; read, search, and send messages. Sending messages requires a Google Workspace account and a configured Google Chat app.",
+            "Docs: read document content and structure, and make batch edits.",
+            "Drive: search, list, read, and download files; view metadata and sharing permissions; create or copy files; and upload local files or new revisions.",
+            "Gmail: search and read email threads, list and create drafts and replies, manage labels, and move messages or threads to or from Trash and Spam.",
+            "People API (Developer Preview): view your profile, search personal contacts, and search your organization's directory. Directory search requires a Google Workspace account.",
+            "Sheets: read spreadsheets and cell ranges, write values and formulas, insert rows or columns, and make batch updates.",
+            "Slides: read presentations and individual slides, fetch thumbnails, and make batch edits.",
+            "Tasks: list task lists and tasks, create and update tasks, mark tasks complete, and delete or restore tasks."
+          ]
+        },
+        {
+          "fig": {
+            "type": "illustration",
+            "title": "One gwscli connects AI agents to all Workspace services",
+            "subtitle": "Illustrative: amber marks the People API, which is still in Developer Preview.",
+            "note": "People API requires enrollment in the Google Workspace Developer Preview Program, and directory search requires a Workspace account.",
+            "glyph": {
+              "kind": "hub",
+              "center": {
+                "label": "gwscli",
+                "tone": "def"
+              },
+              "nodes": [
+                {
+                  "label": "Calendar",
+                  "tone": "base"
+                },
+                {
+                  "label": "Gmail",
+                  "tone": "base"
+                },
+                {
+                  "label": "Drive",
+                  "tone": "base"
+                },
+                {
+                  "label": "Docs",
+                  "tone": "base"
+                },
+                {
+                  "label": "Sheets",
+                  "tone": "base"
+                },
+                {
+                  "label": "Slides",
+                  "tone": "base"
+                },
+                {
+                  "label": "Chat",
+                  "tone": "base"
+                },
+                {
+                  "label": "Tasks",
+                  "tone": "base"
+                },
+                {
+                  "label": "People API",
+                  "tone": "hi"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "p": "The examples Google provides show how it's used day to day:"
+        },
+        {
+          "fig": {
+            "type": "cards",
+            "title": "Once installed, you can give instructions like these",
+            "subtitle": "Examples are from Google's documentation, paraphrased.",
+            "items": [
+              {
+                "icon": "clock",
+                "title": "Check your schedule",
+                "desc": "\"What's on my calendar for the rest of today?\" The agent calls Calendar to find out.",
+                "tags": [
+                  "Calendar"
+                ]
+              },
+              {
+                "icon": "chat",
+                "title": "Handle email",
+                "desc": "\"Summarize this week's unread email and draft a reply to my manager proposing a meeting on Tuesday.\"",
+                "tags": [
+                  "Gmail"
+                ]
+              },
+              {
+                "icon": "search",
+                "title": "Find docs",
+                "desc": "\"Find the Q3 plan docs and list the open action items.\"",
+                "tags": [
+                  "Drive",
+                  "Docs"
+                ]
+              },
+              {
+                "icon": "table",
+                "title": "Turn them into tasks",
+                "desc": "\"Add the open action items from the Q3 doc to my Tasks list.\"",
+                "tags": [
+                  "Tasks"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "How to install: what you need first",
+      "blocks": [
+        {
+          "p": "First check the requirements: a machine running Linux, macOS, or Windows on x86_64 or ARM64, plus a Google Cloud project. If you don't have one, create it; if your organization administrator prevents project creation, use an existing project or contact an admin. On Linux/macOS you need curl; on Windows, PowerShell."
+        },
+        {
+          "p": "There are two ways to install. The fastest is the quick-install script: on Linux/macOS, a single curl command installs to ~/.local/bin, and you can set GWSCLI_INSTALL_DIR to choose a different directory. On Windows, run one command in PowerShell; it installs to $HOME\\bin and adds it to your user PATH automatically, and you can set $env:GWSCLI_INSTALL_DIR to change the directory."
+        },
+        {
+          "p": "You can also install manually: download the correct binary and documentation assets for your OS and CPU architecture from dl.google.com/workspace-cli, then place the binary in a directory on your PATH (such as ~/.local/bin or ~/bin). On Windows, make sure $HOME\\bin is on your PATH. On macOS, clear the quarantine attribute after downloading."
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "Two install paths: one command, or download by CPU architecture",
+            "subtitle": "Illustrative: amber shows the quick-install path Google presents first.",
+            "left": {
+              "label": "Quick install",
+              "sub": "One script",
+              "items": [
+                {
+                  "label": "Linux / macOS",
+                  "tag": "One curl command",
+                  "state": "hi"
+                },
+                {
+                  "label": "Installs to ~/.local/bin",
+                  "tag": "Change it with GWSCLI_INSTALL_DIR",
+                  "state": "base"
+                },
+                {
+                  "label": "Windows",
+                  "tag": "One PowerShell command",
+                  "state": "base"
+                },
+                {
+                  "label": "Installs to $HOME\\bin",
+                  "tag": "Adds itself to your user PATH",
+                  "state": "base"
+                }
+              ]
+            },
+            "right": {
+              "label": "Manual download",
+              "sub": "Specify a version",
+              "items": [
+                {
+                  "label": "Pick the package for your CPU architecture",
+                  "tag": "x86_64 / ARM64",
+                  "state": "base"
+                },
+                {
+                  "label": "Linux / macOS / Windows",
+                  "tag": "Platform-specific binaries",
+                  "state": "base"
+                },
+                {
+                  "label": "Choose your own install directory",
+                  "tag": "e.g. ~/.local/bin or ~/bin",
+                  "state": "base"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "p": "After installing, verify it with gwscli version. If you already work inside an AI coding agent, you can download Google's install prompt file INSTALL_PROMPT.md and have the agent follow it. For interactive sign-in and authorization, though, it's best to complete those steps yourself in your local terminal."
+        },
+        {
+          "callout": {
+            "kind": "note",
+            "title": "Permission tip",
+            "text": "If /usr/local/bin requires elevated permissions, download the binary to a writable directory that's on your PATH, such as ~/.local/bin or ~/bin."
+          }
+        }
+      ]
+    },
+    {
+      "h": "How to set up authentication: start read-only, then add access as needed",
+      "blocks": [
+        {
+          "p": "gwscli uses OAuth 2.0 for authentication. Broadly, you can either configure your own OAuth client and let gwscli manage tokens and refreshes, or pass an existing OAuth access token directly."
+        },
+        {
+          "p": "For configuring your own client, Personal mode is the shortcut: open a pre-selected link in the Google Cloud console, and it creates a single-user OAuth 2.0 client for your own account, automatically enables core Workspace services, and skips the consent screen and app verification. After downloading the client secret JSON, run gwscli auth setup to register it, then gwscli auth login --bundle=readonly to sign in."
+        },
+        {
+          "p": "If you don't use Personal mode, complete these three manual setup steps before signing in. First, enable services: each command group requires both the product API and its companion *mcp.googleapis.com service—except People API, which only uses people.googleapis.com. Second, create credentials: choose Desktop app as the application type and select \"Use this client for an AI-powered agent.\" Third, register the client with gwscli auth setup."
+        },
+        {
+          "fig": {
+            "type": "steps",
+            "title": "Manual mode: enable services, create a client, then sign in",
+            "subtitle": "Illustrative: the setup order when you don't use Personal mode",
+            "steps": [
+              {
+                "name": "Enable services",
+                "tool": "gcloud services enable",
+                "desc": "Enable both the product API and its companion *mcp.googleapis.com service"
+              },
+              {
+                "name": "Create an OAuth client",
+                "tool": "Google Cloud console",
+                "desc": "Choose Desktop app and select Use this client for an AI-powered agent"
+              },
+              {
+                "name": "Register credentials",
+                "tool": "gwscli auth setup",
+                "desc": "Pass in the downloaded client secret JSON"
+              },
+              {
+                "name": "Sign in and authorize",
+                "tool": "gwscli auth login",
+                "desc": "You can start read-only with --bundle=readonly"
+              }
+            ]
+          }
+        },
+        {
+          "p": "Authorization is incremental: when you run gwscli auth login again, the newly granted scopes merge with your existing ones. Least privilege matters here—start read-only, then add write permissions only as needed:"
+        },
+        {
+          "list": [
+            "Read-only for all services: gwscli auth login --bundle=readonly",
+            "Read-only for one service: gwscli auth login chat --bundle=readonly",
+            "A single action: gwscli auth login gmail search_threads",
+            "A single service: gwscli auth login drive",
+            "Multiple services: gwscli auth login chat gmail",
+            "Multiple specific commands: gwscli auth login \"chat search_messages\" \"gmail create_draft\"",
+            "All services: gwscli auth login"
+          ]
+        },
+        {
+          "p": "Check status with gwscli auth status, refresh tokens manually with gwscli auth refresh, sign out with gwscli auth logout, and reset with gwscli auth reset. Access tokens typically expire after 1 hour, but gwscli automatically uses your cached refresh token to get a new one when you run a command, so you don't have to think about it."
+        },
+        {
+          "p": "Another approach is to pass an existing token: add the global --oauth_token=\"$ACCESS_TOKEN\" to any command. Avoid typing a literal token on the command line—it can show up in ps, shell history, or agent transcripts and leak. When you pass a token, gwscli doesn't show a consent page or automatically refresh expired tokens, so make sure the token has the scopes the command needs, the project services are enabled, and the credential is an AI agent client or a service account with domain-wide delegation."
+        },
+        {
+          "callout": {
+            "kind": "note",
+            "title": "Remote sign-in can hang",
+            "text": "Interactive sign-in starts a temporary local server at http://127.0.0.1:<port>/ and waits for the browser to redirect back to it. In headless environments, Cloud Shell, remote SSH sessions, or containers without port mapping, sign-in will hang. Either set up port forwarding or use --oauth_token instead."
+          }
+        }
+      ]
+    },
+    {
+      "h": "For developers: how commands work and what the output looks like",
+      "blocks": [
+        {
+          "p": "Command format is consistent: gwscli <service> <action> [flags]. The key is dynamic discovery—services, actions, parameters, and schemas are fetched from the backend at runtime and can change without backward compatibility after a version update. So don't hard-code commands in scripts; have the agent or script inspect them at runtime."
+        },
+        {
+          "list": [
+            "gwscli --help: lists all services and tool commands",
+            "gwscli drive --help: lists drive actions",
+            "gwscli drive list_recent_files --help: shows parameters, flags, and an output format summary. Add --show-scopes to see the minimum OAuth scopes required.",
+            "gwscli drive search_files --schema: doesn't execute; just prints the full JSON schema and field definitions."
+          ]
+        },
+        {
+          "p": "Commands that list items, files, or calendar records output valid JSON directly, so you can pipe them into jq for further filtering:"
+        },
+        {
+          "fig": {
+            "type": "code",
+            "lang": "bash",
+            "title": "Output is structured JSON you can filter with jq",
+            "subtitle": "Example command quoted verbatim from Google's documentation",
+            "code": "gwscli drive search_files \\\n--query = \"title contains 'Quarterly'\" \\\n| jq '.files[] | {id: .id, title: .title}'",
+            "highlight": [
+              1
+            ]
+          }
+        },
+        {
+          "p": "Document content is also JSON: docs read_doc returns a JSON representation of the document (including text and structural elements); drive read_file_content returns JSON with a fileContent string field containing formatted plain text or Markdown."
+        },
+        {
+          "p": "For binaries and exports, use drive download_file_content, with --destinationPath for the local path and --exportMimeType for the export format. For Google Workspace documents, omitting --exportMimeType exports plain text by default (such as text/plain or text/csv); for regular files like PDFs or images, this parameter is ignored. Upload a local file with drive create_file --filePath, and send a new revision of an existing file with drive upload_file_revision --filePath."
+        }
+      ]
+    },
+    {
+      "h": "Security and governance: sensitive actions wait for you, telemetry on by default",
+      "blocks": [
+        {
+          "p": "Letting an AI agent touch your email and documents inevitably raises security questions. Google provides several guardrails:"
+        },
+        {
+          "list": [
+            "Prompt injection defense: use only agents and workflows you trust; start read-only; don't feed untrusted documents or email to the agent; review what the agent did, and don't let it send sensitive content outside.",
+            "Request and response screening: configure security filters at the Google Cloud project level to block prompt injection, sensitive data, or harmful content. MCP floor settings applied to the project also apply to gwscli.",
+            "Don't run interactive commands in headless environments: auth login / auth setup will wait indefinitely for input, so don't put them in automated background tasks. Pre-authorize, or use --oauth_token instead."
+          ]
+        },
+        {
+          "p": "The most important guardrail is built-in human confirmation. Sensitive actions like sending messages, sharing externally, or deleting things trigger confirmation: the CLI pauses, prints a prompt to stderr, and waits for your choice on standard input:"
+        },
+        {
+          "fig": {
+            "type": "code",
+            "lang": "text",
+            "title": "Sensitive actions pause and wait for human confirmation",
+            "subtitle": "Prompt text quoted verbatim from Google's documentation",
+            "code": "Allow this app to use send_message?\n\napproval_choice\n(Options: Allow once, Always allow this tool, Don't allow):",
+            "highlight": [
+              1
+            ]
+          }
+        },
+        {
+          "p": "You can respond with identifiers like ALLOW_ONCE (allow once), ALLOW_TOOL_ALWAYS (always allow this tool), or DENY_ONCE (deny this time). Sticky options such as \"always allow\" only appear in an interactive terminal when policy permits them. When an AI agent is running, the user's choice must be written to standard input."
+        },
+        {
+          "p": "Finally, telemetry is on by default. It only records these operational signals: command metadata (target service and action name, flag names, number of positional arguments), environment metadata (CLI version, OS, CPU architecture), and execution diagnostics (status, duration, HTTP status code, error type, crash stack traces). You can turn it off at any time with gwscli logging off, check status with gwscli logging status, and turn it back on with gwscli logging on. To disable it for a single session, set the environment variable GWSCLI_TELEMETRY_ENABLED=0 (false, off, and no also work)."
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "Telemetry is on by default, but it records only limited signals",
+            "subtitle": "Amber marks sensitive content that is explicitly never collected; turn it off with gwscli logging off.",
+            "left": {
+              "label": "What's collected",
+              "sub": "Operational signals only",
+              "items": [
+                {
+                  "label": "Command metadata",
+                  "tag": "Service, action, flag names, argument count",
+                  "state": "base"
+                },
+                {
+                  "label": "Environment metadata",
+                  "tag": "CLI version, OS, CPU architecture",
+                  "state": "base"
+                },
+                {
+                  "label": "Execution diagnostics",
+                  "tag": "Status, duration, HTTP status code, error type",
+                  "state": "base"
+                }
+              ]
+            },
+            "right": {
+              "label": "Never collected",
+              "sub": "Sensitive content",
+              "items": [
+                {
+                  "label": "Flag values",
+                  "tag": "No argument content",
+                  "state": "hi"
+                },
+                {
+                  "label": "OAuth tokens",
+                  "tag": "Login credentials",
+                  "state": "hi"
+                },
+                {
+                  "label": "Search terms / doc IDs / email addresses",
+                  "tag": "Resource content",
+                  "state": "hi"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "p": "Google explicitly says the CLI never collects flag values, OAuth tokens, search terms, document IDs, email addresses, or resource content. Telemetry events are sent directly to Google when a command finishes and are not written to a local log file. The config file lives at ~/.config/gwscli/config.json on Linux, ~/Library/Application Support/gwscli/config.json on macOS, and %AppData%\\gwscli\\config.json on Windows."
+        }
+      ]
+    },
+    {
+      "h": "Pricing: no separate tool charge",
+      "blocks": [
+        {
+          "p": "Google is clear: using gwscli incurs no separate tool charge. The real costs come from requests, which count toward your Google Cloud project's Google Workspace usage tier and quotas; anything beyond that is handled under your existing Workspace subscription and quotas."
+        },
+        {
+          "p": "But the guide gives no specifics on unit pricing, per-tier quotas, or how overages are calculated. It only points to the Google Workspace usage tiers and quotas documentation. If cost matters to you, that's where you'll find the limits for your tier."
+        },
+        {
+          "p": "Two hidden requirements also count as \"costs\": sending Chat messages requires a Google Workspace account and a configured Chat app, and personal Google accounts are not supported. The People API requires joining the Developer Preview Program."
+        }
+      ]
+    },
+    {
+      "h": "What Google hasn't said",
+      "blocks": [
+        {
+          "p": "A few key details the guide doesn't cover:"
+        },
+        {
+          "list": [
+            "Unit pricing and quota caps for each usage tier—it only points to another page, with no numbers here.",
+            "The current gwscli version number and release cadence—no version is listed, and it only says there is no automatic background update.",
+            "Which agent frameworks beyond Claude Code, Codex, and Antigravity are supported—not listed.",
+            "The support boundaries for personal (non-Workspace) Google accounts across services—only Chat message sending is explicitly unsupported for personal accounts.",
+            "When the People API leaves Developer Preview—no date is given.",
+            "Install package sizes and checksums for each platform—not provided."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Who it's for",
+      "blocks": [
+        {
+          "p": "The value is straightforward: if you already use Claude Code, Codex, or Antigravity, gwscli saves you from wiring up Workspace APIs and writing MCP configs yourself. Dynamic discovery, JSON output, and packaged skills mean the agent can understand commands and results out of the box. Starting read-only with human confirmation is also a bit safer than hand-rolling your own integration."
+        },
+        {
+          "p": "The tradeoffs are clear too. You first need a Google Cloud project and an OAuth setup, though Personal mode can simplify that. Sending Chat messages requires a Workspace account and a Chat app. The People API requires applying for the preview. Command interfaces may change between versions, so they don't suit hard-coded scripts. Data is processed by Google, and telemetry is on by default, though you can turn it off."
+        },
+        {
+          "list": [
+            "If you use Google Workspace every day and also use AI coding agents often: it's worth installing. Start with `gwscli auth login --bundle=readonly` and try read-only tasks like checking your schedule or searching email.",
+            "If you only want to work manually in a terminal: that works too, but it's designed primarily as an interface for AI agents.",
+            "If you're a team or enterprise admin: all actions follow your organization's admin access and security policies, sensitive actions have human confirmation, and you can validate it on a small scope first.",
+            "If telemetry bothers you: run `gwscli logging off` right after installing, then decide whether to turn it back on."
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Use the Google Workspace command-line interface (CLI)",
+      "publisher": "Google for Developers",
+      "date": "2026-11-25",
+      "url": "https://developers.google.com/workspace/guides/workspace-cli"
+    },
+    "more": [],
+    "note": "Figures are illustrative or taken directly from Google's documentation; command and prompt examples are quoted verbatim from the source. The services list comes from Google's 'What your agent can do' table."
+  },
+  "claims": [
+    {
+      "text": "Using gwscli incurs no separate tool charge; requests count toward your Google Cloud project's Google Workspace usage tier and quotas.",
+      "value": "no separate tool charge",
+      "source_url": "https://developers.google.com/workspace/guides/workspace-cli",
+      "as_written": "No separate tool charge",
+      "quote": "Using gwscli incurs no separate tool charge."
+    },
+    {
+      "text": "If you don't use Personal mode, complete the 3 manual setup steps—enable services, create credentials, and register the client—before signing in.",
+      "value": "three",
+      "source_url": "https://developers.google.com/workspace/guides/workspace-cli",
+      "as_written": "3 steps",
+      "quote": "complete all three manual setup steps in your Google Cloud project before signing in"
+    },
+    {
+      "text": "Google OAuth 2.0 access tokens typically expire after 1 hour; gwscli automatically renews them using your cached refresh token.",
+      "value": "1 hour",
+      "source_url": "https://developers.google.com/workspace/guides/workspace-cli",
+      "as_written": "1 hour",
+      "quote": "Google OAuth 2.0 access tokens typically expire after 1 hour."
+    },
+    {
+      "text": "Google's guide was last updated on November 25, 2026.",
+      "value": "2026-11-25",
+      "source_url": "https://developers.google.com/workspace/guides/workspace-cli",
+      "as_written": "2026-11-25",
+      "quote": "Last updated 2026-11-25 UTC."
+    },
+    {
+      "text": "Set `GWSCLI_TELEMETRY_ENABLED` to 0 (or false, off, or no) to disable telemetry for just the current terminal session.",
+      "value": "0",
+      "source_url": "https://developers.google.com/workspace/guides/workspace-cli",
+      "as_written": "0",
+      "quote": "set the GWSCLI_TELEMETRY_ENABLED environment variable to 0 , false , off , or no"
+    }
+  ],
+  "cover": {
+    "headline": "Google launches gwscli",
+    "highlight": "One prompt to put AI agents to work in Workspace",
+    "glyph": {
+      "kind": "hub",
+      "center": {
+        "label": "gwscli",
+        "tone": "def"
+      },
+      "nodes": [
+        {
+          "label": "Calendar",
+          "tone": "base"
+        },
+        {
+          "label": "Email",
+          "tone": "base"
+        },
+        {
+          "label": "Drive",
+          "tone": "base"
+        },
+        {
+          "label": "Sheets",
+          "tone": "base"
+        },
+        {
+          "label": "Slides",
+          "tone": "base"
+        },
+        {
+          "label": "Tasks",
+          "tone": "base"
+        }
+      ]
+    }
+  },
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "5292b4bf32b45a89"
+}
