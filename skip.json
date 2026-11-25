@@ -130,5 +130,59 @@
     "reason": "官方页面日期为 2026-11-20，已超过 72 小时",
     "title": "Thinking Machines 发布 Inkling 2 Mini 模型：32GB 内存的 Mac 就能本地跑 在断网的 MacBook 上几分钟写出能玩的飞行模拟器",
     "at": "2026-11-25T01:52:28.249Z"
+  },
+  {
+    "id": "c037696db2",
+    "reason": "主材料是 CEO 的 X 帖，宣布 Perplexity Computer 的幻灯片原生查看器并可在 PPT/Google Slides 中编辑，没有官方博文或可拆开讲的细节，属于小功能更新",
+    "title": "Slide decks you create in Perplexity Computer now have a native viewer",
+    "at": "2026-11-25T07:57:04.585Z"
+  },
+  {
+    "id": "b0f32f271a",
+    "reason": "官方账号宣布西班牙语新音色上线，只指向 TTS Playground，没有发布博文或评测数字，属于现有 TTS 的语种扩展",
+    "title": "Our new Spanish voices have arrived",
+    "at": "2026-11-25T07:57:04.627Z"
+  },
+  {
+    "id": "ec442b764e",
+    "reason": "OpenAI 客户案例（Customer stories：Intentful 如何使用 dots）",
+    "title": "How Intentful uses dots to make more time for growth",
+    "at": "2026-11-25T07:57:04.666Z"
+  },
+  {
+    "id": "99b93f3e10",
+    "reason": "OpenAI 客户案例（Customer stories：Clay 如何用 Codex 和 ChatGPT）",
+    "title": "Clay helps sales teams win with Codex and ChatGPT",
+    "at": "2026-11-25T07:57:04.706Z"
+  },
+  {
+    "id": "9544aed5e2",
+    "reason": "主材料是 Mencap 慈善机构页面，不是 DeepMind 官方博客或技术报告；Mencap 新闻稿日期为 2026-11-19，已超过 72 小时；目前只是开放机构意向登记",
+    "title": "The Google DeepMind Easy Read Co-Creator Tool",
+    "at": "2026-11-25T07:57:04.748Z"
+  },
+  {
+    "id": "6a368ee477",
+    "reason": "官方页面日期为 2026-11-18，已超过 72 小时",
+    "title": "Pika 发布了一个全新的 AI视频工具Enact：能模仿片场当导演现场实时导戏 视频一边播一边改，能拖人摆位、还能给 AI 演员说戏",
+    "at": "2026-11-25T07:57:04.786Z"
+  },
+  {
+    "id": "a03947fc9e",
+    "reason": "候选标注 2026-11-20，已超过 72 小时",
+    "title": "Ideogram 发布了 Ideogram 4.6 模型：原生 4K 出图 宣称为迄今最精确的改图模型",
+    "at": "2026-11-25T07:57:04.823Z"
+  },
+  {
+    "id": "a3b508c32e",
+    "reason": "候选标注 2026-11-19，已超过 72 小时；页面是 MAI Labs 的 Canvas 试用页，同一图像模型 MAI Image 2.7 的发布稿此前已跳过",
+    "title": "Microsoft launched Canvas, a new workspace powered by MAI Image 2.7 Flash",
+    "at": "2026-11-25T07:57:04.862Z"
+  },
+  {
+    "id": "fca930afdd",
+    "reason": "官方页面日期为 2026-11-18，已超过 72 小时",
+    "title": "Inworld 开源两款语音模型：降噪时留下笑声和呼吸，能智能判断你「说完了」笔记本就能跑",
+    "at": "2026-11-25T07:57:04.900Z"
   }
 ]
