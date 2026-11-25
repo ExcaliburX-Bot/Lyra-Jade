@@ -158,3 +158,8 @@ test("翻译：长文分批，每批都带全文和已翻好的部分", async ()
   const r = await translateArticle(zh, { mock: (stage, ss, user) => { calls++; return Object.fromEntries(ss.map(s => [s.id, `${s.path[0] === "title" ? "Gemini launches" : "en"} ${numbersZh(s.text).join(" ")}`])); } });
   assert.ok(r.article && calls >= 2);
 });
+
+test("翻译：千瓦时、千米里的「千」是单位，不是数量级", () => {
+  assert.deepEqual(numbersZh("耗电大约 0.4 千瓦时，跑了 5 千米"), ["0.4", "5"]);
+  assert.deepEqual(numbersZh("3 千人"), ["3000"]);
+});
