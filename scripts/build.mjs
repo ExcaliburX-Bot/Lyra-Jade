@@ -154,10 +154,23 @@ function buildLang(L) {
       return `<div class="lib-area"><h3>${esc(en ? ar.en : ar.zh)}<small>${items.length}</small></h3><ul>${items.map(p => {
         const name = en ? (p.name_en || p.name) : p.name, sub = p.title && p.title !== name ? p.title : "";
         const meta = [p.org || p.author, p.year].filter(Boolean).join(" · ");
-        return `<li class="${p.art ? "done" : ""}">${p.art ? `<a href="a/${p.art.slug}.html">` : "<div>"}<b>${esc(name)}</b>${sub ? `<span class="lib-t">${esc(sub)}</span>` : ""}<span class="lib-m">${esc(meta)}</span><em>${p.art ? (en ? "Read the deep dive →" : "已精读 →") : (en ? "Coming up" : "待精读")}</em>${p.art ? "</a>" : "</div>"}</li>`; }).join("")}</ul></div>`; }).join("")}
+        const extra = p.extra ? `<i class="lib-x" title="${en ? "Added to round out the curriculum" : "站长收藏之外、为体系化学习补充的论文"}">${en ? "added" : "补充"}</i>` : "";
+        return `<li id="p-${esc(p.id)}" class="${p.art ? "done" : ""}">${p.art ? `<a href="a/${p.art.slug}.html">` : p.url ? `<a href="${esc(p.url)}" target="_blank" rel="noopener">` : "<div>"}<b>${esc(name)}${extra}</b>${sub ? `<span class="lib-t">${esc(sub)}</span>` : ""}<span class="lib-m">${esc(meta)}</span><em>${p.art ? (en ? "Read the deep dive →" : "已精读 →") : p.url ? (en ? "Coming up · original paper ↗" : "待精读 · 看原文 ↗") : (en ? "Coming up" : "待精读")}</em>${p.art || p.url ? "</a>" : "</div>"}</li>`; }).join("")}</ul></div>`; }).join("")}
   </section>`;
+  /* 学习路线：几条按顺序读的主线，每条显示精读进度；书单是全集，路线是推荐的精读顺序 */
+  const byId = new Map(libItems.map(p => [p.id, p]));
+  const NUM = "一二三四五六七八九十";
+  const trackIds = new Set((LIBRARY.tracks || []).flatMap(t => t.ids));
+  const tracksHtml = (LIBRARY.tracks || []).length ? `<section class="wrap lpaths" id="paths">
+    <div class="lib-h"><h2>${en ? "Learning paths" : "学习路线"}</h2><p>${en ? `${LIBRARY.tracks.length} paths through the field, each read in order · <b>${[...trackIds].filter(id => byId.get(id)?.art).length}</b> of ${trackIds.size} papers explained so far. Deep dives follow these paths; the full reading list is below.` : `${LIBRARY.tracks.length} 条主线，每条按顺序读 · ${trackIds.size} 篇里已精读 <b>${[...trackIds].filter(id => byId.get(id)?.art).length}</b> 篇。精读按主线的顺序写，完整书单在下面。`}</p></div>
+    ${LIBRARY.tracks.map((t, ti) => { const items = t.ids.map(id => byId.get(id)).filter(Boolean), n = items.filter(p => p.art).length;
+      return `<div class="lpath" id="path-${esc(t.k)}"><div class="tr-h"><span class="tr-n">${en ? `Path ${ti + 1}` : `主线${NUM[ti] || ti + 1}`}</span><h3>${esc(en ? t.en : t.zh)}</h3><small>${en ? `${n} / ${items.length} explained` : `已精读 ${n} / ${items.length}`}</small></div>
+        <p>${esc(en ? t.den : t.dzh)}</p><div class="tr-bar"><span style="width:${Math.round(100 * n / items.length)}%"></span></div>
+        <ol>${items.map((p, i) => { const name = en ? (p.name_en || p.name) : p.name;
+          return `<li class="${p.art ? "done" : ""}"><a href="${p.art ? `a/${p.art.slug}.html` : `#p-${esc(p.id)}`}"><i>${i + 1}</i><b>${esc(name)}</b><small>${esc(String(p.year || ""))}</small></a></li>`; }).join("")}</ol></div>`; }).join("")}
+  </section>` : "";
   render(L, { page: "papers.html", depth: 0, title: en ? `Paper deep dives · ${L.titleTail}` : `论文精读 · ${SITE_NAME}`,
-    desc: en ? "The AI papers that matter, explained in depth and in plain language." : "把重要的 AI 论文讲透：有深度，也让普通人看得懂。", main: listingTpl + libHtml, data: { ...data, section: "paper" } });
+    desc: en ? "The AI papers that matter, explained in depth and in plain language." : "把重要的 AI 论文讲透：有深度，也让普通人看得懂。", main: listingTpl + tracksHtml + libHtml, data: { ...data, section: "paper" } });
 
   /* 专题页：t/<专题>.html，和首页同一个列表模板，只显示这个专题的文章 */
   for (const tp of topics) {

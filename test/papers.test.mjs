@@ -48,10 +48,24 @@ test("构建：论文精读页有书单，精读过的论文链到文章；论�
   const page = fs.readFileSync(path.join(dist, "papers.html"), "utf8");
   assert.match(page, /"section":"paper"/);
   assert.match(page, /论文书单/);
-  assert.match(page, /<li class="done"><a href="a\/p\.html"><b>Transformer<\/b>/);
+  assert.match(page, /<li id="p-transformer" class="done"><a href="a\/p\.html"><b>Transformer<\/b>/);
+  /* 学习路线：主线一里 Transformer 已精读，链到文章；没精读的链到书单里的条目 */
+  assert.match(page, /id="paths"[\s\S]*主线一[\s\S]*<li class="done"><a href="a\/p\.html"><i>4<\/i><b>Transformer<\/b>/);
+  assert.match(page, /<a href="#p-word2vec"><i>1<\/i>/);
+  assert.match(page, /已精读 1 \/ 13/);
   assert.ok(fs.existsSync(path.join(dist, "en/papers.html")));
   assert.match(fs.readFileSync(path.join(dist, "a/p.html"), "utf8"), /论文 NIPS 2017/);
   const api = JSON.parse(fs.readFileSync(path.join(dist, "api/v1/articles.json"), "utf8"));
   assert.deepEqual(api.articles[0].topics, []);
   fs.rmSync(tmp, { recursive: true, force: true });
+});
+
+test("论文书单：学习路线里的每篇论文都在书单里，补充论文都有链接", () => {
+  const lib = JSON.parse(fs.readFileSync("content/papers/library.json", "utf8"));
+  const ids = new Set(lib.papers.map(p => p.id));
+  assert.equal(ids.size, lib.papers.length, "论文 id 不能重复");
+  const areas = new Set(lib.areas.map(a => a.k));
+  for (const p of lib.papers) assert.ok(areas.has(p.area), `${p.id} 的方向 ${p.area} 不存在`);
+  for (const t of lib.tracks) for (const id of t.ids) assert.ok(ids.has(id), `主线 ${t.k} 里的 ${id} 不在书单里`);
+  for (const p of lib.papers.filter(p => p.extra)) assert.match(p.url, /^https:\/\//, `${p.id} 缺少链接`);
 });

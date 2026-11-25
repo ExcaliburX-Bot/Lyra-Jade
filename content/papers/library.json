@@ -1,5 +1,5 @@
 {
- "note": "论文书单：论文精读的待读清单。来源：站长收藏的论文合集（书目分类参考 Latent Space 2025 AI Papers Reading List）。只收书目信息，不收别人写的简介。",
+ "note": "论文书单：论文精读的待读清单。来源：站长收藏的论文合集（书目分类参考 Latent Space 2025 AI Papers Reading List）。只收书目信息，不收别人写的简介。标记 extra 的是站长收藏之外、为体系化学习补充的论文。tracks 是学习主线：按顺序精读。",
  "areas": [
   {
    "k": "classic",
@@ -7,14 +7,19 @@
    "en": "Foundations"
   },
   {
+   "k": "arch",
+   "zh": "架构演进",
+   "en": "Architecture"
+  },
+  {
    "k": "frontier",
    "zh": "前沿大模型",
    "en": "Frontier LLMs"
   },
   {
-   "k": "bench",
-   "zh": "基准与评估",
-   "en": "Benchmarks & evals"
+   "k": "finetune",
+   "zh": "微调与对齐",
+   "en": "Fine-tuning & alignment"
   },
   {
    "k": "prompting",
@@ -37,14 +42,29 @@
    "en": "Code generation"
   },
   {
+   "k": "infra",
+   "zh": "推理与部署效率",
+   "en": "Inference & efficiency"
+  },
+  {
+   "k": "data",
+   "zh": "训练数据",
+   "en": "Training data"
+  },
+  {
+   "k": "safety",
+   "zh": "可解释性与安全",
+   "en": "Interpretability & safety"
+  },
+  {
+   "k": "bench",
+   "zh": "基准与评估",
+   "en": "Benchmarks & evals"
+  },
+  {
    "k": "vision",
    "zh": "视觉与多模态",
    "en": "Vision & multimodal"
-  },
-  {
-   "k": "audio",
-   "zh": "语音与音频",
-   "en": "Voice & audio"
   },
   {
    "k": "diffusion",
@@ -52,9 +72,14 @@
    "en": "Image & video generation"
   },
   {
-   "k": "finetune",
-   "zh": "微调",
-   "en": "Fine-tuning"
+   "k": "audio",
+   "zh": "语音与音频",
+   "en": "Voice & audio"
+  },
+  {
+   "k": "rl",
+   "zh": "强化学习与科学里程碑",
+   "en": "RL & science milestones"
   }
  ],
  "papers": [
@@ -1119,6 +1144,557 @@
    "area": "classic",
    "arxiv": "1910.02054",
    "url": "https://arxiv.org/abs/1910.02054"
+  },
+  {
+   "id": "alexnet",
+   "name": "AlexNet",
+   "title": "ImageNet Classification with Deep Convolutional Neural Networks",
+   "year": 2012,
+   "org": "Krizhevsky 等",
+   "area": "classic",
+   "url": "https://proceedings.neurips.cc/paper_files/paper/2012/hash/c399862d3b9d6b76c8436e924a68c45b-Abstract.html",
+   "extra": true
+  },
+  {
+   "id": "bahdanau-attention",
+   "name": "注意力机制的起源",
+   "title": "Neural Machine Translation by Jointly Learning to Align and Translate",
+   "year": 2014,
+   "org": "Bahdanau 等",
+   "area": "classic",
+   "arxiv": "1409.0473",
+   "url": "https://arxiv.org/abs/1409.0473",
+   "extra": true,
+   "name_en": "Bahdanau attention"
+  },
+  {
+   "id": "adam",
+   "name": "Adam",
+   "title": "Adam: A Method for Stochastic Optimization",
+   "year": 2014,
+   "org": "Kingma, Ba",
+   "area": "classic",
+   "arxiv": "1412.6980",
+   "url": "https://arxiv.org/abs/1412.6980",
+   "extra": true
+  },
+  {
+   "id": "dropout",
+   "name": "Dropout",
+   "title": "Dropout: A Simple Way to Prevent Neural Networks from Overfitting",
+   "year": 2014,
+   "org": "Srivastava 等",
+   "area": "classic",
+   "url": "https://jmlr.org/papers/v15/srivastava14a.html",
+   "extra": true
+  },
+  {
+   "id": "batch-norm",
+   "name": "Batch Normalization",
+   "title": "Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift",
+   "year": 2015,
+   "org": "Google",
+   "area": "classic",
+   "arxiv": "1502.03167",
+   "url": "https://arxiv.org/abs/1502.03167",
+   "extra": true
+  },
+  {
+   "id": "bpe-subword",
+   "name": "BPE 子词分词",
+   "title": "Neural Machine Translation of Rare Words with Subword Units",
+   "year": 2015,
+   "org": "Sennrich 等",
+   "area": "classic",
+   "arxiv": "1508.07909",
+   "url": "https://arxiv.org/abs/1508.07909",
+   "extra": true,
+   "name_en": "BPE subword units"
+  },
+  {
+   "id": "layer-norm",
+   "name": "Layer Normalization",
+   "title": "Layer Normalization",
+   "year": 2016,
+   "org": "Ba 等",
+   "area": "classic",
+   "arxiv": "1607.06450",
+   "url": "https://arxiv.org/abs/1607.06450",
+   "extra": true
+  },
+  {
+   "id": "t5",
+   "name": "T5",
+   "title": "Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer",
+   "year": 2019,
+   "org": "Google",
+   "area": "arch",
+   "arxiv": "1910.10683",
+   "url": "https://arxiv.org/abs/1910.10683",
+   "extra": true
+  },
+  {
+   "id": "switch-transformer",
+   "name": "Switch Transformer",
+   "title": "Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity",
+   "year": 2021,
+   "org": "Google",
+   "area": "arch",
+   "arxiv": "2101.03961",
+   "url": "https://arxiv.org/abs/2101.03961",
+   "extra": true
+  },
+  {
+   "id": "rope",
+   "name": "RoPE 旋转位置编码",
+   "title": "RoFormer: Enhanced Transformer with Rotary Position Embedding",
+   "year": 2021,
+   "org": "Su 等",
+   "area": "arch",
+   "arxiv": "2104.09864",
+   "url": "https://arxiv.org/abs/2104.09864",
+   "extra": true,
+   "name_en": "RoPE (rotary embeddings)"
+  },
+  {
+   "id": "flashattention",
+   "name": "FlashAttention",
+   "title": "FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness",
+   "year": 2022,
+   "org": "Dao 等",
+   "area": "arch",
+   "arxiv": "2205.14135",
+   "url": "https://arxiv.org/abs/2205.14135",
+   "extra": true
+  },
+  {
+   "id": "gqa",
+   "name": "GQA 分组查询注意力",
+   "title": "GQA: Training Generalized Multi-Query Transformer Models from Multi-Head Checkpoints",
+   "year": 2023,
+   "org": "Google",
+   "area": "arch",
+   "arxiv": "2305.13245",
+   "url": "https://arxiv.org/abs/2305.13245",
+   "extra": true,
+   "name_en": "GQA (grouped-query attention)"
+  },
+  {
+   "id": "mamba",
+   "name": "Mamba",
+   "title": "Mamba: Linear-Time Sequence Modeling with Selective State Spaces",
+   "year": 2023,
+   "org": "Gu, Dao",
+   "area": "arch",
+   "arxiv": "2312.00752",
+   "url": "https://arxiv.org/abs/2312.00752",
+   "extra": true
+  },
+  {
+   "id": "rlhf-christiano",
+   "name": "RLHF 的源头",
+   "title": "Deep Reinforcement Learning from Human Preferences",
+   "year": 2017,
+   "org": "OpenAI · DeepMind",
+   "area": "finetune",
+   "arxiv": "1706.03741",
+   "url": "https://arxiv.org/abs/1706.03741",
+   "extra": true,
+   "name_en": "Deep RL from human preferences"
+  },
+  {
+   "id": "summarize-from-feedback",
+   "name": "用人类反馈学摘要",
+   "title": "Learning to Summarize from Human Feedback",
+   "year": 2020,
+   "org": "OpenAI",
+   "area": "finetune",
+   "arxiv": "2009.01325",
+   "url": "https://arxiv.org/abs/2009.01325",
+   "extra": true,
+   "name_en": "Summarize from human feedback"
+  },
+  {
+   "id": "flan",
+   "name": "FLAN",
+   "title": "Finetuned Language Models Are Zero-Shot Learners",
+   "year": 2021,
+   "org": "Google",
+   "area": "finetune",
+   "arxiv": "2109.01652",
+   "url": "https://arxiv.org/abs/2109.01652",
+   "extra": true
+  },
+  {
+   "id": "self-instruct",
+   "name": "Self-Instruct",
+   "title": "Self-Instruct: Aligning Language Models with Self-Generated Instructions",
+   "year": 2022,
+   "org": "Wang 等",
+   "area": "finetune",
+   "arxiv": "2212.10560",
+   "url": "https://arxiv.org/abs/2212.10560",
+   "extra": true
+  },
+  {
+   "id": "constitutional-ai",
+   "name": "Constitutional AI",
+   "title": "Constitutional AI: Harmlessness from AI Feedback",
+   "year": 2022,
+   "org": "Anthropic",
+   "area": "finetune",
+   "arxiv": "2212.08073",
+   "url": "https://arxiv.org/abs/2212.08073",
+   "extra": true
+  },
+  {
+   "id": "deepseek-v3",
+   "name": "DeepSeek V3",
+   "title": "DeepSeek-V3 Technical Report",
+   "year": 2024,
+   "org": "DeepSeek",
+   "area": "frontier",
+   "arxiv": "2412.19437",
+   "url": "https://arxiv.org/abs/2412.19437",
+   "extra": true
+  },
+  {
+   "id": "deepseek-r1",
+   "name": "DeepSeek R1",
+   "title": "DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning",
+   "year": 2025,
+   "org": "DeepSeek",
+   "area": "frontier",
+   "arxiv": "2501.12948",
+   "url": "https://arxiv.org/abs/2501.12948",
+   "extra": true
+  },
+  {
+   "id": "llm-int8",
+   "name": "LLM.int8()",
+   "title": "LLM.int8(): 8-bit Matrix Multiplication for Transformers at Scale",
+   "year": 2022,
+   "org": "Dettmers 等",
+   "area": "infra",
+   "arxiv": "2208.07339",
+   "url": "https://arxiv.org/abs/2208.07339",
+   "extra": true
+  },
+  {
+   "id": "gptq",
+   "name": "GPTQ",
+   "title": "GPTQ: Accurate Post-Training Quantization for Generative Pre-trained Transformers",
+   "year": 2022,
+   "org": "Frantar 等",
+   "area": "infra",
+   "arxiv": "2210.17323",
+   "url": "https://arxiv.org/abs/2210.17323",
+   "extra": true
+  },
+  {
+   "id": "speculative-decoding",
+   "name": "投机解码",
+   "title": "Fast Inference from Transformers via Speculative Decoding",
+   "year": 2022,
+   "org": "Google",
+   "area": "infra",
+   "arxiv": "2211.17192",
+   "url": "https://arxiv.org/abs/2211.17192",
+   "extra": true,
+   "name_en": "Speculative decoding"
+  },
+  {
+   "id": "vllm",
+   "name": "vLLM / PagedAttention",
+   "title": "Efficient Memory Management for Large Language Model Serving with PagedAttention",
+   "year": 2023,
+   "org": "Kwon 等",
+   "area": "infra",
+   "arxiv": "2309.06180",
+   "url": "https://arxiv.org/abs/2309.06180",
+   "extra": true
+  },
+  {
+   "id": "the-pile",
+   "name": "The Pile",
+   "title": "The Pile: An 800GB Dataset of Diverse Text for Language Modeling",
+   "year": 2020,
+   "org": "EleutherAI",
+   "area": "data",
+   "arxiv": "2101.00027",
+   "url": "https://arxiv.org/abs/2101.00027",
+   "extra": true
+  },
+  {
+   "id": "textbooks-are-all-you-need",
+   "name": "Textbooks Are All You Need",
+   "title": "Textbooks Are All You Need",
+   "year": 2023,
+   "org": "Microsoft",
+   "area": "data",
+   "arxiv": "2306.11644",
+   "url": "https://arxiv.org/abs/2306.11644",
+   "extra": true
+  },
+  {
+   "id": "fineweb",
+   "name": "FineWeb",
+   "title": "The FineWeb Datasets: Decanting the Web for the Finest Text Data at Scale",
+   "year": 2024,
+   "org": "Hugging Face",
+   "area": "data",
+   "arxiv": "2406.17557",
+   "url": "https://arxiv.org/abs/2406.17557",
+   "extra": true
+  },
+  {
+   "id": "concrete-problems-ai-safety",
+   "name": "AI 安全的具体问题",
+   "title": "Concrete Problems in AI Safety",
+   "year": 2016,
+   "org": "Amodei 等",
+   "area": "safety",
+   "arxiv": "1606.06565",
+   "url": "https://arxiv.org/abs/1606.06565",
+   "extra": true,
+   "name_en": "Concrete Problems in AI Safety"
+  },
+  {
+   "id": "induction-heads",
+   "name": "归纳头",
+   "title": "In-context Learning and Induction Heads",
+   "year": 2022,
+   "org": "Anthropic",
+   "area": "safety",
+   "arxiv": "2209.11895",
+   "url": "https://arxiv.org/abs/2209.11895",
+   "extra": true,
+   "name_en": "Induction heads"
+  },
+  {
+   "id": "toy-models-superposition",
+   "name": "叠加的玩具模型",
+   "title": "Toy Models of Superposition",
+   "year": 2022,
+   "org": "Anthropic",
+   "area": "safety",
+   "arxiv": "2209.10652",
+   "url": "https://arxiv.org/abs/2209.10652",
+   "extra": true,
+   "name_en": "Toy Models of Superposition"
+  },
+  {
+   "id": "scaling-monosemanticity",
+   "name": "Scaling Monosemanticity",
+   "title": "Scaling Monosemanticity: Extracting Interpretable Features from Claude 3 Sonnet",
+   "year": 2024,
+   "org": "Anthropic",
+   "area": "safety",
+   "url": "https://transformer-circuits.pub/2024/scaling-monosemanticity/index.html",
+   "extra": true
+  },
+  {
+   "id": "dqn",
+   "name": "DQN",
+   "title": "Human-level Control through Deep Reinforcement Learning",
+   "year": 2015,
+   "org": "DeepMind",
+   "area": "rl",
+   "url": "https://www.nature.com/articles/nature14236",
+   "extra": true
+  },
+  {
+   "id": "alphago",
+   "name": "AlphaGo",
+   "title": "Mastering the Game of Go with Deep Neural Networks and Tree Search",
+   "year": 2016,
+   "org": "DeepMind",
+   "area": "rl",
+   "url": "https://www.nature.com/articles/nature16961",
+   "extra": true
+  },
+  {
+   "id": "alphazero",
+   "name": "AlphaZero",
+   "title": "Mastering Chess and Shogi by Self-Play with a General Reinforcement Learning Algorithm",
+   "year": 2017,
+   "org": "DeepMind",
+   "area": "rl",
+   "arxiv": "1712.01815",
+   "url": "https://arxiv.org/abs/1712.01815",
+   "extra": true
+  },
+  {
+   "id": "alphafold-2",
+   "name": "AlphaFold 2",
+   "title": "Highly Accurate Protein Structure Prediction with AlphaFold",
+   "year": 2021,
+   "org": "DeepMind",
+   "area": "rl",
+   "url": "https://www.nature.com/articles/s41586-021-03819-2",
+   "extra": true
+  },
+  {
+   "id": "sentence-bert",
+   "name": "Sentence-BERT",
+   "title": "Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks",
+   "year": 2019,
+   "org": "Reimers, Gurevych",
+   "area": "rag",
+   "arxiv": "1908.10084",
+   "url": "https://arxiv.org/abs/1908.10084",
+   "extra": true
+  },
+  {
+   "id": "dpr",
+   "name": "DPR 稠密检索",
+   "title": "Dense Passage Retrieval for Open-Domain Question Answering",
+   "year": 2020,
+   "org": "Meta",
+   "area": "rag",
+   "arxiv": "2004.04906",
+   "url": "https://arxiv.org/abs/2004.04906",
+   "extra": true,
+   "name_en": "DPR (dense retrieval)"
+  }
+ ],
+ "tracks": [
+  {
+   "k": "lm",
+   "zh": "语言模型：从词向量到推理模型",
+   "en": "Language models: from word vectors to reasoning models",
+   "dzh": "一条主干：词怎么变成向量，注意力怎么出现，模型怎么做大、怎么学会听话，最后怎么学会推理。",
+   "den": "The trunk: how words became vectors, how attention arrived, how models scaled up, learned to follow instructions, and finally learned to reason.",
+   "ids": [
+    "word2vec",
+    "seq2seq",
+    "bahdanau-attention",
+    "transformer",
+    "gpt-1",
+    "bert",
+    "gpt-2",
+    "gpt-3",
+    "scaling-laws-kaplan",
+    "chinchilla",
+    "instructgpt",
+    "dpo",
+    "deepseek-r1"
+   ]
+  },
+  {
+   "k": "arch",
+   "zh": "训练与架构的关键零件",
+   "en": "Key parts of training and architecture",
+   "dzh": "今天的大模型由哪些零件拼成：优化器、归一化、分词、残差，以及让模型更大、更快、更长的结构改进。",
+   "den": "The parts today's models are built from: optimizer, normalization, tokenization, residuals, and the changes that made models bigger, faster and longer.",
+   "ids": [
+    "adam",
+    "layer-norm",
+    "bpe-subword",
+    "resnet",
+    "t5",
+    "sparsely-gated-moe",
+    "switch-transformer",
+    "rope",
+    "flashattention",
+    "gqa",
+    "mamba",
+    "deepseek-v3"
+   ]
+  },
+  {
+   "k": "align",
+   "zh": "对齐与安全",
+   "en": "Alignment and safety",
+   "dzh": "让模型按人的意图行事：从人类反馈强化学习到 AI 反馈，再到打开模型内部看它在想什么。",
+   "den": "Getting models to do what people intend: from learning from human feedback to AI feedback, to looking inside the model.",
+   "ids": [
+    "ppo",
+    "rlhf-christiano",
+    "summarize-from-feedback",
+    "instructgpt",
+    "flan",
+    "self-instruct",
+    "constitutional-ai",
+    "dpo",
+    "concrete-problems-ai-safety",
+    "induction-heads",
+    "toy-models-superposition",
+    "scaling-monosemanticity"
+   ]
+  },
+  {
+   "k": "apps",
+   "zh": "从模型到应用：提示、检索、智能体",
+   "en": "From models to applications: prompting, retrieval, agents",
+   "dzh": "模型训练好之后怎么用：让它一步步想、去查资料、调用工具，直到能自己修代码。",
+   "den": "Using a trained model: thinking step by step, looking things up, calling tools, all the way to fixing code on its own.",
+   "ids": [
+    "chain-of-thought-prompting",
+    "let-s-think-step-by-step",
+    "sentence-bert",
+    "dpr",
+    "rag-meta",
+    "react",
+    "toolformer",
+    "tree-of-thoughts",
+    "let-s-verify-step-by-step",
+    "s1-scaling-test-time-compute",
+    "swe-bench",
+    "swe-agent"
+   ]
+  },
+  {
+   "k": "vision",
+   "zh": "看与画：视觉和生成",
+   "en": "Seeing and drawing: vision and generation",
+   "dzh": "从识别图片到理解图文、再到生成图像：卷积、视觉 Transformer、图文对齐和扩散模型。",
+   "den": "From recognizing images to linking images and text to generating them: convnets, vision Transformers, image-text alignment and diffusion.",
+   "ids": [
+    "alexnet",
+    "resnet",
+    "gan",
+    "vision-transformer-vit",
+    "clip",
+    "diffusion-origins",
+    "ddpm",
+    "latent-diffusion-models",
+    "diffusion-transformers-dit",
+    "llava",
+    "segment-anything-sam"
+   ]
+  },
+  {
+   "k": "infra",
+   "zh": "让大模型跑得起：效率与部署",
+   "en": "Making big models affordable: efficiency and serving",
+   "dzh": "训练和使用大模型的成本从哪里省：蒸馏、显存优化、低秩微调、量化、投机解码和推理服务。",
+   "den": "Where the cost of training and running big models gets cut: distillation, memory optimization, low-rank fine-tuning, quantization, speculative decoding and serving.",
+   "ids": [
+    "knowledge-distillation",
+    "zero",
+    "lora",
+    "flashattention",
+    "llm-int8",
+    "gptq",
+    "qlora",
+    "speculative-decoding",
+    "vllm"
+   ]
+  },
+  {
+   "k": "rl",
+   "zh": "强化学习与科学里程碑",
+   "en": "Reinforcement learning and science milestones",
+   "dzh": "语言模型之外的另一条线：从打游戏、下围棋到预测蛋白质结构，以及后来被大模型借去的 PPO。",
+   "den": "The other line beyond language models: from video games and Go to protein structures, plus PPO, which language models later borrowed.",
+   "ids": [
+    "dqn",
+    "alphago",
+    "ppo",
+    "alphazero",
+    "alphafold-2"
+   ]
   }
  ]
 }
