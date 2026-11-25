@@ -1,0 +1,837 @@
+{
+  "slug": "b2a-economy-how-agents-buy",
+  "date": "2026-11-23",
+  "category": "biz",
+  "publisher": "a16z.news",
+  "title": "11,307 次测试拆解：AI 代理替你买东西时的 5 条规律",
+  "summary": "如果下次帮你挑耳机、选软件、订酒店的是 AI 代理，商家该怎么让它选中自己？a16z 联合 The Prompting Company 做了 11,307 次代理实测，拆出 5 条给商家的规律。",
+  "ai_summary": "a16z 联合代理测试公司 The Prompting Company，用 1,270 条指令跑了 11,307 次购物代理实测，又拿 ChatGPT、Gemini、Perplexity 做 2,619 次对照，想回答：AI 代理开始替人买耳机、选软件、订酒店时，商家怎么被选中。几个反直觉结论：代理间互相抄答案，一款商品被一个代理选中后，有 73% 概率再被别的代理选中；它们比人更会算账，同价时 86% 选退换政策更好的一方；折扣低于 10% 没效果，超过 50% 反而绕开。适合品牌商家和代理生态创业者；限制是样本来自特定代理和一段时间。",
+  "brief": [
+    "一个代理选中的商品，有 73% 概率被另一个代理也选中；近四分之一场景里四个代理全选同一款。",
+    "同价时 86% 选退换政策更好的一方；折扣低于 10% 无效、超过 50% 会绕开。",
+    "需求一具体就翻盘：泛泛比吹风机 Shark 赢 91%，细软发质 Dyson 赢 51%，每天用 Dyson 赢 88%。",
+    "支持访客结账的店，代理 81% 能走完结账；要求登录的店每次都提前卡住。"
+  ],
+  "readMinutes": 8,
+  "sections": [
+    {
+      "h": "这是什么：一场「把 AI 代理当顾客」的实测",
+      "blocks": [
+        {
+          "p": "这是 a16z 作者 Olivia Moore 和 Justine Moore 关于「B2A 经济」的第二篇。B2A 就是 Business-to-Agent：品牌不再只卖给人，还要卖给会替你挑东西、下单的 AI 代理。"
+        },
+        {
+          "p": "这次他们找了代理测试公司 The Prompting Company（客户包括 NVIDIA、Google、Databricks 等），让四个购物代理 Grok Bot、Muse、Instinct、Dots 在 1,270 条指令下跑完 11,307 次任务；又用 ChatGPT、Gemini、Perplexity 做了 2,619 次购物请求作对照。测试覆盖实体商品和软件。"
+        },
+        {
+          "p": "消费数据部分用了 YipitData 的抽样，看 Muse 等消费代理已经促成了哪些真实购买，并共享了代理消费 Top 50 商家名单。文章把结论归纳成 5 条。"
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "这次实测的规模",
+            "subtitle": "The Prompting Company 完成，样本因实验而异",
+            "items": [
+              {
+                "value": "11,307",
+                "unit": "次",
+                "label": "完成的代理运行",
+                "note": "来自 1,270 条指令"
+              },
+              {
+                "value": "1,270",
+                "unit": "条",
+                "label": "指令（prompt）",
+                "note": "覆盖实体商品和软件"
+              },
+              {
+                "value": "2,619",
+                "unit": "次",
+                "label": "对照购物请求",
+                "note": "ChatGPT、Gemini、Perplexity"
+              },
+              {
+                "value": "50",
+                "unit": "家",
+                "label": "代理消费 Top 商家",
+                "note": "名单已共享，供自行分析"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "为什么「默认选项」决定生死：代理在互相抄答案",
+      "blocks": [
+        {
+          "p": "第一条结论：代理很爱撞答案。一个产品只要被一个代理选中，就有 73% 概率被至少另一个代理也选中；近四分之一的情况下，四个代理全选了同一款。换句话说，能不能进「默认清单」，基本决定你能不能卖出东西。"
+        },
+        {
+          "p": "而且这张清单很短。Muse 是四个里唯一完全公开研究日志的，日志显示：它几乎总是先从自己的 Meta 目录搜起，最多拉 50 个候选；如果它同时用浏览器再搜（不是每次都搜），平均只看 3 个产品页。其他代理的重合度这么高，说明它们的搜索集也差不多小。"
+        },
+        {
+          "fig": {
+            "type": "illustration",
+            "title": "Muse 的候选池：最多 50 个，平均只看 3 个页面",
+            "subtitle": "示意：蓝色是默认起点（Meta 目录），琥珀色是细看和最终选中",
+            "note": "依据 Muse 公开的研究日志；最终推荐 1 款为示意",
+            "glyph": {
+              "kind": "funnel",
+              "stages": [
+                {
+                  "label": "Meta 目录",
+                  "value": 50,
+                  "display": "最多 50 个",
+                  "tone": "def"
+                },
+                {
+                  "label": "浏览器细看",
+                  "value": 3,
+                  "display": "平均 3 个",
+                  "tone": "hi"
+                },
+                {
+                  "label": "最终推荐",
+                  "value": 1,
+                  "display": "1 款",
+                  "tone": "hi"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "p": "怎么挤进这张短名单？靠「尖峰用例」：在更具体的人群或场景里证明自己更强。吹风机测试最直观——让代理在 Shark FlexStyle 和 Dyson Airwrap 里二选一：泛泛比较时，更便宜的 Shark 赢 91%；但只要用户说「细软或染后发质」，Dyson 赢 51%；说「每天都要用」，Dyson 的胜率跳到 88%。具体需求会逼代理去看重量、最高温度、噪音这些参数，让 Dyson 的溢价变得说得通。"
+        },
+        {
+          "fig": {
+            "type": "columns",
+            "title": "需求一具体，默认推荐就翻盘",
+            "subtitle": "琥珀色是「加具体条件后翻盘」的场景；数值是该产品胜出比例",
+            "note": "Shark 91% 指更便宜的 Shark 被选中；后两条是 Dyson 的胜率",
+            "items": [
+              {
+                "label": "泛泛比较",
+                "sub": "Shark FlexStyle",
+                "value": 91,
+                "display": "91%",
+                "tone": "base"
+              },
+              {
+                "label": "细软/染后发质",
+                "sub": "Dyson Airwrap",
+                "value": 51,
+                "display": "51%",
+                "tone": "hi"
+              },
+              {
+                "label": "每天都要用",
+                "sub": "Dyson Airwrap",
+                "value": 88,
+                "display": "88%",
+                "tone": "hi"
+              }
+            ]
+          }
+        },
+        {
+          "p": "选软件是同一套逻辑。泛泛问「平面设计软件」，代理 78% 提名 Canva，Adobe 一次都没进名单；但用户一提到「团队模板」，Adobe 就高频出现；说需要「专业级输出」，Adobe 每次都被选。所以别在宽泛请求里跟默认答案硬碰，去赢有明确场景的请求。"
+        }
+      ]
+    },
+    {
+      "h": "代理不是普通搜索：先看记忆，再看你的产品页",
+      "blocks": [
+        {
+          "p": "传统 LLM（大语言模型）找产品靠训练数据和网页搜索，倾向从评测站、新闻、论坛里挑「几个好选择」，未必是能直接买的商品。代理不一样：先查用户记忆（存下来的偏好），再走自己的连接器和目录，最后才做外部搜索。Muse 和 Dots 用自己的搜索系统，Grok Bot 和 Instinct 用 Exa。"
+        },
+        {
+          "fig": {
+            "type": "illustration",
+            "title": "代理先查记忆和自有目录，再上网搜",
+            "subtitle": "示意：琥珀色是代理比传统模型多出来的动作",
+            "glyph": {
+              "kind": "hub",
+              "center": {
+                "label": "代理",
+                "tone": "def"
+              },
+              "nodes": [
+                {
+                  "label": "用户记忆",
+                  "tone": "hi"
+                },
+                {
+                  "label": "自有目录/连接器",
+                  "tone": "hi"
+                },
+                {
+                  "label": "网页搜索",
+                  "tone": "base"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "p": "关键区别：代理比传统 LLM 更爱直接访问产品页或第三方商品页。所以你的网站能不能被代理读懂，决定它能否搞清楚你的产品是干嘛的、多少钱、有什么限制，进而决定你会不会进最终名单。"
+        },
+        {
+          "p": "软件也一样。作者让 Dots 用一张产品图生成 10 张广告、由代理自己挑生图工具：代理先查 Midjourney，发现官方说没有通用 API（程序接口）、还几乎禁止自动化使用，直接放弃；转去 Ideogram，从产品页一路找到 API 和官方 MCP（一种让软件工具互相接通的协议）集成，文档里连「生成并下载图片」的代码都有，于是轻松选中。给代理一条清楚的通路，比给人类做漂亮落地页更管用。"
+        }
+      ]
+    },
+    {
+      "h": "代理会算总账：退换、折扣、信任全都算",
+      "blocks": [
+        {
+          "p": "代理是「无情的优化器」：会算总拥有成本，包括运费、订阅期限、退货退款政策、甚至保修。最刺眼的一个数字：同价时，代理 86% 会选退换政策更好的一方（免费退货、更长退货期、原路退款）。"
+        },
+        {
+          "p": "Quince 是好例子：它进了代理消费零售商前 15，却根本不是全球前 15 的零售商。它家 50 美元的羊绒衫页面，把价格、免运费、库存、评价放在顶部，还直接和传统零售价对比。软件也能这么干：域名注册工具 Porkbun 在代理交易笔数排第 9、技术类第 1，赢了 Cloudflare（第 17）和 GoDaddy（第 112）——虽然后两家每月注册域名数是它的 2.6 倍和 4.8 倍。Muse 和 Dots 都偏爱它透明、没有「首年低价后面跳涨」的定价。"
+        },
+        {
+          "p": "但价格也有底线。一次测试里，Grok Bot 放弃 200 美元的 Sonos 音箱，选了授权经销商 250 美元的，理由是保修。275 次真实店铺对比里，代理 72% 选了更贵但更可信的一方。折扣上：低于 10% 完全没用；10%–50% 有吸引力，但代理也只有 24% 会因此选更便宜但更不可信的选项；折扣一超过 50%，代理反而绕开——「好得不像真的」会被直接否掉。"
+        },
+        {
+          "fig": {
+            "type": "bars",
+            "title": "同价选退换好的；折扣甜区只有 10%–50%",
+            "subtitle": "琥珀色=代理更愿意选的比例；灰色=绕开",
+            "note": "「低于 10%」和「超过 50%」的 0% 是按原文『没影响』『绕开』做的示意，原文未给精确比例",
+            "legend": [
+              {
+                "tone": "hi",
+                "label": "代理更愿意选"
+              },
+              {
+                "tone": "base",
+                "label": "没影响"
+              },
+              {
+                "tone": "dim",
+                "label": "绕开"
+              }
+            ],
+            "groups": [
+              {
+                "label": "同价二选一",
+                "items": [
+                  {
+                    "label": "选退换政策更好的一方",
+                    "value": 86,
+                    "display": "86%",
+                    "tone": "hi"
+                  }
+                ]
+              },
+              {
+                "label": "折扣区间：选「更便宜但更不可信」的比例",
+                "items": [
+                  {
+                    "label": "低于 10%",
+                    "value": 0,
+                    "display": "0%",
+                    "tone": "base"
+                  },
+                  {
+                    "label": "10%–50%",
+                    "value": 24,
+                    "display": "24%",
+                    "tone": "hi"
+                  },
+                  {
+                    "label": "超过 50%",
+                    "value": 0,
+                    "display": "绕开",
+                    "tone": "dim"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "每个代理口味不同：渠道、证据、呈现都差很多",
+      "blocks": [
+        {
+          "p": "四个代理像四个不同的人。有些差异来自「反爬」：Amazon 结账测试里，Grok Bot 每次都能走到购物车，Muse、Instinct、Dots 每次都卡住。渠道偏好也很强：Grok Bot 有 17.5% 的回复链到 Amazon，其他代理没有一个超过 1.6%；Muse 有 26% 链到 Walmart、22% 链到 Best Buy。"
+        },
+        {
+          "p": "它们信的证据也不同。Muse 很少引用评价，只在 10% 的推荐里提到，其他代理是 30%–41%；Dots 有 11.4% 引用专业产品评测，其他代理都不超过 3.7%；Instinct 不把评分当回事，在 26 次平分决胜测试里，「评分更好」只赢了 4 次，它更看重退换和取消条款。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "四个代理，各有各的口味和渠道",
+            "subtitle": "数值均为测试中出现的比例",
+            "note": "Dots 另有 11.4% 引用专业产品评测；Instinct 在 26 次平分决胜里只有 4 次信「评分更好」",
+            "columns": [
+              "代理",
+              "常链渠道",
+              "引用评价",
+              "Amazon 结账"
+            ],
+            "rows": [
+              [
+                "Grok Bot",
+                "Amazon 17.5%",
+                "30–41%",
+                "全部成功"
+              ],
+              [
+                "Muse",
+                "Walmart 26%、Best Buy 22%",
+                "10%",
+                "全部被拦"
+              ],
+              [
+                "Instinct",
+                "更倾向品牌直营",
+                "30–41%",
+                "全部被拦"
+              ],
+              [
+                "Dots",
+                "—",
+                "30–41%",
+                "全部被拦"
+              ]
+            ],
+            "highlight": {
+              "col": 1
+            }
+          }
+        },
+        {
+          "p": "呈现方式也不同：问「线下会议做 AI 笔记的工具」，Grok Bot 和 Instinct 最终都推荐 Granola，理由也像（现有设备可用、隐私、方便），但 Instinct 做了一张漂亮的展示页，Grok Bot 则直接给答案、还先提出自己来记笔记。所以同一款产品，在不同代理手里「被卖的方式」可能完全不同。"
+        }
+      ]
+    },
+    {
+      "h": "去代理已经在的地方：市场、聚合器和结账",
+      "blocks": [
+        {
+          "p": "代理喜欢在聚合器和市场里开始和结束搜索，因为候选最密。Top 50 商家里，近三分之一（33%）的代理消费流向市场和聚合器；把「自己也开第三方市场」的零售商算进去是 46%，再把传统多品牌零售商算进去是 55%。"
+        },
+        {
+          "fig": {
+            "type": "columns",
+            "title": "Top 50 商家的代理消费，近三分之一流向市场与聚合器",
+            "subtitle": "琥珀色是口径最小、最直接的一项；后两项逐步加总",
+            "note": "原文为 'nearly one-third'，图中按 33% 示意换算",
+            "items": [
+              {
+                "label": "市场+聚合器",
+                "value": 33,
+                "display": "近三分之一",
+                "tone": "hi",
+                "calc": "100 ÷ 3 ≈ 33"
+              },
+              {
+                "label": "再算上第三方市场型零售商",
+                "value": 46,
+                "display": "46%",
+                "tone": "base"
+              },
+              {
+                "label": "再算上传统多品牌零售商",
+                "value": 55,
+                "display": "55%",
+                "tone": "base"
+              }
+            ]
+          }
+        },
+        {
+          "p": "这个比例被旅行类拉高——目前旅行是代理消费最大的一块，Expedia 和 Booking.com 是消费额前两名，美国航空第 4、美联航第 6。一个实测里，同一家酒店的可退款大床房，官网 476.20 美元、Expedia 476 美元，Expedia 还给了「现在付或到店付」和 PayPal 选项。除非用户明确要官网订，代理的选择很明确。"
+        },
+        {
+          "p": "不过目前代理主要靠自己的产品目录和浏览器完成选择，外部连接器用得还少：10 月 22 日到 11 月 8 日的测试里，Grok Bot 只在 5% 的指令里提出连接 App，另外三个都不到 1%。但这正在变快：OpenAI 的 Businesses in ChatGPT 让商家更新资料、加带价格和库存的商品流；Meta 把现有商品目录接进 Muse 的搜索起点；Shopify Catalog 让商品能直接用 Shop Pay 买。"
+        },
+        {
+          "p": "最后一关是结账。支持访客结账的店铺，代理有 81% 能走到结账表单最后一步；要求登录的店铺，每次都提前卡住——有时问用户要凭证，有时干脆换一家。支付上，Muse、Grok Bot、Instinct 都用 Stripe 的 Link 钱包，Muse 能在一百多万家接受 Link 的商家即时结账、其他地方发一次性虚拟卡，用户在聊天里批准、不把真实卡号给代理。测试结束后，OpenAI 在 11 月 13 日给 Dots 上线了 ChatGPT Wallet，先给美国 Pro 用户。"
+        }
+      ]
+    },
+    {
+      "h": "官方还没说的",
+      "blocks": [
+        {
+          "p": "原文没有回答的、但读者最关心的几件事："
+        },
+        {
+          "list": [
+            "四个代理分别是谁家的产品、完整技术细节——原文只提到 Muse 用 Meta 目录、Dots 接了 ChatGPT Wallet，其余身份没有展开。",
+            "Top 50 商家的完整明细和各自金额——原文说已共享名单，但正文没有逐家列出。",
+            "各项测试的具体指令、权重和样本量差异——原文只说「样本因实验而异」。",
+            "这些规律会持续多久、代理与零售商签约后会怎么变——原文只给了方向性判断。",
+            "对中文市场和其他地区是否成立——消费数据是美国抽样，YipitData 不区分 Muse 和 Instinct、也不含 Amazon。",
+            "有没有可复用的「代理优化」工具或服务清单——原文只说欢迎相关创业者联系。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "适合谁",
+      "blocks": [
+        {
+          "p": "价值：如果你在卖东西——实体商品、SaaS、域名、酒店——这套测试第一次把「代理怎么挑」量化出来，能直接指导产品页、定价和渠道。"
+        },
+        {
+          "p": "代价：按这些结论做，意味着要维护代理可读的网站、公开透明定价和退换政策、把商品铺进聚合器和市场、支持访客结账，还要面对每家代理不同的口味。"
+        },
+        {
+          "list": [
+            "如果你是品牌或电商：先测自己网站在代理眼里的样子，把价格、运费、库存、评价、退换政策放在页面顶部。",
+            "如果你是软件或 SaaS：给代理一条 API 或 MCP 通路，别像 Midjourney 那样让代理撞墙。",
+            "如果你是渠道运营：别只看人，去代理已经聚集的市场和聚合器里占位。",
+            "如果你只是好奇：最反直觉的一点是，退换政策现在就是「营销文案」，它决定了 86% 的同价二选一。"
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Welcome to the B2A Economy: How Agents Buy",
+      "publisher": "a16z.news",
+      "date": "2026-11-23",
+      "url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents"
+    },
+    "note": "本文图 2、图 3 为示意结构；图 7 的「近三分之一」按 33% 示意换算；图 5 中 0% 为「没影响/绕开」的示意。商家排名与金额仅代表 YipitData 提供的样本，不含 Amazon，不区分 Muse 与 Instinct。"
+  },
+  "claims": [
+    {
+      "text": "测试共完成 11,307 次代理运行",
+      "value": "11,307",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "11,307 次",
+      "quote": "across 1,270 prompts and 11,307 completed agent runs"
+    },
+    {
+      "text": "这些运行来自 1,270 条指令",
+      "value": "1,270",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "1,270 条",
+      "quote": "across 1,270 prompts and 11,307 completed agent runs"
+    },
+    {
+      "text": "另用 ChatGPT、Gemini、Perplexity 做了 2,619 次购物请求作对照",
+      "value": "2,619",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "2,619 次",
+      "quote": "plus 2,619 shopping-request runs on ChatGPT, Gemini, and Perplexity"
+    },
+    {
+      "text": "文章共享了代理消费 Top 50 商家名单",
+      "value": "50",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "Top 50 家",
+      "quote": "We've shared the top 50 merchants by agent spend"
+    },
+    {
+      "text": "文章总结出 5 条赢得代理的结论",
+      "value": "five",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "5 条",
+      "quote": "with five takeaways on how to win them over"
+    },
+    {
+      "text": "测试用四个购物代理",
+      "value": "four",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "四个代理",
+      "quote": "all four agents picked the same top product"
+    },
+    {
+      "text": "一个代理选中的产品有 73% 概率被另一个代理也选中",
+      "value": "73%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "73%",
+      "quote": "a product picked by one agent had a 73% chance of being picked by at least one other agent"
+    },
+    {
+      "text": "近四分之一情况下四个代理全选同一款",
+      "value": "a quarter",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "近四分之一",
+      "quote": "in nearly a quarter of cases, all four agents picked the same top product"
+    },
+    {
+      "text": "Muse 最多拉 50 个候选选项",
+      "value": "50",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "最多 50 个",
+      "quote": "and pulls a maximum of 50 options"
+    },
+    {
+      "text": "Muse 用浏览器搜索时平均只看 3 个产品页",
+      "value": "three",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "平均 3 个",
+      "quote": "the agent only looks at three product pages on average"
+    },
+    {
+      "text": "泛泛比较吹风机时，代理 91% 选更便宜的 Shark",
+      "value": "91%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "91%",
+      "quote": "chose the cheaper Shark in 91% of cases"
+    },
+    {
+      "text": "细软或染后发质场景，Dyson 赢 51%",
+      "value": "51%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "51%",
+      "quote": "Dyson won in 51% of runs"
+    },
+    {
+      "text": "每天都要用的场景，Dyson 胜率 88%",
+      "value": "88%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "88%",
+      "quote": "Dyson's victory margin increased to 88%"
+    },
+    {
+      "text": "泛泛问平面设计软件，代理 78% 提名 Canva",
+      "value": "78%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "78%",
+      "quote": "agents nominated Canva in 78% of runs"
+    },
+    {
+      "text": "Dots 被要求生成 10 张广告并自行选工具",
+      "value": "ten",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "10 张",
+      "quote": "We asked Dots to generate ten ads based on a product photo"
+    },
+    {
+      "text": "同价时代理 86% 选退换政策更好的一方",
+      "value": "86%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "86%",
+      "quote": "agents chose the retailer with the better return policy (free returns, longer return window, refund to original payment method) in 86% of tests"
+    },
+    {
+      "text": "Quince 排进代理消费零售商前 15",
+      "value": "15",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "前 15",
+      "quote": "Quince ranks in the top 15 retailers by consumer agent spend"
+    },
+    {
+      "text": "Quince 的羊绒衫产品页售价 50 美元",
+      "value": "$50",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "50 美元",
+      "quote": "The product page for Quince's $50 cashmere sweater shows why"
+    },
+    {
+      "text": "Porkbun 在代理交易笔数里排第 9",
+      "value": "#9",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "第 9",
+      "quote": "#9 in the number of agent transactions"
+    },
+    {
+      "text": "Porkbun 在技术类排第 1",
+      "value": "#1",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "第 1",
+      "quote": "#1 in the technology category"
+    },
+    {
+      "text": "Cloudflare 排第 17",
+      "value": "#17",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "第 17",
+      "quote": "Cloudflare (ranked #17)"
+    },
+    {
+      "text": "GoDaddy 排第 112",
+      "value": "#112",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "第 112",
+      "quote": "GoDaddy (ranked #112)"
+    },
+    {
+      "text": "Cloudflare 每月注册域名数是 Porkbun 的 2.6 倍",
+      "value": "2.6x",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "2.6 倍",
+      "quote": "both register significantly more domains per month than Porkbun (2.6x for Cloudflare, 4.8x for GoDaddy)"
+    },
+    {
+      "text": "GoDaddy 每月注册域名数是 Porkbun 的 4.8 倍",
+      "value": "4.8x",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "4.8 倍",
+      "quote": "both register significantly more domains per month than Porkbun (2.6x for Cloudflare, 4.8x for GoDaddy)"
+    },
+    {
+      "text": "Grok Bot 放弃 200 美元的 Sonos 音箱",
+      "value": "$200",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "200 美元",
+      "quote": "Grok Bot passed over a $200 Sonos speaker listing"
+    },
+    {
+      "text": "改选授权经销商 250 美元的选项",
+      "value": "$250",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "250 美元",
+      "quote": "in favor of a $250 option from an authorized dealer"
+    },
+    {
+      "text": "真实店铺对比共 275 次",
+      "value": "275",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "275 次",
+      "quote": "across 275 real-store comparisons"
+    },
+    {
+      "text": "275 次真实店铺对比中，代理 72% 选更贵但更可信的一方",
+      "value": "72%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "72%",
+      "quote": "agents recommended the trusted option 72% of the time"
+    },
+    {
+      "text": "折扣低于 10% 完全没用",
+      "value": "10%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "低于 10%",
+      "quote": "a discount less than 10% did not sway the agent at all"
+    },
+    {
+      "text": "折扣 10%–50% 更有吸引力",
+      "value": "10-50%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "10%–50%",
+      "quote": "Discounts between 10-50% were more compelling"
+    },
+    {
+      "text": "10%–50% 折扣下，代理只 24% 选更便宜但更不可信的选项",
+      "value": "24%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "24%",
+      "quote": "agents still only took a less expensive, less trusted option 24% of the time"
+    },
+    {
+      "text": "折扣超过 50%，代理绕开",
+      "value": "50%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "超过 50%",
+      "quote": "Once the discount exceeded 50%, the agent steered clear"
+    },
+    {
+      "text": "Grok Bot 有 17.5% 的回复链到 Amazon",
+      "value": "17.5%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "17.5%",
+      "quote": "Grok Bot linked to Amazon in 17.5% of runs"
+    },
+    {
+      "text": "其他代理链到 Amazon 的比例都不超 1.6%",
+      "value": "1.6%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "1.6%",
+      "quote": "while no other agent topped 1.6%"
+    },
+    {
+      "text": "Muse 有 26% 的回复链到 Walmart",
+      "value": "26%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "26%",
+      "quote": "Muse linked to Walmart in 26% of answers"
+    },
+    {
+      "text": "Muse 有 22% 的回复链到 Best Buy",
+      "value": "22%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "22%",
+      "quote": "and Best Buy in 22%"
+    },
+    {
+      "text": "Muse 只在 10% 的推荐里引用评价",
+      "value": "10%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "10%",
+      "quote": "it mentions them in just 10% of its picks"
+    },
+    {
+      "text": "其他代理引用评价的比例为 30%–41%",
+      "value": "30-41%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "30%–41%",
+      "quote": "compared to 30-41% for the other agents"
+    },
+    {
+      "text": "Dots 有 11.4% 的推荐引用专业产品评测",
+      "value": "11.4%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "11.4%",
+      "quote": "Dots cites professional product tests in 11.4% of runs"
+    },
+    {
+      "text": "其他代理引用专业评测都不超过 3.7%",
+      "value": "3.7%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "3.7%",
+      "quote": "while no other agent tops 3.7%"
+    },
+    {
+      "text": "Instinct 的 26 次平分决胜里，「评分更好」只赢 4 次",
+      "value": "4 of 26",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "26 次里赢 4 次",
+      "quote": "“better reviews” won only 4 of its 26 tiebreakers"
+    },
+    {
+      "text": "Top 50 商家近三分之一消费流向市场和聚合器（图中按 33% 示意）",
+      "value": "one-third",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "近三分之一（图按 33% 示意）",
+      "quote": "Nearly one-third of observed spend among the top 50 merchants by agent spend went to marketplaces and aggregators"
+    },
+    {
+      "text": "把第三方市场型零售商算进去，比例升到 46%",
+      "value": "46%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "46%",
+      "quote": "This rises to 46% if you include retailers that operate third-party marketplaces"
+    },
+    {
+      "text": "再把传统多品牌零售商算进去，比例升到 55%",
+      "value": "55%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "55%",
+      "quote": "and 55% if you include conventional multi-brand retailers"
+    },
+    {
+      "text": "美国航空排第 4、美联航排第 6",
+      "value": "#4 and #6",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "第 4、第 6",
+      "quote": "American Airlines and United ranked #4 and #6, respectively"
+    },
+    {
+      "text": "同一房间官网价 476.20 美元",
+      "value": "$476.20",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "476.20 美元",
+      "quote": "the same hotel's refundable king room was available for $476.20 direct"
+    },
+    {
+      "text": "Expedia 价 476 美元",
+      "value": "$476",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "476 美元",
+      "quote": "and $476 on Expedia"
+    },
+    {
+      "text": "酒店例子日期为 2026 年 12 月 4–6 日",
+      "value": "December 4–6, 2026",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "2026 年 12 月 4–6 日",
+      "quote": "Hotel Zelos, December 4–6, 2026"
+    },
+    {
+      "text": "测试期从 2026 年 10 月 22 日到 11 月 8 日",
+      "value": "October 22–November 8, 2026",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "2026 年 10 月 22 日至 11 月 8 日",
+      "quote": "October 22–November 8, 2026"
+    },
+    {
+      "text": "Grok Bot 只在 5% 的指令里提出连接 App",
+      "value": "5%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "5%",
+      "quote": "Grok Bot offered to connect an app in 5% of runs"
+    },
+    {
+      "text": "另外三个代理提出连接 App 的比例都不到 1%",
+      "value": "1%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "不足 1%",
+      "quote": "while Instinct, Muse, and Dots each did so in fewer than 1%"
+    },
+    {
+      "text": "支持访客结账的店，代理 81% 走到结账最后一步",
+      "value": "81%",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "81%",
+      "quote": "agents reached the end of the checkout form in 81% of runs….on stores that offer guest checkout"
+    },
+    {
+      "text": "Link 支持超过 100 万家商家即时结账",
+      "value": "more than a million",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "超过 100 万家",
+      "quote": "Link enables instant checkout at more than a million businesses"
+    },
+    {
+      "text": "ChatGPT Wallet 于 11 月 13 日上线给 Dots",
+      "value": "November 13",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "11 月 13 日",
+      "quote": "OpenAI launched ChatGPT Wallet for Dots on November 13"
+    },
+    {
+      "text": "YipitData 样本覆盖到 2026 年 11 月 11 日",
+      "value": "November 11, 2026",
+      "source_url": "https://a16z.news/p/welcome-to-the-b2a-economy-how-agents",
+      "as_written": "2026 年 11 月 11 日",
+      "quote": "covers agent-facilitated purchases through November 11, 2026"
+    }
+  ],
+  "cover": {
+    "headline": "B2A 经济：代理怎么买",
+    "highlight": "11,307 次实测拆出 5 条规律",
+    "big": {
+      "value": "11,307",
+      "unit": "次",
+      "label": "代理购物实测"
+    },
+    "glyph": {
+      "kind": "funnel",
+      "stages": [
+        {
+          "label": "候选",
+          "value": 50,
+          "display": "50",
+          "tone": "def"
+        },
+        {
+          "label": "细看",
+          "value": 3,
+          "display": "3",
+          "tone": "hi"
+        },
+        {
+          "label": "选中",
+          "value": 1,
+          "display": "1",
+          "tone": "hi"
+        }
+      ]
+    }
+  },
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "origin": "auto",
+    "candidate": "c76ecea55a",
+    "tier": "official",
+    "via": "https://xiaohu.ai/article/b2a-agents-as-customers/",
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "generated_at": "2026-11-25T06:50:46.815Z"
+  }
+}
