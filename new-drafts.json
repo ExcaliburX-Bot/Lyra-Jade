@@ -1,10 +1,10 @@
 [
   {
-    "slug": "phonic-1-1-speech-to-speech",
-    "title": "Phonic-1.1 发布：接话更自然，指数比上代高 1.8 分",
-    "file": "content/articles/phonic-1-1-speech-to-speech.json",
-    "errors": 0,
-    "warnings": 0,
+    "slug": "b2a-economy-how-agents-buy",
+    "title": "11,307 次测试拆解：AI 代理替你买东西时的 5 条规律",
+    "file": "content/articles/b2a-economy-how-agents-buy.json",
+    "errors": 1,
+    "warnings": 1,
     "provider": "deepseek",
     "model": "deepseek-v4-pro"
   }
