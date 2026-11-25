@@ -1,0 +1,693 @@
+{
+  "slug": "magi-2-480b-video-model",
+  "date": "2026-11-25",
+  "category": "research",
+  "publisher": "Sand.ai",
+  "title": "Sand.ai 发布 MAGI-2：480B 参数，能原生生成 30 秒 1080p 音画视频",
+  "summary": "想做一条带口型、配乐和拟音的短片？Sand.ai 今天发布的旗舰模型 MAGI-2，把参数放大到 480B，能原生生成最长 30 秒的 1080p、25 fps 音画视频，官方称 Artificial Analysis 视频竞技场四项平均 Elo 比预览版高了 151.8 分。",
+  "ai_summary": "Sand.ai 今天发布旗舰视频模型 MAGI-2，把预览放大：总参数 114B→480B、活跃参数约 6B→约 28B，预训练数据扩到 4T token。它原生生成最长 30 秒 1080p、25fps 音画视频，一次请求最多 20 个参考素材，支持时间线和视频编辑。官方称在 Artificial Analysis Video Arena v2.1，四项平均 Elo 从 998.5 涨到 1150.3；Multi-Head Latent MoE 训练比 LatentMoE 快约 22%。480B 预训练检查点出现解数独、隐式叙事、跨语言等能力，后训练后更难激发。价格与上线时间未公布。",
+  "brief": [
+    "参数放大 4 倍多：总参数 114B → 480B，活跃参数约 6B → 约 28B，预训练数据约 3 倍、共 4T token。",
+    "能原生生成最长 30 秒、1080p、25 fps 的音画视频；一次请求最多 20 个参考素材（10 张图、5 段视频、5 段音频）。",
+    "官方称 Artificial Analysis Video Arena v2.1 四项平均 Elo 从 998.5 提到 1150.3，提升 151.8 分，但只和自家预览版比。",
+    "官方称 Multi-Head Latent MoE 在匹配算力下训练比 LatentMoE 快约 22%，图表标注约省 23% 算力。"
+  ],
+  "readMinutes": 8,
+  "sections": [
+    {
+      "h": "这是什么？一条主干同时生成画面和声音",
+      "blocks": [
+        {
+          "p": "Sand.ai 是一家做视频生成模型的公司，MAGI 是它的旗舰系列。今年 8 月，团队发布过研究预览版 MAGI-2 Preview（约 114B 总参数、约 6B 活跃参数）；今天发布的是把它整体放大后的完整旗舰版 MAGI-2。"
+        },
+        {
+          "p": "MAGI-2 最特别的一点：视频和音频在同一个模型主干里一起生成，而不是先出画面、再另外配音。官方说它能直接生成带口型同步的对白，以及拟音（脚步声、关门声这类音效）、环境声和配乐。"
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "五个数字看懂 MAGI-2 旗舰",
+            "subtitle": "数据来自 Sand.ai 官方博客",
+            "items": [
+              {
+                "value": 480,
+                "unit": "B",
+                "label": "总参数",
+                "note": "预览版 114B，放大 4 倍多"
+              },
+              {
+                "value": 28,
+                "unit": "B",
+                "label": "活跃参数",
+                "note": "约 28B；预览版约 6B"
+              },
+              {
+                "value": 4,
+                "unit": "T token",
+                "label": "预训练数据",
+                "note": "约 3 倍于预览版"
+              },
+              {
+                "value": 30,
+                "unit": "秒",
+                "label": "最长时长",
+                "note": "1080p、25 fps 原生音画"
+              },
+              {
+                "value": 151.8,
+                "unit": "分",
+                "label": "Elo 提升",
+                "note": "AA Video Arena v2.1 四项平均，对比自家预览版"
+              }
+            ]
+          }
+        },
+        {
+          "p": "面向创作者，它还支持 6 种画幅、最多 20 个参考素材（10 张图、5 段视频、5 段音频一起作为条件）、精确时间线和镜头切换控制，以及对已有视频做定向编辑。"
+        },
+        {
+          "fig": {
+            "type": "cards",
+            "title": "六项开箱能力",
+            "subtitle": "能力清单（官网没有给出价格信息）",
+            "items": [
+              {
+                "icon": "audio",
+                "title": "原生音画同步",
+                "desc": "一条主干同时生成对白、口型、拟音、环境音和配乐",
+                "tags": [
+                  "音频",
+                  "视频"
+                ]
+              },
+              {
+                "icon": "image",
+                "title": "六种画幅",
+                "desc": "支持六种宽高比",
+                "tags": [
+                  "6 比例"
+                ]
+              },
+              {
+                "icon": "clock",
+                "title": "最长 30 秒",
+                "desc": "1080p、25 fps 原生音画",
+                "tags": [
+                  "1080p",
+                  "25fps"
+                ]
+              },
+              {
+                "icon": "layers",
+                "title": "最多 20 个参考",
+                "desc": "10 张图、5 段视频、5 段音频一起当条件",
+                "tags": [
+                  "omni-reference"
+                ]
+              },
+              {
+                "icon": "table",
+                "title": "时间线控制",
+                "desc": "精确时间线和镜头切换控制",
+                "tags": [
+                  "timeline"
+                ]
+              },
+              {
+                "icon": "video",
+                "title": "视频编辑",
+                "desc": "对已有视频做定向编辑",
+                "tags": [
+                  "editing"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "从预览版到旗舰：四样东西一起放大",
+      "blocks": [
+        {
+          "p": "这次不是只加参数。官方强调「模型容量、系统、数据一起放大」，再配上定向后训练和 1080p 升采样。四项最容易对比的数字见下图。"
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "从 Preview 到旗舰，四项一起放大",
+            "subtitle": "琥珀色是这次放大后的旗舰；Elo 为 AA Video Arena v2.1 四项平均",
+            "left": {
+              "label": "MAGI-2 Preview",
+              "sub": "2026 年 8 月发布",
+              "items": [
+                {
+                  "label": "总参数",
+                  "tag": "114B",
+                  "state": "base"
+                },
+                {
+                  "label": "活跃参数",
+                  "tag": "约 6B",
+                  "state": "base"
+                },
+                {
+                  "label": "预训练数据",
+                  "tag": "基线",
+                  "state": "base"
+                },
+                {
+                  "label": "AA 四项平均 Elo",
+                  "tag": "998.5",
+                  "state": "base"
+                }
+              ]
+            },
+            "right": {
+              "label": "MAGI-2 旗舰",
+              "sub": "今天发布",
+              "items": [
+                {
+                  "label": "总参数",
+                  "tag": "480B",
+                  "state": "hi"
+                },
+                {
+                  "label": "活跃参数",
+                  "tag": "约 28B",
+                  "state": "hi"
+                },
+                {
+                  "label": "预训练数据",
+                  "tag": "4T token",
+                  "state": "hi"
+                },
+                {
+                  "label": "AA 四项平均 Elo",
+                  "tag": "1150.3",
+                  "state": "hi"
+                }
+              ]
+            },
+            "footer": "四项都是同一方向的放大：参数、活跃参数、数据、Elo"
+          }
+        },
+        {
+          "p": "Elo 是什么？Artificial Analysis Video Arena v2.1 是一个靠人类盲测投票排名的视频竞技场；Elo 是借棋类排名的那套分数，越高代表在盲测对比中越常被选中。官方给的是 4 项任务的平均值：I2V（图生视频）、I2V-Silent（图生视频、无声）、T2V-Silent（文生视频、无声）、T2V（文生视频）。"
+        },
+        {
+          "callout": {
+            "kind": "note",
+            "title": "读 Elo 前先看基准",
+            "text": "这个 +151.8 分是和自己 8 月的预览版比，不是和别家旗舰模型比。原文没有给出和竞品的直接 Elo 对比；Elo 柱状图从 950 基线画起。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "为什么要把 token 拆成 8 份？Multi-Head Latent MoE 的通信账",
+      "blocks": [
+        {
+          "p": "先说背景。480B 总参数的模型，如果每次都全量激活，训练和推理都跑不动，所以必须「稀疏」：每次只用一部分参数。预览版就验证了这条路，MAGI-2 把主干放大了 4 倍多，从 114B 总参数（约 6B 活跃）到 480B（约 28B 活跃）。"
+        },
+        {
+          "p": "但常规 MoE（Mixture-of-Experts，混合专家）直接放大，会卡在分布式系统的通信上。它的做法是「先路由、后分发」：每个 token 先被路由到 top-k 个专家（概率最高的 k 个），再把完整 token 发到对应设备。问题有两个：跨设备通信量随 top-k 线性增长；每台设备分到的 token 数随路由结果波动，在视频、音频、参考图混在一起的序列里更不均衡，于是出现掉队设备、流水线气泡和显存尖峰。"
+        },
+        {
+          "fig": {
+            "type": "illustration",
+            "title": "一个 token 拆成 8 个独立 head",
+            "subtitle": "示意：每个 head 有自己的路由和专家池，通信只按 head 静态交换",
+            "glyph": {
+              "kind": "context",
+              "total": 8,
+              "segments": [
+                {
+                  "size": 1,
+                  "tone": "base",
+                  "label": "头1"
+                },
+                {
+                  "size": 1,
+                  "tone": "base",
+                  "label": "头2"
+                },
+                {
+                  "size": 1,
+                  "tone": "base",
+                  "label": "头3"
+                },
+                {
+                  "size": 1,
+                  "tone": "base",
+                  "label": "头4"
+                },
+                {
+                  "size": 1,
+                  "tone": "base",
+                  "label": "头5"
+                },
+                {
+                  "size": 1,
+                  "tone": "base",
+                  "label": "头6"
+                },
+                {
+                  "size": 1,
+                  "tone": "base",
+                  "label": "头7"
+                },
+                {
+                  "size": 1,
+                  "tone": "base",
+                  "label": "头8"
+                }
+              ]
+            },
+            "note": "常规 MoE 把完整 token 动态路由到远端专家；这里先拆 head、再本地路由 top-k。"
+          }
+        },
+        {
+          "p": "Multi-Head Latent MoE 的解法是「先拆、再换、最后本地路由」：把每个 token 拆成多个独立的 head，每个 head 有自己的 router（路由器）和专家池。先把 activation 切片按 head 所有权做静态交换，数据相关的 top-k 路由完全留在本地设备上完成。这样跨设备通信和 top-k 无关，张量形状事先确定，消除了大规模稀疏训练里的通信不确定性。"
+        },
+        {
+          "p": "整套训练栈也围绕它设计：Head Parallel 和 MagiFSDP 把「静态切片交换」和「分片的专家参数、梯度、优化器状态」解耦；MagiMoE 在本地优化每层数千个窄专家，并把共享专家计算、激活重算、权重梯度计算和通信重叠；MagiMuon 把 Muon 优化器高效扩展到分片专家矩阵。"
+        },
+        {
+          "p": "官方给了两个数字：在匹配总 FLOPs（浮点运算量）、各自最优配置下，Multi-Head Latent MoE 训练比 LatentMoE 快约 22%；在验证损失对训练算力的曲线上，8-head 版本达到同样损失大约省 23% 算力（图表标注）。"
+        }
+      ]
+    },
+    {
+      "h": "4T token 数据怎么来，为什么不过度过滤",
+      "blocks": [
+        {
+          "p": "数据量直接看规模：约 3 倍于预览版，共 4T token。这个量级需要吞吐优先的数据管线——官方说在约 10 亿个样本上完成标注（平均每个样本约 4k token），三周内完成。"
+        },
+        {
+          "p": "比数量更重要的是「留了什么」。官方延续了预览版的教训：不把复杂镜头当脏数据激进过滤，而是保留多角色互动、快速剪辑、屏幕文字和密集的真实声景。"
+        },
+        {
+          "p": "为什么值得说：当模型容量和数据一起放大到 480B × 4T 时，很多低层结构错误（比如多余手指、动作塌陷）在预训练阶段就自己消退了；这些错误在小模型时代需要大量后训练打补丁。"
+        }
+      ]
+    },
+    {
+      "h": "后训练和 1080p 升采样：从修缺陷转向磨质感",
+      "blocks": [
+        {
+          "p": "预训练把结构一致性和动作稳定性打好之后，后训练就不用再花强化学习（RL）的预算去修解剖错误和连续性断裂，而是集中在视觉和声学质感上：光影深度、表面微纹理、毛发和材质真实感，而且是跨长序列的。"
+        },
+        {
+          "p": "1080p 是怎么来的？一个 latent spatiotemporal upscaler（在潜在空间做时空升采样的模块）把基础模型输出抬到全 1080p、25 fps，并且在升采样阶段把原始参考图重新注入。因为基础生成已经锚定了脸和文字在每帧的位置，重新给原始参考图，升采样器重建细节时就能直接借用原始外观线索——官方说这显著改善了小脸身份识别和文字可读性。"
+        },
+        {
+          "p": "官网给了三组 1080p、25 fps 的 RL 前后对比（月球洞穴、阁楼工作间、高山湖泊），可以拖动分隔条边播放边对比。原文没有给这三组的量化指标。"
+        }
+      ]
+    },
+    {
+      "h": "预训练自己长出来的能力，后训练后反而更难激发",
+      "blocks": [
+        {
+          "p": "官方在评估 480B 预训练检查点时，发现一些超出「画面质量」和「镜头控制」的行为。为了排除外部大模型改写提示词（Prompt Enhancement，简称 PE）的功劳，他们把 PE 关掉复测，这些行为仍然存在。"
+        },
+        {
+          "list": [
+            "视觉推理解谜：形状标记、对称补全、迷宫、数独。以 9×9 数独为例，模型保留所有给定数字，填满其余格子，让每行、每列、每个 3×3 子格都满足 1–9。",
+            "隐式叙事补全与自主导演：只给角色/场景参考和三个故事节拍，不指定构图、机位、剪辑点，模型自己计划镜头构图、视角切换和特写。",
+            "跨语言理解与翻译：让角色说另一种语言时，模型直接生成目标语言对白，不用外部 LLM 先改写脚本。"
+          ]
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "预训练涌现的三项能力，后训练后更难激发",
+            "subtitle": "琥珀色是预训练时较强的三项能力；灰色是后训练后变难",
+            "left": {
+              "label": "480B 预训练检查点",
+              "sub": "PE 关闭",
+              "items": [
+                {
+                  "label": "视觉推理（数独等）",
+                  "tag": "出现",
+                  "state": "hi"
+                },
+                {
+                  "label": "隐式叙事补全",
+                  "tag": "出现",
+                  "state": "hi"
+                },
+                {
+                  "label": "跨语言理解",
+                  "tag": "出现",
+                  "state": "hi"
+                }
+              ]
+            },
+            "right": {
+              "label": "后训练之后",
+              "sub": "在几千条精选片段上微调",
+              "items": [
+                {
+                  "label": "视觉质感",
+                  "tag": "明显提升",
+                  "state": "base"
+                },
+                {
+                  "label": "视觉推理",
+                  "tag": "变难激发",
+                  "state": "dim"
+                },
+                {
+                  "label": "隐式叙事",
+                  "tag": "变难激发",
+                  "state": "dim"
+                },
+                {
+                  "label": "跨语言理解",
+                  "tag": "变难激发",
+                  "state": "dim"
+                }
+              ]
+            },
+            "footer": "官方把这类比作 LLM 的「对齐税」"
+          }
+        },
+        {
+          "p": "但后训练之后，这三类行为明显变化。官方在几千条精选片段上微调后，视觉质感有明显提升，可预训练里看到的推理、隐式叙事和跨语言行为变难激发。官方的猜测是：在小而偏美学的数据集上微调，把输出分布收窄到「电影质感」，代价是更广的预训练泛化——类似 LLM 里说的「对齐税」（alignment tax）。"
+        },
+        {
+          "callout": {
+            "kind": "takeaway",
+            "title": "官方的自我修正",
+            "text": "视觉质感不再是唯一指标。守规则、组织因果事件、整合跨模态线索，同样重要。下一代的训练数据会按这个思路设计。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "官方还没说的",
+      "blocks": [
+        {
+          "list": [
+            "价格和 API 计费方式：全文没有提。",
+            "上线时间、开放范围：没有提；只说了「即将」开源和技术报告。",
+            "开源的具体日期和许可协议：没有说。",
+            "技术报告的具体发布时间：没有说。",
+            "和别家旗舰视频模型的直接对比：Elo 只和自家 Preview 比，没有第三方对照。",
+            "生成 30 秒 1080p 视频的推理成本、耗时：没有给出。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "适合谁",
+      "blocks": [
+        {
+          "p": "价值：如果你要的是「一条主干搞定音画同步」的端到端工作流——对白口型、拟音、环境音、配乐一起出来，再加多参考图控制和时间线剪辑——MAGI-2 是照着这个场景做的。"
+        },
+        {
+          "p": "代价：现在还没有价格和上线时间。官方也列了自己的限制：极端高速运动偶尔出现轨迹或连续性伪影；中远景的 2D 动画在细微局部运动上可能过于平滑；复杂声景在层次和物理真实感上还有空间；如何在后训练中保留预训练泛化仍是研究问题。"
+        },
+        {
+          "list": [
+            "如果你是视频创作者，想要音画同步、多参考、时间线控制：可以先等开源和 API 消息，再决定是否接入。",
+            "如果你做大规模稀疏训练或视频模型研究：Multi-Head Latent MoE 的架构，加上 Head Parallel、MagiFSDP、MagiMoE、MagiMuon 这套系统值得细读，等官方技术报告。",
+            "如果你只想看跑分：注意 Elo 是和自己预览版比，不是横向竞品对比；看能力时也把「后训练后涌现能力变难激发」一起算进去。"
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "MAGI-2: A 480B Frontier Video Generation Model",
+      "publisher": "Sand.ai",
+      "date": "2026-11-25",
+      "url": "https://sand.ai/blog/magi-2"
+    },
+    "more": [],
+    "note": "本文所有数字均来自 Sand.ai 官方博客（2026-11-25）；Elo 为官方引用 Artificial Analysis Video Arena v2.1 的数值。token 拆分等示意图为按原文描述绘制。"
+  },
+  "claims": [
+    {
+      "text": "MAGI-2 旗舰版总参数为 480B",
+      "value": "480B",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "480B",
+      "quote": "MAGI-2 scales the base model more than 4× to 480B total parameters and ~28B active parameters"
+    },
+    {
+      "text": "MAGI-2 旗舰版活跃参数约 28B",
+      "value": "~28B",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "约 28B",
+      "quote": "MAGI-2 scales the base model more than 4× to 480B total parameters and ~28B active parameters"
+    },
+    {
+      "text": "预览版 MAGI-2 Preview 总参数约 114B",
+      "value": "~114B",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "114B",
+      "quote": "In August 2026, we released MAGI-2 Preview [1] (~114B total parameters, ~6B active)"
+    },
+    {
+      "text": "预览版活跃参数约 6B",
+      "value": "~6B",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "约 6B",
+      "quote": "In August 2026, we released MAGI-2 Preview [1] (~114B total parameters, ~6B active)"
+    },
+    {
+      "text": "MAGI-2 把基础模型规模放大 4 倍多",
+      "value": "more than 4×",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "4 倍多",
+      "quote": "MAGI-2 scales the base model more than 4× to 480B total parameters and ~28B active parameters"
+    },
+    {
+      "text": "MAGI-2 预训练数据共 4T token",
+      "value": "4T tokens",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "4T token",
+      "quote": "For MAGI-2, we expanded pre-training data roughly 3× over Preview to 4T tokens."
+    },
+    {
+      "text": "预训练数据约为预览版的 3 倍",
+      "value": "roughly 3×",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "约 3 倍",
+      "quote": "For MAGI-2, we expanded pre-training data roughly 3× over Preview to 4T tokens."
+    },
+    {
+      "text": "MAGI-2 最多生成 30 秒视频",
+      "value": "30 seconds",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "最长 30 秒",
+      "quote": "It generates up to 30 seconds of 1080p, 25 fps native audio-video"
+    },
+    {
+      "text": "MAGI-2 支持 1080p 分辨率",
+      "value": "1080p",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "1080p",
+      "quote": "It generates up to 30 seconds of 1080p, 25 fps native audio-video"
+    },
+    {
+      "text": "MAGI-2 支持 25 fps 帧率",
+      "value": "25 fps",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "25 fps",
+      "quote": "It generates up to 30 seconds of 1080p, 25 fps native audio-video"
+    },
+    {
+      "text": "一次原生请求最多 20 个参考素材",
+      "value": "20 media items",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "最多 20 个参考素材",
+      "quote": "supports omni-reference across images, video, and audio (up to 20 media items per native request)"
+    },
+    {
+      "text": "参考素材中最多 10 张图",
+      "value": "10 images",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "最多 10 张图",
+      "quote": "combines up to 20 references (up to 10 images, 5 videos, and 5 audio clips) via omni-reference"
+    },
+    {
+      "text": "参考素材中最多 5 段视频",
+      "value": "5 videos",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "5 段视频",
+      "quote": "combines up to 20 references (up to 10 images, 5 videos, and 5 audio clips) via omni-reference"
+    },
+    {
+      "text": "参考素材中最多 5 段音频",
+      "value": "5 audio clips",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "5 段音频",
+      "quote": "combines up to 20 references (up to 10 images, 5 videos, and 5 audio clips) via omni-reference"
+    },
+    {
+      "text": "MAGI-2 支持六种画幅",
+      "value": "six aspect ratios",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "6 种画幅",
+      "quote": "It supports six aspect ratios"
+    },
+    {
+      "text": "AA Video Arena v2.1 四项平均 Elo 比预览版高 151.8 分",
+      "value": "+151.8",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "151.8 分",
+      "quote": "raising our 4-task average Elo on Artificial Analysis Video Arena v2.1 by +151.8 points over MAGI-2 Preview"
+    },
+    {
+      "text": "预览版四项平均 Elo 为 998.5",
+      "value": "998.5",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "998.5",
+      "quote": "raising our 4-task average Elo on Artificial Analysis Video Arena v2.1 by +151.8 points over MAGI-2 Preview (998.5 → 1150.3)"
+    },
+    {
+      "text": "MAGI-2 旗舰四项平均 Elo 为 1150.3",
+      "value": "1150.3",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "1150.3",
+      "quote": "raising our 4-task average Elo on Artificial Analysis Video Arena v2.1 by +151.8 points over MAGI-2 Preview (998.5 → 1150.3)"
+    },
+    {
+      "text": "Elo 为 4 项任务的平均值",
+      "value": "4-task",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "四项平均",
+      "quote": "raising our 4-task average Elo on Artificial Analysis Video Arena v2.1"
+    },
+    {
+      "text": "Elo 柱状图从 950 基线画起",
+      "value": "950 baseline",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "950 基线",
+      "quote": "Elo bars plotted from a 950 baseline"
+    },
+    {
+      "text": "Multi-Head Latent MoE 训练比 LatentMoE 快约 22%",
+      "value": "22%",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "约 22%",
+      "quote": "Multi-Head Latent MoE achieves roughly a 22% training speedup over LatentMoE."
+    },
+    {
+      "text": "8-head 的 Multi-Head Latent MoE 验证损失低于 Standard MoE",
+      "value": "8-head",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "8 个 head",
+      "quote": "an 8-head Multi-Head Latent MoE achieves consistently lower validation loss than Standard MoE"
+    },
+    {
+      "text": "图表标注 Multi-Head Latent MoE 约省 23% 算力",
+      "value": "~23%",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "约 23%",
+      "quote": "~ 23 % less compute"
+    },
+    {
+      "text": "4T token 覆盖约 10 亿个样本",
+      "value": "1 billion samples",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "约 10 亿个样本",
+      "quote": "annotating 4T tokens across roughly 1 billion samples (averaging ~4k tokens per sample) in three weeks"
+    },
+    {
+      "text": "每个样本平均约 4k token",
+      "value": "~4k tokens per sample",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "约 4k token",
+      "quote": "annotating 4T tokens across roughly 1 billion samples (averaging ~4k tokens per sample) in three weeks"
+    },
+    {
+      "text": "数据标注在三周内完成",
+      "value": "three weeks",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "三周",
+      "quote": "annotating 4T tokens across roughly 1 billion samples (averaging ~4k tokens per sample) in three weeks"
+    },
+    {
+      "text": "后训练在几千条精选片段上微调",
+      "value": "several thousand",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "几千条",
+      "quote": "Fine-tuning on several thousand curated clips delivers a clear jump in visual polish"
+    },
+    {
+      "text": "涌现能力测试用 9×9 数独",
+      "value": "9×9",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "9×9 数独",
+      "quote": "On 9×9 Sudoku probes, for example, the model preserves all given digits"
+    },
+    {
+      "text": "数独每个 3×3 子格需满足 1–9",
+      "value": "3×3",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "3×3 子格",
+      "quote": "every row, column, and 3×3 subgrid satisfies 1–9"
+    },
+    {
+      "text": "数独每行、每列、每个 3×3 子格满足 1–9",
+      "value": "1–9",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "1–9",
+      "quote": "every row, column, and 3×3 subgrid satisfies 1–9"
+    },
+    {
+      "text": "叙事测试只给三个故事节拍",
+      "value": "three story beats",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "三个故事节拍",
+      "quote": "providing only character/scene references and three story beats"
+    },
+    {
+      "text": "预览版于 2026 年 8 月发布",
+      "value": "August 2026",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "2026 年 8 月",
+      "quote": "In August 2026, we released MAGI-2 Preview"
+    },
+    {
+      "text": "官网给出三组 1080p、25 fps 的 RL 前后对比",
+      "value": "three",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "三组",
+      "quote": "The three 1080p, 25 fps comparisons below show full upscaled outputs before and after RL."
+    },
+    {
+      "text": "MagiMoE 每层优化数千个窄专家",
+      "value": "thousands",
+      "source_url": "https://sand.ai/blog/magi-2",
+      "as_written": "数千个窄专家",
+      "quote": "optimizes local execution across thousands of narrow experts per layer"
+    }
+  ],
+  "cover": {
+    "headline": "MAGI-2 旗舰发布",
+    "highlight": "480B 参数，30 秒 1080p 音画",
+    "big": {
+      "value": "480",
+      "unit": "B",
+      "label": "总参数"
+    }
+  },
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "origin": "auto",
+    "candidate": "0dd093458c",
+    "tier": "official",
+    "via": "https://xiaohu.ai/article/sand-ai-magi-2/",
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "generated_at": "2026-11-25T20:05:20.427Z"
+  }
+}
