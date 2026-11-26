@@ -1,0 +1,1100 @@
+{
+  "slug": "word2vec-efficient-estimation-of-word-representations",
+  "category": "paper",
+  "publisher": "Mikolov et al. · Google",
+  "date": "2013-01-16",
+  "title": "Word2vec explained: how words become vectors, and why king - man + woman = queen",
+  "summary": "word2vec removed the most expensive part of neural language models—the hidden layer—and used CBOW and Skip-gram to learn word vectors from billions of words, making meaning computable with arithmetic for the first time. We work through the model cost by hand, demo the analogy task with 3-D toy vectors, and find the errors hidden in the paper's own results.",
+  "ai_summary": "Efficient Estimation of Word Representations in Vector Space (Google, 2013) introduces CBOW and Skip-gram, two log-linear models with no hidden layer. One predicts the center word from its context; the other predicts context from the center, making it fast to learn several-hundred-dimensional word vectors from billions of words. The paper builds 8,869 semantic and 10,675 syntactic analogy questions, answered with vector arithmetic plus cosine similarity. A 300-dimensional Skip-gram reaches 53.3% total accuracy, far above the previous public best of 24.6%; a 1,000-dimensional version trained on 6B words reaches 65.6%. The paper also argues that dimensionality and data should grow together. Its limitation: each word has only one context-independent vector.",
+  "brief": [
+    "Problem: words were treated as isolated IDs with no similarity between them; neural network language models that could learn word vectors were too slow to use on big data.",
+    "Method: drop the nonlinear hidden layer. Learn word vectors with CBOW (context predicts the center word) and Skip-gram (the center predicts context), paired with hierarchical softmax.",
+    "Result: training cost dropped by one to two orders of magnitude. Skip-gram led by a wide margin on semantic analogy questions, and 'king - man + woman ≈ queen' became the classic example.",
+    "Limitation: each word has only one context-independent vector; the models do not understand word structure, and they learn co-occurrence associations rather than facts."
+  ],
+  "paper": {
+    "title": "Efficient Estimation of Word Representations in Vector Space",
+    "authors": "Tomas Mikolov, Kai Chen, Greg Corrado, Jeffrey Dean",
+    "org": "Google",
+    "venue": "ICLR 2013 Workshop",
+    "year": 2013,
+    "arxiv": "1301.3781",
+    "url": "https://arxiv.org/abs/1301.3781"
+  },
+  "cover": {
+    "headline": "A close reading of the word2vec paper",
+    "highlight": "Word meaning can be computed with arithmetic",
+    "glyph": {
+      "kind": "flow",
+      "nodes": [
+        {
+          "label": "king - man"
+        },
+        {
+          "label": "+ woman"
+        },
+        {
+          "label": "≈ queen",
+          "tone": "hi"
+        }
+      ]
+    }
+  },
+  "sections": [
+    {
+      "h": "What the paper actually did",
+      "blocks": [
+        {
+          "p": "In January 2013, four Google researchers—Tomas Mikolov, Kai Chen, Greg Corrado, and Jeff Dean—published this 12-page paper. It introduced two extremely simple models, **CBOW** and **Skip-gram**, for turning each word into a vector of a few hundred numbers. Together with the open-source tooling that followed, these models became known as **word2vec**."
+        },
+        {
+          "p": "Its significance has two sides. The first is speed: it removed the hidden layer that made neural language models of the time expensive, so the same computer could handle far more data. The paper says high-quality vectors can be learned from a 1.6-billion-word corpus in under a day. The second is quality: the learned vectors encode regularities—most famously, king - man + woman ≈ queen—so word meaning can be computed with arithmetic."
+        },
+        {
+          "p": "This is the first piece in our 'language models' learning track. From here, a word is no longer an isolated ID but a point in space; everything that follows—Seq2Seq, attention, Transformer, GPT—builds on the idea that words are vectors. The first layer in today's large models is still the **embedding** layer, and it does exactly that."
+        },
+        {
+          "callout": {
+            "kind": "takeaway",
+            "title": "The one-sentence version",
+            "text": "Represent each word as a vector of a few hundred dimensions, so words that appear in similar contexts sit close together in space. CBOW predicts the center word from the surrounding words; Skip-gram predicts the surrounding words from the center. With the hidden layer removed, the model is simple enough to train on billions of words, and the learned vectors can answer analogy questions like 'France is to Paris as Germany is to ?' using arithmetic."
+          }
+        },
+        {
+          "callout": {
+            "kind": "prereq",
+            "title": "Three small concepts for reading this paper",
+            "text": "If these are new to you, three ideas are enough:",
+            "list": [
+              "**Vector**: an ordered list of numbers, such as (0.2, -1.3, 0.7). Vectors can be added and subtracted, and you can compare whether they point in similar directions.",
+              "**Language model**: a model that predicts the next word from the preceding text. In 2013, the best language models were neural networks, but they were slow to train.",
+              "**Softmax**: turns a set of scores into probabilities that sum to 1. With a one-million-word vocabulary, you need to compute one million scores—the main cost."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "The problem: to a computer, 'cat' and 'dog' are unrelated",
+      "blocks": [
+        {
+          "p": "Before word2vec, most NLP systems treated words as **atoms**: each word was just an index in a vocabulary—'cat' was no. 3051, 'dog' was no. 8722. The indices had no relationship to each other, so 'cat' was as far from 'dog' as it was from 'democracy'."
+        },
+        {
+          "p": "The paper concedes that this approach has its reasons: it is simple and robust, and simple models trained on huge amounts of data often beat complex models trained on less data. The popular N-gram models of the time, for example, could already be trained on trillions of words. But in domains with limited high-quality data, such as speech recognition and machine translation, simple techniques had hit their limits; adding more data no longer brought clear gains."
+        },
+        {
+          "callout": {
+            "kind": "intuition",
+            "title": "IDs versus coordinates",
+            "text": "Treating words as IDs is like knowing only each city's postal code: the fact that 100000 and 100001 are adjacent does not mean the two cities are next to each other. Treating words as vectors is like giving each city a latitude and longitude: cities that are close have close coordinates, and 'the direction from Beijing to Tianjin' can be compared with 'the direction from Shanghai to Suzhou.' What word2vec aims to do is give every word a meaningful 'coordinate.'"
+          }
+        },
+        {
+          "p": "The idea of giving words coordinates had existed for a long time, known as **distributed representation**: a word is represented jointly by hundreds of numbers, and each number participates in representing many words. Bengio et al.'s 2003 neural network language model learned word vectors as a byproduct of training a language model. The problem was speed: the paper notes that, as far as the authors knew, no prior architecture had been successfully trained on more than a few hundred million words, and word vector dimensionality was only 50 to 100."
+        },
+        {
+          "p": "So the paper's goal is explicit: learn high-quality word vectors from billions of words and vocabularies of millions—quickly and well."
+        }
+      ]
+    },
+    {
+      "h": "Why old models were slow: calculating the cost per training example",
+      "blocks": [
+        {
+          "p": "The paper first defines a uniform cost metric for all models: the total number of parameters accessed during training. Total cost O = E × T × Q, where E is the number of training epochs, T is the number of words in the training set, and Q is the per-example cost, which varies by model."
+        },
+        {
+          "p": "**The feedforward neural network language model (NNLM)** predicts the next word from the previous N words. It has input, projection, hidden, and output layers: each of the N words is looked up as a D-dimensional vector (the projection layer), passed through a nonlinear hidden layer with H units, and finally turned into probabilities over all V words in the vocabulary. The per-example cost is:"
+        },
+        {
+          "formula": {
+            "expr": "Q = N × D + N × D × H + H × V",
+            "parts": [
+              {
+                "sym": "N × D",
+                "desc": "Looking up the N word vectors: cheap—it is just table lookup."
+              },
+              {
+                "sym": "N × D × H",
+                "desc": "Projection-to-hidden fully connected layer: the projection layer is dense, so this term is expensive."
+              },
+              {
+                "sym": "H × V",
+                "desc": "Hidden-to-output layer: the model must score every word in the vocabulary. When V is on the order of one million, this is the largest term."
+              }
+            ],
+            "note": "The expensive H × V term can be reduced to about H × log_{2}(V) with hierarchical softmax, explained below. Once that is done, the bottleneck becomes the middle term, N × D × H—the nonlinear hidden layer."
+          }
+        },
+        {
+          "p": "**The recurrent neural network language model (RNNLM)** does not depend on a fixed window of N previous words: the hidden layer connects back to itself, giving it a kind of short-term memory. Its cost is Q = H × H + H × V, and after applying hierarchical softmax the bottleneck falls to the hidden layer's H × H."
+        },
+        {
+          "callout": {
+            "kind": "intuition",
+            "title": "Hierarchical softmax: replacing a one-in-a-million choice with twenty questions",
+            "text": "To pick one word out of a million, ordinary softmax must score every word. Hierarchical softmax arranges the vocabulary into a binary tree, so predicting a word becomes walking from the root to a leaf, answering a 'left or right' question at each step. One million words requires only about 20 questions, because 2^20 is about one million. The paper goes further and uses a Huffman tree: frequent words sit closer to the root, so they need fewer questions. The paper says that for a one-million-word vocabulary, this is about twice as fast as an ordinary binary tree."
+          }
+        },
+        {
+          "p": "The conclusion from both old models is the same: the most expensive part is the nonlinear hidden layer. That layer is what makes neural networks powerful, but if the goal is only to learn word vectors, it may not be necessary."
+        }
+      ]
+    },
+    {
+      "h": "Two new models: CBOW and Skip-gram without the hidden layer",
+      "blocks": [
+        {
+          "p": "The paper's key decision is: accept a simpler, less expressive model in exchange for being able to train on far more data. Both new models have no hidden layer—only word-vector lookup and output classification—making them log-linear models."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "CBOW and Skip-gram: one predicts the center from context, the other predicts context from the center",
+            "subtitle": "Based on section 3 and figure 1 of the paper",
+            "columns": [
+              "",
+              "CBOW (Continuous Bag-of-Words)",
+              "Skip-gram"
+            ],
+            "rows": [
+              [
+                "Input",
+                "Four words before and after the center word",
+                "The single center word"
+              ],
+              [
+                "Target",
+                "The center word",
+                "Each word within a range before and after"
+              ],
+              [
+                "How multiple inputs are handled",
+                "Average the context vectors (order is ignored, hence 'bag-of-words')",
+                "One input, many classifications"
+              ],
+              [
+                "Per-example cost Q",
+                "N × D + D × log_{2}(V)",
+                "C × (D + D × log_{2}(V))"
+              ],
+              [
+                "What the paper found",
+                "Faster; slightly better on syntactic questions",
+                "Slower; much better on semantic questions"
+              ]
+            ]
+          }
+        },
+        {
+          "p": "**CBOW** (Continuous Bag-of-Words) looks like a feedforward language model with the hidden layer removed, with two differences: it uses both preceding and following words, and it averages the context vectors, discarding word order. The paper found that four words on each side work best for predicting the center word."
+        },
+        {
+          "p": "**Skip-gram** flips the task: it takes the center word as input and predicts each word within a range before and after it. Because distant words are usually less related, the paper samples them less often. With maximum distance C = 10, it first picks R randomly between 1 and C, then predicts R words before and R words after the center. Nearby words are predicted on every step, while distant words only appear occasionally."
+        },
+        {
+          "p": "The paper does not write out the training objective. Here is the standard formulation from a follow-up paper (Mikolov et al., NIPS 2013) to clarify what Skip-gram optimizes:"
+        },
+        {
+          "formula": {
+            "expr": "p(w_{O} | w_{I}) = exp( v'_{O} · v_{I} ) / Σ_{w=1}^{V} exp( v'_{w} · v_{I} )",
+            "parts": [
+              {
+                "sym": "w_{I}",
+                "desc": "The input word (the center word); v_{I} is its 'input vector'—the final word vector to be used."
+              },
+              {
+                "sym": "w_{O}",
+                "desc": "A context word to predict; v'_{O} is its 'output vector'."
+              },
+              {
+                "sym": "v'_{O} · v_{I}",
+                "desc": "The dot product of two vectors: the more their directions align, the larger the value, and the more the model expects them to co-occur."
+              },
+              {
+                "sym": "Σ_{w=1}^{V}",
+                "desc": "The sum over all V words in the vocabulary turns the score into a probability. This step is too expensive, so hierarchical softmax is used."
+              }
+            ],
+            "note": "Training adjusts all vectors to make word pairs that actually co-occur as probable as possible. As a result, words that appear in similar contexts get pushed toward similar directions."
+          }
+        },
+        {
+          "callout": {
+            "kind": "intuition",
+            "title": "Why 'guessing the neighbors' learns word meaning",
+            "text": "There is an old line in linguistics: you know a word by the company it keeps. 'Cat' and 'dog' often appear near 'feed,' 'pet,' and 'fur.' To get both words right, the model has to give them similar vectors. No one told the model that cats and dogs are both animals—it squeezed that conclusion out of billions of sentences."
+          }
+        },
+        {
+          "quiz": {
+            "q": "CBOW adds the context vectors and averages them. What information does that discard?",
+            "options": [
+              "Word meaning",
+              "The order of the context words",
+              "Which word is the center word",
+              "Vocabulary size"
+            ],
+            "answer": 1,
+            "why": "Addition ignores order: 'dog bites man' and 'man bites dog' produce the same averaged context vector, hence 'bag-of-words.' Meaning is exactly what the vectors preserve; the center word is the target to predict; vocabulary size has nothing to do with this averaging operation."
+          }
+        }
+      ]
+    },
+    {
+      "h": "Back-of-the-envelope: how much cheaper are the new models?",
+      "blocks": [
+        {
+          "p": "Plug the paper's cost formulas into typical parameters and the gap becomes clear. The table below uses D = H = 500, vocabulary V = one million (log_{2}(V) ≈ 20), and hierarchical softmax throughout:"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Without the hidden layer, per-example training cost drops by one to two orders of magnitude",
+            "subtitle": "Illustrative: computed by this site from the paper's formulas 2, 4, and 5 with typical parameters, not from the paper itself. Amber indicates CBOW.",
+            "columns": [
+              "Model",
+              "Cost formula (with hierarchical softmax)",
+              "Plugging in N = 10 (8 for CBOW), D = H = 500, C = 10",
+              "Relative to NNLM"
+            ],
+            "rows": [
+              [
+                "NNLM",
+                "N × D + N × D × H + H × log_{2}V",
+                "5,000 + 2,500,000 + 10,000 ≈ 2.52 million",
+                "1"
+              ],
+              [
+                "CBOW",
+                "N × D + D × log_{2}V",
+                "4,000 + 10,000 = 14,000",
+                "about 1/180"
+              ],
+              [
+                "Skip-gram",
+                "C × (D + D × log_{2}V)",
+                "10 × (500 + 10,000) = 105,000",
+                "about 1/24"
+              ]
+            ],
+            "highlight": {
+              "row": 1
+            },
+            "note": "In NNLM, the N × D × H term accounts for more than 99% of the cost. CBOW and Skip-gram remove exactly that term. Skip-gram runs one classification per context word, so it is about 7× as expensive as CBOW."
+          }
+        },
+        {
+          "p": "One to two orders of magnitude cheaper means the same compute can train on much more data with much higher dimensionality. The paper's experiments later show that this is exactly where the quality gain comes from."
+        },
+        {
+          "quiz": {
+            "q": "According to the paper's cost formula, where does most computation in NNLM go after hierarchical softmax is applied?",
+            "options": [
+              "Word-vector lookup N × D",
+              "Projection to nonlinear hidden layer N × D × H",
+              "Output layer H × log_{2}V",
+              "All three are similar"
+            ],
+            "answer": 1,
+            "why": "With typical numbers, N × D × H is 2.5 million, while the other two terms together are only about 15,000. The paper therefore targets the hidden layer: remove it, and cost collapses. Hierarchical softmax has already reduced the output layer from H × V to H × log_{2}V."
+          }
+        }
+      ]
+    },
+    {
+      "h": "How to test word vectors: analogy questions solved by vector arithmetic",
+      "blocks": [
+        {
+          "p": "Earlier evaluations of word vectors typically listed words and their nearest neighbors, then judged by intuition whether the results seemed reasonable. The paper designed a stricter test: analogy questions. For example, 'big is to biggest as small is to ?'"
+        },
+        {
+          "p": "The method uses only vector arithmetic: compute X = vector(\"biggest\") − vector(\"big\") + vector(\"small\"), then find the word in the vocabulary with the smallest angle to X (highest cosine similarity), excluding words that appear in the question. If the result is exactly smallest, the question is marked correct."
+        },
+        {
+          "callout": {
+            "kind": "intuition",
+            "title": "Cosine similarity: direction only, not magnitude",
+            "text": "The cosine similarity of two vectors is the cosine of the angle between them: identical direction is 1, perpendicular is 0, opposite is -1. Comparing directions rather than magnitudes matters because a word vector's length often tracks how frequent the word is, while its direction is closer to meaning."
+          }
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "A 3-D toy example: king - man + woman is closest to queen",
+            "subtitle": "Illustrative: the vectors below are invented by this site, with only three meaningful dimensions; real word vectors have hundreds of dimensions, and individual dimensions usually do not have names.",
+            "columns": [
+              "Word",
+              "Vector (royalty, male, human)",
+              "Cosine similarity to X"
+            ],
+            "rows": [
+              [
+                "king",
+                "(0.9, 0.8, 0.7)",
+                "0.29"
+              ],
+              [
+                "man",
+                "(0.1, 0.8, 0.9)",
+                "— (question word; excluded)"
+              ],
+              [
+                "woman",
+                "(0.1, −0.8, 0.9)",
+                "0.75"
+              ],
+              [
+                "queen",
+                "(0.9, −0.8, 0.7)",
+                "0.99"
+              ],
+              [
+                "X = king - man + woman",
+                "(0.9, −0.8, 0.5)",
+                "—"
+              ]
+            ],
+            "highlight": {
+              "row": 3
+            },
+            "note": "'king - man' removes 'male' and part of 'human,' leaving 'royalty'; adding 'woman' restores 'female.' In a real model, this 'gender direction' is not one preset dimension but a direction that emerges during training. By the rules, king, man, and woman are excluded because they appear in the question, so the answer is queen."
+          }
+        },
+        {
+          "p": "The paper's test set has two categories: 8,869 semantic questions, covering capital-country, currency, city-state, and man-woman pairs; and 10,675 syntactic questions, covering adjective-to-adverb, opposites, comparatives, superlatives, present participles, past tense, and plural nouns. For each category, researchers first manually compiled word pairs, then combined pairs into questions—for example, 68 large U.S. cities and their states yielded about 2,500 questions."
+        },
+        {
+          "p": "Scoring is strict: the answer counts only if it matches exactly—synonyms are marked wrong. The paper therefore says 100% accuracy is nearly impossible, because the model has no information about word morphology, such as -ly or -est endings."
+        },
+        {
+          "quiz": {
+            "q": "The paper requires analogy answers to match exactly. How does this affect scoring?",
+            "options": [
+              "It inflates scores",
+              "It lowers scores: synonyms or semantically right words with the wrong form are marked wrong",
+              "No effect",
+              "Only affects semantic questions"
+            ],
+            "answer": 1,
+            "why": "Exact matching is a conservative scoring method, so the model actually 'knows' more than the score suggests. The paper later notes that its example table scores only about 60% under this standard, yet many 'wrong' answers are quite close."
+          }
+        }
+      ]
+    },
+    {
+      "h": "Result 1: dimensionality and data must grow together",
+      "blocks": [
+        {
+          "p": "The paper trains on the Google News corpus, about 6B tokens in total, with the vocabulary limited to the 1 million most frequent words. It first runs a set of small experiments with CBOW across different data sizes and dimensionalities, using only questions that contain the 30,000 most common words:"
+        },
+        {
+          "fig": {
+            "type": "heatmap",
+            "title": "Diminishing returns from scaling data or dimensions alone; accuracy keeps rising only when both grow together",
+            "subtitle": "Units: %. CBOW accuracy on a subset of analogy questions, from Table 2 of the paper. Color intensity is illustrative only; darker means higher accuracy.",
+            "rows": [
+              "50 dim",
+              "100 dim",
+              "300 dim",
+              "600 dim"
+            ],
+            "cols": [
+              "24M",
+              "49M",
+              "98M",
+              "196M",
+              "391M",
+              "783M"
+            ],
+            "values": [
+              [
+                13.4,
+                15.7,
+                18.6,
+                19.1,
+                22.5,
+                23.2
+              ],
+              [
+                19.4,
+                23.1,
+                27.8,
+                28.7,
+                33.4,
+                32.2
+              ],
+              [
+                23.2,
+                29.2,
+                35.3,
+                38.6,
+                43.7,
+                45.9
+              ],
+              [
+                24,
+                30.1,
+                36.5,
+                40.8,
+                46.6,
+                50.4
+              ]
+            ],
+            "display": [
+              [
+                "13.4",
+                "15.7",
+                "18.6",
+                "19.1",
+                "22.5",
+                "23.2"
+              ],
+              [
+                "19.4",
+                "23.1",
+                "27.8",
+                "28.7",
+                "33.4",
+                "32.2"
+              ],
+              [
+                "23.2",
+                "29.2",
+                "35.3",
+                "38.6",
+                "43.7",
+                "45.9"
+              ],
+              [
+                "24.0",
+                "30.1",
+                "36.5",
+                "40.8",
+                "46.6",
+                "50.4"
+              ]
+            ],
+            "highlight": {
+              "row": 3
+            },
+            "note": "Look at the 50-dim row: as data grows from 24M words to 783M, accuracy only climbs from 13.4 to 23.2, because the dimensionality is too low to hold more information. Look at the far-left column: as dimensionality grows from 50 to 600, accuracy only moves from 13.4 to 24.0, because there is not enough data to learn more. Raise both together, and accuracy reaches 50.4."
+          }
+        },
+        {
+          "p": "This conclusion sounds obvious, but the paper makes a point of it: at the time, it was popular to train word vectors with only 50 to 100 dimensions on huge datasets, and those dimensions were clearly not enough. According to CBOW's cost formula, doubling the data and doubling the dimensionality cost about the same amount of extra computation, so the two should grow together. This is the same kind of question the Scaling Laws paper would take up seven years later."
+        }
+      ]
+    },
+    {
+      "h": "Result 2: Skip-gram takes a big lead on semantic questions",
+      "blocks": [
+        {
+          "p": "To compare the four architectures fairly, the paper trains them on the same data, about 320M words and an 82K vocabulary, to produce 640-dimensional vectors:"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Same data and dimensions: Skip-gram scores more than twice as high as the other models on semantic questions",
+            "subtitle": "Units: %. From Table 3 of the paper. The blue column shows semantic questions.",
+            "columns": [
+              "Model",
+              "Semantic",
+              "Syntactic",
+              "MSR sentence completion"
+            ],
+            "rows": [
+              [
+                "RNNLM",
+                "9",
+                "36",
+                "35"
+              ],
+              [
+                "NNLM",
+                "23",
+                "53",
+                "47"
+              ],
+              [
+                "CBOW",
+                "24",
+                "64",
+                "61"
+              ],
+              [
+                "Skip-gram",
+                "55",
+                "59",
+                "56"
+              ]
+            ],
+            "highlight": {
+              "col": 1
+            },
+            "note": "The RNNLM vectors were previously trained on a single CPU for about eight weeks. The paper argues that RNNLM does worse on semantic questions because its word vectors are directly tied to a nonlinear hidden layer."
+          }
+        },
+        {
+          "p": "Each architecture has its own profile: RNN vectors are mainly good at syntactic questions; NNLM is clearly better than RNN; CBOW beats NNLM on syntactic questions and is about even on semantic ones; **Skip-gram is slightly behind CBOW on syntactic questions but far ahead of every model on semantic ones**."
+        },
+        {
+          "p": "Compared with the public word vectors of the time (Table 4 in the paper), the gap is even clearer: the best previously published total accuracy was only 24.6%, from Mikolov's own 640-dimensional RNNLM vectors, while a 300-dimensional Skip-gram trained on 783M words reached 53.3%, and CBOW reached 36.1%. On a single CPU, CBOW trained in about a day and Skip-gram in about three days."
+        },
+        {
+          "p": "**One epoch beats three.** The paper also found that doubling the data and training for a single epoch works about as well as, or better than, training three epochs on the original data, and it is faster. For example, Skip-gram trained for 1 epoch on 1.6B words reached 53.8% total accuracy, slightly above the 53.3% from 3 epochs on 783M words."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "At scale: 1,000-dimensional vectors from 6B words, trained in about two days",
+            "subtitle": "From Table 6 of the paper, trained with the DistBelief distributed framework. Training time is shown as days × CPU cores; core counts are estimates. Amber indicates Skip-gram.",
+            "columns": [
+              "Model",
+              "Dimensions",
+              "Semantic %",
+              "Syntactic %",
+              "Total accuracy %",
+              "Training time"
+            ],
+            "rows": [
+              [
+                "NNLM",
+                "100",
+                "34.2",
+                "64.5",
+                "50.8",
+                "14 days × 180 cores"
+              ],
+              [
+                "CBOW",
+                "1000",
+                "57.3",
+                "68.9",
+                "63.7",
+                "2 days × 140 cores"
+              ],
+              [
+                "Skip-gram",
+                "1000",
+                "66.1",
+                "65.1",
+                "65.6",
+                "2.5 days × 125 cores"
+              ]
+            ],
+            "highlight": {
+              "row": 2
+            },
+            "note": "The paper says the 1,000-dimensional NNLM was not completed because it would take too long to train. Measured as days × cores, the new models used only about one-eighth to one-ninth of the NNLM's computation, and still produced vectors with 10× the dimensionality and higher accuracy."
+          }
+        },
+        {
+          "quiz": {
+            "q": "Why does Skip-gram clearly outperform CBOW on semantic questions? Which explanation below is most plausible?",
+            "options": [
+              "Skip-gram uses higher-dimensional vectors.",
+              "Skip-gram makes a separate prediction for each context word, so each word gets more and finer-grained training signal that is not averaged away.",
+              "Skip-gram uses a hidden layer.",
+              "Skip-gram is trained on more data."
+            ],
+            "answer": 1,
+            "why": "The paper itself does not give a reason; this is a common explanation. CBOW averages the context into a single vector before predicting the center word, so information from rare words tends to get averaged away. Skip-gram has each word separately predict each of its neighbors, giving more training signal. In the comparison, both models had the same dimensionality and data, and neither had a hidden layer."
+          }
+        }
+      ]
+    },
+    {
+      "h": "What it learned: neat regularities and obvious mistakes",
+      "blocks": [
+        {
+          "p": "The paper uses the best Skip-gram vectors from Table 4, with 300 dimensions and trained on 783M words, to show a batch of analogy results. As you read the table, try spotting the errors yourself:"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "The paper's analogy examples: mostly correct, but with several clear errors",
+            "subtitle": "From Table 8 of the paper. Each row applies the relationship from the left pair to the right side. Parentheses mark errors or questionable answers flagged by this site; in the amber row, two of the three examples are wrong.",
+            "columns": [
+              "Relationship",
+              "Example 1",
+              "Example 2",
+              "Example 3"
+            ],
+            "rows": [
+              [
+                "France → Paris",
+                "Italy: Rome",
+                "Japan: Tokyo",
+                "Florida: Tallahassee"
+              ],
+              [
+                "big → bigger",
+                "small: larger (should be smaller)",
+                "cold: colder",
+                "quick: quicker"
+              ],
+              [
+                "Einstein → scientist",
+                "Messi: midfielder",
+                "Mozart: violinist (questionable: composer would be more fitting)",
+                "Picasso: painter"
+              ],
+              [
+                "copper → Cu",
+                "zinc: Zn",
+                "gold: Au",
+                "uranium: plutonium (should be U)"
+              ],
+              [
+                "Microsoft → Ballmer",
+                "Google: Yahoo (should be Google's CEO)",
+                "IBM: McNealy (he was Sun's CEO)",
+                "Apple: Jobs"
+              ],
+              [
+                "Japan → sushi",
+                "Germany: sausage",
+                "France: tapas (Spanish snack)",
+                "US: pizza"
+              ]
+            ],
+            "highlight": {
+              "row": 4
+            },
+            "note": "The original table has 10 rows; 6 are shown here. The paper itself says that under exact-match scoring, this table would score only about 60%."
+          }
+        },
+        {
+          "p": "These mistakes are revealing. What word vectors learn is 'who co-occurs with whom,' so the CEO of Sun is likely to appear next to IBM, and France and Spanish snacks show up in the same kinds of articles. What they learn is **association**, not **fact**."
+        },
+        {
+          "p": "The paper also mentions two uses. Using the average of 10 examples instead of one to represent a relationship improves accuracy on the semantic and syntactic questions by about 10 percentage points. Taking the average vector of a group of words and finding the word farthest from it turns the vectors into an odd-one-out puzzle."
+        },
+        {
+          "p": "On the Microsoft Sentence Completion Challenge, with 1,040 sentences, each missing one word and five choices per blank, Skip-gram alone scored only 48.0%, below LSA's 49%. But in a weighted combination with an RNN language model, the score reached 58.9%, beating the previous best of 55.4%. Word vectors and language models capture complementary information."
+        }
+      ]
+    },
+    {
+      "h": "Limitations, and what came next",
+      "blocks": [
+        {
+          "list": [
+            "**One word, one vector:** 'apple' is the same vector whether it means the fruit or the company, and the riverbank and financial senses of 'bank' are mixed together. The word vectors themselves do not look at context.",
+            "**No understanding of word structure:** the model treats big, bigger, and biggest as three unrelated words, ignoring patterns in word endings. The paper also says that adding word-structure information could further improve syntactic scores.",
+            "**Word order is lost:** CBOW simply averages the context, and Skip-gram predicts each neighbor independently; neither cares about sentence structure.",
+            "**Limited evaluation:** the analogy questions test linear regularities in the vector space, and the paper only 'believes' this correlates with real-world usefulness; it does not validate on many downstream tasks."
+          ]
+        },
+        {
+          "p": "**A few small discrepancies in the paper.** The abstract says high-quality word vectors can be learned from the 1.6-billion-word corpus 'in under a day.' By Table 5, this holds for CBOW, at 0.6 days for 1 epoch, but Skip-gram on the same data takes 2 days. Also, the two proposed models are widely called word2vec, but that name never appears in the paper itself; it comes from the authors' later open-source release."
+        },
+        {
+          "p": "**What came next.** The paper's final section notes that the authors later open-sourced single-machine multithreaded C++ code that can process billions of words per hour, and released more than 1.4 million named-entity vectors trained on over 100 billion words. A NIPS paper later that same year (Mikolov et al., 2013) added **negative sampling**, comparing against only a few randomly sampled 'counterexamples' instead of the full softmax, and **frequent-word subsampling**. That combination is what most people mean today when they say word2vec."
+        },
+        {
+          "p": "Continuing down this learning track, the next questions arise naturally. What if a word's meaning depends on context? What if we need to process not a single word but a whole sentence, and translate it into another sentence? That is the problem the next paper, Seq2Seq (2014), sets out to solve. Later, ELMo, BERT, and GPT give each word a **context-dependent** vector, but the first layer is still a word2vec-style embedding table."
+        }
+      ]
+    },
+    {
+      "h": "Check yourself: did you get it?",
+      "blocks": [
+        {
+          "quiz": {
+            "q": "When training Skip-gram with maximum distance C = 10, each step randomly picks R from 1 to 10 and predicts only R words before and R words after the center word. What is the effect of this?",
+            "options": [
+              "Makes training more random, preventing overfitting.",
+              "Nearby words are predicted almost every time, while distant words are predicted only occasionally, effectively giving nearby words more weight.",
+              "Keeps the computation per example fixed.",
+              "Makes rare words appear more often."
+            ],
+            "answer": 1,
+            "why": "A neighbor at distance 1 is predicted for any R, while a neighbor at distance 10 is predicted only when R happens to be 10, a one-in-ten chance. The paper's rationale is that distant words are usually less related to the current word, so they should be sampled less."
+          }
+        },
+        {
+          "quiz": {
+            "q": "For 'France - Paris + Tokyo,' which word is the most likely result? What kind of relationship does this question test?",
+            "options": [
+              "Japan; semantic relationship.",
+              "Japan; syntactic relationship.",
+              "Kyoto; semantic relationship.",
+              "Tokyo; syntactic relationship."
+            ],
+            "answer": 0,
+            "why": "'France - Paris' gives the 'country minus capital' direction; adding Tokyo lands near Japan. Capital-country pairs are in the paper's semantic category, while comparatives and plurals are syntactic. Tokyo itself appears in the question, so it is excluded."
+          }
+        },
+        {
+          "p": "After reading this piece, you should be able to answer these questions:"
+        },
+        {
+          "list": [
+            "What is the fundamental difference between treating words as IDs and treating them as vectors?",
+            "Why were the old neural network language models slow? Which term dominated the cost?",
+            "How does hierarchical softmax turn a one-in-a-million choice into twenty yes/no decisions? Why is the Huffman tree faster?",
+            "What predicts what in CBOW and Skip-gram? Which question type is each one better at?",
+            "Why does 'guessing the neighbors' make similar words end up with similar vectors?",
+            "How are analogy questions answered with vector arithmetic and cosine similarity? Why does exact matching underrate the model?",
+            "Why do dimensionality and data have to grow together?",
+            "What problems come from having only one vector per word? How did later models solve them?"
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Efficient Estimation of Word Representations in Vector Space (arXiv:1301.3781, v3)",
+      "publisher": "Mikolov et al. · Google",
+      "date": "2013-09-07",
+      "url": "https://arxiv.org/abs/1301.3781"
+    },
+    "note": "This article is based on version 3 of the paper on arXiv (September 2013); the first version appeared in January 2013. Tables marked 'Illustrative' were computed or created by this site from the paper's formulas. The softmax formula for Skip-gram, negative sampling, and frequent-word subsampling come from the authors' follow-up paper the same year, Distributed Representations of Words and Phrases and their Compositionality, and are not in this paper."
+  },
+  "claims": [
+    {
+      "text": "arXiv version 3",
+      "value": "1301.3781v3",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "arXiv:1301.3781v3 [cs.CL] 7 Sep 2013",
+      "as_written": "version 3"
+    },
+    {
+      "text": "1.6 billion words, under a day",
+      "value": "1.6 billion words",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "it takes less than a day to learn high quality word vectors from a 1.6 billion words data set",
+      "as_written": "1.6 billion"
+    },
+    {
+      "text": "N-gram models can be trained on trillions of words",
+      "value": "trillions of words",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "it is possible to train N-grams on virtually all available data (trillions of words [3])",
+      "as_written": "trillions"
+    },
+    {
+      "text": "Previously no more than a few hundred million words, 50-100 dimensions",
+      "value": "50 - 100",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "than a few hundred of millions of words, with a modest dimensionality of the word vectors between 50 - 100",
+      "as_written": "50 to 100"
+    },
+    {
+      "text": "Semantic questions: 8,869; syntactic questions: 10,675",
+      "value": "8869",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "Overall, there are 8869 semantic and 10675 syntactic questions",
+      "as_written": "8869"
+    },
+    {
+      "text": "10,675 syntactic questions",
+      "value": "10675",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "8869 semantic and 10675 syntactic questions",
+      "as_written": "10675"
+    },
+    {
+      "text": "68 cities, about 2,500 questions",
+      "value": "68",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "we made a list of 68 large American cities and the states they belong to, and formed about 2.5K questions",
+      "as_written": "68"
+    },
+    {
+      "text": "about 2.5K questions",
+      "value": "2.5K",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "formed about 2.5K questions",
+      "as_written": "2500"
+    },
+    {
+      "text": "100% accuracy is impossible",
+      "value": "100%",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "reaching 100% accuracy is likely to be impossible",
+      "as_written": "100%"
+    },
+    {
+      "text": "Google News corpus: about 6B tokens",
+      "value": "6B",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "This corpus contains about 6B tokens",
+      "as_written": "6 billion"
+    },
+    {
+      "text": "Vocabulary of 1 million",
+      "value": "1 million",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "We have restricted the vocabulary size to 1 million most frequent words",
+      "as_written": "1 million"
+    },
+    {
+      "text": "30,000 frequent words",
+      "value": "30k",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "with vocabulary restricted to the most frequent 30k words",
+      "as_written": "30,000"
+    },
+    {
+      "text": "Table 2: 50 dim, 13.4→23.2",
+      "value": "13.4",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "13.4",
+      "as_written": "13.4"
+    },
+    {
+      "text": "Table 2: 23.2",
+      "value": "23.2",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "23.2",
+      "as_written": "23.2"
+    },
+    {
+      "text": "Table 2: 600 dim, 24.0",
+      "value": "24.0",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "24.0",
+      "as_written": "24.0"
+    },
+    {
+      "text": "Table 2: 600 dim, 783M words, 50.4",
+      "value": "50.4",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "50.4",
+      "as_written": "50.4"
+    },
+    {
+      "text": "C = 10",
+      "value": "C = 10",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "In the following experiments, we use C = 10",
+      "as_written": "10"
+    },
+    {
+      "text": "Four words before and after",
+      "value": "four future and four history words",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "a log-linear classifier with four future and four history words at the input",
+      "as_written": "4"
+    },
+    {
+      "text": "640 dimensions, 320M words, 82K vocabulary",
+      "value": "320M words",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "(320M words, 82K vocabulary)",
+      "as_written": "320 million"
+    },
+    {
+      "text": "82K vocabulary",
+      "value": "82K",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "82K vocabulary",
+      "as_written": "82K"
+    },
+    {
+      "text": "RNNLM training: about 8 weeks",
+      "value": "8 weeks",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "took about 8 weeks to train on a single CPU",
+      "as_written": "8 weeks"
+    },
+    {
+      "text": "Table 3: Skip-gram semantic 55%",
+      "value": "55",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "55",
+      "as_written": "55"
+    },
+    {
+      "text": "Table 4: RNNLM 640 dim, 24.6%",
+      "value": "24.6",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "24.6",
+      "as_written": "24.6%"
+    },
+    {
+      "text": "Table 4: Skip-gram 53.3%",
+      "value": "53.3",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "53.3",
+      "as_written": "53.3%"
+    },
+    {
+      "text": "Table 4: CBOW 36.1%",
+      "value": "36.1",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "36.1",
+      "as_written": "36.1%"
+    },
+    {
+      "text": "783 million words",
+      "value": "783M",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "783M",
+      "as_written": "783 million"
+    },
+    {
+      "text": "Table 5: 1 epoch, 1.6B words, Skip-gram 53.8%",
+      "value": "53.8",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "53.8",
+      "as_written": "53.8%"
+    },
+    {
+      "text": "Table 5: 1 epoch, CBOW, 1.6B words, 0.6 days",
+      "value": "0.6",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "0.6",
+      "as_written": "0.6 days"
+    },
+    {
+      "text": "CBOW about one day, Skip-gram about three days",
+      "value": "about three days",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "training time for the Skip-gram model was about three days",
+      "as_written": "three days"
+    },
+    {
+      "text": "Table 6: NNLM 14 × 180",
+      "value": "14 x 180",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "14 x 180",
+      "as_written": "14 days × 180 cores"
+    },
+    {
+      "text": "Table 6: CBOW 63.7, 2 × 140",
+      "value": "63.7",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "63.7",
+      "as_written": "63.7"
+    },
+    {
+      "text": "Table 6: Skip-gram 66.1, 65.6, 2.5 × 125",
+      "value": "65.6",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "65.6",
+      "as_written": "65.6"
+    },
+    {
+      "text": "Table 6: Skip-gram semantic 66.1%",
+      "value": "66.1",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "66.1",
+      "as_written": "66.1"
+    },
+    {
+      "text": "Table 6: NNLM 50.8%",
+      "value": "50.8",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "50.8",
+      "as_written": "50.8"
+    },
+    {
+      "text": "Table 6: 1,000 dimensions",
+      "value": "1000",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "Note that training of NNLM with 1000-dimensional vectors would take too long to complete",
+      "as_written": "1,000 dimensions"
+    },
+    {
+      "text": "1,040 sentences",
+      "value": "1040",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "This task consists of 1040 sentences",
+      "as_written": "1,040"
+    },
+    {
+      "text": "Skip-gram 48.0, LSA 49",
+      "value": "48.0",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "48.0",
+      "as_written": "48.0%"
+    },
+    {
+      "text": "LSA 49",
+      "value": "49",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "49",
+      "as_written": "49%"
+    },
+    {
+      "text": "Combined 58.9%, previous best 55.4%",
+      "value": "58.9%",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "a weighted combination leads to a new state of the art result 58.9% accuracy",
+      "as_written": "58.9%"
+    },
+    {
+      "text": "Previous best 55.4%",
+      "value": "55.4%",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "state of the art performance of 55.4% accuracy",
+      "as_written": "55.4%"
+    },
+    {
+      "text": "Table 8: about 60%",
+      "value": "60%",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "the results in Table 8 would score only about 60%",
+      "as_written": "60%"
+    },
+    {
+      "text": "Using 10 examples improves accuracy by about 10 percentage points",
+      "value": "10%",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "we have observed improvement of accuracy of our best models by about 10% absolutely",
+      "as_written": "10 percentage points"
+    },
+    {
+      "text": "More than 1.4 million vectors, over 100 billion words",
+      "value": "1.4 million",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "We also published more than 1.4 million vectors that represent named entities, trained on more than 100 billion words",
+      "as_written": "more than 1.4 million"
+    },
+    {
+      "text": "100 billion words",
+      "value": "100 billion words",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "trained on more than 100 billion words",
+      "as_written": "100 billion"
+    },
+    {
+      "text": "Huffman tree is about twice as fast",
+      "value": "two times speedup",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "this results in about two times speedup in evaluation",
+      "as_written": "2×"
+    },
+    {
+      "text": "Skip-gram is about 7× more expensive than CBOW (computed by this site from the formulas)",
+      "value": "C × (D + D × log2 (V))",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "Q = C × (D + D × log2 (V))",
+      "as_written": "7×"
+    },
+    {
+      "text": "In NNLM, the N × D × H term accounts for more than 99% (computed by this site from the formulas)",
+      "value": "N × D × H",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "Thus, most of the complexity is caused by the term N × D × H",
+      "as_written": "99%"
+    },
+    {
+      "text": "Billions of words per hour",
+      "value": "billions of words per hour",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "it is in the order of billions of words per hour",
+      "as_written": "billions"
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "51fe45173a0340ce"
+}
