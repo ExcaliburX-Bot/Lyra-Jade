@@ -190,5 +190,65 @@
     "reason": "原站拒绝程序抓取（HTTP 403），自动跳过",
     "title": "Midjourney 发布 Niji 8：历代最快的 Niji，编辑功能接替角色参考 cref",
     "at": "2026-11-25T20:05:20.522Z"
+  },
+  {
+    "id": "d0a3a7f662",
+    "reason": "IBM Research 的工程教程：用现有开源 CUGA 和语音接口搭了一个农业语音助手演示，没有新模型、新产品发布或可核对的实证研究数据",
+    "title": "An Indic Voice Agent with CUGA",
+    "at": "2026-11-26T01:57:23.052Z"
+  },
+  {
+    "id": "a2040dd8e4",
+    "reason": "同一事件已写过（claude-ship-beta-launch）。这是 Claude Ship 上线后的使用指南（页面日期 Nov 24, 2026），不是新发布",
+    "title": "Claude Ship 指南：自动完成从代码检查、自动改错到按规则放行的全流程",
+    "at": "2026-11-26T01:57:23.093Z"
+  },
+  {
+    "id": "9be79e84af",
+    "reason": "官方页面日期 November 17, 2026，已超过 72 小时",
+    "title": "Mirelo 发布 Sound Agent：一句话给视频加音效、去配乐、拆人声，还能配成 32 种语言",
+    "at": "2026-11-26T01:57:23.134Z"
+  },
+  {
+    "id": "19739ec972",
+    "reason": "Higgsfield 产品使用教程，不是新模型或新产品发布；页面正文未见发布日期，候选标注 2026-11-17，已超过 72 小时",
+    "title": "Higgsfield 发布 AI 品牌吉祥物教程：不训练模型，靠固定描述和三张参考表画同一只熊",
+    "at": "2026-11-26T01:57:23.172Z"
+  },
+  {
+    "id": "de5cd1a6d5",
+    "reason": "官方页面日期 November 22, 2026，已超过 72 小时；且是首席科学家的立场文章，不是新产品或带完整方法的实证研究",
+    "title": "Perplexity and Intelligence",
+    "at": "2026-11-26T01:57:23.213Z"
+  },
+  {
+    "id": "3ea993db7e",
+    "reason": "官方页面日期 November 20, 2026，已超过 72 小时",
+    "title": "Combatting adversarial distillation",
+    "at": "2026-11-26T01:57:23.250Z"
+  },
+  {
+    "id": "d15c456432",
+    "reason": "OpenAI 客户案例（Customer stories：Hebbia 如何使用 GPT-6 Astra），按规范不写；官方页面日期 November 20, 2026，已超过 72 小时",
+    "title": "Hebbia sees improvements in financial research with GPT-6 Astra",
+    "at": "2026-11-26T01:57:23.292Z"
+  },
+  {
+    "id": "6687f7be62",
+    "reason": "官方页面日期 November 19, 2026，已超过 72 小时",
+    "title": "How OpenAI’s Performance Factory keeps ChatGPT fast",
+    "at": "2026-11-26T01:57:23.332Z"
+  },
+  {
+    "id": "4b08ec5026",
+    "reason": "官方页面日期 November 19, 2026，已超过 72 小时；且是业务学习指南/参考架构，不是新发布",
+    "title": "Deploying Daybreak Red",
+    "at": "2026-11-26T01:57:23.369Z"
+  },
+  {
+    "id": "cb99e2baa6",
+    "reason": "演示页（Watch a walkthrough），不是发布稿；候选标注 2026-11-19，已超过 72 小时",
+    "title": "See PR scans in action",
+    "at": "2026-11-26T01:57:23.410Z"
   }
 ]
