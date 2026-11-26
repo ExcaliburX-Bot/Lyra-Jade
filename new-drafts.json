@@ -1,10 +1,10 @@
 [
   {
-    "slug": "where-scientists-draw-the-line-on-ai-agents",
-    "title": "科学家给 AI 科研代理划界线：17 位受访者总结出 5 个信任维度",
-    "file": "content/articles/where-scientists-draw-the-line-on-ai-agents.json",
-    "errors": 1,
-    "warnings": 1,
+    "slug": "perplexity-time-machine-api",
+    "title": "Perplexity 上线 Time Machine：API 可按日期看网页历史，最远 365 天",
+    "file": "content/articles/perplexity-time-machine-api.json",
+    "errors": 0,
+    "warnings": 0,
     "provider": "deepseek",
     "model": "deepseek-v4-pro"
   }
