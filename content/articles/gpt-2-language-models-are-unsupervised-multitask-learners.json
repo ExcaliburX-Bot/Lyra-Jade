@@ -1,0 +1,1267 @@
+{
+  "slug": "gpt-2-language-models-are-unsupervised-multitask-learners",
+  "category": "paper",
+  "publisher": "Radford 等 · OpenAI",
+  "date": "2019-02-14",
+  "title": "精读《GPT-2》：不微调，只给一段提示，语言模型自己学会了做任务",
+  "summary": "GPT-2 把 GPT-1 放大到 15 亿参数、换成 40 GB 的网页文本，然后不再微调：把任务写成提示，模型就能零样本做阅读理解、摘要、翻译和问答。我们拆开“任务也是文本”的核心想法、WebText 和字节级 BPE、各任务的提示写法和成绩，再看论文怎样检查背题，以及它算错的参数量。",
+  "ai_summary": "《Language Models are Unsupervised Multitask Learners》（OpenAI，2019）主张，在足够大且多样的文本上训练的语言模型，会在没有明确监督的情况下学会许多任务。作者用 Reddit 点赞外链构建了 40 GB 的 WebText，训练了最大 15 亿参数的 GPT-2，结构沿用 GPT-1 并改为前置层归一化、字节级 BPE、1024 上下文。不微调、只用提示，GPT-2 在 8 个语言建模数据集中的 7 个上零样本刷新纪录，CoQA 阅读理解 55 F1，但摘要、翻译和问答仍很初级。所有任务都随模型变大而提升，最大的模型仍欠拟合。",
+  "brief": [
+    "问题：每个任务都要一套标注数据，多任务学习难以扩展；能否让模型从自然语言本身学会任务？",
+    "方法：在 40 GB 的 WebText 上训练最大 15 亿参数的 Transformer 解码器，不微调，把任务写成提示让它接着写。",
+    "结果：8 个语言建模数据集中 7 个零样本刷新纪录；CoQA 55 F1；摘要、翻译、问答还很初级，但都随模型变大稳步提升。",
+    "局限：零样本离实用还远，论文报告的参数量算错；GPT-3 用少样本提示和更大规模把这条路走通。"
+  ],
+  "paper": {
+    "title": "Language Models are Unsupervised Multitask Learners",
+    "authors": "Alec Radford, Jeffrey Wu, Rewon Child, David Luan, Dario Amodei, Ilya Sutskever",
+    "org": "OpenAI",
+    "venue": "OpenAI 预印本",
+    "year": 2019,
+    "url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf"
+  },
+  "cover": {
+    "headline": "GPT-2 原论文精读",
+    "highlight": "不微调，只给一段提示",
+    "big": {
+      "value": "15",
+      "unit": "亿参数",
+      "label": "GPT-2 的规模，是 GPT-1 的十几倍"
+    }
+  },
+  "sections": [
+    {
+      "h": "先说结论：这篇论文到底做了什么",
+      "blocks": [
+        {
+          "p": "2019 年 2 月，OpenAI 的 Alec Radford、Jeffrey Wu、Rewon Child、David Luan、Dario Amodei 和 Ilya Sutskever 发布了这篇论文。和上一篇 GPT-1 一样，它没有发在 arXiv 上，而是 OpenAI 网站上的一份 PDF。论文里最大的那个模型叫 **GPT-2**，有 15 亿参数，是 GPT-1 的十几倍。"
+        },
+        {
+          "p": "它的核心主张写在标题里：**语言模型是无监督的多任务学习者**。只要在足够大、足够多样的文本上训练“猜下一个词”，模型就会**自己学会很多任务**：阅读理解、摘要、翻译、问答，而且不需要任何微调，也不需要改模型结构，只要把任务写成一段文字让它接着往下写。这种用法叫**零样本**（zero-shot）。"
+        },
+        {
+          "p": "为此，作者从 Reddit 上被点赞的链接里爬了 800 多万篇网页，共 40 GB 文本，叫 WebText。结果，GPT-2 在 8 个语言建模数据集中的 7 个上零样本刷新了纪录；看着一篇文章和对话历史，它在 CoQA 阅读理解上拿到 55 F1，追平或超过了 4 个有监督基线中的 3 个，而那些基线用了 12.7 万多条人工标注的问答。在摘要、翻译、问答上，它离实用还差得远，但每一项都随着模型变大而稳步提升。"
+        },
+        {
+          "p": "这篇论文在主线上承上启下：GPT-1 证明了“预训练 ＋ 微调”可行，并在结尾的零样本实验里露出苗头；GPT-2 把这个苗头放大成主角，**第一次把“不微调、直接用提示做任务”当作正经的研究方向**；一年后的 GPT-3 再把规模放大 100 多倍，用“少样本提示”让这件事真正好用起来。"
+        },
+        {
+          "callout": {
+            "kind": "takeaway",
+            "title": "一句话版本",
+            "text": "GPT-2 ＝ GPT-1 的结构稍作修改 ＋ 放大到 15 亿参数 ＋ 换成 40 GB 的高质量网页文本。不微调，只把任务写成文字前缀（比如在文章后面加“TL;DR:”让它写摘要），模型就能做阅读理解、摘要、翻译和问答。效果随模型大小稳定上升，最大的模型仍然欠拟合。"
+          }
+        },
+        {
+          "callout": {
+            "kind": "prereq",
+            "title": "读这篇需要的三个小概念",
+            "text": "不懂也没关系，这三条够用了：",
+            "list": [
+              "**GPT-1**：在书上预训练、再微调到具体任务的 Transformer 解码器。详见本主线上一篇《GPT-1》。",
+              "**零样本**：模型没见过这个任务的任何训练样本，也不更新参数，直接上场做题。",
+              "**困惑度（PPL）**：语言模型对文本有多“意外”的指标。困惑度 10 大致相当于每一步都在 10 个词里犹豫，越低越好。"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "问题：每个任务都要一套标注数据，走不远",
+      "blocks": [
+        {
+          "p": "论文开头的判断很直接：当时的机器学习系统更像“狭窄的专家”，而不是“能干的通才”。主流做法是为每个任务收集一批示范、训练一个模型去模仿，再在同分布的测试集上评估。这样的系统对数据分布和任务描述的细微变化都很脆弱。"
+        },
+        {
+          "p": "多任务学习是一条出路，但作者算了一笔账：从元学习的角度看，每个（数据集，目标）组合只相当于一个训练样本；当时最大的多任务研究也只用了 10 个和 17 个这样的组合，而现有的学习方法往往需要成百上千个样本才能学到能泛化的东西。靠人工继续堆数据集和设计目标，很难扩展到需要的程度。"
+        },
+        {
+          "p": "所以论文换了个思路：**能不能让模型从自然语言本身学会任务，而不需要人告诉它哪部分是输入、哪部分是答案？**"
+        }
+      ]
+    },
+    {
+      "h": "核心想法：任务本身也可以写成文字",
+      "blocks": [
+        {
+          "p": "论文先把“做一个任务”写成概率：学一个任务，就是估计条件分布 p(output | input)。但一个通用系统同一个输入可能要做不同的任务，所以它应该估计 **p(output | input, task)**：除了输入，还要知道要做什么。"
+        },
+        {
+          "p": "以前，“要做什么”是靠模型结构（每个任务一个专用的编码器、解码器）或训练算法来告诉模型的。论文指出，**语言本身就能灵活地描述任务、输入和输出**。翻译样本可以写成一串文字：（翻译成法语，英文句子，法文句子）；阅读理解样本可以写成：（回答问题，文章，问题，答案）。"
+        },
+        {
+          "formula": {
+            "expr": "p(x) ＝ Π_{i=1}^{n} p(s_{i} | s_{1}, …, s_{i−1})",
+            "parts": [
+              {
+                "sym": "x",
+                "desc": "一段文本，由词元 s_{1}, …, s_{n} 组成"
+              },
+              {
+                "sym": "p(s_{i} | s_{1}, …, s_{i−1})",
+                "desc": "已知前面所有词元，下一个是 s_{i} 的概率。这就是语言模型要学的东西"
+              },
+              {
+                "sym": "Π",
+                "desc": "整段文本的概率等于每一步概率的连乘。它让模型不仅能给任意文本打分，也能一个词一个词地生成"
+              }
+            ],
+            "note": "关键在于：如果任务、输入、答案都写在同一段文本里，那么“预测答案”只是“预测下一个词”的一部分。论文的说法是，有监督的目标和无监督的目标相同，只是在序列的一个子集上计算，所以无监督目标的全局最优，也就是有监督目标的全局最优。"
+          }
+        },
+        {
+          "callout": {
+            "kind": "intuition",
+            "title": "网上到处都是“天然的示范”",
+            "text": "论文在 WebText 里找到了许多自然出现的翻译示范，比如“正如法国人说的：Je ne suis pas un imbecile（我不是傻瓜）”，或者一段英文报道里引用一句法语再附上英文翻译。一个想把下一个词猜准的模型，如果足够大，就会顺带学会“看到法语后面跟着‘意思是’，就该接一句英文翻译”。作者的猜想是：只要容量够大，语言模型就会去推断并执行文本里展示的任务，只是为了把它们预测得更准。"
+          }
+        },
+        {
+          "p": "论文坦言这只是理论上成立。真正的问题是：实际训练时，能不能把无监督目标优化到足够好？初步实验显示，足够大的语言模型确实能在这种设定下学会多任务，只是比直接监督慢得多。"
+        }
+      ]
+    },
+    {
+      "h": "数据：WebText，让人类先帮忙筛一遍",
+      "blocks": [
+        {
+          "p": "要让模型见识尽可能多的任务示范，数据得**又大又杂**。此前的语言模型大多只在单一领域训练：新闻、维基百科或小说。网页爬虫数据（如 Common Crawl）规模大得多，但质量很差，有研究发现其中大量文档“内容几乎无法理解”。"
+        },
+        {
+          "p": "作者的折中办法是：只爬**被人筛选过**的网页。他们抓取了 Reddit 上所有获得至少 3 个 karma（点赞）的外链，把这当作一个粗略的信号：至少有人觉得这个链接有意思、有用，或者好笑。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "WebText：4500 万个链接，清理后 800 多万篇文档、40 GB",
+            "subtitle": "根据论文第 2.1 节整理",
+            "columns": [
+              "步骤",
+              "做法"
+            ],
+            "rows": [
+              [
+                "来源",
+                "Reddit 上至少获得 3 个 karma 的所有外链，共 4500 万个"
+              ],
+              [
+                "时间范围",
+                "不含 2017 年 12 月之后创建的链接"
+              ],
+              [
+                "提取正文",
+                "用 Dragnet 和 Newspaper 两个工具从 HTML 中抽取文本"
+              ],
+              [
+                "清理",
+                "去重和基于启发式规则的清洗，剩下 800 多万篇文档、40 GB 文本"
+              ],
+              [
+                "刻意去掉",
+                "所有维基百科文档：因为很多评测数据集也来自维基百科，去掉它可以减少训练和测试的重叠"
+              ]
+            ]
+          }
+        },
+        {
+          "p": "**输入表示**：为了让模型能给**任何字符串**打分，GPT-2 改用**字节级的 BPE**。普通的 BPE 在 Unicode 字符上工作，要覆盖所有 Unicode 字符，基础词表就超过 13 万；字节级 BPE 的基础词表只要 256 个字节。但直接在字节上做 BPE 会产生 dog、dog.、dog!、dog? 这样大量重复的词元，浪费词表，所以论文规定不同类别的字符（字母、标点等）之间不合并，空格除外。最终词表是 50257 个。"
+        },
+        {
+          "p": "这样做的好处是：模型可以直接在任何语言建模数据集上评测，不管它们怎么预处理、怎么分词、词表多大。WebText 里极其罕见的 <UNK> 标记，400 亿字节里只出现了 26 次。"
+        }
+      ]
+    },
+    {
+      "h": "模型：GPT-1 的结构，四个尺寸",
+      "blocks": [
+        {
+          "p": "模型基本沿用 GPT-1，只改了几处："
+        },
+        {
+          "list": [
+            "**层归一化挪到每个子块的输入处**（类似“预激活”的残差网络），并在最后一个自注意力块之后再加一层归一化。这种“前置归一化”后来成了大模型的标准做法，能让很深的网络训练更稳定。",
+            "**残差层的初始化按深度缩小**：初始权重乘以 1/√N，N 是残差层的数量。层数越多，残差路径上累积的数值越多，缩小初始值可以防止数值越加越大。",
+            "**词表扩大到 50257**，**上下文从 512 个词元扩到 1024**，批大小增加到 512。"
+          ]
+        },
+        {
+          "p": "论文训练了四个大小大致按对数均匀分布的模型，最小的相当于原版 GPT，第二小的相当于最大的 BERT，最大的就是 GPT-2。每个模型的学习率都按 WebText 上 5% 留出数据的困惑度手动调过。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "四个模型：论文写的参数量，和按配置算出来的不一样",
+            "subtitle": "“按配置估算”由本站计算：每层约 12 × d_{model}^{2}，加上词表 50257 × d_{model} 和位置 1024 × d_{model}，忽略层归一化等小项。琥珀色是 GPT-2",
+            "columns": [
+              "论文写的参数量",
+              "层数",
+              "d_{model}",
+              "Transformer 块",
+              "词元 ＋ 位置嵌入",
+              "按配置估算"
+            ],
+            "rows": [
+              [
+                "117M",
+                "12",
+                "768",
+                "8490 万",
+                "3940 万",
+                "约 1.24 亿"
+              ],
+              [
+                "345M",
+                "24",
+                "1024",
+                "3.02 亿",
+                "5260 万",
+                "约 3.55 亿"
+              ],
+              [
+                "762M",
+                "36",
+                "1280",
+                "7.08 亿",
+                "6560 万",
+                "约 7.73 亿"
+              ],
+              [
+                "1542M（GPT-2）",
+                "48",
+                "1600",
+                "14.75 亿",
+                "8200 万",
+                "约 15.57 亿"
+              ]
+            ],
+            "highlight": {
+              "row": 3
+            },
+            "note": "四个模型按配置算都比论文写的大。最小模型的 117M 和按 GPT-1 的配置（4 万词表、512 上下文）算出的约 1.16 亿很接近，看起来是沿用了 GPT-1 的数字，没算上更大的词表和更长的上下文。OpenAI 后来在开源代码的说明里承认原来的参数量算错了，把它们改称 124M、355M、774M 和 1.5B，与这里的估算一致。"
+          }
+        },
+        {
+          "p": "论文还特别指出：**所有模型都仍然欠拟合 WebText**，训练得更久，留出数据上的困惑度还在下降。图 4 里，训练集和测试集的困惑度几乎一样，并随模型变大一起下降，说明即便是 GPT-2，离“背下训练数据”也还远。"
+        },
+        {
+          "quiz": {
+            "q": "GPT-2 为什么用字节级 BPE，而不是在 Unicode 字符上做 BPE？",
+            "options": [
+              "字节级更快",
+              "Unicode 字符太多，基础词表会超过 13 万；字节只有 256 种，又能表示任何字符串",
+              "为了让模型只学英语",
+              "为了减少参数"
+            ],
+            "answer": 1,
+            "why": "目标是让模型能给任意文本计算概率。字节级的基础词表只有 256 个，不会有词表外的情况，再通过合并学出常见的词片段。论文还加了一条规则，避免把 dog 和它后面的标点合成大量重复词元。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "怎样不微调就让它做任务：把任务写成提示",
+      "blocks": [
+        {
+          "p": "所有结果都是零样本的：不更新任何参数，只是精心安排模型看到的上文，再让它接着生成或打分。不同任务用不同的写法："
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "同一个语言模型，靠不同的“上文”做不同的任务",
+            "subtitle": "根据论文第 3 节整理",
+            "columns": [
+              "任务",
+              "给模型看什么",
+              "怎么得到答案"
+            ],
+            "rows": [
+              [
+                "阅读理解（CoQA）",
+                "文章 ＋ 对话历史 ＋ 最后写一个“A:”",
+                "贪心解码，接着写出的就是答案"
+              ],
+              [
+                "摘要（CNN / Daily Mail）",
+                "文章 ＋ “TL;DR:”",
+                "用 top-k 采样（k ＝ 2）生成 100 个词元，取前 3 句"
+              ],
+              [
+                "翻译（WMT'14 英法）",
+                "几组“英文句子 ＝ 法文句子”的示例 ＋ 一个英文句子 ＋ “＝”",
+                "贪心解码，取生成的第一句"
+              ],
+              [
+                "问答（Natural Questions）",
+                "几组问答示例 ＋ 新问题",
+                "生成简短答案"
+              ],
+              [
+                "完形填空（CBT、Winograd）",
+                "把每个候选词分别填进句子",
+                "比较整句的概率，选最高的"
+              ]
+            ]
+          }
+        },
+        {
+          "callout": {
+            "kind": "intuition",
+            "title": "TL;DR 是网上的“天然提示”",
+            "text": "TL;DR 是 Too Long; Didn't Read（太长不看）的缩写，网上的人常在长文末尾写上它，后面跟一两句总结。模型在 WebText 里见过无数次这种格式，所以看到 TL;DR: 就知道该写总结了。论文做了对照：去掉 TL;DR 这个提示，摘要的综合分数掉了 6.4 分，说明用自然语言就能唤起模型的特定行为。今天的“提示工程”，可以在这里找到最早的影子之一。"
+          }
+        },
+        {
+          "quiz": {
+            "q": "论文说“去掉 TL;DR: 提示后摘要分数下降 6.4 分”，这说明了什么？",
+            "options": [
+              "TL;DR 是一个特殊的控制符号",
+              "模型从训练数据中学会了 TL;DR 后面通常是总结，用自然语言就能指定任务",
+              "摘要任务需要微调",
+              "ROUGE 分数不可靠"
+            ],
+            "answer": 1,
+            "why": "TL;DR 在模型眼里只是普通文本，没有任何特殊设计。模型从网页里学到了“TL;DR 后面接一段总结”这个规律，于是一句提示就能切换它的行为。这正是“语言本身可以指定任务”的证据。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "结果一：语言建模，8 个数据集里 7 个刷新纪录",
+      "blocks": [
+        {
+          "p": "先测模型最本行的事：语言建模。WebText 上训练的模型直接在其他语言建模基准上评测，一点不训练、不微调。这些数据集的文本经过各种规范化处理（拆开的标点和缩写、打乱的句子、甚至 <UNK> 标记），对 GPT-2 来说是明显的“分布外”。论文用可逆的去分词器去掉这些痕迹，对 GPT-2 有 2.5 到 5 的困惑度改善。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "零样本语言建模：除了 1BW，GPT-2 全部超过此前最好",
+            "subtitle": "来自论文表 3。PPL 是困惑度（越低越好），ACC 是准确率 %，BPB / BPC 是每字节 / 每字符比特数（越低越好）。蓝色列是 GPT-2",
+            "columns": [
+              "数据集（指标）",
+              "此前最好",
+              "117M",
+              "1542M（GPT-2）"
+            ],
+            "rows": [
+              [
+                "LAMBADA（PPL）",
+                "99.8",
+                "35.13",
+                "8.63"
+              ],
+              [
+                "LAMBADA（ACC）",
+                "59.23",
+                "45.99",
+                "63.24"
+              ],
+              [
+                "CBT 普通名词（ACC）",
+                "85.7",
+                "87.65",
+                "93.30"
+              ],
+              [
+                "CBT 命名实体（ACC）",
+                "82.3",
+                "83.4",
+                "89.05"
+              ],
+              [
+                "WikiText-2（PPL）",
+                "39.14",
+                "29.41",
+                "18.34"
+              ],
+              [
+                "PTB（PPL）",
+                "46.54",
+                "65.85",
+                "35.76"
+              ],
+              [
+                "enwik8（BPB）",
+                "0.99",
+                "1.16",
+                "0.93"
+              ],
+              [
+                "text8（BPC）",
+                "1.08",
+                "1.17",
+                "0.98"
+              ],
+              [
+                "WikiText-103（PPL）",
+                "18.3",
+                "37.50",
+                "17.48"
+              ],
+              [
+                "1BW（PPL）",
+                "21.8",
+                "75.20",
+                "42.16"
+              ]
+            ],
+            "highlight": {
+              "col": 3
+            },
+            "note": "在 Penn Treebank 和 WikiText-2 这类只有一两百万词元训练数据的小数据集上提升最大；1BW 是唯一没超过的，论文认为它规模最大、而且按句子打乱，破坏了全部长距离结构。"
+          }
+        },
+        {
+          "p": "**LAMBADA** 专门考长距离依赖：要预测句子的最后一个词，而人至少要看前面 50 个词元的上下文才能猜对。GPT-2 把困惑度从 99.8 降到 8.6，准确率从 19% 提到 52.66%。论文检查错误后发现，大多数错误答案都是通顺的续写，只是不能作为句子的**最后一个词**；加一个过滤停用词的规则后，准确率提到 63.24%，比此前最好高 4 个百分点。"
+        },
+        {
+          "p": "**Winograd 常识推理**：GPT-2 的准确率为 70.70%，比此前最好提高 7 个百分点。但论文提醒，这个数据集只有 273 道题。"
+        }
+      ]
+    },
+    {
+      "h": "结果二：零样本做任务，有的接近，有的还很差",
+      "blocks": [
+        {
+          "fig": {
+            "type": "table",
+            "title": "五类任务的零样本成绩：阅读理解接近有监督模型，摘要和翻译还很初级",
+            "subtitle": "来自论文第 3.5–3.8 节和表 4。琥珀色是表现最好的阅读理解",
+            "columns": [
+              "任务",
+              "GPT-2 零样本",
+              "对照"
+            ],
+            "rows": [
+              [
+                "CoQA 阅读理解（F1）",
+                "55",
+                "4 个有监督基线中追平或超过 3 个；最好的 BERT 系统接近人类的 89"
+              ],
+              [
+                "CNN / Daily Mail 摘要（ROUGE 平均）",
+                "21.40",
+                "随机抽 3 句是 20.98，取前 3 句是 31.55，此前最好 32.75"
+              ],
+              [
+                "法译英（BLEU）",
+                "11.5",
+                "当时最好的无监督翻译方法是 33.5"
+              ],
+              [
+                "英译法（BLEU）",
+                "5",
+                "比用双语词典逐词替换还略差"
+              ],
+              [
+                "Natural Questions 问答（完全匹配）",
+                "4.1%",
+                "按问题类型回答最常见答案的简单基线是 1.0%；检索 ＋ 抽取的系统是 30% 到 50%"
+              ]
+            ],
+            "highlight": {
+              "row": 0
+            }
+          }
+        },
+        {
+          "p": "**阅读理解**最接近实用：看着文章、对话历史和一个“A:”，GPT-2 贪心解码就能拿到 55 F1，而对比的有监督系统用了 12.7 万多条人工问答训练。不过论文检查后发现，它常常用简单的检索式启发，比如被问“谁”的时候，就从文章里挑一个人名作答。"
+        },
+        {
+          "p": "**摘要**看起来像摘要，但经常只总结文章的最后部分，或者搞错细节（比如车祸里有几辆车、标志是在帽子上还是衬衫上）。按 ROUGE 分数，它只比随机抽 3 句话略好。"
+        },
+        {
+          "p": "**翻译**的结果最让作者意外：他们特意把非英语网页从 WebText 里过滤掉了，事后用语言检测器只找到约 10 MB 的法语，比以往无监督翻译研究常用的法语单语语料小约 500 倍。即便如此，GPT-2 法译英拿到 11.5 BLEU，超过了好几个无监督翻译的基线。英译法只有 5 BLEU，因为它的法语能力远弱于英语能力。"
+        },
+        {
+          "p": "**问答**用来测模型的参数里存了多少知识。GPT-2 完全匹配只有 4.1%，但最小的模型连按问题类型回答最常见答案的 1.0% 基线都没超过，GPT-2 答对的数量是最小模型的 5.3 倍。它的置信度也比较可靠：在它最有把握的 1% 问题上，准确率达到 63.1%。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "GPT-2 最有把握的 30 个回答里，错了 8 个",
+            "subtitle": "来自论文表 5（Natural Questions 开发集），这里选了 8 行；对错由论文标注，概率是 GPT-2 给自己答案的概率",
+            "columns": [
+              "问题",
+              "GPT-2 的回答",
+              "论文标注",
+              "概率"
+            ],
+            "rows": [
+              [
+                "Who wrote the book the origin of species?",
+                "Charles Darwin",
+                "✓",
+                "83.4%"
+              ],
+              [
+                "When was the first star wars film released?",
+                "1977",
+                "✓",
+                "71.4%"
+              ],
+              [
+                "What is the most common blood type in sweden?",
+                "A",
+                "✗",
+                "70.6%"
+              ],
+              [
+                "Largest state in the us by land mass?",
+                "California",
+                "✗（应为阿拉斯加）",
+                "59.2%"
+              ],
+              [
+                "Who plays ser davos in game of thrones?",
+                "Peter Dinklage",
+                "✗",
+                "52.1%"
+              ],
+              [
+                "Who won the most mvp awards in the nba?",
+                "Michael Jordan",
+                "✗",
+                "50.2%"
+              ],
+              [
+                "Who is the first president to be impeached?",
+                "Andrew Johnson",
+                "✓",
+                "48.3%"
+              ],
+              [
+                "Who played john connor in the original terminator?",
+                "Arnold Schwarzenegger",
+                "✗",
+                "45.2%"
+              ]
+            ],
+            "highlight": {
+              "row": 3
+            },
+            "note": "论文脚注里还有一段小插曲：第一作者 Alec 自认为很擅长冷知识，在同样的设定下随机抽 100 题测试自己，答对 17 题。他又补了一句：其实只对了 14 题，另外 3 题“本该答对”，但被题目泄露了答案。"
+          }
+        },
+        {
+          "p": "所有任务有一个共同点：**成绩随模型大小稳步上升**。论文图 1 显示，阅读理解、翻译、摘要、问答的零样本表现都随参数量增加而提高，摘要里称之为“对数线性”的提升。这是 GPT-3 和《Scaling Laws》后来系统研究的现象。"
+        }
+      ]
+    },
+    {
+      "h": "是学会了，还是背下来了",
+      "blocks": [
+        {
+          "p": "训练数据这么大，测试题会不会早就在训练数据里出现过？论文为此专门做了重叠分析：把 WebText 训练集的所有 8 元组（连续 8 个词）放进布隆过滤器，再检查各个测试集里有多少 8 元组也出现在训练集中。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "测试集和 WebText 的重叠，大多不比它们和自己训练集的重叠更多",
+            "subtitle": "测试集里的 8 元组有多少也出现在训练数据中，来自论文表 6。琥珀色是 1BW",
+            "columns": [
+              "数据集",
+              "和自己的训练集重叠",
+              "和 WebText 训练集重叠"
+            ],
+            "rows": [
+              [
+                "PTB",
+                "2.67%",
+                "0.88%"
+              ],
+              [
+                "WikiText-2",
+                "0.66%",
+                "1.63%"
+              ],
+              [
+                "enwik8",
+                "7.50%",
+                "6.31%"
+              ],
+              [
+                "text8",
+                "2.34%",
+                "3.94%"
+              ],
+              [
+                "WikiText-103",
+                "9.09%",
+                "2.42%"
+              ],
+              [
+                "1BW",
+                "13.19%",
+                "3.75%"
+              ]
+            ],
+            "highlight": {
+              "row": 5
+            },
+            "note": "常见语言建模测试集和 WebText 的重叠在 1% 到 6% 之间，平均 3.2%；和它们自己的训练集平均重叠 5.9%，反而更高。1BW 和自己训练集的重叠接近 13.2%。论文还发现 WikiText-103 的测试集里有一篇文章也在它自己的训练集里。"
+          }
+        },
+        {
+          "list": [
+            "**LAMBADA**：平均重叠 1.2%。去掉所有有重叠的样本重新计算，困惑度从 8.6 变成 8.7，准确率从 63.2% 降到 62.9%，影响很小。",
+            "**CoQA**：新闻类文章约 15% 出现在 WebText 中，模型在这些文章上的 F1 高约 3 分；整体看，重叠带来约 0.5 到 1.0 的 F1 提升。CoQA 发布于 WebText 的截止日期之后，问题和答案本身不在训练数据里。",
+            "**Winograd**：只有 10 道题和 WebText 有 8 元组重叠，其中 2 个是误报。"
+          ]
+        },
+        {
+          "p": "论文的结论是：数据重叠带来了**小而稳定**的好处，但大多数数据集的重叠并不比它们原本训练集和测试集之间的重叠更严重。论文建议，以后构建 NLP 数据集时，用 n 元组重叠去重应当成为一个必要的检查步骤。"
+        }
+      ]
+    },
+    {
+      "h": "几处值得留意的细节",
+      "blocks": [
+        {
+          "list": [
+            "**参数量算错了**：论文表 2 的 117M、345M、762M、1542M 都比按配置算出的小（见上文的估算表）。最小模型的 117M 和按 GPT-1 的配置估算的大小很接近，很可能是没把更大的词表和更长的上下文算进去。",
+            "**数据规模的两种说法**：第 2.1 节说 WebText 是 40 GB 文本，第 3.1 节说 <UNK> 在“400 亿字节”中出现了 26 次。40 GB 约等于 400 亿字节，两者一致，只是单位不同，读的时候不要误以为是两份数据。",
+            "**“7 out of 8”的口径**：表 3 有 10 列，但 LAMBADA 的困惑度和准确率算一个数据集，CBT 的两种题型也算一个，所以是 8 个数据集，GPT-2 只在 1BW 上没超过此前最好。",
+            "**这篇论文其实没有给出 GPT-2 的发布细节**：发布时 OpenAI 因为担心被滥用（比如批量生成假新闻），起初只公开了最小的模型，几个月里分批放出更大的版本，2019 年 11 月才公开完整的 15 亿参数模型。这个“分阶段发布”的决定当时引起了很大争议，但论文本身没有讨论。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "局限，以及之后的故事",
+      "blocks": [
+        {
+          "p": "论文的讨论部分很克制："
+        },
+        {
+          "list": [
+            "**零样本离实用还很远**：阅读理解有竞争力，摘要只是“定性上像”，按指标仍很初级。论文写道，从实际应用的角度看，GPT-2 的零样本表现还远远不能用。",
+            "**很多任务仍是随机水平**：作者承认，肯定还有很多实际任务上 GPT-2 并不比随机猜好；即使在问答和翻译上，也只有模型足够大时才开始超过简单的基线。",
+            "**单向的局限**：论文提到，还不清楚 GPT-2 更多的数据和容量，能否弥补 BERT 已经证明的单向表示的低效。他们打算在 GLUE 等基准上微调 GPT-2 来回答这个问题。"
+          ]
+        },
+        {
+          "p": "**之后的故事**。论文结论说，在足够大且多样的数据上训练的大容量模型，会开始在没有明确监督的情况下学会大量任务。一年后，GPT-3（2020）把这句话推到了极致：1750 亿参数，并且用**少样本提示**（在上文里放几个例子）代替零样本，在许多任务上接近甚至超过了微调模型。同一年的《Scaling Laws》则把“越大越好”变成了可以预测的幂律。"
+        },
+        {
+          "p": "GPT-2 自己也留下了几个持久的影响：前置层归一化成为大模型的标准结构；字节级 BPE 被许多后续模型沿用；“用一段提示唤起任务”的思路，后来发展成了整个提示工程。"
+        }
+      ]
+    },
+    {
+      "h": "检验一下：你吃透了吗",
+      "blocks": [
+        {
+          "quiz": {
+            "q": "论文为什么说“有监督目标的全局最优也是无监督目标的全局最优”？",
+            "options": [
+              "因为两者用同一个优化器",
+              "因为如果任务、输入和答案都写在同一段文本里，预测答案只是预测下一个词的一部分",
+              "因为有监督数据是无监督数据的子集",
+              "因为语言模型不需要标签"
+            ],
+            "answer": 1,
+            "why": "当答案也是文本的一部分时，有监督目标就是“在答案那几个位置上预测下一个词”，它是语言模型目标的一个子集。论文同时提醒，这只是理论上成立，实际能不能优化到位才是问题，初步实验显示学得比直接监督慢得多。"
+          }
+        },
+        {
+          "quiz": {
+            "q": "GPT-2 在 LAMBADA 上的很多错误答案都是“通顺的续写，但不是句子的最后一个词”。论文怎样改进？",
+            "options": [
+              "微调模型",
+              "加一个过滤停用词的规则，近似“必须是句末最后一个词”这个约束",
+              "换一个更大的模型",
+              "只允许输出上下文里出现过的词"
+            ],
+            "answer": 1,
+            "why": "论文加了停用词过滤，准确率从 52.66% 提到 63.24%。而此前最好的方法限制只能输出上下文里出现过的词，论文发现这对 GPT-2 反而有害，因为 19% 的答案并不在上下文里。"
+          }
+        },
+        {
+          "p": "读完这篇，你应该能回答下面这些问题："
+        },
+        {
+          "list": [
+            "p(output | input, task) 是什么意思？为什么说语言可以描述任务？",
+            "WebText 是怎么构建的？为什么去掉了维基百科？",
+            "字节级 BPE 解决了什么问题？",
+            "GPT-2 在结构上对 GPT-1 做了哪三处修改？",
+            "零样本做摘要、翻译、阅读理解时，分别给模型看什么？",
+            "哪些任务表现接近实用？哪些还很差？",
+            "论文怎样检查测试数据和训练数据的重叠？结论是什么？",
+            "论文报告的参数量为什么和按配置算出的不一致？"
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Language Models are Unsupervised Multitask Learners（OpenAI 预印本）",
+      "publisher": "Radford 等 · OpenAI",
+      "date": "2019-02-14",
+      "url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf"
+    },
+    "note": "本文依据 OpenAI 发布的论文 PDF（2019 年 2 月）。参数量的估算由本站按论文配置计算；OpenAI 后来更正参数量、以及 GPT-2 分阶段发布的经过，来自 OpenAI 的公开说明，不在这篇论文里。"
+  },
+  "claims": [
+    {
+      "text": "15 亿参数",
+      "value": "1.5B",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "Our largest model, GPT-2, is a 1.5B parameter Transformer",
+      "as_written": "15 亿"
+    },
+    {
+      "text": "十几倍（over an order of magnitude）",
+      "value": "order of magnitude",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "has over an order of magnitude more parameters than GPT",
+      "as_written": "十几倍"
+    },
+    {
+      "text": "CoQA 55 F1、4 个基线中的 3 个、12.7 万",
+      "value": "55",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "the answers generated by the language model reach 55 F1 on the CoQA dataset - matching or exceeding the performance of 3 out of 4 baseline systems without using the 127,000+ training examples",
+      "as_written": "55"
+    },
+    {
+      "text": "12.7 万多条",
+      "value": "127,000+",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "without using the 127,000+ training examples",
+      "as_written": "12.7 万"
+    },
+    {
+      "text": "8 个中的 7 个",
+      "value": "7 out of 8",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "achieves state of the art results on 7 out of 8 tested language modeling datasets in a zero-shot setting but still underfits WebText",
+      "as_written": "7 个"
+    },
+    {
+      "text": "10 个和 17 个组合",
+      "value": "10 and 17",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "trained on a total of 10 and 17 (dataset, objective) pairs respectively",
+      "as_written": "10 个"
+    },
+    {
+      "text": "至少 3 个 karma",
+      "value": "3 karma",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "which received at least 3 karma",
+      "as_written": "3 个"
+    },
+    {
+      "text": "4500 万个链接",
+      "value": "45 million",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "contains the text subset of these 45 million links",
+      "as_written": "4500 万"
+    },
+    {
+      "text": "800 多万篇、40 GB",
+      "value": "8 million",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "contains slightly over 8 million documents for a total of 40 GB of text",
+      "as_written": "800 多万"
+    },
+    {
+      "text": "40 GB",
+      "value": "40 GB",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "for a total of 40 GB of text",
+      "as_written": "40 GB"
+    },
+    {
+      "text": "Unicode 基础词表超过 13 万",
+      "value": "130,000",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "This would result in a base vocabulary of over 130,000 before any multi-symbol tokens are added",
+      "as_written": "13 万"
+    },
+    {
+      "text": "字节级 256",
+      "value": "256",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "a byte-level version of BPE only requires a base vocabulary of size 256",
+      "as_written": "256"
+    },
+    {
+      "text": "词表 50257",
+      "value": "50,257",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "The vocabulary is expanded to 50,257",
+      "as_written": "50257"
+    },
+    {
+      "text": "上下文 512→1024、批大小 512",
+      "value": "1024",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "We also increase the context size from 512 to 1024 tokens and a larger batchsize of 512 is used",
+      "as_written": "1024"
+    },
+    {
+      "text": "<UNK> 400 亿字节里 26 次",
+      "value": "26 times",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "occurring only 26 times in 40 billion bytes",
+      "as_written": "26 次"
+    },
+    {
+      "text": "400 亿字节",
+      "value": "40 billion bytes",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "only 26 times in 40 billion bytes",
+      "as_written": "400 亿"
+    },
+    {
+      "text": "5% 留出数据",
+      "value": "5%",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "manually tuned for the best perplexity on a 5% held-out sample of WebText",
+      "as_written": "5%"
+    },
+    {
+      "text": "表 2：117M 12 层 768",
+      "value": "117M",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "117M",
+      "as_written": "117M"
+    },
+    {
+      "text": "345M",
+      "value": "345M",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "345M",
+      "as_written": "345M"
+    },
+    {
+      "text": "762M",
+      "value": "762M",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "762M",
+      "as_written": "762M"
+    },
+    {
+      "text": "1542M",
+      "value": "1542M",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "1542M",
+      "as_written": "1542M"
+    },
+    {
+      "text": "去分词器 2.5–5 PPL",
+      "value": "2.5 to 5",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "We observe gains of 2.5 to 5 perplexity for GPT-2 with these de-tokenizers",
+      "as_written": "2.5 到 5"
+    },
+    {
+      "text": "PTB、WikiText-2 只有一两百万训练词元",
+      "value": "1 to 2 million",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "which have only 1 to 2 million training tokens",
+      "as_written": "一两百万"
+    },
+    {
+      "text": "LAMBADA 至少 50 个词元",
+      "value": "50 tokens",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "which require at least 50 tokens of context for a human to successfully predict",
+      "as_written": "50 个"
+    },
+    {
+      "text": "LAMBADA 99.8→8.6、19%→52.66%",
+      "value": "8.6",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "GPT-2 improves the state of the art from 99.8 (Grave et al., 2016) to 8.6 perplexity and increases the accuracy of LMs on this test from 19%",
+      "as_written": "8.6"
+    },
+    {
+      "text": "LAMBADA 99.8",
+      "value": "99.8",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "from 99.8",
+      "as_written": "99.8"
+    },
+    {
+      "text": "LAMBADA 19%",
+      "value": "19%",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "from 19% (Dehghani et al., 2018) to 52.66%",
+      "as_written": "19%"
+    },
+    {
+      "text": "LAMBADA 52.66%",
+      "value": "52.66%",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "to 52.66%",
+      "as_written": "52.66%"
+    },
+    {
+      "text": "停用词过滤 63.24%、高 4%",
+      "value": "63.24%",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "further increases accuracy to 63.24%, improving the overall state of the art on this task by 4%",
+      "as_written": "63.24%"
+    },
+    {
+      "text": "高 4 个百分点",
+      "value": "4%",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "improving the overall state of the art on this task by 4%",
+      "as_written": "4 个百分点"
+    },
+    {
+      "text": "Winograd 70.70%、+7%、273 题",
+      "value": "70.70%",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "GPT-2 improves state of the art accuracy by 7%, achieving 70.70%",
+      "as_written": "70.70%"
+    },
+    {
+      "text": "Winograd +7%",
+      "value": "7%",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "improves state of the art accuracy by 7%",
+      "as_written": "7 个百分点"
+    },
+    {
+      "text": "Winograd 273",
+      "value": "273",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "The dataset is quite small with only 273 examples",
+      "as_written": "273"
+    },
+    {
+      "text": "CoQA 人类 89",
+      "value": "89 F1",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "is nearing the 89 F1 performance of humans",
+      "as_written": "89"
+    },
+    {
+      "text": "top-k k=2、100 词元",
+      "value": "k = 2",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "generate 100 tokens with Top-k random sampling (Fan et al., 2018) with k = 2",
+      "as_written": "k ＝ 2"
+    },
+    {
+      "text": "去掉提示降 6.4",
+      "value": "6.4",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "GPT-2’s performance drops by 6.4 points on the aggregate metric when the task hint is removed",
+      "as_written": "6.4 分"
+    },
+    {
+      "text": "表 4：GPT-2 21.40、随机 20.98、Lede-3 31.55、SOTA 32.75",
+      "value": "21.40",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "21.40",
+      "as_written": "21.40"
+    },
+    {
+      "text": "随机 20.98",
+      "value": "20.98",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "20.98",
+      "as_written": "20.98"
+    },
+    {
+      "text": "Lede-3 31.55",
+      "value": "31.55",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "31.55",
+      "as_written": "31.55"
+    },
+    {
+      "text": "SOTA 32.75",
+      "value": "32.75",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "32.75",
+      "as_written": "32.75"
+    },
+    {
+      "text": "英译法 5 BLEU",
+      "value": "5 BLEU",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "GPT-2 gets 5 BLEU",
+      "as_written": "5"
+    },
+    {
+      "text": "法译英 11.5",
+      "value": "11.5 BLEU",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "achieving 11.5 BLEU",
+      "as_written": "11.5"
+    },
+    {
+      "text": "无监督最好 33.5",
+      "value": "33.5 BLEU",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "the 33.5 BLEU of the current best unsupervised machine translation approach",
+      "as_written": "33.5"
+    },
+    {
+      "text": "约 10 MB 法语、小约 500 倍",
+      "value": "10MB",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "which detected only 10MB of data in the French language which is approximately 500x smaller",
+      "as_written": "10 MB"
+    },
+    {
+      "text": "500 倍",
+      "value": "500x",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "approximately 500x smaller",
+      "as_written": "500 倍"
+    },
+    {
+      "text": "NQ 4.1%",
+      "value": "4.1%",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "GPT-2 answers 4.1% of questions correctly",
+      "as_written": "4.1%"
+    },
+    {
+      "text": "基线 1.0%",
+      "value": "1.0%",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "does not exceed the 1.0% accuracy of an incredibly simple baseline",
+      "as_written": "1.0%"
+    },
+    {
+      "text": "5.3 倍",
+      "value": "5.3 times",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "GPT-2 answers 5.3 times more questions correctly",
+      "as_written": "5.3 倍"
+    },
+    {
+      "text": "最有把握 1% 上 63.1%",
+      "value": "63.1%",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "GPT-2 has an accuracy of 63.1% on the 1% of questions it is most confident in",
+      "as_written": "63.1%"
+    },
+    {
+      "text": "最有把握的 1%",
+      "value": "1%",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "on the 1% of questions it is most confident in",
+      "as_written": "1%"
+    },
+    {
+      "text": "检索系统 30–50%",
+      "value": "30 to 50%",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "the 30 to 50% range of open domain question answering systems",
+      "as_written": "30%"
+    },
+    {
+      "text": "Alec 17 题、实际 14 题",
+      "value": "17 of 100",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "answered 17 of 100 randomly sampled examples correctly",
+      "as_written": "17 题"
+    },
+    {
+      "text": "Alec 14 题",
+      "value": "14 right",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "He actually only got 14 right",
+      "as_written": "14 题"
+    },
+    {
+      "text": "表 5：83.4%",
+      "value": "83.4%",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "83.4%",
+      "as_written": "83.4%"
+    },
+    {
+      "text": "71.4%",
+      "value": "71.4%",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "71.4%",
+      "as_written": "71.4%"
+    },
+    {
+      "text": "70.6%",
+      "value": "70.6%",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "70.6%",
+      "as_written": "70.6%"
+    },
+    {
+      "text": "59.2%",
+      "value": "59.2%",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "59.2%",
+      "as_written": "59.2%"
+    },
+    {
+      "text": "52.1%",
+      "value": "52.1%",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "52.1%",
+      "as_written": "52.1%"
+    },
+    {
+      "text": "50.2%",
+      "value": "50.2%",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "50.2%",
+      "as_written": "50.2%"
+    },
+    {
+      "text": "48.3%",
+      "value": "48.3%",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "48.3%",
+      "as_written": "48.3%"
+    },
+    {
+      "text": "45.2%",
+      "value": "45.2%",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "45.2%",
+      "as_written": "45.2%"
+    },
+    {
+      "text": "测试集与 WebText 1–6%、平均 3.2%；自身 5.9%",
+      "value": "3.2%",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "Common LM datasets’ test sets have between 1-6% overlap with WebText train, with an average of overlap of 3.2%",
+      "as_written": "3.2%"
+    },
+    {
+      "text": "自身平均 5.9%",
+      "value": "5.9%",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "with an average of 5.9% overlap",
+      "as_written": "5.9%"
+    },
+    {
+      "text": "1–6%",
+      "value": "1-6%",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "between 1-6% overlap",
+      "as_written": "1%"
+    },
+    {
+      "text": "1BW 13.2%",
+      "value": "13.2%",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "1BW has an overlap of nearly 13.2% with its own training set",
+      "as_written": "13.2%"
+    },
+    {
+      "text": "表 6：PTB 2.67% / 0.88%",
+      "value": "2.67%",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "2.67%",
+      "as_written": "2.67%"
+    },
+    {
+      "text": "13.19%",
+      "value": "13.19%",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "13.19%",
+      "as_written": "13.19%"
+    },
+    {
+      "text": "9.09%",
+      "value": "9.09%",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "9.09%",
+      "as_written": "9.09%"
+    },
+    {
+      "text": "LAMBADA 平均重叠 1.2%",
+      "value": "1.2%",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "On LAMBADA, the average overlap is 1.2%",
+      "as_written": "1.2%"
+    },
+    {
+      "text": "8.6→8.7、63.2%→62.9%",
+      "value": "62.9%",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "shifts results from 8.6 to 8.7 perplexity and reduces accuracy from 63.2% to 62.9%",
+      "as_written": "62.9%"
+    },
+    {
+      "text": "63.2%",
+      "value": "63.2%",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "from 63.2% to 62.9%",
+      "as_written": "63.2%"
+    },
+    {
+      "text": "8.7",
+      "value": "8.7",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "from 8.6 to 8.7 perplexity",
+      "as_written": "8.7"
+    },
+    {
+      "text": "CoQA 新闻约 15%、高约 3 F1、0.5–1.0",
+      "value": "15%",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "about 15% of documents in the news domain are already in WebText and the model performs about 3 F1 better on these",
+      "as_written": "15%"
+    },
+    {
+      "text": "0.5–1.0 F1",
+      "value": "0.5-1.0",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "we measure a gain of about 0.5-1.0 F1 due to overlap",
+      "as_written": "0.5"
+    },
+    {
+      "text": "Winograd 10 道、2 个误报",
+      "value": "10 schemata",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "we found only 10 schemata which had any 8-gram overlaps with the WebText training set. Of these, 2 were spurious matches",
+      "as_written": "10 道"
+    },
+    {
+      "text": "1/√N",
+      "value": "1/ N",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "by a factor of 1/ N where N is the number of residual layers",
+      "as_written": "1/√N"
+    },
+    {
+      "text": "GPT-1：4 万次合并",
+      "value": "40,000",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "We used a bytepair encoding (BPE) vocabulary with 40,000 merges",
+      "as_written": "4 万"
+    },
+    {
+      "text": "GPT-1：512",
+      "value": "512 tokens",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "contiguous sequences of 512 tokens",
+      "as_written": "512"
+    },
+    {
+      "text": "本站估算：约 1.24 亿",
+      "value": "50,257",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "The vocabulary is expanded to 50,257",
+      "as_written": "1.24 亿"
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "tier": "primary",
+    "writer": "论文精读"
+  }
+}
