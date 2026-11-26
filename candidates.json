@@ -1,22 +1,44 @@
 [
   {
+    "id": "1e5e83fde7",
+    "title": "Guided Vision in Gemini Live is now available on iOS",
+    "url": "https://x.com/GeminiApp/status/2125685936344236471",
+    "publisher": "@GeminiApp",
+    "tier": "official",
+    "published": "2026-11-25T20:19:55.216Z",
+    "score": 5.9,
+    "category_hint": "product",
+    "related": []
+  },
+  {
+    "id": "ce0bee1618",
+    "title": "OpenAI is testing Private Inference with a small group of customers",
+    "url": "https://x.com/sama/status/2125638790593274259",
+    "publisher": "@sama",
+    "tier": "official",
+    "published": "2026-11-25T17:12:34.793Z",
+    "score": 5.1,
+    "category_hint": "product",
+    "related": []
+  },
+  {
+    "id": "d749a29fc5",
+    "title": "Gemini adds 60+ new expressive voices with local accents",
+    "url": "https://x.com/GeminiApp/status/2125629066006950339",
+    "publisher": "@GeminiApp",
+    "tier": "official",
+    "published": "2026-11-25T16:33:56.271Z",
+    "score": 5.1,
+    "category_hint": "product",
+    "related": []
+  },
+  {
     "id": "37b5c9ba93",
     "title": "Where scientists draw the line on AI agents",
     "url": "https://huggingface.co/blog/allenai/where-scientists-draw-the-line-on-ai-agents",
     "publisher": "Hugging Face",
     "tier": "primary",
     "published": "2026-11-25T18:52:55.000Z",
-    "score": 4.9,
-    "category_hint": null,
-    "related": []
-  },
-  {
-    "id": "d0a3a7f662",
-    "title": "An Indic Voice Agent with CUGA",
-    "url": "https://huggingface.co/blog/ibm-research/an-indic-voice-agent-with-cuga",
-    "publisher": "Hugging Face",
-    "tier": "primary",
-    "published": "2026-11-25T10:22:09.000Z",
     "score": 4.9,
     "category_hint": null,
     "related": []
@@ -29,111 +51,6 @@
     "tier": "official",
     "published": "2026-11-24T13:07:53.000Z",
     "score": 4.7,
-    "category_hint": "product",
-    "related": []
-  },
-  {
-    "id": "a2040dd8e4",
-    "title": "Claude Ship 指南：自动完成从代码检查、自动改错到按规则放行的全流程",
-    "url": "https://claude.dev/blog/the-work-after-you-open-a-pr/",
-    "publisher": "claude.dev",
-    "tier": "official",
-    "published": "2026-11-25T00:00:00.000Z",
-    "score": 4.6,
-    "category_hint": null,
-    "via": "https://xiaohu.ai/article/claude-code-ship/",
-    "discovered_by": "xiaohu",
-    "related": []
-  },
-  {
-    "id": "9be79e84af",
-    "title": "Mirelo 发布 Sound Agent：一句话给视频加音效、去配乐、拆人声，还能配成 32 种语言",
-    "url": "https://mirelo.ai/blog/mirelo-sound-agent",
-    "publisher": "mirelo.ai",
-    "tier": "official",
-    "published": "2026-11-17T00:00:00.000Z",
-    "score": 4.4,
-    "category_hint": null,
-    "via": "https://xiaohu.ai/article/mirelo-sound-agent/",
-    "discovered_by": "xiaohu",
-    "related": []
-  },
-  {
-    "id": "19739ec972",
-    "title": "Higgsfield 发布 AI 品牌吉祥物教程：不训练模型，靠固定描述和三张参考表画同一只熊",
-    "url": "https://higgsfield.ai/zh/blog/consistent-brand-mascot-ai",
-    "publisher": "higgsfield.ai",
-    "tier": "official",
-    "published": "2026-11-17T00:00:00.000Z",
-    "score": 4.4,
-    "category_hint": null,
-    "via": "https://xiaohu.ai/article/higgsfield-brand-mascot/",
-    "discovered_by": "xiaohu",
-    "related": []
-  },
-  {
-    "id": "de5cd1a6d5",
-    "title": "Perplexity and Intelligence",
-    "url": "https://openai.com/index/perplexity-and-intelligence",
-    "publisher": "OpenAI",
-    "tier": "official",
-    "published": "2026-11-22T00:00:00.000Z",
-    "score": 4.2,
-    "category_hint": "product",
-    "related": []
-  },
-  {
-    "id": "3ea993db7e",
-    "title": "Combatting adversarial distillation",
-    "url": "https://openai.com/index/combatting-adversarial-distillation",
-    "publisher": "OpenAI",
-    "tier": "official",
-    "published": "2026-11-20T10:00:00.000Z",
-    "score": 4.2,
-    "category_hint": "product",
-    "related": []
-  },
-  {
-    "id": "d15c456432",
-    "title": "Hebbia sees improvements in financial research with GPT-6 Astra",
-    "url": "https://openai.com/business/customer-stories/hebbia",
-    "publisher": "OpenAI",
-    "tier": "official",
-    "published": "2026-11-20T00:00:00.000Z",
-    "score": 4.2,
-    "category_hint": "product",
-    "related": []
-  },
-  {
-    "id": "6687f7be62",
-    "title": "How OpenAI’s Performance Factory keeps ChatGPT fast",
-    "url": "https://openai.com/index/how-openai-performance-factory-keeps-chatgpt-fast",
-    "publisher": "OpenAI",
-    "tier": "official",
-    "published": "2026-11-19T08:00:00.000Z",
-    "score": 4.2,
-    "category_hint": "product",
-    "related": []
-  },
-  {
-    "id": "4b08ec5026",
-    "title": "Deploying Daybreak Red",
-    "url": "https://openai.com/business/learn/deploying-daybreak-red",
-    "publisher": "OpenAI",
-    "tier": "official",
-    "published": "2026-11-19T00:00:00.000Z",
-    "score": 4.2,
-    "category_hint": "product",
-    "related": []
-  },
-  {
-    "id": "cb99e2baa6",
-    "title": "See PR scans in action",
-    "url": "https://openai.com/business/learn/pr-scans-demo",
-    "publisher": "OpenAI",
-    "tier": "official",
-    "published": "2026-11-19T00:00:00.000Z",
-    "score": 4.2,
     "category_hint": "product",
     "related": []
   },
@@ -336,6 +253,28 @@
     "related": []
   },
   {
+    "id": "84b1f8c028",
+    "title": "Freeze the web with Perplexity Time Machine",
+    "url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine",
+    "publisher": "Perplexity",
+    "tier": "official",
+    "published": "2026-11-25",
+    "score": 4.1,
+    "category_hint": "product",
+    "related": []
+  },
+  {
+    "id": "07e4d18518",
+    "title": "Migrating our Messages API to Rust",
+    "url": "https://www.anthropic.com/research/migrating-api-to-rust",
+    "publisher": "Anthropic",
+    "tier": "official",
+    "published": "2026-11-25",
+    "score": 4.1,
+    "category_hint": "product",
+    "related": []
+  },
+  {
     "id": "d1e1fa1ba8",
     "title": "Connectors and skills come together as plugins",
     "url": "https://x.com/claudeai/status/2124970294523945328",
@@ -353,35 +292,6 @@
     "publisher": "@MistralAI",
     "tier": "official",
     "published": "2026-11-23T16:39:11.010Z",
-    "score": 4.1,
-    "category_hint": "product",
-    "related": []
-  },
-  {
-    "id": "48a4e5b02b",
-    "title": "Returning to the Neuron Basis for Interpretability, Part 1: Answering Three Objections",
-    "url": "https://alignment.anthropic.com/2026/neuron-basis-theory/",
-    "publisher": "Anthropic",
-    "tier": "official",
-    "published": "2026-11-23T00:00:00.000Z",
-    "score": 4.1,
-    "category_hint": "product",
-    "related": [
-      {
-        "title": "Returning to the Neuron Basis for Interpretability, Part 2: Using Neurons For Safety Applications",
-        "url": "https://alignment.anthropic.com/2026/neuron-basis-applications/",
-        "publisher": "Anthropic",
-        "tier": "official"
-      }
-    ]
-  },
-  {
-    "id": "7f47a49321",
-    "title": "Zero data retention with Enterprise Frontier Safeguards is now in beta",
-    "url": "https://claude.com/resources/articles/zero-data-retention-with-enterprise-frontier-safeguards",
-    "publisher": "Anthropic",
-    "tier": "official",
-    "published": "2026-11-23",
     "score": 4.1,
     "category_hint": "product",
     "related": []
@@ -442,16 +352,108 @@
     "related": []
   },
   {
-    "id": "86a9211921",
-    "title": "Anthropic 发布 58 家企业 AI 访谈报告：三分之二缩减招聘，高回报靠改分工与流程",
-    "url": "https://www.anthropic.com/research/working-with-ai",
+    "id": "a88353929e",
+    "title": "Merry Making: Play, Build and Create With NVIDIA Technologies This Holiday Season",
+    "url": "https://blogs.nvidia.com/blog/nvidia-technologies-holidays-2026/",
+    "publisher": "NVIDIA",
+    "tier": "official",
+    "published": "2026-11-23T17:00:08.000Z",
+    "score": 3.8,
+    "category_hint": null,
+    "related": []
+  },
+  {
+    "id": "48a4e5b02b",
+    "title": "Returning to the Neuron Basis for Interpretability, Part 1: Answering Three Objections",
+    "url": "https://alignment.anthropic.com/2026/neuron-basis-theory/",
     "publisher": "Anthropic",
     "tier": "official",
-    "published": "2026-11-25T00:00:00.000Z",
-    "score": 3.9,
+    "published": "2026-11-23T00:00:00.000Z",
+    "score": 3.6,
+    "category_hint": "product",
+    "related": [
+      {
+        "title": "Returning to the Neuron Basis for Interpretability, Part 2: Using Neurons For Safety Applications",
+        "url": "https://alignment.anthropic.com/2026/neuron-basis-applications/",
+        "publisher": "Anthropic",
+        "tier": "official"
+      }
+    ]
+  },
+  {
+    "id": "7f47a49321",
+    "title": "Zero data retention with Enterprise Frontier Safeguards is now in beta",
+    "url": "https://claude.com/resources/articles/zero-data-retention-with-enterprise-frontier-safeguards",
+    "publisher": "Anthropic",
+    "tier": "official",
+    "published": "2026-11-23",
+    "score": 3.6,
+    "category_hint": "product",
+    "related": []
+  },
+  {
+    "id": "bbe099f294",
+    "title": "Anthropic 数学家称和 Claude 证明了黎曼猜想：1700 万行 Lean 证明已公开，尚无外部核对",
+    "url": "https://alpo.ge/remark.pdf",
+    "publisher": "alpo.ge",
+    "tier": "official",
+    "published": "2026-11-21T00:00:00.000Z",
+    "score": 3.6,
     "category_hint": null,
-    "via": "https://xiaohu.ai/article/anthropic-working-with-ai/",
+    "via": "https://xiaohu.ai/article/riemann-hypothesis-proof-claim/",
     "discovered_by": "xiaohu",
+    "related": []
+  },
+  {
+    "id": "3f1695fde4",
+    "title": "已经订阅了 Google AI服务的 免费领取一台Google Colab云电脑 上手指南：一条 SSH 连进 12 GB 内存 Ubuntu",
+    "url": "https://x.com/jandisufg/status/2123530059310850353",
+    "publisher": "@jandisufg",
+    "tier": "official",
+    "published": "2026-11-21T00:00:00.000Z",
+    "score": 3.6,
+    "category_hint": null,
+    "via": "https://xiaohu.ai/article/google-colab-cli-ssh/",
+    "discovered_by": "xiaohu",
+    "related": []
+  },
+  {
+    "id": "ca73c64f19",
+    "title": "Notion 团队 AI 工作指南：100 人各写一份技能，不如 2 人搭一座全队共用的工厂",
+    "url": "https://www.notion.com/a-new-shape-for-work",
+    "publisher": "notion.com",
+    "tier": "official",
+    "published": "2026-11-21T00:00:00.000Z",
+    "score": 3.6,
+    "category_hint": null,
+    "via": "https://xiaohu.ai/article/notion-new-shape-for-work/",
+    "discovered_by": "xiaohu",
+    "related": []
+  },
+  {
+    "id": "e032fea5d7",
+    "title": "a16z 每周图表：Z 世代观点全重合不到一成，过半基金经理预计巨头半年内砍 AI 开支",
+    "url": "https://www.a16z.news/p/charts-of-the-week-there-is-no-gen",
+    "publisher": "a16z.news",
+    "tier": "official",
+    "published": "2026-11-21T00:00:00.000Z",
+    "score": 3.6,
+    "category_hint": null,
+    "via": "https://xiaohu.ai/article/a16z-no-gen-z/",
+    "discovered_by": "xiaohu",
+    "related": []
+  },
+  {
+    "id": "aaec692e1d",
+    "title": "Perplexity Computer now works directly in Chromium browsers via the extension.",
+    "url": "https://pplx.ai/chrome-extension",
+    "publisher": "@perplexity_ai",
+    "tier": "official",
+    "published": "2026-11-20T21:47:32.000Z",
+    "score": 3.6,
+    "category_hint": "product",
+    "text": "Perplexity Computer now works directly in Chromium browsers through the Perplexity extension.\n\nHand off a task from the side panel, and watch Computer work across your tabs and tools.\n\nGet the Perplexity extension from the Chrome Web Store:\n\nhttps://pplx.ai/chrome-extension",
+    "via": "https://x.com/perplexity_ai/status/2123896048510996827",
     "related": []
   }
 ]
