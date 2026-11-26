@@ -1,0 +1,1123 @@
+{
+  "slug": "sparsely-gated-mixture-of-experts-outrageously-large-neural-networks",
+  "category": "paper",
+  "publisher": "Shazeer et al. · Google Brain",
+  "date": "2017-01-23",
+  "title": "A close read of sparsely-gated MoE: thousands of experts, a few per input, huge parameter growth for almost the same compute",
+  "summary": "An MoE layer holds many expert networks, and a gating network selects only the top k experts to compute for each input. That decouples total parameter count from compute—the paper reached 137 billion parameters. We work through Top-K gating, expert batching, and the load-balancing loss by hand, then look at the language modeling and translation experiments and how the idea made its way into Transformers and today's large models.",
+  "ai_summary": "Outrageously Large Neural Networks: The Sparsely-Gated Mixture-of-Experts Layer (Shazeer et al., Google Brain, ICLR 2017) introduces a sparsely gated mixture-of-experts layer: many feed-forward expert networks plus a noisy Top-K gating network, where each input is processed by only a few selected experts. The paper uses a mix of data and model parallelism to enlarge expert batches, widens expert hidden layers to reduce the communication-to-computation ratio, and adds importance and load losses to keep the gate from favoring a few experts. At comparable compute, language-model perplexity falls substantially as the number of experts grows; the MoE layer has up to about 137 billion parameters. On machine translation it beats GNMT with less computation.",
+  "brief": [
+    "The problem: more parameters make models stronger, but a normal network uses every parameter for every example, so compute grows roughly quadratically with scale.",
+    "The method: an MoE layer is made of many experts and a noisy Top-K gate; each input only runs through k experts, with hybrid parallelism and load-balancing losses.",
+    "The result: with compute held constant, more experts mean lower perplexity; a 68-billion-parameter model trained on a 100-billion-word corpus cuts perplexity by 39%; translation beats GNMT with less computation.",
+    "The limitations: load balancing requires extra loss terms; distributed communication and efficiency problems remain; some translation experiments use a different gate."
+  ],
+  "paper": {
+    "title": "Outrageously Large Neural Networks: The Sparsely-Gated Mixture-of-Experts Layer",
+    "authors": "Noam Shazeer, Azalia Mirhoseini, Krzysztof Maziarz, Andy Davis, Quoc Le, Geoffrey Hinton, Jeff Dean",
+    "org": "Google Brain",
+    "venue": "ICLR 2017",
+    "year": 2017,
+    "arxiv": "1701.06538",
+    "url": "https://arxiv.org/abs/1701.06538"
+  },
+  "cover": {
+    "headline": "A close read of the original MoE paper",
+    "highlight": "Huge parameter growth, unchanged compute",
+    "glyph": {
+      "kind": "flow",
+      "nodes": [
+        {
+          "label": "Input"
+        },
+        {
+          "label": "Gate selects only the top k experts",
+          "tone": "hi"
+        },
+        {
+          "label": "Weighted sum"
+        }
+      ]
+    }
+  },
+  "sections": [
+    {
+      "h": "Bottom line: what this paper actually did",
+      "blocks": [
+        {
+          "p": "In January 2017, Noam Shazeer, Azalia Mirhoseini, Krzysztof Maziarz, Andy Davis, Quoc Le, Geoffrey Hinton, and Jeff Dean of Google Brain released this paper under an audacious title, \"Outrageously Large Neural Networks.\" It later appeared at ICLR 2017."
+        },
+        {
+          "p": "It takes on a fundamental tension: more parameters can hold more knowledge, but a normal network uses **all** of them for every example. When the model and the data both grow, compute scales roughly as the product of the two. The paper's answer is **conditional computation**: each example activates only a small part of the network."
+        },
+        {
+          "p": "Concretely, it uses a **sparsely gated mixture-of-experts (MoE) layer**: many small feed-forward networks with the same structure but separate parameters, called experts, plus a trainable gating network. For each input, the gate picks only a few experts—say, four—to run, adds their outputs by weight, and leaves the rest untouched."
+        },
+        {
+          "p": "That lets the expert count grow into the thousands, so total parameters explode while per-example compute stays almost flat. The paper places the MoE layer between two LSTM layers, scales it to 137 billion parameters, and beats the best results of the time on language modeling and machine translation at lower computational cost."
+        },
+        {
+          "p": "What makes it practical is a set of engineering solutions: keeping each expert's batch large enough, cutting communication between machines, and stopping the gate from always favoring a few experts. Today's large MoE models still face the same problems."
+        },
+        {
+          "callout": {
+            "kind": "takeaway",
+            "title": "One-sentence version",
+            "text": "MoE = many experts + a gate that picks only the top k. Total parameter count and per-token compute are decoupled: the model can be outrageously large while each token uses only a small slice of compute. The cost is that load balancing and distributed communication get harder."
+          }
+        },
+        {
+          "callout": {
+            "kind": "prereq",
+            "title": "Three small concepts you'll need",
+            "text": "You don't need to know much; these three are enough:",
+            "list": [
+              "**Feed-forward network**: multiply the input by a matrix, apply an activation function, and multiply by another matrix. The \"feed-forward network\" inside each Transformer layer is exactly this.",
+              "**Softmax**: turns a set of arbitrary numbers into probabilities that sum to 1.",
+              "**Perplexity**: measures how \"perplexed\" a language model is when predicting the next word; lower is better."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "The problem: more parameters is better, but every parameter has to be computed",
+      "blocks": [
+        {
+          "p": "The paper starts by noting that, with enough data, adding parameters substantially improves accuracy—backed by results in text, images, and audio. But in a typical deep model, every example activates the whole model. When both model size and data scale up, training cost grows roughly quadratically, and hardware progress can't keep up."
+        },
+        {
+          "p": "Conditional computation is an old idea: turn on only part of the network for each input. But the paper argues that no previous work had shown a major improvement in model capacity, training time, or model quality, and pins the failure on five challenges:"
+        },
+        {
+          "list": [
+            "**GPUs are good at arithmetic, not branching.** If each example takes a different path, the GPU slows down; the only practical option is to turn large chunks of the network on or off.",
+            "**Batches get shredded.** Large batches amortize the cost of parameter loads and updates, but conditional computation gives each chunk only a small slice of examples.",
+            "**Network bandwidth is the bottleneck.** A GPU cluster's compute can be thousands of times greater than its inter-machine bandwidth, so an algorithm must do far more computation than data transfer to be efficient.",
+            "**Extra loss terms are needed.** Controlling sparsity and load balancing may require auxiliary losses, which can affect model quality.",
+            "**You need enough data.** Previous work mostly used small image datasets of up to 600,000 images. It's hard to see how those labels could train a model with millions of parameters, let alone billions."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "The MoE layer: many experts, only a few are used",
+      "blocks": [
+        {
+          "p": "An MoE layer consists of n expert networks E_{1}, …, E_{n} and a gating network G. The output is the weighted sum of the expert outputs:"
+        },
+        {
+          "formula": {
+            "expr": "y = Σ_{i=1}^{n} G(x)_{i} · E_{i}(x)",
+            "parts": [
+              {
+                "sym": "E_{i}(x)",
+                "desc": "Output of the i-th expert. In the paper, each expert is a feed-forward network with the same structure but different parameters."
+              },
+              {
+                "sym": "G(x)_{i}",
+                "desc": "Weight the gating network gives to the i-th expert. It is sparse: mostly zero."
+              },
+              {
+                "sym": "G(x)_{i} = 0",
+                "desc": "This expert does not need to be computed at all—that is the compute saved."
+              }
+            ]
+          }
+        },
+        {
+          "p": "How does the gate become sparse? The paper adds two things to an ordinary softmax gate:"
+        },
+        {
+          "formula": {
+            "expr": "H(x)_{i} = (x · W_{g})_{i} + StandardNormal() · Softplus((x · W_{noise})_{i})\nG(x) = Softmax(KeepTopK(H(x), k))",
+            "parts": [
+              {
+                "sym": "x · W_{g}",
+                "desc": "The raw score for each expert; W_{g} is a trainable matrix."
+              },
+              {
+                "sym": "Noise term",
+                "desc": "Adds Gaussian noise with a trainable scale; it helps load balancing (detailed later)."
+              },
+              {
+                "sym": "KeepTopK",
+                "desc": "Keep only the top k scores and set the rest to negative infinity; after softmax they become 0."
+              }
+            ]
+          }
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Gating by hand: 8 experts, only 2 run",
+            "subtitle": "Illustrative: the eight expert scores are made up by us; noise is ignored and k = 2. Computed with the paper's formulas (3)–(5).",
+            "columns": [
+              "Expert",
+              "Score",
+              "Plain softmax weight",
+              "Top-2 gate weight",
+              "Compute?"
+            ],
+            "rows": [
+              [
+                "1",
+                "2.0",
+                "0.190",
+                "0.269",
+                "Yes"
+              ],
+              [
+                "2",
+                "1.0",
+                "0.070",
+                "0",
+                "No"
+              ],
+              [
+                "3",
+                "0.5",
+                "0.042",
+                "0",
+                "No"
+              ],
+              [
+                "4",
+                "3.0",
+                "0.516",
+                "0.731",
+                "Yes"
+              ],
+              [
+                "5",
+                "−1.0",
+                "0.009",
+                "0",
+                "No"
+              ],
+              [
+                "6",
+                "0.0",
+                "0.026",
+                "0",
+                "No"
+              ],
+              [
+                "7",
+                "1.5",
+                "0.115",
+                "0",
+                "No"
+              ],
+              [
+                "8",
+                "0.2",
+                "0.031",
+                "0",
+                "No"
+              ]
+            ],
+            "highlight": {
+              "row": 3
+            },
+            "note": "With a plain softmax gate, every expert gets a nonzero weight and all 8 must compute. With Top-2 gating, softmax is taken only over the two highest-scoring experts (0.731 and 0.269), so only 2 run—one quarter of the expert compute."
+          }
+        },
+        {
+          "p": "**How is the gating network trained?** With ordinary backpropagation, jointly with the rest of the model. The paper notes that when k > 1, the selected experts' weights have nonzero gradients with respect to the gate parameters. This differs from earlier work that used boolean gates and trained the gate with reinforcement learning. The paper also concedes that keeping only the top k creates a theoretically worrying discontinuity, but it observed no problem in practice."
+        },
+        {
+          "callout": {
+            "kind": "intuition",
+            "title": "Like a hospital with thousands of specialists",
+            "text": "A normal network is a general practitioner who has to see each patient from start to finish. An MoE is a large hospital: the triage desk (the gating network) glances at the patient and sends them to only the most relevant specialists. The hospital can employ thousands of doctors (parameters explode), yet each patient uses only a few doctors' time (compute stays fixed). The hard part is keeping triage from sending every patient to the same few doctors."
+          }
+        },
+        {
+          "p": "When experts number in the thousands or tens of thousands, the gate itself gets expensive. The paper uses a **two-level hierarchical MoE**: a first-level gate picks a few groups, and each group has its own gate that chooses experts."
+        }
+      ]
+    },
+    {
+      "h": "Making it fast: batches and bandwidth",
+      "blocks": [
+        {
+          "p": "**Batches get shredded.** For a batch of b examples, with each example choosing k of n experts, each expert receives only about kb / n examples. The more experts there are, the smaller each expert's batch and the less efficient the GPU becomes."
+        },
+        {
+          "p": "The paper's fix is **mixing data and model parallelism**: standard layers and the gate use ordinary data parallelism (one copy per machine), but each expert exists only once globally and lives on one machine. The machines run synchronously, and each expert collects the relevant examples from all of them. With d machines, each expert's batch becomes about kbd / n—d times larger."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "By hand: how small expert batches get, and how much hybrid parallelism expands them",
+            "subtitle": "Illustrative: the per-machine batch b, expert count n, and selected experts per example k are chosen by us; computed with the formulas in section 3.1 of the paper.",
+            "columns": [
+              "Setting",
+              "Average examples per expert"
+            ],
+            "rows": [
+              [
+                "One machine: b = 1024, n = 256, k = 4",
+                "1024 × 4 / 256 = 16"
+              ],
+              [
+                "16 machines, hybrid parallelism (d = 16)",
+                "16 × 16 = 256"
+              ],
+              [
+                "Then send all time steps of a sentence into the MoE at once (say, 20 words)",
+                "256 × 20 = 5120"
+              ]
+            ],
+            "note": "The paper also exploits a \"convolutional\" pattern: the same MoE is applied to every time step, so it waits for the previous layer to finish all time steps and then sends them through the MoE as one large batch."
+          }
+        },
+        {
+          "p": "**Network bandwidth.** Experts are fixed on their machines, and the gate has few parameters, so communication mostly sends expert inputs and outputs back and forth. To be efficient, an expert's computation relative to its input/output size must exceed the ratio of GPU compute to network bandwidth—the paper says this may be \"thousands to one\" on GPUs. For a feed-forward expert with one hidden layer, that ratio is exactly the hidden layer size, so you simply make the hidden layer large (thousands of units)."
+        },
+        {
+          "p": "The ambition is huge: the paper says the goal is to train a trillion-parameter model on a trillion-word corpus. It hadn't been done at the time of writing, but \"should be possible by adding more hardware.\""
+        }
+      ]
+    },
+    {
+      "h": "Load balancing: don't let the gate play favorites",
+      "blocks": [
+        {
+          "p": "The paper observes that the gating network tends to converge to a state where it keeps giving the same few experts large weights. The imbalance is **self-reinforcing**: favored experts get more training, become better, and are then selected even more often."
+        },
+        {
+          "p": "The paper's approach is a soft constraint. It defines an expert's \"importance\" on a batch as the sum of its gate weights, then adds a loss that penalizes how much that importance varies across experts:"
+        },
+        {
+          "formula": {
+            "expr": "Importance(X) = Σ_{x∈X} G(x)\nL_{importance}(X) = w_{importance} · CV(Importance(X))^{2}",
+            "parts": [
+              {
+                "sym": "Importance(X)",
+                "desc": "Sum of the gate weights each expert receives over a batch of examples."
+              },
+              {
+                "sym": "CV",
+                "desc": "Coefficient of variation: standard deviation ÷ mean. It measures how uneven the experts are."
+              },
+              {
+                "sym": "w_{importance}",
+                "desc": "A hand-tuned scaling factor; the paper uses 0.1 in its language-model experiments."
+              }
+            ]
+          }
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "By hand: the more uneven the importance, the larger the penalty",
+            "subtitle": "Illustrative: the importance of the 4 experts over a batch is made up by us; CV is computed with population standard deviation.",
+            "columns": [
+              "Case",
+              "Importance of the 4 experts",
+              "Mean",
+              "Std. dev.",
+              "CV²",
+              "Loss (w = 0.1)"
+            ],
+            "rows": [
+              [
+                "Almost all to expert 1",
+                "3.2, 0.4, 0.3, 0.1",
+                "1.0",
+                "1.27",
+                "1.63",
+                "0.163"
+              ],
+              [
+                "Perfectly balanced",
+                "1, 1, 1, 1",
+                "1.0",
+                "0",
+                "0",
+                "0"
+              ]
+            ]
+          }
+        },
+        {
+          "p": "**Equal importance is not equal load.** One expert might get a few examples with large weights while another gets many examples with small weights. Their importance can match even though the number of examples they process differs a lot, which causes memory overflows or uneven speed on distributed hardware. So the paper adds a second loss, L_{load}, to balance how many examples each expert receives."
+        },
+        {
+          "p": "But \"how many examples\" is a discrete quantity with no gradient. That's the role of the **noise** in the gate: with noise, selection becomes a probability, and the normal cumulative distribution function gives a smooth estimate that can be used in backpropagation."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "The effect of the two balancing losses",
+            "subtitle": "From Appendix Table 6 of the paper, MoE-256 trained for 10 epochs. The last column is the busiest expert's load relative to the average.",
+            "columns": [
+              "w_{importance}",
+              "w_{load}",
+              "Test perplexity",
+              "CV (importance)",
+              "CV (load)",
+              "Max load ÷ average load"
+            ],
+            "rows": [
+              [
+                "0",
+                "0",
+                "39.8",
+                "3.04",
+                "3.01",
+                "17.80"
+              ],
+              [
+                "0.2",
+                "0",
+                "35.6",
+                "0.06",
+                "0.17",
+                "1.47"
+              ],
+              [
+                "0",
+                "0.2",
+                "35.7",
+                "0.22",
+                "0.04",
+                "1.15"
+              ],
+              [
+                "0.1",
+                "0.1",
+                "35.6",
+                "0.06",
+                "0.05",
+                "1.14"
+              ],
+              [
+                "1.0",
+                "1.0",
+                "35.7",
+                "0.03",
+                "0.02",
+                "1.07"
+              ]
+            ],
+            "highlight": {
+              "row": 0
+            },
+            "note": "With no balancing loss, the busiest expert has 17.8× the average load and perplexity is much worse (39.8). With either loss, quality is about the same; the larger the load-loss weight, the lighter the busiest expert's burden."
+          }
+        },
+        {
+          "p": "Also, to avoid a memory overflow from initial load imbalance, the paper initializes both W_{g} and W_{noise} to 0, so the gate starts with only noise and no preferences."
+        }
+      ]
+    },
+    {
+      "h": "Experiment 1: language modeling, with over 1,000× more parameters",
+      "blocks": [
+        {
+          "p": "**The 1-billion-word benchmark** uses about 829 million words of news sentences and a vocabulary of 793,471 words. The model is two LSTM layers with an MoE layer in between. Each expert is a feed-forward network with a hidden layer of 1,024 units and about 1 million parameters. Each input activates 4 experts, so the MoE part uses about 4 million multiply-adds per time step; the two LSTM layers use about 2 million each, for a total of about 8 million."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Same compute, more experts is better",
+            "subtitle": "From Appendix Table 7 (in part), trained for 10 epochs on the 1-billion-word benchmark. Each model uses about 8 million multiply-adds per time step.",
+            "columns": [
+              "Model",
+              "Parameters (millions, excluding embeddings and softmax)",
+              "Test perplexity"
+            ],
+            "rows": [
+              [
+                "LSTM-2048-512 (no MoE)",
+                "9.4",
+                "44.7"
+              ],
+              [
+                "MoE-4 (4 experts, all used)",
+                "8.4",
+                "45.0"
+              ],
+              [
+                "MoE-32",
+                "37.8",
+                "39.7"
+              ],
+              [
+                "MoE-256",
+                "272.9",
+                "35.7"
+              ],
+              [
+                "MoE-1024 (hierarchical)",
+                "1079.0",
+                "34.6"
+              ],
+              [
+                "MoE-4096 (hierarchical)",
+                "4303.4",
+                "34.1"
+              ]
+            ],
+            "highlight": {
+              "row": 5
+            },
+            "note": "The second column excludes embedding and softmax parameters. With compute fixed, parameters grow from about 9.4 million to about 4.3 billion, and perplexity drops about 24%. Beyond about 1 billion parameters, returns diminish."
+          }
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "High-capacity MoE vs. the previous best",
+            "subtitle": "From Table 1. Parameter and compute figures exclude embeddings and softmax.",
+            "columns": [
+              "Model",
+              "Perplexity after 10 epochs",
+              "Parameters",
+              "Compute per time step",
+              "Training time"
+            ],
+            "rows": [
+              [
+                "Previous best (LSTM)",
+                "34.7",
+                "151 million",
+                "151 million",
+                "59 hours, 32 K40s"
+              ],
+              [
+                "Low-budget MoE",
+                "34.1",
+                "4.303 billion",
+                "8.9 million",
+                "15 hours, 16 K40s"
+              ],
+              [
+                "Mid-budget MoE",
+                "31.3",
+                "4.313 billion",
+                "33.8 million",
+                "17 hours, 32 K40s"
+              ],
+              [
+                "High-budget MoE",
+                "28.0",
+                "4.371 billion",
+                "142.7 million",
+                "47 hours, 32 K40s"
+              ]
+            ],
+            "highlight": {
+              "row": 1
+            },
+            "note": "The low-budget MoE beats the previous best in the same number of epochs using only about 6% of its compute. The high-budget MoE matches its compute and delivers much lower perplexity."
+          }
+        },
+        {
+          "p": "**100-billion-word corpus.** The paper suspects that with more data, larger capacity pays off more. On Google's internal corpus of about 100 billion words of news, using the same budget of about 8 million multiply-adds per time step, the expert count is scaled all the way to 131,072, giving the MoE layer up to about 137 billion parameters."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "With more data, capacity is worth more",
+            "subtitle": "From Appendix Table 8 (in part), test perplexity after 1 epoch on the 100-billion-word corpus.",
+            "columns": [
+              "Model",
+              "Total parameters (billions)",
+              "Test perplexity"
+            ],
+            "rows": [
+              [
+                "4-layer LSTM (compute-matched baseline)",
+                "0.1",
+                "47.0"
+              ],
+              [
+                "MoE-32",
+                "0.1",
+                "40.4"
+              ],
+              [
+                "MoE-4096",
+                "4.4",
+                "30.9"
+              ],
+              [
+                "MoE-65536",
+                "68.9",
+                "28.9"
+              ],
+              [
+                "MoE-131072",
+                "137.7",
+                "29.2"
+              ]
+            ],
+            "highlight": {
+              "row": 3
+            },
+            "note": "With 65,536 experts (about 68 billion parameters), perplexity is 39% lower than the compute-matched baseline; each example uses only 4 of the experts, giving the layer 99.994% sparsity. Doubling the experts again to 131,072 actually makes it worse, which the paper suspects is because the layer becomes too sparse."
+          }
+        }
+      ]
+    },
+    {
+      "h": "Experiment 2: machine translation",
+      "blocks": [
+        {
+          "p": "The paper trims the encoder and decoder LSTM layers of Google's GNMT system from 9 and 8 down to 3 and 2, inserts one MoE layer in each, and uses up to 2,048 experts per layer. Each expert has about 2 million parameters, adding about 8 billion parameters in total."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Single language pairs: less compute, higher BLEU",
+            "subtitle": "From Tables 2 and 3, WMT'14 newstest2014",
+            "columns": [
+              "Task",
+              "Model",
+              "BLEU",
+              "Compute per time step",
+              "Total parameters",
+              "Training"
+            ],
+            "rows": [
+              [
+                "English→French",
+                "MoE, 2,048 experts (trained longer)",
+                "40.56",
+                "85 million",
+                "8.7 billion",
+                "6 days, 64 K40s"
+              ],
+              [
+                "English→French",
+                "GNMT",
+                "39.22",
+                "214 million",
+                "278 million",
+                "6 days, 96 K80s"
+              ],
+              [
+                "English→German",
+                "MoE, 2,048 experts",
+                "26.03",
+                "85 million",
+                "8.7 billion",
+                "1 day, 64 K40s"
+              ],
+              [
+                "English→German",
+                "GNMT",
+                "24.91",
+                "214 million",
+                "278 million",
+                "1 day, 96 K80s"
+              ]
+            ],
+            "note": "The paper says that compared with GNMT without reinforcement-learning fine-tuning, English→French and English→German score 1.34 and 1.12 BLEU higher. On Google's internal English→French production data, test BLEU is 1.01 higher using one sixth of the training time."
+          }
+        },
+        {
+          "p": "**Multilingual translation.** One model translates 12 language pairs at once. A previous multilingual GNMT was worse than 12 separate models—not surprising, since the separate models together have 12 times the capacity. With the MoE, perplexity is 19% lower than the multilingual GNMT; 11 of the 12 language pairs have higher BLEU (by up to 5.84 points), and 8 even beat individually trained models. The only pair that got worse was English→Korean, which the paper attributes to oversampling a small set of real examples for this rare language pair, causing overfitting."
+        },
+        {
+          "p": "**The experts really do specialize.** The paper lists the contexts most often handled by several experts in the English→French translation model's encoder: one handles words like “innovation” and “researchers,” another handles the indefinite article “a” in “play an important role,” and another handles words meaning “fast.” The specialization is learned on its own."
+        }
+      ]
+    },
+    {
+      "h": "A few details worth keeping in mind",
+      "blocks": [
+        {
+          "list": [
+            "**The translation experiments didn't use the main gate.** Appendix F says that because of some infrastructure quirks at the time (later fixed), the single-language-pair translation experiments used a “strictly balanced” gate: each expert took only a fixed number of the highest-scoring examples per batch, and inference approximated this with learned thresholds. The noisy Top-K gate described in the main text was used only in the language-modeling and multilingual translation experiments.",
+            "**The “18% lower” claim works out to about 19% from the table.** Appendix C.2 says the high-budget MoE's perplexity after 10 epochs was 18% lower than the previous best model; using the table values 28.0 and 34.7 gives about 19%.",
+            "**Efficiency wasn't always high.** The largest model, with 131,072 experts, reached only 0.30 TFLOPS per GPU, far below the others. The paper explains that to keep it comparable with the other models, the batch size was not increased as more GPUs were added.",
+            "**A typo.** Section 1.3 says the goal is to turn MoE into a vehicle for “computational computation”; from context this should be “conditional computation.” This arXiv version still says “under review,” and it contains several similar errors.",
+            "**The theoretical concerns were set aside.** On the discontinuity introduced by keeping only the top k, and on gate gradients flowing only to the selected experts, the paper simply says it saw “no problem in practice” and does not analyze them further."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "What came next: from LSTM to Transformer to today's large models",
+      "blocks": [
+        {
+          "list": [
+            "**A memory-saving optimizer.** To fit up to 1 billion parameters on each GPU, the paper modifies Adam: it drops the first moment (setting β_{1} = 0) and approximates the second moment matrix with two vectors of row and column averages. The paper notes that Adam's two moment estimates triple memory usage (see our close read of Adam). This idea later became the Adafactor optimizer, which T5 used for training (see our close read of T5).",
+            "**Moving into Transformers.** Later work replaced the feed-forward network in each Transformer layer with an MoE layer. The next paper in this series, **Switch Transformer**, simplifies k to 1, sending each token to a single expert and scaling to over a trillion parameters.",
+            "**Today's mainstream large models.** DeepSeek-V3 has 671 billion total parameters but activates only about 37 billion per token—exactly the idea of decoupling total parameter count from compute (see our close read of DeepSeek-R1). Load balancing remains one of the core design problems in these models."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Test yourself: did you get it?",
+      "blocks": [
+        {
+          "quiz": {
+            "q": "Why does MoE allow parameters to explode while per-input compute stays almost the same?",
+            "options": [
+              "The experts are all small.",
+              "The gating network selects only k experts per input to compute; the other experts get weight 0 and are never computed.",
+              "It uses faster GPUs.",
+              "Experts share parameters."
+            ],
+            "answer": 1,
+            "why": "Total parameters grow with the number of experts, but each input passes through only k experts. In the paper, a layer with 65,536 experts uses only 4 per input, giving 99.994% sparsity."
+          }
+        },
+        {
+          "quiz": {
+            "q": "Why does the gating network add noise?",
+            "options": [
+              "To make training more random.",
+              "It helps load balancing: with noise, “whether an expert gets selected” becomes a probability that gradients can flow through, so a smooth load loss can be defined.",
+              "To prevent overfitting.",
+              "To speed up computation."
+            ],
+            "answer": 1,
+            "why": "The number of examples assigned to each expert is discrete and cannot be backpropagated. With noise, the selection probability can be written using the normal cumulative distribution function; summing those probabilities gives a differentiable load estimate."
+          }
+        },
+        {
+          "quiz": {
+            "q": "What happens if you don't add any load-balancing loss?",
+            "options": [
+              "Nothing changes.",
+              "The gate increasingly favors a few experts, which becomes self-reinforcing; in the paper's experiments, the busiest expert has about 18× the average load, and perplexity is worse.",
+              "None of the experts get used.",
+              "The model cannot train."
+            ],
+            "answer": 1,
+            "why": "Favored experts get more training, become better, and are chosen more often. In Table 6 of the paper, perplexity is 39.8 with no balancing loss, and falls to about 35.6–35.7 with either loss."
+          }
+        },
+        {
+          "p": "After reading this, you should be able to answer these questions:"
+        },
+        {
+          "list": [
+            "What tension does conditional computation try to resolve? Why did earlier attempts fail?",
+            "How is the noisy Top-K gate computed?",
+            "Why does each expert's batch shrink as the number of experts grows? How does the paper solve this?",
+            "Why does the expert hidden layer need to be large?",
+            "What does the importance loss balance, and what does the load loss balance?",
+            "How does the amount of data affect MoE's gains?",
+            "How did the MoE idea later find its way into Transformers and today's large models?"
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Outrageously Large Neural Networks: The Sparsely-Gated Mixture-of-Experts Layer (arXiv:1701.06538 v1)",
+      "publisher": "Shazeer et al. · Google Brain",
+      "date": "2017-01-23",
+      "url": "https://arxiv.org/abs/1701.06538"
+    },
+    "note": "This article is based on version 1 of the arXiv paper (January 2017). Tables marked “Illustrative” use numbers chosen by us and are computed with the paper's formulas. The “about 19%” figure was computed by us from Table 1 of the paper. Adafactor and Switch Transformer are later work; DeepSeek-V3's parameter scale is taken from the DeepSeek-R1 paper."
+  },
+  "claims": [
+    {
+      "text": "arXiv version 1, January 2017",
+      "value": "1701.06538v1",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "arXiv:1701.06538v1 [cs.LG] 23 Jan 2017",
+      "as_written": "January 2017"
+    },
+    {
+      "text": "Up to 137 billion parameters",
+      "value": "137 billion",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "up to 137 billion",
+      "as_written": "137 billion"
+    },
+    {
+      "text": "Over 1,000× increase in capacity",
+      "value": "1000x",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "greater than 1000x improvements in model capacity",
+      "as_written": "over 1,000×"
+    },
+    {
+      "text": "Up to 600,000 images",
+      "value": "600,000",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "600,000 images",
+      "as_written": "600,000 images"
+    },
+    {
+      "text": "829 million words",
+      "value": "829 million",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "829 million words",
+      "as_written": "829 million"
+    },
+    {
+      "text": "Vocabulary of 793,471",
+      "value": "793,471",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "793,471",
+      "as_written": "793,471"
+    },
+    {
+      "text": "About 1 million parameters per expert",
+      "value": "1M",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "= 1M parameters",
+      "as_written": "1 million"
+    },
+    {
+      "text": "4 million multiply-adds for the MoE part",
+      "value": "4M",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "4M ops/timestep",
+      "as_written": "4 million multiply-adds"
+    },
+    {
+      "text": "About 2 million multiply-adds for each of the two LSTM layers",
+      "value": "2M",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "contribute 2M",
+      "as_written": "2 million multiply-adds"
+    },
+    {
+      "text": "About 8 million multiply-adds total",
+      "value": "8 million",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "about 8 million multiply-andadds",
+      "as_written": "8 million multiply-adds"
+    },
+    {
+      "text": "24% lower",
+      "value": "24%",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "24% lower perplexity",
+      "as_written": "24%"
+    },
+    {
+      "text": "Uses only 6% of the compute",
+      "value": "6%",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "only 6% of the computation",
+      "as_written": "6%"
+    },
+    {
+      "text": "100 billion words",
+      "value": "100 billion",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "totalling roughly 100 billion words",
+      "as_written": "100 billion"
+    },
+    {
+      "text": "39% lower",
+      "value": "39%",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "dropping 39% lower",
+      "as_written": "39%"
+    },
+    {
+      "text": "About 68 billion parameters",
+      "value": "68 billion",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "68 billion parameters",
+      "as_written": "68 billion"
+    },
+    {
+      "text": "99.994% sparsity",
+      "value": "99.994%",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "99.994%",
+      "as_written": "99.994%"
+    },
+    {
+      "text": "Adds about 8 billion parameters",
+      "value": "8 billion",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "about 8 billion parameters",
+      "as_written": "8 billion"
+    },
+    {
+      "text": "About 2 million parameters per expert",
+      "value": "two million",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "about two million parameters",
+      "as_written": "2 million"
+    },
+    {
+      "text": "40.56 and 26.03",
+      "value": "40.56",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "40.56 and 26.03",
+      "as_written": "40.56"
+    },
+    {
+      "text": "1.34 and 1.12 BLEU",
+      "value": "1.34",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "1.34 and 1.12 BLEU",
+      "as_written": "1.34"
+    },
+    {
+      "text": "One sixth of the time, 1.01 BLEU higher",
+      "value": "1.01",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "1.01 higher test BLEU",
+      "as_written": "1.01"
+    },
+    {
+      "text": "12× capacity",
+      "value": "12\ntimes",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "12 times the capacity",
+      "as_written": "12×"
+    },
+    {
+      "text": "19% lower perplexity",
+      "value": "19%",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "19% lower perplexity",
+      "as_written": "19%"
+    },
+    {
+      "text": "11 of 12",
+      "value": "11 of the 12",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "11 of the 12 language pairs",
+      "as_written": "11"
+    },
+    {
+      "text": "up to 5.84",
+      "value": "5.84",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "5.84",
+      "as_written": "5.84"
+    },
+    {
+      "text": "8 beat individually trained models",
+      "value": "8 of 12",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "8 of 12 language pairs",
+      "as_written": "8"
+    },
+    {
+      "text": "18% lower (paper)",
+      "value": "18%",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "lower test perplexity by 18%",
+      "as_written": "18%"
+    },
+    {
+      "text": "We compute about 19%: 28.0 / 34.7",
+      "value": "28.0",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "28.0",
+      "as_written": "19%"
+    },
+    {
+      "text": "0.30 TFLOPS",
+      "value": "0.30",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "0.30 TFLOPS/GPU",
+      "as_written": "0.30"
+    },
+    {
+      "text": "Adam triples memory usage",
+      "value": "triples",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "This triples the required memory",
+      "as_written": "3×"
+    },
+    {
+      "text": "β1 = 0",
+      "value": "β1 = 0",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "we set β1 = 0",
+      "as_written": "0"
+    },
+    {
+      "text": "1 billion parameters per GPU",
+      "value": "1 billion",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "1 billion parameters per GPU",
+      "as_written": "1 billion"
+    },
+    {
+      "text": "thousands to one",
+      "value": "thousands to one",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "thousands to one",
+      "as_written": "thousands to one"
+    },
+    {
+      "text": "Table 6: 39.8, 17.80",
+      "value": "17.80",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "17.80",
+      "as_written": "17.8"
+    },
+    {
+      "text": "39.8",
+      "value": "39.8",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "39.8",
+      "as_written": "39.8"
+    },
+    {
+      "text": "Table 7",
+      "value": "4303.4",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "4303.4",
+      "as_written": "4303.4"
+    },
+    {
+      "text": "44.7",
+      "value": "44.7",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "44.7",
+      "as_written": "44.7"
+    },
+    {
+      "text": "34.1",
+      "value": "34.1",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "34.1",
+      "as_written": "34.1"
+    },
+    {
+      "text": "4.3 billion",
+      "value": "4303 million",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "4303 million",
+      "as_written": "4.3 billion"
+    },
+    {
+      "text": "Table 1: 151 million",
+      "value": "151 million",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "151 million",
+      "as_written": "151 million"
+    },
+    {
+      "text": "4.303 billion",
+      "value": "4303 million",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "4303 million",
+      "as_written": "4.303 billion"
+    },
+    {
+      "text": "4.313 billion",
+      "value": "4313 million",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "4313 million",
+      "as_written": "4.313 billion"
+    },
+    {
+      "text": "4.371 billion",
+      "value": "4371 million",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "4371 million",
+      "as_written": "4.371 billion"
+    },
+    {
+      "text": "8.9 million",
+      "value": "8.9 million",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "8.9 million",
+      "as_written": "8.9 million"
+    },
+    {
+      "text": "33.8 million",
+      "value": "33.8 million",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "33.8 million",
+      "as_written": "33.8 million"
+    },
+    {
+      "text": "142.7 million",
+      "value": "142.7 million",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "142.7 million",
+      "as_written": "142.7 million"
+    },
+    {
+      "text": "Table 2: 85 million, 8.7 billion, 214 million, 278 million",
+      "value": "85M",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "85M",
+      "as_written": "85 million"
+    },
+    {
+      "text": "8.7 billion",
+      "value": "8.7B",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "8.7B",
+      "as_written": "8.7 billion"
+    },
+    {
+      "text": "214 million",
+      "value": "214M",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "214M",
+      "as_written": "214 million"
+    },
+    {
+      "text": "278 million",
+      "value": "278M",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "278M",
+      "as_written": "278 million"
+    },
+    {
+      "text": "Table 8",
+      "value": "137.7",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "137.7",
+      "as_written": "137.7"
+    },
+    {
+      "text": "28.9",
+      "value": "28.9",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "28.9",
+      "as_written": "28.9"
+    },
+    {
+      "text": "47.0",
+      "value": "47.0",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "47.0",
+      "as_written": "47.0"
+    },
+    {
+      "text": "9.4 million",
+      "value": "9.4",
+      "source_url": "https://arxiv.org/abs/1701.06538",
+      "quote": "9.4",
+      "as_written": "9.4 million"
+    },
+    {
+      "text": "DeepSeek-V3: 671 billion / 37 billion",
+      "value": "671 billion",
+      "source_url": "https://arxiv.org/abs/2501.12948",
+      "quote": "DeepSeek V3 has 671 billion total parameters, with 37 billion activated per token",
+      "as_written": "671 billion"
+    },
+    {
+      "text": "37 billion",
+      "value": "37 billion",
+      "source_url": "https://arxiv.org/abs/2501.12948",
+      "quote": "with 37 billion activated per token",
+      "as_written": "37 billion"
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "46a7f184843d757d"
+}
