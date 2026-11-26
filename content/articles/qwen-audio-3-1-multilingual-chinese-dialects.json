@@ -1,0 +1,343 @@
+{
+  "slug": "qwen-audio-3-1-multilingual-chinese-dialects",
+  "date": "2026-11-26",
+  "category": "product",
+  "publisher": "Alibaba_Qwen",
+  "topics": [
+    "qwen"
+  ],
+  "title": "Qwen-Audio-3.1 多语言升级：ASR 覆盖 59 种语言、8 种中文方言",
+  "summary": "想让 AI 听懂你的家乡话、或用方言合成语音？通义千问给 Qwen-Audio-3.1 的三个语音模型做了一次多语言升级，重点放在中文方言。",
+  "ai_summary": "11 月 26 日，通义千问（Qwen）宣布为 Qwen-Audio-3.1 系列补上多语言能力，重点是中文方言。这次升级覆盖三条产品线：语音识别（ASR，把说话转成文字）支持 59 种语言、8 种中文方言；语音合成（TTS，把文字转成语音）支持 65 种语言、6 种中文方言；实时语音（Realtime，边说边回）支持 53 种语言、6 种中文方言。对做客服、字幕、配音、语音助手的人来说，等于多了一组现成的多语言/方言入口，尤其适合服务不同方言用户。要注意的是，这些数字来自官方发布，原文没有列出具体是哪几种方言，也没有给评测数据，落地前最好用真实语料验证。",
+  "brief": [
+    "ASR（语音识别）现在支持 59 种语言和 8 种中文方言。",
+    "TTS（语音合成）支持 65 种语言和 6 种中文方言，是三个方向里语言覆盖最多的。",
+    "Realtime（实时语音）支持 53 种语言和 6 种中文方言。",
+    "三个模型都已在官方渠道开放，可分别试用。"
+  ],
+  "readMinutes": 3,
+  "sections": [
+    {
+      "h": "这是什么：Qwen-Audio-3.1 的三个语音模型一起做了多语言升级",
+      "blocks": [
+        {
+          "p": "Qwen-Audio-3.1 是通义千问此前发布的语音基础模型系列，官方这次在 11 月 26 日宣布为它补上多语言能力，重点放在中文方言。所谓语音基础模型，可以理解成给语音应用打底的能力：识别、合成、实时对话，各占一条线。"
+        },
+        {
+          "p": "三个方向分别对应：ASR（Automatic Speech Recognition，语音识别）把录音转成文字；TTS（Text-to-Speech，语音合成）把文字转成语音；Realtime 是实时语音，适合边说边回的对话场景。官方说这次在识别和合成上都加强了中文方言。"
+        }
+      ]
+    },
+    {
+      "h": "三个模型各自覆盖多少语言和方言？",
+      "blocks": [
+        {
+          "p": "官方给的是三组数字，按语言种类看：TTS 最多，ASR 次之，Realtime 最少。中文方言方面，ASR 比另外两个多两种。"
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "TTS 语言最多，Realtime 最少，方言上 ASR 多两种",
+            "subtitle": "单位：种；数字来自官方发布",
+            "items": [
+              {
+                "value": "59",
+                "unit": "种语言",
+                "label": "ASR 语音识别"
+              },
+              {
+                "value": "8",
+                "unit": "种中文方言",
+                "label": "ASR 语音识别"
+              },
+              {
+                "value": "65",
+                "unit": "种语言",
+                "label": "TTS 语音合成"
+              },
+              {
+                "value": "6",
+                "unit": "种中文方言",
+                "label": "TTS 语音合成"
+              },
+              {
+                "value": "53",
+                "unit": "种语言",
+                "label": "Realtime 实时语音"
+              },
+              {
+                "value": "6",
+                "unit": "种中文方言",
+                "label": "Realtime 实时语音"
+              }
+            ]
+          }
+        },
+        {
+          "p": "这些数字来自官方发布，属于厂商口径；原文没有给出第三方评测，也不代表每门语言或方言的实际识别质量都一样。"
+        }
+      ]
+    },
+    {
+      "h": "为什么说重点在中文方言？",
+      "blocks": [
+        {
+          "p": "方言对语音模型是现实难点：同一个意思，不同方言的发音差异很大，不少方言还缺少统一的书面写法，训练语料也相对少。官方把这次升级的亮点写成「enhanced Chinese dialect recognition and synthesis」——中文方言的识别和合成都增强了，而且三条产品线都覆盖。"
+        },
+        {
+          "p": "不过原文只给了方言的数量，没有列出具体是哪几种。下面是三种模型里，中文方言占总语言数的比例，可以直观看出「方言是其中一小部分」。"
+        },
+        {
+          "fig": {
+            "type": "schematic",
+            "title": "中文方言只是总语言数里的一小部分",
+            "subtitle": "示意：琥珀色是中文方言，外圈是语言总数，数字来自官方发布",
+            "items": [
+              {
+                "glyph": {
+                  "kind": "ring",
+                  "value": 8,
+                  "max": 59,
+                  "label": "ASR",
+                  "display": "8/59"
+                },
+                "title": "语音识别 ASR",
+                "sub": "语音 → 文字",
+                "rows": [
+                  {
+                    "k": "语言",
+                    "v": "59 种"
+                  },
+                  {
+                    "k": "中文方言",
+                    "v": "8 种"
+                  }
+                ]
+              },
+              {
+                "glyph": {
+                  "kind": "ring",
+                  "value": 6,
+                  "max": 65,
+                  "label": "TTS",
+                  "display": "6/65"
+                },
+                "title": "语音合成 TTS",
+                "sub": "文字 → 语音",
+                "rows": [
+                  {
+                    "k": "语言",
+                    "v": "65 种"
+                  },
+                  {
+                    "k": "中文方言",
+                    "v": "6 种"
+                  }
+                ]
+              },
+              {
+                "glyph": {
+                  "kind": "ring",
+                  "value": 6,
+                  "max": 53,
+                  "label": "Realtime",
+                  "display": "6/53"
+                },
+                "title": "实时语音 Realtime",
+                "sub": "边说边回",
+                "rows": [
+                  {
+                    "k": "语言",
+                    "v": "53 种"
+                  },
+                  {
+                    "k": "中文方言",
+                    "v": "6 种"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "想上手，三个模型怎么进？",
+      "blocks": [
+        {
+          "p": "官方帖子里给了三个入口，分别对应 ASR、TTS、Realtime，都是短链。"
+        },
+        {
+          "fig": {
+            "type": "cards",
+            "title": "三条产品线，各有入口",
+            "subtitle": "能力描述来自官方发布；入口是官方帖子里的短链",
+            "note": "跳转前请核对模型页面上的许可和使用方式。",
+            "items": [
+              {
+                "icon": "audio",
+                "title": "ASR 语音识别",
+                "desc": "把语音转成文字，覆盖 59 种语言、8 种中文方言。",
+                "tags": [
+                  "59 语言",
+                  "8 方言"
+                ],
+                "tone": "base"
+              },
+              {
+                "icon": "doc",
+                "title": "TTS 语音合成",
+                "desc": "把文字合成语音，覆盖 65 种语言、6 种中文方言。",
+                "tags": [
+                  "65 语言",
+                  "6 方言"
+                ],
+                "tone": "base"
+              },
+              {
+                "icon": "chat",
+                "title": "Realtime 实时语音",
+                "desc": "边说边回的实时对话，覆盖 53 种语言、6 种中文方言。",
+                "tags": [
+                  "53 语言",
+                  "6 方言"
+                ],
+                "tone": "base"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "官方还没说的",
+      "blocks": [
+        {
+          "list": [
+            "具体是哪 8 种或 6 种中文方言，粤语、闽南语等是否在内。",
+            "多语言覆盖里具体包含哪些语种。",
+            "识别错误率、合成自然度、实时延迟等评测数字。",
+            "是否收费，以及 API 价格和速率限制。",
+            "和上一版 Qwen-Audio-3.1（多语言升级前）相比具体提升多少。",
+            "方言的测试条件，比如嘈杂环境、口音浓淡等。"
+          ],
+          "p": "这些信息原文都没有给出，落地前需要自行核对或等待官方后续说明。"
+        }
+      ]
+    },
+    {
+      "h": "适合谁",
+      "blocks": [
+        {
+          "p": "价值很清楚：如果你做的产品需要和多语言、多方言的用户打交道，这三条线给了现成的入口——转写走 ASR，合成配音走 TTS，实时对话走 Realtime。"
+        },
+        {
+          "p": "代价是现在只有官方口径的数量，没有公开的评测、定价或具体方言清单，所以不能只凭数字就决定上线。"
+        },
+        {
+          "list": [
+            "如果你要做多语言字幕或客服转写，先看 ASR。",
+            "如果你要生成有声书、配音或多语言播报，看 TTS。",
+            "如果你做语音助手或实时翻译，看 Realtime。",
+            "如果你的用户讲特定方言，先去确认该方言是否在 8 种或 6 种名单里。"
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "New multilingual capabilities are here for Qwen-Audio-3.1! Especially for Chinese dialects.",
+      "publisher": "Alibaba_Qwen",
+      "date": "2026-11-26",
+      "url": "https://x.com/Alibaba_Qwen/status/2125798914490249411"
+    },
+    "more": [
+      {
+        "label": "Qwen-Audio-3.1-ASR",
+        "url": "https://t.co/S3zi6LBBai"
+      },
+      {
+        "label": "Qwen-Audio-3.1-TTS",
+        "url": "https://t.co/PcnbjnrEGl"
+      },
+      {
+        "label": "Qwen-Audio-3.1-Realtime",
+        "url": "https://t.co/5SYe9Bv5eE"
+      }
+    ],
+    "note": "本文只依据 Qwen 官方 X 帖子。图中环形比例为示意，数字来自官方发布；具体方言名单、评测和定价原文未提供。"
+  },
+  "claims": [
+    {
+      "text": "语音识别（ASR）覆盖 59 种语言。",
+      "value": "59",
+      "source_url": "https://x.com/Alibaba_Qwen/status/2125798914490249411",
+      "as_written": "59 种",
+      "quote": "ASR: 59 languages, 8 Chinese dialects."
+    },
+    {
+      "text": "语音识别（ASR）覆盖 8 种中文方言。",
+      "value": "8",
+      "source_url": "https://x.com/Alibaba_Qwen/status/2125798914490249411",
+      "as_written": "8 种",
+      "quote": "ASR: 59 languages, 8 Chinese dialects."
+    },
+    {
+      "text": "语音合成（TTS）覆盖 65 种语言。",
+      "value": "65",
+      "source_url": "https://x.com/Alibaba_Qwen/status/2125798914490249411",
+      "as_written": "65 种",
+      "quote": "TTS: 65 languages, 6 Chinese dialects."
+    },
+    {
+      "text": "语音合成（TTS）覆盖 6 种中文方言。",
+      "value": "6",
+      "source_url": "https://x.com/Alibaba_Qwen/status/2125798914490249411",
+      "as_written": "6 种",
+      "quote": "TTS: 65 languages, 6 Chinese dialects."
+    },
+    {
+      "text": "实时语音（Realtime）覆盖 53 种语言。",
+      "value": "53",
+      "source_url": "https://x.com/Alibaba_Qwen/status/2125798914490249411",
+      "as_written": "53 种",
+      "quote": "Realtime: 53 languages, 6 Chinese dialects."
+    },
+    {
+      "text": "实时语音（Realtime）覆盖 6 种中文方言。",
+      "value": "6",
+      "source_url": "https://x.com/Alibaba_Qwen/status/2125798914490249411",
+      "as_written": "6 种",
+      "quote": "Realtime: 53 languages, 6 Chinese dialects."
+    },
+    {
+      "text": "官方在 2026 年 11 月 26 日发布这次升级。",
+      "value": "2026-11-26",
+      "source_url": "https://x.com/Alibaba_Qwen/status/2125798914490249411",
+      "as_written": "2026 年 11 月 26 日"
+    }
+  ],
+  "cover": {
+    "headline": "Qwen 语音模型方言升级",
+    "highlight": "ASR 59 种语言、8 种方言",
+    "glyph": {
+      "kind": "ring",
+      "value": 8,
+      "max": 59,
+      "label": "ASR",
+      "display": "8/59"
+    }
+  },
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "origin": "auto",
+    "candidate": "0f70c64888",
+    "tier": "official",
+    "via": null,
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "generated_at": "2026-11-26T19:39:57.885Z"
+  }
+}
