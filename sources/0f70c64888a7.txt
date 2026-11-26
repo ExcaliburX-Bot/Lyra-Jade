@@ -1,0 +1,21 @@
+URL: https://x.com/Alibaba_Qwen/status/2125798914490249411
+FETCHED: 2026-11-26T09:40:25.208Z
+NOTE: X 帖子原文（含作者自己的整串），由 Grok Bot 在 X 上读取
+
+🎙️ New multilingual capabilities are here for Qwen-Audio-3.1! Especially for Chinese dialects.
+
+We previously released the Qwen-Audio-3.1 series of speech foundation models. Today, we are bringing the enhanced multilingual capabilities, with a strong focus on Chinese dialects.
+
+Our multilingual upgrades:
+- ASR: 59 languages, 8 Chinese dialects.
+- TTS: 65 languages, 6 Chinese dialects.
+- Realtime: 53 languages, 6 Chinese dialects.
+
+Key highlights:
+- Enhanced Chinese dialect recognition and synthesis.
+- Broader language coverage across all modalities.
+
+Qwen-Audio-3.1 is now available. Give it a try! 🥳
+- Qwen-Audio-3.1-ASR: https://t.co/S3zi6LBBai
+- Qwen-Audio-3.1-TTS: https://t.co/PcnbjnrEGl
+- Qwen-Audio-3.1-Realtime: https://t.co/5SYe9Bv5eE
