@@ -1,0 +1,421 @@
+{
+  "slug": "openai-daybreak-nato-cyber-defence",
+  "date": "2026-11-17",
+  "category": "product",
+  "publisher": "OpenAI",
+  "topics": [
+    "openai"
+  ],
+  "title": "OpenAI aids NATO and allied cyber defense: up to 300 billion tokens a month, 95% of 88 issues confirmed",
+  "summary": "Cyber defense teams review large volumes of software and investigate suspicious activity every day. OpenAI says it is putting security models into the hands of NATO and several European countries through Daybreak, helping defenders find vulnerabilities faster while humans still confirm and fix them.",
+  "ai_summary": "OpenAI is providing cybersecurity models through Daybreak to NATO's core institutions, with access already extended to the EU, France, Germany, Poland, and Ukraine. NATO has used up to 300 billion input and output tokens per month. On results: ENISA found four vulnerabilities and all were fixed; in a November joint report from ENISA and CERT-EU, maintainers reviewed 88 potential issues and confirmed 95% as genuine; CERT Polska found six MikroTik RouterOS vulnerabilities and the vendor has fixed them. For defenders, the value is faster initial triage and vulnerability exploration, with humans keeping oversight and final judgment. The biggest limitation: the announcement does not disclose pricing, contracts, or costs, and does not say whether the 300 billion tokens is a steady run rate or a peak.",
+  "brief": [
+    "NATO has used up to 300 billion input and output tokens per month.",
+    "ENISA used the models to find four vulnerabilities, all fixed.",
+    "A November report reviewed 88 potential issues and confirmed 95% as genuine.",
+    "CERT Polska found six MikroTik RouterOS vulnerabilities, and the vendor has shipped fixes."
+  ],
+  "readMinutes": 6,
+  "sections": [
+    {
+      "h": "What it is: OpenAI hands Daybreak to government and military defenders",
+      "blocks": [
+        {
+          "p": "On November 17, 2026, OpenAI announced a partnership with NATO Communications and Information Agency (NCIA) to provide Daybreak cybersecurity models to NATO's core institutions, helping protect member networks."
+        },
+        {
+          "p": "Daybreak is an AI tool for \"trusted defenders\" doing authorized security work: reviewing software, investigating suspicious activity, validating vulnerabilities, and developing and testing fixes. Its target users are government and national cyber agencies, not a general-purpose chat product."
+        },
+        {
+          "fig": {
+            "type": "illustration",
+            "title": "A typical Daybreak workflow: flagging suspicious code in a large codebase",
+            "subtitle": "Illustrative: amber shows code flagged by AI for review; the example is for illustration only",
+            "glyph": {
+              "kind": "doc",
+              "lines": 8,
+              "select": [
+                3,
+                4
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "h": "How much NATO uses: up to 300 billion tokens a month",
+      "blocks": [
+        {
+          "p": "The announcement gives one scale number: NATO has used up to 300 billion input and output tokens per month on this work. Tokens are the smallest unit of text a model reads and generates, and 300 billion reflects a large accumulated throughput of code review, alert triage, and vulnerability analysis."
+        },
+        {
+          "p": "Note the \"up to\" qualifier: this is a peak figure, not a fixed monthly amount, and the announcement does not give an average. Vendors usually cite usage figures to show scale, not to claim every month hits the ceiling."
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "Four key numbers",
+            "subtitle": "Token figure is the maximum monthly usage; 95% is the share confirmed by maintainers after review.",
+            "items": [
+              {
+                "value": 3000,
+                "unit": "B tokens / month",
+                "label": "NATO peak usage",
+                "note": "input + output; source says up to 300 billion"
+              },
+              {
+                "value": 95,
+                "unit": "%",
+                "label": "Potential issues confirmed genuine",
+                "note": "from 88 reviewed by maintainers"
+              },
+              {
+                "value": 4,
+                "unit": "issues",
+                "label": "Vulnerabilities found by ENISA",
+                "note": "all fixed"
+              },
+              {
+                "value": 6,
+                "unit": "issues",
+                "label": "Vulnerabilities found by CERT Polska",
+                "note": "MikroTik RouterOS, vendor fixed"
+              }
+            ]
+          }
+        },
+        {
+          "fig": {
+            "type": "quote",
+            "title": "NCIA: AI keeps defenders ahead of adversaries",
+            "text": "AI-powered cyber defence models represent a generational leap in cyber security. They accelerate vulnerability discovery, detect emerging threats at machine speed and enable defenders to stay ahead of adversaries.",
+            "who": "Dr Dylan Browne",
+            "role": "NCIA General Manager",
+            "source_url": "https://openai.com/index/strengthening-nato-allied-cyber-defences-ai"
+          }
+        }
+      ]
+    },
+    {
+      "h": "What role AI plays in exercises: faster triage, not replacing humans",
+      "blocks": [
+        {
+          "p": "OpenAI also supported the 2026 Crossed Swords exercise, organized by the NATO Cooperative Cyber Defence Centre of Excellence (CCDCOE). The exercise included a new training stream in which participants built, deployed, and evaluated AI agents for cyber operations using OpenAI Daybreak in the technical environment."
+        },
+        {
+          "p": "The key element is human oversight. The announcement says participants acted as operators of AI agents and emphasizes maintaining human oversight. AI provides speed and scale; people still make the final judgment."
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "AI accelerates initial triage, humans make the final call",
+            "subtitle": "Amber shows the parts AI accelerates; grey shows the parts still owned by people.",
+            "left": {
+              "label": "What AI accelerates",
+              "sub": "Models like Daybreak",
+              "items": [
+                {
+                  "label": "Review software, investigate suspicious activity",
+                  "tag": "reads code + alerts",
+                  "state": "hi"
+                },
+                {
+                  "label": "Validate vulnerabilities",
+                  "tag": "initial triage",
+                  "state": "hi"
+                },
+                {
+                  "label": "Develop and test fixes",
+                  "tag": "accelerates",
+                  "state": "hi"
+                }
+              ]
+            },
+            "right": {
+              "label": "What humans keep",
+              "sub": "Defenders, researchers, maintainers",
+              "items": [
+                {
+                  "label": "Authorized security work",
+                  "tag": "scope",
+                  "state": "base"
+                },
+                {
+                  "label": "Direct research",
+                  "tag": "direction",
+                  "state": "base"
+                },
+                {
+                  "label": "Test on real systems",
+                  "tag": "confirmation",
+                  "state": "base"
+                },
+                {
+                  "label": "Confirm impact, publish fixes",
+                  "tag": "final",
+                  "state": "base"
+                }
+              ]
+            },
+            "footer": "The announcement stresses the human in the loop: AI provides speed; humans make decisions and confirm results."
+          }
+        }
+      ]
+    },
+    {
+      "h": "Allied results: 4 vulnerabilities fixed, 88 issues 95% genuine",
+      "blocks": [
+        {
+          "p": "Beyond NATO, OpenAI has provided these cyber models to defenders in Europe, including the EU's cybersecurity agency ENISA and national cyber agencies in France (ANSSI), Germany, and Poland. Ukraine's Ministry of Digital Transformation is also using Daybreak to protect civilian infrastructure."
+        },
+        {
+          "fig": {
+            "type": "cards",
+            "title": "Who is already using it, and what they have done",
+            "subtitle": "Amber shows the headline results with specific figures; grey shows the other organizations with access.",
+            "items": [
+              {
+                "icon": "globe",
+                "title": "NATO core institutions",
+                "desc": "Access to Daybreak through NCIA to help protect member networks",
+                "tags": [
+                  "up to 300B tokens / month"
+                ],
+                "tone": "hi"
+              },
+              {
+                "icon": "shield",
+                "title": "ENISA",
+                "desc": "Found four vulnerabilities in software used across EU institutions, all fixed",
+                "tags": [
+                  "4 vulnerabilities"
+                ],
+                "tone": "hi"
+              },
+              {
+                "icon": "shield",
+                "title": "CERT Polska",
+                "desc": "Found six MikroTik RouterOS vulnerabilities, vendor fixed them",
+                "tags": [
+                  "6 vulnerabilities"
+                ],
+                "tone": "hi"
+              },
+              {
+                "icon": "globe",
+                "title": "Ukraine's Ministry of Digital Transformation",
+                "desc": "Using Daybreak to protect civilian infrastructure",
+                "tags": [
+                  "civilian infrastructure"
+                ],
+                "tone": "base"
+              },
+              {
+                "icon": "shield",
+                "title": "French, German, and Polish cyber agencies",
+                "desc": "Have access to these cyber models",
+                "tags": [
+                  "ANSSI and others"
+                ],
+                "tone": "base"
+              }
+            ]
+          }
+        },
+        {
+          "p": "ENISA used these models to find four vulnerabilities in software used across EU institutions, and fixes have been published for all four, with links listed in the announcement."
+        },
+        {
+          "p": "More notable is the November joint report from ENISA and CERT-EU, the EU institutions' computer emergency response team. They reviewed 27 software projects using frontier models, including OpenAI models accessed through Daybreak, along with tools including the Codex security plug-in. Software maintainers reviewed 88 potential issues, and 95% were confirmed as genuine."
+        },
+        {
+          "callout": {
+            "kind": "note",
+            "title": "What the 95% actually means",
+            "text": "The announcement says 95% is the aggregate result \"across the models tested\", not OpenAI's number alone. It means that of the issues AI flagged and humans confirmed, 95% turned out to be genuine. That shows AI triage can save a lot of work, but human maintainers still do the final confirmation."
+          }
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "How to read the three results",
+            "subtitle": "All figures come from OpenAI's announcement; the 95% is aggregated across all models tested, not OpenAI alone.",
+            "columns": [
+              "Source",
+              "Target",
+              "Finding",
+              "Result",
+              "Who confirms"
+            ],
+            "rows": [
+              [
+                "ENISA",
+                "Software used across EU institutions",
+                "4 vulnerabilities",
+                "fixes published for all 4",
+                "maintainers confirm"
+              ],
+              [
+                "ENISA + CERT-EU (November report)",
+                "27 software projects",
+                "88 potential issues",
+                "95% confirmed genuine",
+                "software maintainers review"
+              ],
+              [
+                "CERT Polska",
+                "MikroTik RouterOS",
+                "6 vulnerabilities",
+                "vendor fixed",
+                "researchers verified on real systems"
+              ]
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "The CERT Polska MikroTik case: six vulnerabilities, vendor fixed",
+      "blocks": [
+        {
+          "p": "Poland's CERT Polska used OpenAI models to help find six vulnerabilities in MikroTik RouterOS and coordinated disclosure with the vendor. Researchers directed the work, tested findings on real systems, and verified their impact; AI accelerated vulnerability analysis and exploration."
+        },
+        {
+          "p": "MikroTik then released fixes, and CERT Polska confirmed the fixes blocked the attacks it had observed. For network operators using affected devices, that offers a concrete remediation path."
+        }
+      ]
+    },
+    {
+      "h": "Cost and pricing: no numbers published",
+      "blocks": [
+        {
+          "p": "The announcement gives no prices, contract amounts, or per-token costs. In a statement, NCIA General Manager Dylan Browne said that as they scale adoption, they will build a deeper understanding of token consumption, usage patterns, and the economics of AI models, to optimize costs, evaluate competing solutions, and make procurement decisions."
+        },
+        {
+          "p": "In other words, the organization is itself working through the economics but has not published specific figures. If you want to know how much Daybreak costs or how it is billed, there is no public answer yet."
+        }
+      ]
+    },
+    {
+      "h": "What OpenAI hasn't said",
+      "blocks": [
+        {
+          "list": [
+            "Price and cost: no per-token, per-project, or contract figures.",
+            "Whether NATO's 300 billion tokens is a steady run rate or a one-month peak: the announcement only says \"up to\", with no average.",
+            "What model Daybreak actually is, its context window, and what access controls it has: not detailed.",
+            "Specific results for Ukraine: the announcement only says it helps identify and fix vulnerabilities faster, with no numbers.",
+            "Whether these tools are open to ordinary businesses or individuals, or how to apply: not stated."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Who it's for",
+      "blocks": [
+        {
+          "p": "The value is clear: for national cyber agencies and multinational defense teams handling huge volumes of code and alerts every day, AI speeds up initial triage — flagging suspicious code and potential vulnerabilities before handing them to humans. The three results in the announcement follow the same pattern of AI triage plus human confirmation: four vulnerabilities fixed, 88 issues with 95% confirmed genuine, and six MikroTik vulnerabilities fixed."
+        },
+        {
+          "p": "The costs are also clear: it consumes a lot of tokens, up to 300 billion per month for NATO, which means real compute budget; and it still depends on experienced researchers and maintainers. AI cannot publish fixes on its own."
+        },
+        {
+          "list": [
+            "If you run a national cyber agency or multinational defense team: Daybreak is a good fit for initial triage and acceleration in authorized security work, but pair it with a solid human review process.",
+            "If you maintain software: every AI-reported issue still needs to be verified one by one. A 95% confirmation rate saves effort, but it is not zero false positives.",
+            "If you are a regular enterprise security team: this post does not explain how to get access, so do not assume you can use it directly; watch for future application and pricing details."
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Strengthening NATO and allied cyber defenses with AI",
+      "publisher": "OpenAI",
+      "date": "2026-11-17",
+      "url": "https://openai.com/index/strengthening-nato-allied-cyber-defences-ai"
+    },
+    "more": [],
+    "note": "No sources other than the primary material were used in the article. \"Illustrative\" in figures refers only to how the diagrams are drawn; the numbers themselves come from OpenAI's announcement. The 95% confirmation rate is an aggregate across all frontier models tested in the joint report, not OpenAI's result alone."
+  },
+  "claims": [
+    {
+      "text": "NATO has used up to 300 billion input and output tokens per month on this work.",
+      "value": "300 billion",
+      "source_url": "https://openai.com/index/strengthening-nato-allied-cyber-defences-ai",
+      "as_written": "300 billion",
+      "quote": "NATO has used up to 300 billion raw input and output tokens per month as part of this work."
+    },
+    {
+      "text": "OpenAI supported the 2026 Crossed Swords exercise.",
+      "value": "2026",
+      "source_url": "https://openai.com/index/strengthening-nato-allied-cyber-defences-ai",
+      "as_written": "2026",
+      "quote": "OpenAI also supported the 2026 Crossed Swords exercise."
+    },
+    {
+      "text": "ENISA used these models to find four vulnerabilities, and fixes were published for all four.",
+      "value": "four",
+      "source_url": "https://openai.com/index/strengthening-nato-allied-cyber-defences-ai",
+      "as_written": "4",
+      "quote": "The EU's cyber agency, ENISA, used our models to identify four vulnerabilities in software used across EU institutions, with fixes published for all four"
+    },
+    {
+      "text": "The November ENISA-CERT-EU joint report reviewed 27 software projects.",
+      "value": "27",
+      "source_url": "https://openai.com/index/strengthening-nato-allied-cyber-defences-ai",
+      "as_written": "27",
+      "quote": "A November joint report from ENISA and CERT-EU also describes a review of 27 software projects using frontier models including OpenAI models accessed through Daybreak"
+    },
+    {
+      "text": "Software maintainers reviewed 88 potential issues.",
+      "value": "88",
+      "source_url": "https://openai.com/index/strengthening-nato-allied-cyber-defences-ai",
+      "as_written": "88",
+      "quote": "95% of the 88 potential issues assessed by software maintainers were confirmed as genuine"
+    },
+    {
+      "text": "Of the 88 potential issues, 95% were confirmed as genuine.",
+      "value": "95%",
+      "source_url": "https://openai.com/index/strengthening-nato-allied-cyber-defences-ai",
+      "as_written": "95%",
+      "quote": "95% of the 88 potential issues assessed by software maintainers were confirmed as genuine"
+    },
+    {
+      "text": "CERT Polska used OpenAI models to help identify six vulnerabilities in MikroTik RouterOS.",
+      "value": "six",
+      "source_url": "https://openai.com/index/strengthening-nato-allied-cyber-defences-ai",
+      "as_written": "6",
+      "quote": "CERT Polska used OpenAI models to help identify six vulnerabilities in MikroTik RouterOS"
+    },
+    {
+      "text": "The ENISA-CERT-EU joint report was published in November.",
+      "value": "November",
+      "source_url": "https://openai.com/index/strengthening-nato-allied-cyber-defences-ai",
+      "as_written": "November",
+      "quote": "A November joint report from ENISA and CERT-EU also describes a review of 27 software projects"
+    },
+    {
+      "text": "OpenAI published the announcement on November 17, 2026.",
+      "value": "November 17, 2026",
+      "source_url": "https://openai.com/index/strengthening-nato-allied-cyber-defences-ai",
+      "as_written": "November 17, 2026",
+      "quote": "November 17, 2026"
+    }
+  ],
+  "cover": {
+    "headline": "OpenAI × NATO cyber defense",
+    "highlight": "Up to 300 billion tokens per month",
+    "big": {
+      "value": 3000,
+      "unit": "B tokens / month",
+      "label": "NATO peak usage"
+    }
+  },
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "042ceb7a0093d732"
+}
