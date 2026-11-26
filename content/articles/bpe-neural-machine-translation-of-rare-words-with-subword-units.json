@@ -1,0 +1,964 @@
+{
+  "slug": "bpe-neural-machine-translation-of-rare-words-with-subword-units",
+  "category": "paper",
+  "publisher": "Sennrich、Haddow、Birch · 爱丁堡大学",
+  "date": "2015-08-31",
+  "title": "精读《BPE 子词分词》：把词拆成常见的片段，固定词表也能拼出任何词，大模型的 token 由此而来",
+  "summary": "神经翻译的词表只有几万个词，罕见词和新词翻不出来。这篇论文把 1994 年的字节对编码压缩算法改造成分词方法：从字母开始，反复合并最常见的相邻两块。我们按论文代码手算 10 次合并，看它的实验、切分不一致带来的错误，以及它怎样变成今天大模型的 token。",
+  "ai_summary": "《Neural Machine Translation of Rare Words with Subword Units》（Sennrich 等，爱丁堡大学，ACL 2016）把字节对编码（BPE）用于分词：从字符出发，反复把语料中最常见的相邻符号对合并为新符号，合并次数决定词表大小。罕见词和新词被表示为子词序列，翻译模型不再需要回退词典。在 WMT 2015 英译德、英译俄上，子词模型比词典基线最多高 1.1 和 1.3 BLEU，罕见词翻译明显改善，联合两种语言学习的 BPE 切分更一致。",
+  "brief": [
+    "问题：翻译模型词表只有几万个词，罕见词、人名、复合词只能查词典或照抄，也无法生成新词。",
+    "方法：借用 BPE 压缩算法，从字母开始反复合并最常见的相邻两块，用固定词表表示任意词。",
+    "结果：不用词典，英译德、英译俄 BLEU 最多高 1.1 和 1.3，罕见词和未见词翻得更好；联合 BPE 切分更一致。",
+    "局限：词表大小靠经验设定；BLEU 最高的是字符二元组而非 BPE；分开学时切分不一致会导致转写错误。"
+  ],
+  "paper": {
+    "title": "Neural Machine Translation of Rare Words with Subword Units",
+    "authors": "Rico Sennrich, Barry Haddow, Alexandra Birch",
+    "org": "爱丁堡大学",
+    "venue": "ACL 2016",
+    "year": 2015,
+    "arxiv": "1508.07909",
+    "url": "https://arxiv.org/abs/1508.07909"
+  },
+  "cover": {
+    "headline": "BPE 子词分词原论文精读",
+    "highlight": "固定词表，拼出任何词",
+    "glyph": {
+      "kind": "flow",
+      "nodes": [
+        {
+          "label": "单个字母"
+        },
+        {
+          "label": "反复合并最常见的一对",
+          "tone": "hi"
+        },
+        {
+          "label": "子词词表"
+        }
+      ]
+    }
+  },
+  "sections": [
+    {
+      "h": "先说结论：这篇论文到底做了什么",
+      "blocks": [
+        {
+          "p": "2015 年 8 月，爱丁堡大学的 Rico Sennrich、Barry Haddow 和 Alexandra Birch 发布了这篇论文，次年发表在 ACL 2016。它要解决的是神经机器翻译的一个老毛病：**模型的词表是固定的，可要翻译的词是无穷无尽的**。"
+        },
+        {
+          "p": "当时的神经翻译模型，词表一般只有 3 万到 5 万个词。词表外的词统统变成一个“未知词”符号，翻译时只能靠查词典或者原样照抄来补救。可是人名、复合词、外来词、新造的词层出不穷，德语这种能把好几个词拼成一个长词的语言更是如此。"
+        },
+        {
+          "p": "论文的办法是：**把词拆成更小的“子词”**。常见的词保持完整，少见的词拆成几个常见的片段，实在不行就拆到单个字母。这样，用一个固定大小的词表，就能表示任何词。怎么拆？论文借用了 1994 年的一个数据压缩算法，**字节对编码**（Byte Pair Encoding，BPE）：从单个字母开始，反复把语料里最常一起出现的两个符号合并成一个新符号，合并多少次，就决定了词表有多大。"
+        },
+        {
+          "p": "在 WMT 2015 英译德和英译俄任务上，子词模型不再需要查词典，比查词典的基线分别高出最多 1.1 和 1.3 个 BLEU 分，对罕见词和训练集里从没见过的词，翻译得明显更好。"
+        },
+        {
+          "p": "这篇论文的影响远远超出了机器翻译。今天 GPT、LLaMA 等大模型说的 **token**，大多就是用 BPE 或它的变体切出来的。“模型一次读一个 token”里的 token 是什么，就是从这篇论文开始定型的。"
+        },
+        {
+          "callout": {
+            "kind": "takeaway",
+            "title": "一句话版本",
+            "text": "BPE ＝ 从字母出发，一次次把最常见的相邻两块粘成一块。常见词最后变成一整块，罕见词停在几个片段。这样，固定大小的词表能拼出任何词。"
+          }
+        },
+        {
+          "callout": {
+            "kind": "prereq",
+            "title": "读这篇需要的三个小概念",
+            "text": "不懂也没关系，这三条够用了：",
+            "list": [
+              "**词表**：模型认识的所有符号的清单。模型的输入和输出层大小都跟词表大小成正比，所以词表不能无限大。",
+              "**编码器－解码器翻译模型**：一个网络读原文，一个网络写译文，中间用注意力对齐。本文的模型就是《Bahdanau 注意力》精读里讲的那个。",
+              "**BLEU**：比较机器译文和参考译文的词语重合程度，分数越高越好。"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "问题：词表是封闭的，语言是开放的",
+      "blocks": [
+        {
+          "p": "在词级别的翻译模型里，遇到词表外的词（论文叫 OOV），通常的补救是“回退到词典”：先输出一个未知词符号，再根据注意力找到它对应的原文词，查双语词典翻译，查不到就原样照抄。"
+        },
+        {
+          "p": "论文指出这有几个问题：两种语言的词并不总是一一对应，比如德语一个复合词可能对应英语好几个词；照抄对人名还算合理，但很多时候需要改变词形或转写字母，比如从拉丁字母写成西里尔字母；而且词级模型根本**无法生成**训练时没见过的新词。"
+        },
+        {
+          "p": "但另一方面，很多“不认识的词”其实是可以**透明地翻译**的：一个称职的译者即使第一次见到，也能根据它的组成部分翻出来。论文举了三类："
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "能通过更小单位翻译的三类词",
+            "subtitle": "例子来自论文第 3 节",
+            "columns": [
+              "类型",
+              "例子",
+              "怎么翻"
+            ],
+            "rows": [
+              [
+                "人名等专有名词",
+                "英语 Barack Obama → 俄语 Барак Обама",
+                "同一字母表就照抄，不同字母表就逐音转写"
+              ],
+              [
+                "同源词和外来词",
+                "英语 claustrophobia → 德语 Klaustrophobie",
+                "按规律改几个字母"
+              ],
+              [
+                "结构复杂的词",
+                "英语 solar system → 德语 Sonnensystem（Sonne ＋ System）",
+                "拆成语素分别翻译再拼起来"
+              ]
+            ]
+          }
+        },
+        {
+          "p": "论文统计了德语训练数据里 100 个罕见词（不在最常见的 5 万个词里），发现大多数都能这样从英语翻出来：其中 56 个复合词、21 个人名、6 个同源外来词、5 个能按词缀翻译的词，以及 1 个数字和 1 个计算机语言名称。"
+        }
+      ]
+    },
+    {
+      "h": "BPE：把压缩算法改造成分词算法",
+      "blocks": [
+        {
+          "p": "原始的 BPE 是 Gage 在 1994 年提出的压缩算法：反复找出数据里出现最多的一对字节，用一个没用过的字节替换它。论文把它搬到分词上，合并的对象从字节换成了字符和字符串："
+        },
+        {
+          "list": [
+            "**初始化**：词表里只有所有单个字符。每个词写成字符序列，末尾加一个特殊的“词尾”符号（论文写作 ·，代码里是 </w>），用来在翻译后还原词的边界。",
+            "**统计**：数出所有相邻符号对出现的次数。每个词按它在语料里的出现次数加权，而且不跨越词的边界，所以只需要在“词 → 次数”的字典上跑，很快。",
+            "**合并**：把出现最多的那一对（比如 A 和 B）在所有地方替换成一个新符号 AB，加入词表。",
+            "**重复**：回到第二步，直到合并了预定的次数。"
+          ]
+        },
+        {
+          "p": "每次合并都产生一个新符号，代表一个字符片段。常见的字符片段、乃至整个常见词，最终都会被合并成单个符号。最终词表大小 ＝ 初始字符数 ＋ 合并次数，**合并次数是这个算法唯一的超参数**。"
+        },
+        {
+          "p": "测试时，把新词先拆成字符，再**按学到的顺序**依次应用合并规则。任何词都能这样处理，所以词表是固定的，能表示的词却是开放的。论文说，唯一可能出现的未知符号是训练中从没见过的字符。"
+        },
+        {
+          "callout": {
+            "kind": "intuition",
+            "title": "像在一篇文章里找“常用搭配”",
+            "text": "BPE 有点像给一本书做缩写：先发现“t”后面最常跟“h”，就把“th”当成一个字；再发现“th”后面最常跟“e”，又造出“the”。高频的组合越粘越大，最终整个常用词成了一个字；低频词粘不起来，就保持零件状态。它完全不懂语法，只看统计。"
+          }
+        },
+        {
+          "p": "论文附了一段只有十几行的 Python 代码。我们按它的示例跑一遍："
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "手算 BPE：10 次合并，从字母长出整词",
+            "subtitle": "示意：语料是论文算法 1 里的四个词及其出现次数：low ×5、lower ×2、newest ×6、widest ×3。</w> 表示词尾。数字由本站运行论文代码得出；并列时取最先遇到的那一对",
+            "columns": [
+              "第几次",
+              "合并的两块",
+              "出现次数",
+              "合并后语料里的样子"
+            ],
+            "rows": [
+              [
+                "1",
+                "e ＋ s",
+                "9",
+                "n e w es t </w>、w i d es t </w>"
+              ],
+              [
+                "2",
+                "es ＋ t",
+                "9",
+                "n e w est </w>、w i d est </w>"
+              ],
+              [
+                "3",
+                "est ＋ </w>",
+                "9",
+                "n e w est</w>、w i d est</w>"
+              ],
+              [
+                "4",
+                "l ＋ o",
+                "7",
+                "lo w </w>、lo w e r </w>"
+              ],
+              [
+                "5",
+                "lo ＋ w",
+                "7",
+                "low </w>、low e r </w>"
+              ],
+              [
+                "6",
+                "n ＋ e",
+                "6",
+                "ne w est</w>"
+              ],
+              [
+                "7",
+                "ne ＋ w",
+                "6",
+                "new est</w>"
+              ],
+              [
+                "8",
+                "new ＋ est</w>",
+                "6",
+                "newest</w>：整个词成了一个 token"
+              ],
+              [
+                "9",
+                "low ＋ </w>",
+                "5",
+                "low</w>：整个词成了一个 token"
+              ],
+              [
+                "10",
+                "w ＋ i",
+                "3",
+                "wi d est</w>"
+              ]
+            ],
+            "highlight": {
+              "row": 7
+            },
+            "note": "“est</w>”在 newest 和 widest 里一共出现 6 ＋ 3 ＝ 9 次，所以最先被粘起来，它恰好是英语的最高级词尾。没有人告诉算法什么是词缀，频率自己把它找了出来。"
+          }
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "用学到的 10 条规则切新词",
+            "subtitle": "示意：按上表的合并顺序处理没在语料里出现过的词。数字由本站运行论文代码得出",
+            "columns": [
+              "新词",
+              "切分结果",
+              "说明"
+            ],
+            "rows": [
+              [
+                "lowest",
+                "low ｜ est</w>",
+                "两个学过的片段拼成，虽然这个词从没见过"
+              ],
+              [
+                "slow",
+                "s ｜ low</w>",
+                "前面多一个字母，照样能表示"
+              ],
+              [
+                "newer",
+                "new ｜ e ｜ r ｜ </w>",
+                "er 在这么小的语料里没学到，就退回到单个字母"
+              ]
+            ],
+            "note": "合并次数越多，切出来的片段越大、序列越短，但词表越大。实际使用时会合并几万次。"
+          }
+        },
+        {
+          "quiz": {
+            "q": "BPE 唯一需要人为设定的超参数是什么？",
+            "options": [
+              "学习率",
+              "合并的次数，它直接决定了最终词表的大小",
+              "每个词最多切几段",
+              "词尾符号的写法"
+            ],
+            "answer": 1,
+            "why": "最终词表 ＝ 初始字符 ＋ 每次合并产生的一个新符号。合并越多，常见片段越大、文本越短，但词表越大。论文的英德实验用了 59,500 次合并。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "词表大小和文本长度的拉锯",
+      "blocks": [
+        {
+          "p": "分词方法要在两件事之间取舍：词表越大，模型的输入层、输出层越大，越慢越占内存；可词表太小，一个词就要切成很多段，序列变长，编码器和解码器的计算量至少和序列长度成正比，模型要跨越更远的距离传递信息。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "同一份德语训练语料，用不同方法切分",
+            "subtitle": "来自论文表 1。token 数单位是百万；“未知”是开发集里切不出来的 token 数",
+            "columns": [
+              "切分方法",
+              "token 数（百万）",
+              "词表大小",
+              "未知"
+            ],
+            "rows": [
+              [
+                "不切（整词）",
+                "100",
+                "1,750,000",
+                "1079"
+              ],
+              [
+                "单个字符",
+                "550",
+                "3000",
+                "0"
+              ],
+              [
+                "字符二元组",
+                "306",
+                "20,000",
+                "34"
+              ],
+              [
+                "字符三元组",
+                "214",
+                "120,000",
+                "59"
+              ],
+              [
+                "复合词拆分",
+                "102",
+                "1,100,000",
+                "643"
+              ],
+              [
+                "Morfessor 语素切分",
+                "109",
+                "544,000",
+                "237"
+              ],
+              [
+                "按音节断字",
+                "186",
+                "404,000",
+                "230"
+              ],
+              [
+                "BPE",
+                "112",
+                "63,000",
+                "0"
+              ],
+              [
+                "BPE（双语联合）",
+                "111",
+                "82,000",
+                "32"
+              ]
+            ],
+            "highlight": {
+              "row": 7
+            },
+            "note": "整词要 175 万个词条还切不干净；单个字符没有未知词，但文本长了 5 倍多。BPE 只让文本变长约 12%，词表却缩小到 6 万出头，而且没有未知词。"
+          }
+        },
+        {
+          "p": "论文也试了语言学方法：按频率拆复合词、按规则断音节、用 Morfessor 无监督切语素。它们只适度缩小了词表，也解决不了未知词，不符合“不要词典、开放词表”的目标。"
+        }
+      ]
+    },
+    {
+      "h": "两种语言，分开学还是一起学",
+      "blocks": [
+        {
+          "p": "翻译涉及两种语言，BPE 可以分别在原文和译文上各学一套，也可以把两边的语料拼在一起学一套（论文叫**联合 BPE**）。"
+        },
+        {
+          "list": [
+            "**分开学**：文本和词表更紧凑，而且保证每个片段在对应语言的训练文本里都出现过。",
+            "**联合学**：两边的切分更一致。分开学的话，同一个人名在两种语言里可能被切成不同的片段，模型就很难学会它们之间的对应。"
+          ]
+        },
+        {
+          "p": "英语和俄语字母不同，怎么联合学？论文先用 ISO-9 标准把俄语转写成拉丁字母，在合并后的语料上学 BPE，再把学到的合并规则转写回西里尔字母，用到俄语文本上。"
+        }
+      ]
+    },
+    {
+      "h": "实验：英译德、英译俄",
+      "blocks": [
+        {
+          "p": "实验用 WMT 2015 的数据：英译德训练集有 420 万个句对，约 1 亿个 token；英译俄有 260 万个句对，约 5000 万个 token。模型沿用 Bahdanau 等人的编码器－解码器结构，隐藏层 1000 维、词向量 620 维，用 Adadelta 训练约 7 天，束搜索宽度 12。每种设置训练 8 个模型，报告开发集上最好的单个模型和 8 个模型的集成。"
+        },
+        {
+          "p": "对比的系统：WUnk（词级模型，词表外的词直接输出未知符号）、WDict（词级模型 ＋ 回退词典，主要基线）、C2-50k（最常见的 5 万个词不切，其余切成字符二元组）、BPE-60k（两种语言分别学 BPE）、BPE-J90k（联合 BPE）。子词系统都**不用**回退词典。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "英译德：子词模型对罕见词和没见过的词翻得更好",
+            "subtitle": "来自论文表 2，newstest2015，8 个模型集成。BLEU、chrF3 越高越好；“罕见词”“未见词”一栏是一元 F1（%）",
+            "columns": [
+              "系统",
+              "BLEU",
+              "chrF3",
+              "罕见词 F1",
+              "未见词 F1"
+            ],
+            "rows": [
+              [
+                "WDict（词级 ＋ 回退词典）",
+                "24.2",
+                "52.4",
+                "36.8",
+                "36.8"
+              ],
+              [
+                "C2-50k（字符二元组）",
+                "25.3",
+                "53.5",
+                "40.5",
+                "30.9"
+              ],
+              [
+                "BPE-60k（分开学）",
+                "24.5",
+                "53.9",
+                "40.9",
+                "29.3"
+              ],
+              [
+                "BPE-J90k（联合学）",
+                "24.7",
+                "54.1",
+                "41.8",
+                "33.6"
+              ]
+            ],
+            "highlight": {
+              "row": 3
+            },
+            "note": "罕见词指不在训练集最常见 5 万个词里的词，未见词指训练集里从没出现过的词。英译德的未见词大多是人名，照抄就对，所以带词典的基线在这一栏反而最好。"
+          }
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "英译俄：字母不同时，子词模型的优势更明显",
+            "subtitle": "来自论文表 3，newstest2015，8 个模型集成",
+            "columns": [
+              "系统",
+              "BLEU",
+              "chrF3",
+              "罕见词 F1",
+              "未见词 F1"
+            ],
+            "rows": [
+              [
+                "WDict（词级 ＋ 回退词典）",
+                "22.8",
+                "51.0",
+                "26.5",
+                "6.6"
+              ],
+              [
+                "C2-50k（字符二元组）",
+                "24.1",
+                "51.6",
+                "27.8",
+                "17.4"
+              ],
+              [
+                "BPE-60k（分开学）",
+                "23.6",
+                "52.7",
+                "29.7",
+                "15.6"
+              ],
+              [
+                "BPE-J90k（联合学）",
+                "24.1",
+                "53.0",
+                "29.7",
+                "18.3"
+              ]
+            ],
+            "highlight": {
+              "row": 3
+            },
+            "note": "俄语用西里尔字母，人名不能照抄，必须转写。词典基线的未见词 F1 只有 6.6，子词模型能学会逐段转写，提高到 18.3。"
+          }
+        },
+        {
+          "p": "几点观察：所有子词系统的罕见词 F1 都比基线高（英译德从 36.8% 到 41.8%，英译俄从 26.5% 到 29.7%）；集成模型的 BLEU 比基线高 0.3 到 1.3 分；联合 BPE 在大多数指标上好于分开学。论文还提醒，罕见词虽然只占测试集的一小部分，却往往承载着句子的核心信息，BLEU 这类整体指标很可能低估了它们的影响。"
+        },
+        {
+          "p": "**频率分析**。论文把译文里的词按训练集中的频率排名分组。最常见的 5 万个词，各系统表现相当；排名 5 万到 50 万之间的词，如果当作整词放进词表，表现会随频率下降而严重变差，切成子词的系统则稳定得多。原因是这些词太稀疏：在训练集里，排名第 5 万的词只出现 60 次，排名第 50 万的只出现 2 次，根本学不好；子词片段则常见得多。所以，**缩小词表、让更多的词用子词表示，反而可能更好**。"
+        }
+      ]
+    },
+    {
+      "h": "看几个具体的翻译",
+      "blocks": [
+        {
+          "fig": {
+            "type": "table",
+            "title": "子词模型怎样翻出没见过的词",
+            "subtitle": "来自论文表 4、表 5。“｜”是子词边界",
+            "columns": [
+              "原文",
+              "参考译文",
+              "词级 ＋ 词典",
+              "联合 BPE"
+            ],
+            "rows": [
+              [
+                "health research institutes",
+                "Gesundheitsforschungsinstitute",
+                "Forschungsinstitute（丢了 health）",
+                "Gesundheits｜forsch｜ungsin｜stitute"
+              ],
+              [
+                "Mirzayeva（人名）",
+                "Мирзаева",
+                "照抄成拉丁字母",
+                "Mir｜za｜yeva → Мир｜за｜ева"
+              ],
+              [
+                "rakfisk（挪威发酵鱼）",
+                "ракфиска",
+                "照抄成拉丁字母",
+                "rak｜f｜isk → рак｜ф｜иска"
+              ]
+            ]
+          }
+        },
+        {
+          "list": [
+            "**切得“不对”也能翻对**：BPE 的切分不一定符合语素边界。比如 BPE-60k 把“研究机构”切成 Forsch｜ungsinstitu｜ten，语言学上更合理的是 Forschungs｜instituten，但译文依然正确。字符二元组系统把“研究机构”切成十几段，这部分也翻对了（不过它的译文同样漏掉了 health）。论文说，模型对“切得太碎”很稳健。",
+            "**切分不一致会出错**：分开学的 BPE-60k 把 rakfisk 转写时多了一个 п、少了一个 к。论文追查到，训练数据里有些词两边切法不一致（比如 p｜rak｜ri｜ti 对应 пра｜крит｜и），模型错误地学到了 rak → пра。联合 BPE 两边切法一致，就没有这个问题。",
+            "**数据太少时会“音译”错**：asinine（愚蠢的）应该译成 dumm，子词模型翻成了 Asinin-Situation 之类，错了，但像是一个外来词的合理猜测。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "几处值得留意的细节",
+      "blocks": [
+        {
+          "list": [
+            "**开头的例子拼错了**：论文用德语复合词 Abwasser｜behandlungs｜anlange（污水处理厂）开篇，正确拼法是 Abwasserbehandlungsanlage，最后一段多了一个 n。",
+            "**图 1 和代码用的不是同一个例子**：算法 1 的代码在 low、lower、newest、widest 上运行，图 1 展示的却是在 low、lowest、newer、wider 上学到的合并，正文里“未见词 lower 被切成 low er·”指的是图 1 的例子。直接运行代码得不到图 1 的结果。",
+            "**“9–11%”和表格对不上**：正文说罕见词只占测试集的 9% 到 11%。按表 2、表 3 给出的词数，英译德是 2900 / 44085，约 6.6%；英译俄是 5442 / 55654，约 9.8%。可能是统计口径不同，但论文没有说明。",
+            "**BLEU 最好的不是 BPE**：英译德集成模型的最高 BLEU（25.3）来自字符二元组系统；BPE-60k 的单个模型 BLEU（21.5）甚至低于词典基线（22.0）。论文的主要论据是罕见词的 F1 和 chrF3，而不是 BLEU。",
+            "**词表大小是拍的**：论文承认，合并次数的选择“有些随意”，主要是为了和之前的工作可比；自动选出最优的词表大小，留作未来研究。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "之后：今天大模型的 token 是怎么来的",
+      "blocks": [
+        {
+          "p": "BPE 很快成了神经网络处理文本的标准第一步。主线一里的几篇论文，都能看到它的身影："
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "主线一里的模型怎么切分文本",
+            "subtitle": "来自各论文的数据处理部分",
+            "columns": [
+              "模型",
+              "切分方法",
+              "词表大小"
+            ],
+            "rows": [
+              [
+                "Transformer（2017）英德翻译",
+                "BPE，原文和译文共用一个词表",
+                "约 37,000"
+              ],
+              [
+                "BERT（2018）",
+                "WordPiece（和 BPE 思路相近的子词方法）",
+                "30,000"
+              ],
+              [
+                "GPT-2（2019）",
+                "字节级 BPE",
+                "50,257"
+              ],
+              [
+                "LLaMA（2023）",
+                "BPE（SentencePiece 实现），数字拆成单个数位，未知字符退回字节",
+                "—"
+              ]
+            ]
+          }
+        },
+        {
+          "list": [
+            "**字节级 BPE**：GPT-2 指出，按 Unicode 字符做 BPE 的话，光是初始字符就要 13 万多个，而常见 BPE 词表只有 3.2 万到 6.4 万；改成在**字节**上做，初始词表只需 256 个，任何字符串都能表示，包括中文和表情符号。它还禁止 BPE 跨字符类别合并，否则会学出 dog. dog! dog? 这样一堆重复的 token。",
+            "**数字拆成单个数位**：LLaMA 把所有数字拆成单个数位。论文没有解释原因，常见的理解是：这样数字的切法更规整，不会出现“1234”被切成“12”“34”这类不规则的块，对算术更友好。",
+            "**token 决定了模型“看到”什么**：模型的上下文长度、按 token 计费的价格、模型数字母和做算术时的一些奇怪错误，都和分词方式有关。"
+          ]
+        },
+        {
+          "p": "这一条路线的下一篇回到视觉，看另一个基础零件：让上百层的网络也能训练的**残差连接**（ResNet）。"
+        }
+      ]
+    },
+    {
+      "h": "检验一下：你吃透了吗",
+      "blocks": [
+        {
+          "quiz": {
+            "q": "用 BPE 时，一个训练时从没见过的英语单词会怎样？",
+            "options": [
+              "变成未知词符号",
+              "被拆成学过的子词片段，最差拆到单个字母，总能表示出来",
+              "被丢弃",
+              "必须查词典"
+            ],
+            "answer": 1,
+            "why": "测试时先拆成字符，再按学到的顺序应用合并规则。只要字符见过，就一定能表示，这正是“开放词表”的意思。"
+          }
+        },
+        {
+          "quiz": {
+            "q": "为什么不干脆用单个字符作为词表，彻底避免未知词？",
+            "options": [
+              "字符太多",
+              "文本会变得很长（论文表 1 里约是整词的 5.5 倍），计算量大，模型要跨越更远的距离传递信息",
+              "字符不能做嵌入",
+              "字符没法表示德语"
+            ],
+            "answer": 1,
+            "why": "编码器－解码器的计算量至少和序列长度成正比。BPE 在词表大小和序列长度之间找到了折中：词表 6 万出头，文本只长了约 12%。"
+          }
+        },
+        {
+          "quiz": {
+            "q": "英译俄实验里，联合 BPE 比两种语言分别学 BPE 好在哪？",
+            "options": [
+              "训练更快",
+              "两边的切分更一致，同一个人名在两种语言里被切成对应的片段，模型更容易学会逐段转写",
+              "词表更小",
+              "不需要转写"
+            ],
+            "answer": 1,
+            "why": "分开学时，rakfisk 的翻译出现了多一个字母、少一个字母的错误，原因就是训练数据里两边切法不一致。联合 BPE 先把俄语转写成拉丁字母，在两边一起学，切法自然一致。"
+          }
+        },
+        {
+          "p": "读完这篇，你应该能回答下面这些问题："
+        },
+        {
+          "list": [
+            "词级翻译模型处理罕见词有什么问题？“回退词典”为什么不够？",
+            "BPE 的四个步骤是什么？为什么要加词尾符号？",
+            "为什么说合并次数是唯一的超参数？它怎样影响词表和文本长度？",
+            "测试时遇到新词，BPE 怎么处理？",
+            "联合 BPE 和分开学各有什么好处？",
+            "为什么缩小词表、更多地用子词，有时反而更好？",
+            "GPT-2 的字节级 BPE 解决了什么问题？"
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Neural Machine Translation of Rare Words with Subword Units（arXiv:1508.07909 第 5 版）",
+      "publisher": "Sennrich、Haddow、Birch",
+      "date": "2016-06-10",
+      "url": "https://arxiv.org/abs/1508.07909"
+    },
+    "note": "本文依据论文 arXiv 第 5 版（2016 年 6 月），首版发布于 2015 年 8 月，正式发表于 ACL 2016。标注「示意」的表格由本站运行论文附带的代码得出。Transformer、BERT、GPT-2、LLaMA 的分词方式取自各自论文。“约 6.6%”“约 9.8%”“约 12%”等比例由本站按论文表格计算。"
+  },
+  "claims": [
+    {
+      "text": "arXiv 第 5 版，2016 年 6 月",
+      "value": "1508.07909v5",
+      "source_url": "https://arxiv.org/abs/1508.07909",
+      "quote": "arXiv:1508.07909v5 [cs.CL] 10 Jun 2016",
+      "as_written": "第 5 版"
+    },
+    {
+      "text": "词表 3 万到 5 万",
+      "value": "30 000–50 000",
+      "source_url": "https://arxiv.org/abs/1508.07909",
+      "quote": "30 000–50 000",
+      "as_written": "3 万到 5 万"
+    },
+    {
+      "text": "最多 1.1 和 1.3 BLEU",
+      "value": "1.1",
+      "source_url": "https://arxiv.org/abs/1508.07909",
+      "quote": "by up to 1.1 and 1.3 B",
+      "as_written": "1.1"
+    },
+    {
+      "text": "1.3",
+      "value": "1.3",
+      "source_url": "https://arxiv.org/abs/1508.07909",
+      "quote": "by up to 1.1 and 1.3 B",
+      "as_written": "1.3"
+    },
+    {
+      "text": "100 个罕见词",
+      "value": "100",
+      "source_url": "https://arxiv.org/abs/1508.07909",
+      "quote": "100 rare tokens",
+      "as_written": "100 个"
+    },
+    {
+      "text": "不在最常见 5 万个词里",
+      "value": "50 000",
+      "source_url": "https://arxiv.org/abs/1508.07909",
+      "quote": "the 50 000 most frequent types",
+      "as_written": "5 万"
+    },
+    {
+      "text": "56 个复合词、21 个人名",
+      "value": "56",
+      "source_url": "https://arxiv.org/abs/1508.07909",
+      "quote": "We find 56 compounds, 21 names",
+      "as_written": "56"
+    },
+    {
+      "text": "59,500 次合并",
+      "value": "59 500",
+      "source_url": "https://arxiv.org/abs/1508.07909",
+      "quote": "59 500",
+      "as_written": "59,500"
+    },
+    {
+      "text": "420 万句对",
+      "value": "4.2 million",
+      "source_url": "https://arxiv.org/abs/1508.07909",
+      "quote": "4.2\nmillion sentence pairs",
+      "as_written": "420 万"
+    },
+    {
+      "text": "约 1 亿 token",
+      "value": "100 million",
+      "source_url": "https://arxiv.org/abs/1508.07909",
+      "quote": "approximately 100 million tokens",
+      "as_written": "1 亿"
+    },
+    {
+      "text": "260 万句对",
+      "value": "2.6 million",
+      "source_url": "https://arxiv.org/abs/1508.07909",
+      "quote": "2.6 million sentence pairs",
+      "as_written": "260 万"
+    },
+    {
+      "text": "约 5000 万 token",
+      "value": "50 million",
+      "source_url": "https://arxiv.org/abs/1508.07909",
+      "quote": "approximately 50 million tokens",
+      "as_written": "5000 万"
+    },
+    {
+      "text": "表 1：整词 175 万个词条",
+      "value": "1 750 000",
+      "source_url": "https://arxiv.org/abs/1508.07909",
+      "quote": "1 750 000",
+      "as_written": "175 万"
+    },
+    {
+      "text": "字符切分 550 百万 token（约 5.5 倍）",
+      "value": "550 m",
+      "source_url": "https://arxiv.org/abs/1508.07909",
+      "quote": "550 m",
+      "as_written": "5.5 倍"
+    },
+    {
+      "text": "文本长了 5 倍多",
+      "value": "550 m",
+      "source_url": "https://arxiv.org/abs/1508.07909",
+      "quote": "550 m",
+      "as_written": "5 倍"
+    },
+    {
+      "text": "BPE 112 百万 token（约 12%）",
+      "value": "112 m",
+      "source_url": "https://arxiv.org/abs/1508.07909",
+      "quote": "112 m",
+      "as_written": "12%"
+    },
+    {
+      "text": "BPE 63,000 词条（6 万出头）",
+      "value": "63 000",
+      "source_url": "https://arxiv.org/abs/1508.07909",
+      "quote": "63 000",
+      "as_written": "6 万"
+    },
+    {
+      "text": "罕见词 36.8% → 41.8%",
+      "value": "36.8%",
+      "source_url": "https://arxiv.org/abs/1508.07909",
+      "quote": "36.8%→41.8%",
+      "as_written": "36.8%"
+    },
+    {
+      "text": "41.8%",
+      "value": "41.8%",
+      "source_url": "https://arxiv.org/abs/1508.07909",
+      "quote": "36.8%→41.8%",
+      "as_written": "41.8%"
+    },
+    {
+      "text": "英俄 26.5% → 29.7%",
+      "value": "26.5%",
+      "source_url": "https://arxiv.org/abs/1508.07909",
+      "quote": "26.5%→29.7%",
+      "as_written": "26.5%"
+    },
+    {
+      "text": "29.7%",
+      "value": "29.7%",
+      "source_url": "https://arxiv.org/abs/1508.07909",
+      "quote": "26.5%→29.7%",
+      "as_written": "29.7%"
+    },
+    {
+      "text": "集成高 0.3–1.3 BLEU",
+      "value": "0.3–1.3",
+      "source_url": "https://arxiv.org/abs/1508.07909",
+      "quote": "0.3–1.3 B",
+      "as_written": "0.3 到 1.3"
+    },
+    {
+      "text": "排名 5 万出现 60 次",
+      "value": "60",
+      "source_url": "https://arxiv.org/abs/1508.07909",
+      "quote": "frequency of 60",
+      "as_written": "60 次"
+    },
+    {
+      "text": "排名 50 万出现 2 次",
+      "value": "2",
+      "source_url": "https://arxiv.org/abs/1508.07909",
+      "quote": "frequency of 2",
+      "as_written": "2 次"
+    },
+    {
+      "text": "50 万",
+      "value": "500 000",
+      "source_url": "https://arxiv.org/abs/1508.07909",
+      "quote": "500 000",
+      "as_written": "50 万"
+    },
+    {
+      "text": "9-11%",
+      "value": "9-11%",
+      "source_url": "https://arxiv.org/abs/1508.07909",
+      "quote": "9-11%",
+      "as_written": "9% 到 11%"
+    },
+    {
+      "text": "本站计算：2900 / 44085 约 6.6%",
+      "value": "2900",
+      "source_url": "https://arxiv.org/abs/1508.07909",
+      "quote": "n = 2900",
+      "as_written": "6.6%"
+    },
+    {
+      "text": "本站计算：5442 / 55654 约 9.8%",
+      "value": "5442",
+      "source_url": "https://arxiv.org/abs/1508.07909",
+      "quote": "n = 5442",
+      "as_written": "9.8%"
+    },
+    {
+      "text": "隐藏层 1000、词向量 620",
+      "value": "620",
+      "source_url": "https://arxiv.org/abs/1508.07909",
+      "quote": "embedding layer size\nof 620",
+      "as_written": "620"
+    },
+    {
+      "text": "约 7 天",
+      "value": "7 days",
+      "source_url": "https://arxiv.org/abs/1508.07909",
+      "quote": "approximately 7 days",
+      "as_written": "7 天"
+    },
+    {
+      "text": "束宽 12",
+      "value": "12",
+      "source_url": "https://arxiv.org/abs/1508.07909",
+      "quote": "beam size of 12",
+      "as_written": "12"
+    },
+    {
+      "text": "合并次数有些随意",
+      "value": "somewhat arbitrary",
+      "source_url": "https://arxiv.org/abs/1508.07909",
+      "quote": "somewhat arbitrary",
+      "as_written": "有些随意"
+    },
+    {
+      "text": "Transformer：BPE，约 37000 词表",
+      "value": "37000",
+      "source_url": "https://arxiv.org/abs/1706.03762",
+      "quote": "Sentences were encoded using byte-pair encoding [3], which has a shared sourcetarget vocabulary of about 37000 tokens.",
+      "as_written": "37,000"
+    },
+    {
+      "text": "BERT：WordPiece 30,000",
+      "value": "30,000",
+      "source_url": "https://arxiv.org/abs/1810.04805",
+      "quote": "We use WordPiece embeddings (Wu et al., 2016) with a 30,000 token vocabulary.",
+      "as_written": "30,000"
+    },
+    {
+      "text": "GPT-2：词表 50,257",
+      "value": "50,257",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "The vocabulary is expanded to 50,257.",
+      "as_written": "50,257"
+    },
+    {
+      "text": "GPT-2：Unicode 基础词表 13 万以上",
+      "value": "130,000",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "This would result in a base vocabulary of over 130,000 before any multi-symbol tokens are added.",
+      "as_written": "13 万"
+    },
+    {
+      "text": "GPT-2：常见 BPE 词表 3.2 万到 6.4 万",
+      "value": "32,000 to 64,000",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "the 32,000 to 64,000 token vocabularies often used with BPE",
+      "as_written": "3.2 万"
+    },
+    {
+      "text": "6.4 万",
+      "value": "64,000",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "the 32,000 to 64,000 token vocabularies often used with BPE",
+      "as_written": "6.4 万"
+    },
+    {
+      "text": "GPT-2：字节级只需 256",
+      "value": "256",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "a byte-level version of BPE only requires a base vocabulary of size 256",
+      "as_written": "256"
+    },
+    {
+      "text": "LLaMA：BPE、数字拆位、字节回退",
+      "value": "BPE",
+      "source_url": "https://arxiv.org/abs/2302.13971",
+      "quote": "Notably, we split all numbers into individual digits, and fallback to bytes to decompose unknown UTF-8 characters.",
+      "as_written": "数字拆成单个数位"
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "tier": "primary",
+    "writer": "论文精读"
+  }
+}
