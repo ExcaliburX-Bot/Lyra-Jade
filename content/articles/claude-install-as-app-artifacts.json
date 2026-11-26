@@ -1,0 +1,372 @@
+{
+  "slug": "claude-install-as-app-artifacts",
+  "date": "2026-11-24",
+  "category": "product",
+  "publisher": "Anthropic",
+  "topics": [
+    "claude"
+  ],
+  "title": "Claude artifacts 能一键装成 Mac/Windows 桌面应用，权限分三档",
+  "summary": "如果你每天靠 Claude 生成的某个页面查日程、盯订单，现在可以把它变成像普通软件一样独立开窗、能发通知的桌面应用。装好的 app 有独立图标，权限分三档，编辑后会自动更新。",
+  "ai_summary": "Claude 现在能把 artifacts（小工具）装成 Mac 或 Windows 桌面应用，正在分批 beta。装好后有独立图标和窗口，可分享、发通知、进菜单栏或托盘。权限三档：默认只做浏览器能做的；应用权限可申请置顶窗口、全局快捷键、通知；完全访问可运行程序、读改删文件，仅限自己做或组织内的应用。权限只覆盖当前版本，每次更新都重新授权。应用用你的 Claude 账号，无需打包签名或 API key；调用计入套餐用量。HIPAA-ready 组织、混合部署，以及 Claude Docs、Slides、Sheets 暂不可用。",
+  "brief": [
+    "Claude 的 artifacts 现在能装成 Mac 和 Windows 桌面应用，正在分批 beta。",
+    "装好的 app 有独立图标和窗口，可发通知、进菜单栏或托盘，底层 artifact 编辑后自动更新。",
+    "权限分三档：默认只做浏览器能做的；应用权限可申请置顶窗口、全局快捷键、通知；完全访问可运行程序、读改删文件。",
+    "完全访问只能给自己或组织内同事做的应用；每次更新都要重新授权，Anthropic 不预审应用。"
+  ],
+  "readMinutes": 6,
+  "cover": {
+    "headline": "Artifacts 一键装成桌面应用",
+    "highlight": "三档权限，改动自动更新",
+    "big": {
+      "value": "3",
+      "unit": "档",
+      "label": "权限级别"
+    }
+  },
+  "sections": [
+    {
+      "h": "这是什么：Claude 的 artifacts 能一键变成桌面应用",
+      "blocks": [
+        {
+          "p": "artifacts 是你在 Claude 里让它生成、可以直接运行或分享的成果物。最早它像「交出去的东西」——一张图表、一个网页；现在很多人把它当日常工具：比如一个会议准备页，定期拉取你的日历和邮件，或一个追踪当天要发货订单的小页面。问题在于，这些工具一直活在 Claude 的界面里。"
+        },
+        {
+          "p": "从今天起，Claude for Mac 和 Windows 里多了 Install as app，正在分批 beta。你可以把一个 artifacts 装成桌面应用：它有独立图标、在独立窗口打开，不再藏在 Claude 里，也可以分享给别人。"
+        },
+        {
+          "p": "它和普通软件的关键差别：底座还是 Claude。应用用你的 Claude 账号运行，不用打包、签名，也不用单独登录或配 API key；它要碰你电脑的任何地方，都得先过你设定的权限。"
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "装成 app 后：从 Claude 里的一块，变成独立桌面应用",
+            "subtitle": "琥珀色 = 这次新增的能力；灰色 = 原来没有；其余为原样",
+            "left": {
+              "label": "原来的 artifact",
+              "sub": "在 Claude 界面里打开",
+              "items": [
+                {
+                  "label": "在 Claude 界面里打开",
+                  "state": "base"
+                },
+                {
+                  "label": "只能做浏览器能做的",
+                  "state": "base"
+                },
+                {
+                  "label": "分享给别人",
+                  "state": "base"
+                },
+                {
+                  "label": "主动通知 / 菜单栏",
+                  "state": "dim"
+                },
+                {
+                  "label": "独立图标 / 独立窗口",
+                  "state": "dim"
+                }
+              ]
+            },
+            "right": {
+              "label": "安装后的 app",
+              "sub": "Mac / Windows 桌面",
+              "items": [
+                {
+                  "label": "独立图标 + 独立窗口",
+                  "state": "hi"
+                },
+                {
+                  "label": "发通知 / 进菜单栏和托盘",
+                  "state": "hi"
+                },
+                {
+                  "label": "分享给别人",
+                  "state": "base"
+                },
+                {
+                  "label": "编辑后自动更新",
+                  "state": "hi"
+                },
+                {
+                  "label": "仍需在线登录 Claude",
+                  "state": "base"
+                }
+              ]
+            },
+            "footer": "装好不代表离线可用：仍需在线并登录 Claude 才能打开应用。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "装成 app 之后，多了哪些能力？",
+      "blocks": [
+        {
+          "p": "直观的变化是它像正常 app 一样出现：自己的图标、自己的窗口。原文的逻辑是：如果你每天靠一个工具干活，它就应该像你其他 app 一样打开，并且在有事时提醒你。"
+        },
+        {
+          "list": [
+            "可以发通知，提醒你有事要处理。",
+            "可以把项目加进 macOS 菜单栏或 Windows 系统托盘。",
+            "可以分享给其他人使用。",
+            "底层 artifact 一旦被编辑，应用会自动更新，不用重新打包分发。"
+          ]
+        },
+        {
+          "p": "成本也要一次说清：应用发出的 Claude 请求，会算进你套餐的用量上限；打开应用时必须在线并登录 Claude。Team 和 Enterprise 管理员可以为组织统一开关应用权限和完全访问。"
+        }
+      ]
+    },
+    {
+      "h": "权限三档：看懂它再装",
+      "blocks": [
+        {
+          "p": "应用会碰你的电脑，所以权限是这次设计的核心。总共三档，从低到高："
+        },
+        {
+          "list": [
+            "默认（Default）：应用只能做它在浏览器里也能做的事。",
+            "应用权限（App permissions）：应用可以申请使用 Claude 能紧密控制的能力，比如创建置顶窗口、监听全局快捷键、发通知。",
+            "完全访问（Full computer access）：应用可以申请运行程序，并且读写、修改或删除你的文件，不用每次都问。"
+          ]
+        },
+        {
+          "p": "完全访问不是谁都能给。你只能给自己做的应用开完全访问；在 Team 和 Enterprise 上，也只能给组织内同事做的应用开。Anthropic 不会在你安装前审查这些应用，所以原则是：只给你信任的应用开完全访问。"
+        },
+        {
+          "fig": {
+            "type": "illustration",
+            "title": "三档权限：默认只能做浏览器能做的，完全访问可读改删文件",
+            "subtitle": "示意：1=有，0=没有，2=这一档的核心能力（琥珀色）",
+            "glyph": {
+              "kind": "matrix",
+              "rows": [
+                "默认",
+                "应用权限",
+                "完全访问"
+              ],
+              "cols": [
+                "发通知",
+                "置顶窗口 / 全局快捷键",
+                "运行程序",
+                "读改删文件"
+              ],
+              "cells": [
+                [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  1,
+                  1,
+                  0,
+                  0
+                ],
+                [
+                  1,
+                  1,
+                  2,
+                  2
+                ]
+              ]
+            },
+            "note": "按文章的层级递进理解：完全访问在应用权限之上，再增加运行程序和读改删文件的能力。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "更新与信任：为什么每次更新都要重新授权",
+      "blocks": [
+        {
+          "p": "一个容易忽略的细节：你给的权限只覆盖应用的当前版本。每次应用更新——哪怕是你自己改了 artifact——Claude 都会再问一次。"
+        },
+        {
+          "p": "更要注意的是，如果应用的一部分来自其他网站，那部分可以不经 Claude 再次确认就发生变化。换句话说，「已授权」不等于永远不变。"
+        },
+        {
+          "callout": {
+            "kind": "takeaway",
+            "title": "一句话记住",
+            "text": "安装不等于永久信任。这里的授权更像「按版本授权」：每次改动都要重新点头。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "内部先玩出来的几个例子",
+      "blocks": [
+        {
+          "p": "Anthropic 的人已经用这套东西做出了几个示例应用，能看出它可以做到什么程度："
+        },
+        {
+          "fig": {
+            "type": "cards",
+            "title": "Anthropic 内部先做的几个示例 app",
+            "subtitle": "这些是文中列出的演示，不是官方产品线",
+            "items": [
+              {
+                "icon": "image",
+                "title": "Linnet",
+                "desc": "一个带图层的完整图像编辑器",
+                "tags": [
+                  "图像编辑"
+                ],
+                "tone": "base"
+              },
+              {
+                "icon": "layers",
+                "title": "Phosphor",
+                "desc": "像电影片场道具一样精致的文件管理器",
+                "tags": [
+                  "文件管理"
+                ],
+                "tone": "base"
+              },
+              {
+                "icon": "search",
+                "title": "Sift",
+                "desc": "设置文件夹规则，让 Claude 帮你整理东西",
+                "tags": [
+                  "自动化",
+                  "整理"
+                ],
+                "tone": "base"
+              },
+              {
+                "icon": "code",
+                "title": "Tern",
+                "desc": "Claude 守在旁边的终端，帮你解释命令",
+                "tags": [
+                  "终端"
+                ],
+                "tone": "base"
+              },
+              {
+                "icon": "cpu",
+                "title": "Vitals",
+                "desc": "菜单栏 / 托盘小工具，随时看电脑性能",
+                "tags": [
+                  "性能监控"
+                ],
+                "tone": "base"
+              }
+            ]
+          }
+        },
+        {
+          "p": "这些只是演示，不是官方产品线，但范围从图像编辑、文件管理、自动整理，一直延伸到终端和性能监控。"
+        }
+      ]
+    },
+    {
+      "h": "怎么用起来：描述、试用、一键安装",
+      "blocks": [
+        {
+          "p": "流程很短：向 Claude 描述你要的应用，先把它当 artifact 试用，觉得顺手了，从 Share 菜单点 Install as app。"
+        },
+        {
+          "fig": {
+            "type": "steps",
+            "title": "从想法到桌面 app：描述、试用、安装",
+            "subtitle": "示意：按原文的使用流程整理",
+            "steps": [
+              {
+                "name": "描述应用",
+                "tool": "Claude",
+                "desc": "告诉 Claude 你想要什么，它会生成一个 artifact"
+              },
+              {
+                "name": "当 artifact 试用",
+                "tool": "Claude",
+                "desc": "在 Claude 里跑一跑、改一改，确认顺手"
+              },
+              {
+                "name": "点 Install as app",
+                "tool": "Share 菜单",
+                "desc": "从 Share 菜单安装，无需打包或签名"
+              }
+            ],
+            "note": "装好后，底层 artifact 每次被编辑，应用会自动更新，并重新请求授权。"
+          }
+        },
+        {
+          "p": "它用你的 Claude 账号，所以没有 API key、没有单独登录；应用也不用你打包或签名。"
+        },
+        {
+          "p": "上线范围：beta 在所有套餐推出。Team 上默认开启，但完全访问默认关；Enterprise 默认关，需要 owner 打开。HIPAA-ready 组织和混合部署暂不能使用；Claude Docs、Slides、Sheets 等一些 artifacts 还不能装。另外，需要更新 Claude for Mac 或 Windows 才会看到入口。"
+        }
+      ]
+    },
+    {
+      "h": "官方还没说的",
+      "blocks": [
+        {
+          "list": [
+            "beta 分批铺开的具体时间表：什么时候到你的账号，原文没有承诺。",
+            "能装与不能装的完整 artifacts 清单：只点名 Claude Docs、Slides、Sheets 不行，其他没说全。",
+            "应用能调用哪些 connectors（连接器）的完整名单：例子提到日历和邮件，但没有列全。",
+            "通知、菜单栏、托盘在各系统上的具体样式和频率限制。",
+            "「每次更新都要重新授权」在实际使用中的提示频率和体验。",
+            "除了占用套餐用量，是否还有单独收费，原文没提。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "适合谁",
+      "blocks": [
+        {
+          "p": "价值很清楚：把天天用的内部小工具从 Claude 里解放出来，变成能独立打开、能提醒你、还能分享给同事的桌面应用，省掉打包、签名、维护和分发这些工程活。原文点名适合两类人：知识工作者和开发者。"
+        },
+        {
+          "p": "代价也要看清：需要在线并登录 Claude；调用计入套餐用量；权限模型要求每次更新都重新确认；完全访问能读改删文件，只应给信任的应用。"
+        },
+        {
+          "p": "如果你只是偶尔用 artifacts，不必急着装。如果你是每天靠某个追踪器、准备页干活的人，或者想快速给团队发个小工具，值得先拿一两个低权限应用试起来。"
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Turn artifacts into Mac and Windows apps | Claude by Anthropic",
+      "publisher": "Anthropic",
+      "date": "2026-11-24",
+      "url": "https://claude.com/resources/articles/install-as-app"
+    },
+    "more": [],
+    "note": "本文只依据这一篇官方材料。前后对比图、权限矩阵和步骤图为按原文整理的示意，示例应用名取自原文。"
+  },
+  "claims": [
+    {
+      "text": "安装后的应用权限分三档：默认（Default）、应用权限（App permissions）、完全访问（Full computer access）。",
+      "value": "three levels",
+      "source_url": "https://claude.com/resources/articles/install-as-app",
+      "as_written": "3 档",
+      "quote": "There are three levels of permissions:"
+    },
+    {
+      "text": "Install as app 正在 Claude for Mac 和 Windows 上 beta 推出。",
+      "value": "Mac and Windows",
+      "source_url": "https://claude.com/resources/articles/install-as-app",
+      "as_written": "Mac 和 Windows",
+      "quote": "The \"Install as app\" feature is rolling out in beta in Claude for Mac and Windows."
+    }
+  ],
+  "status": "published",
+  "verified": true,
+  "pipeline": {
+    "origin": "auto",
+    "candidate": "38f3d822d5",
+    "tier": "official",
+    "via": "https://xiaohu.ai/article/claude-install-as-app/",
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "generated_at": "2026-11-25T20:08:10.190Z"
+  }
+}
