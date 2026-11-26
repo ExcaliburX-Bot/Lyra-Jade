@@ -1,11 +1,10 @@
-# 候选清单（2026-11-26 12:57 UTC）
+# 候选清单（2026-11-26 22:07 UTC）
 
 | 分数 | 标题 | 发布方 | 层级 | 相关报道 |
 | --- | --- | --- | --- | --- |
-| 5.1 | [🎙️ New multilingual capabilities are here for Qwen-Audio-3.1! Especially for Chinese dialects.](https://x.com/Alibaba_Qwen/status/2125798914490249411) | @Alibaba_Qwen | official | 0 |
-| 4.9 | [Introducing the llama.cpp benchmark dashboard for AMD Ryzen and Radeon](https://huggingface.co/blog/ggml-org/llamacpp-amd-bench) | Hugging Face | primary | 0 |
-| 4.4 | [Swarms, Flocks, Gangs: How to build, train, and evaluate multi-agent systems](https://huggingface.co/blog/training-swarms) | Hugging Face | primary | 0 |
-| 4.2 | [Broadening access to AI for scientists](https://openai.com/index/expanding-chatgpt-for-academic-researchers) | OpenAI | official | 0 |
+| 5.9 | [Cloudflare 发布 Search for Agents：后台开一个开关，AI Agent 就能直接搜你整站、取回 Markdown 原文](https://blog.cloudflare.com/search-for-agents/) | blog.cloudflare.com | official | 0 |
+| 5.9 | [ElevenLabs 发布 GraphRAG 实践指南：用知识图谱解多跳追问，把语音 RAG 中位延迟从 326ms 压到 155ms](https://elevenlabs.io/blog/what-is-graphrag) | elevenlabs.io | official | 0 |
+| 4.8 | [Come for the Games, Stay for the Community With GeForce NOW](https://blogs.nvidia.com/blog/geforce-now-thursday-community-war-thunder-reward/) | NVIDIA | official | 0 |
 | 4.2 | [Strengthening the fight against online child sexual abuse with new tools and support](https://openai.com/index/strengthening-online-child-safety) | OpenAI | official | 0 |
 | 4.2 | [Science at the Frontier: How scientists use ChatGPT](https://openai.com/index/science-at-the-frontier) | OpenAI | official | 0 |
 | 4.2 | [How Revolut raises ambition without lowering the bar](https://openai.com/business/customer-stories/revolut) | OpenAI | official | 0 |
@@ -13,16 +12,15 @@
 | 4.2 | [More ways to move care forward with ChatGPT for Healthcare](https://openai.com/index/more-ways-to-move-care-forward-with-chatgpt-for-healthcare) | OpenAI | official | 0 |
 | 4.2 | [At Holiday Extras, dots get to work before anyone asks](https://openai.com/business/customer-stories/holiday-extras-dots) | OpenAI | official | 0 |
 | 4.2 | [Our new blog for science](https://openai.com/index/our-new-blog-for-science) | OpenAI | official | 0 |
-| 4.1 | [Building on Nemotron 3.5 Parse: Open Data, Fine-Tuning, and Faster Inference](https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin) | Hugging Face | primary | 0 |
 | 4.1 | [Migrating our Messages API to Rust](https://www.anthropic.com/research/migrating-api-to-rust) | Anthropic | official | 0 |
-| 4.1 | [Connectors and skills come together as plugins](https://x.com/claudeai/status/2124970294523945328) | @claudeai | official | 0 |
-| 4.1 | [If you’re in Europe, you get a month of Vibe Pro for free](https://x.com/MistralAI/status/2124905610386780451) | @MistralAI | official | 0 |
 | 4.1 | [Into the Omniverse: How Developers Turn Ideas Into Simulations With Frontier AI Agents](https://blogs.nvidia.com/blog/developers-simulation-frontier-ai-agents/) | NVIDIA | official | 0 |
 | 4.1 | [We’re partnering with Blue Origin on our first heavy-lift Project Suncatcher launch.](https://blog.google/innovation-and-ai/models-and-research/google-research/blue-origin-project-suncatcher-partnership/) | Google | official | 0 |
 | 4.1 | [Ian Buck Kicks Off NVIDIA’s Week at SC26 as Science Enters the Age of Agents](https://blogs.nvidia.com/blog/ian-buck-sc26/) | NVIDIA | official | 0 |
 | 4.1 | [NVIDIA CUDA-X Libraries Give Agents the Tools to Accelerate Scientific Discovery](https://blogs.nvidia.com/blog/cuda-x-libraries-agents-accelerate-scientific-discovery/) | NVIDIA | official | 0 |
 | 4.1 | [NVIDIA Announces Rubin HPC — A New GPU to Accelerate Agents for Science, Engineering and Analytics](https://blogs.nvidia.com/blog/rubin-hpc/) | NVIDIA | official | 0 |
-| 3.8 | [Merry Making: Play, Build and Create With NVIDIA Technologies This Holiday Season](https://blogs.nvidia.com/blog/nvidia-technologies-holidays-2026/) | NVIDIA | official | 0 |
+| 3.6 | [Building on Nemotron 3.5 Parse: Open Data, Fine-Tuning, and Faster Inference](https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin) | Hugging Face | primary | 0 |
+| 3.6 | [Connectors and skills come together as plugins](https://x.com/claudeai/status/2124970294523945328) | @claudeai | official | 0 |
+| 3.6 | [If you’re in Europe, you get a month of Vibe Pro for free](https://x.com/MistralAI/status/2124905610386780451) | @MistralAI | official | 0 |
 | 3.6 | [Returning to the Neuron Basis for Interpretability, Part 1: Answering Three Objections](https://alignment.anthropic.com/2026/neuron-basis-theory/) | Anthropic | official | 1 |
 | 3.6 | [Zero data retention with Enterprise Frontier Safeguards is now in beta](https://claude.com/resources/articles/zero-data-retention-with-enterprise-frontier-safeguards) | Anthropic | official | 0 |
 | 3.6 | [Anthropic 数学家称和 Claude 证明了黎曼猜想：1700 万行 Lean 证明已公开，尚无外部核对](https://alpo.ge/remark.pdf) | alpo.ge | official | 0 |
@@ -42,5 +40,7 @@
 | 3.6 | [MAI Cyber 2 Flash: Leading security. Lower cost](https://microsoft.ai/news/introducing-mai-cyber-2-flash/) | Microsoft AI | official | 0 |
 | 3.6 | [MAI Licensed Weights: Frontier performance you control](https://microsoft.ai/news/introducing-mai-licensed-weights/) | Microsoft AI | official | 0 |
 | 3.6 | [Microsoft Ignite 2026: MAI keynote transcript](https://microsoft.ai/news/microsoft-ignite-2026-mai-keynote/) | Microsoft AI | official | 0 |
+| 3.5 | [Introducing Genie 4 in the Gemini API and Google AI Studio, the first world model for developers.](https://aistudio.google.com/social_preview/page/genie) | @OfficialLoganK | official | 0 |
+| 3.4 | [Google Will Make AI Agents Use Its MCP Servers. The Gmail One Can't Send Email](https://techstackups.com/articles/google-workspace-ai-agents-mcp/) | Hacker News | discovery | 0 |
 
 **超过 30 天没有新内容的源**：Mistral 新闻、Kimi 博客

@@ -17,26 +17,26 @@
   "openai-news": {
     "etag": null,
     "lastModified": null,
-    "lastOk": "2026-11-26T12:57:37.855Z",
+    "lastOk": "2026-11-26T22:07:39.955Z",
     "lastNew": "2026-11-25T02:52:26.247Z"
   },
   "deepmind-blog": {
-    "etag": "\"I5BRVw\"",
+    "etag": "\"zgFjYQ\"",
     "lastModified": null,
-    "lastOk": "2026-11-26T12:57:37.855Z",
+    "lastOk": "2026-11-26T22:07:39.955Z",
     "lastNew": "2026-11-25T20:59:09.179Z"
   },
   "google-innovation-ai": {
     "etag": null,
     "lastModified": null,
-    "lastOk": "2026-11-26T12:57:37.855Z",
+    "lastOk": "2026-11-26T22:07:39.955Z",
     "lastNew": "2026-11-20T19:11:53.348Z"
   },
   "nvidia-blog": {
-    "etag": "\"d42eb2812ecd3edf425a87993c37be6d-gzip\"",
-    "lastModified": "Wed, 25 Nov 2026 22:53:52 GMT",
-    "lastOk": "2026-11-26T03:24:50.560Z",
-    "lastNew": "2026-11-23T23:08:33.508Z"
+    "etag": "\"09dbf3ffa8fbd71fcf4527a9f9e12030-gzip\"",
+    "lastModified": "Thu, 26 Nov 2026 14:00:22 GMT",
+    "lastOk": "2026-11-26T22:07:39.955Z",
+    "lastNew": "2026-11-26T22:07:39.955Z"
   },
   "mistral-news": {
     "etag": "W/\"ff2c19fb361d43c1bad6025b44b132d2-ssl\"",
@@ -46,13 +46,13 @@
   "hf-blog": {
     "etag": "W/\"42554-LX2l54tnYn4kVUChXgg1busOxBs\"",
     "lastModified": null,
-    "lastOk": "2026-11-26T12:57:37.855Z",
+    "lastOk": "2026-11-26T22:07:39.955Z",
     "lastNew": "2026-11-26T12:57:37.855Z"
   },
   "anthropic-news": {
     "etag": null,
     "lastModified": null,
-    "lastOk": "2026-11-26T12:57:37.855Z",
+    "lastOk": "2026-11-26T22:07:39.955Z",
     "seen": [
       "https://anthropic.com/news/public-benefit-fund",
       "https://anthropic.com/news/s1-sec",
@@ -80,7 +80,7 @@
   "microsoft-ai-news": {
     "etag": null,
     "lastModified": null,
-    "lastOk": "2026-11-26T12:57:37.855Z",
+    "lastOk": "2026-11-26T22:07:39.955Z",
     "lastNew": "2026-11-23T23:08:33.508Z",
     "seen": [
       "https://microsoft.ai/news/microsoft-ignite-2026",
@@ -96,7 +96,7 @@
   "meta-research": {
     "etag": null,
     "lastModified": null,
-    "lastOk": "2026-11-26T12:57:37.855Z",
+    "lastOk": "2026-11-26T22:07:39.955Z",
     "lastNew": "2026-11-20T07:04:20.911Z",
     "seen": [
       "https://research.meta.ai/blog/muse-ember",
@@ -108,7 +108,7 @@
   "kimi-blog": {
     "etag": null,
     "lastModified": null,
-    "lastOk": "2026-11-26T12:57:37.855Z",
+    "lastOk": "2026-11-26T22:07:39.955Z",
     "seen": [
       "https://kimi.ai/blog/kimi-k3-1-pro",
       "https://kimi.ai/blog/kimi-k3",
@@ -122,9 +122,9 @@
   },
   "hn-ai": {
     "etag": null,
-    "lastModified": "Wed, 25 Nov 2026 21:18:02 GMT",
-    "lastOk": "2026-11-26T03:24:50.560Z",
-    "lastNew": "2026-11-26T03:24:50.560Z",
+    "lastModified": "Thu, 26 Nov 2026 17:16:41 GMT",
+    "lastOk": "2026-11-26T22:07:39.955Z",
+    "lastNew": "2026-11-26T22:07:39.955Z",
     "lastError": "2026-11-20T19:11:53.348Z HTTP 502"
   },
   "latent-space-podcast": {
@@ -134,9 +134,9 @@
     "lastNew": "2026-11-26T03:24:50.560Z"
   },
   "xiaohu": {
-    "etag": "W/\"d50cb365fa0ac5a553f3330ace545791\"",
+    "etag": "W/\"3a97761fd503ecbed3e115d05a77cfa3\"",
     "lastModified": null,
-    "lastOk": "2026-11-25T20:59:09.179Z",
-    "lastNew": "2026-11-25T20:59:09.179Z"
+    "lastOk": "2026-11-26T22:07:39.955Z",
+    "lastNew": "2026-11-26T22:07:39.955Z"
   }
 }

@@ -1,46 +1,39 @@
 [
   {
-    "id": "0f70c64888",
-    "title": "🎙️ New multilingual capabilities are here for Qwen-Audio-3.1! Especially for Chinese dialects.",
-    "url": "https://x.com/Alibaba_Qwen/status/2125798914490249411",
-    "publisher": "@Alibaba_Qwen",
+    "id": "170ba12c1b",
+    "title": "Cloudflare 发布 Search for Agents：后台开一个开关，AI Agent 就能直接搜你整站、取回 Markdown 原文",
+    "url": "https://blog.cloudflare.com/search-for-agents/",
+    "publisher": "blog.cloudflare.com",
     "tier": "official",
-    "published": "2026-11-26T03:48:51.305Z",
-    "score": 5.1,
-    "category_hint": "product",
-    "related": []
-  },
-  {
-    "id": "02a0884347",
-    "title": "Introducing the llama.cpp benchmark dashboard for AMD Ryzen and Radeon",
-    "url": "https://huggingface.co/blog/ggml-org/llamacpp-amd-bench",
-    "publisher": "Hugging Face",
-    "tier": "primary",
-    "published": "2026-11-26T11:37:17.000Z",
-    "score": 4.9,
+    "published": "2026-11-27T00:00:00.000Z",
+    "score": 5.9,
     "category_hint": null,
+    "via": "https://xiaohu.ai/article/cloudflare-search-for-agents/",
+    "discovered_by": "xiaohu",
     "related": []
   },
   {
-    "id": "c01600d416",
-    "title": "Swarms, Flocks, Gangs: How to build, train, and evaluate multi-agent systems",
-    "url": "https://huggingface.co/blog/training-swarms",
-    "publisher": "Hugging Face",
-    "tier": "primary",
-    "published": "2026-11-26T00:00:00.000Z",
-    "score": 4.4,
-    "category_hint": null,
-    "related": []
-  },
-  {
-    "id": "f26f2a4dfd",
-    "title": "Broadening access to AI for scientists",
-    "url": "https://openai.com/index/expanding-chatgpt-for-academic-researchers",
-    "publisher": "OpenAI",
+    "id": "022420567f",
+    "title": "ElevenLabs 发布 GraphRAG 实践指南：用知识图谱解多跳追问，把语音 RAG 中位延迟从 326ms 压到 155ms",
+    "url": "https://elevenlabs.io/blog/what-is-graphrag",
+    "publisher": "elevenlabs.io",
     "tier": "official",
-    "published": "2026-11-16T17:00:00.000Z",
-    "score": 4.2,
-    "category_hint": "product",
+    "published": "2026-11-27T00:00:00.000Z",
+    "score": 5.9,
+    "category_hint": null,
+    "via": "https://xiaohu.ai/article/elevenlabs-graphrag/",
+    "discovered_by": "xiaohu",
+    "related": []
+  },
+  {
+    "id": "ff7c1d6266",
+    "title": "Come for the Games, Stay for the Community With GeForce NOW",
+    "url": "https://blogs.nvidia.com/blog/geforce-now-thursday-community-war-thunder-reward/",
+    "publisher": "NVIDIA",
+    "tier": "official",
+    "published": "2026-11-26T14:00:22.000Z",
+    "score": 4.8,
+    "category_hint": null,
     "related": []
   },
   {
@@ -121,45 +114,12 @@
     "related": []
   },
   {
-    "id": "d3aa48daa6",
-    "title": "Building on Nemotron 3.5 Parse: Open Data, Fine-Tuning, and Faster Inference",
-    "url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
-    "publisher": "Hugging Face",
-    "tier": "primary",
-    "published": "2026-11-26T05:05:36.000Z",
-    "score": 4.1,
-    "category_hint": null,
-    "related": []
-  },
-  {
     "id": "07e4d18518",
     "title": "Migrating our Messages API to Rust",
     "url": "https://www.anthropic.com/research/migrating-api-to-rust",
     "publisher": "Anthropic",
     "tier": "official",
     "published": "2026-11-25",
-    "score": 4.1,
-    "category_hint": "product",
-    "related": []
-  },
-  {
-    "id": "d1e1fa1ba8",
-    "title": "Connectors and skills come together as plugins",
-    "url": "https://x.com/claudeai/status/2124970294523945328",
-    "publisher": "@claudeai",
-    "tier": "official",
-    "published": "2026-11-23T20:56:12.910Z",
-    "score": 4.1,
-    "category_hint": "product",
-    "related": []
-  },
-  {
-    "id": "372f1627fa",
-    "title": "If you’re in Europe, you get a month of Vibe Pro for free",
-    "url": "https://x.com/MistralAI/status/2124905610386780451",
-    "publisher": "@MistralAI",
-    "tier": "official",
-    "published": "2026-11-23T16:39:11.010Z",
     "score": 4.1,
     "category_hint": "product",
     "related": []
@@ -220,14 +180,36 @@
     "related": []
   },
   {
-    "id": "a88353929e",
-    "title": "Merry Making: Play, Build and Create With NVIDIA Technologies This Holiday Season",
-    "url": "https://blogs.nvidia.com/blog/nvidia-technologies-holidays-2026/",
-    "publisher": "NVIDIA",
-    "tier": "official",
-    "published": "2026-11-23T17:00:08.000Z",
-    "score": 3.8,
+    "id": "d3aa48daa6",
+    "title": "Building on Nemotron 3.5 Parse: Open Data, Fine-Tuning, and Faster Inference",
+    "url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+    "publisher": "Hugging Face",
+    "tier": "primary",
+    "published": "2026-11-26T05:05:36.000Z",
+    "score": 3.6,
     "category_hint": null,
+    "related": []
+  },
+  {
+    "id": "d1e1fa1ba8",
+    "title": "Connectors and skills come together as plugins",
+    "url": "https://x.com/claudeai/status/2124970294523945328",
+    "publisher": "@claudeai",
+    "tier": "official",
+    "published": "2026-11-23T20:56:12.910Z",
+    "score": 3.6,
+    "category_hint": "product",
+    "related": []
+  },
+  {
+    "id": "372f1627fa",
+    "title": "If you’re in Europe, you get a month of Vibe Pro for free",
+    "url": "https://x.com/MistralAI/status/2124905610386780451",
+    "publisher": "@MistralAI",
+    "tier": "official",
+    "published": "2026-11-23T16:39:11.010Z",
+    "score": 3.6,
+    "category_hint": "product",
     "related": []
   },
   {
@@ -477,6 +459,30 @@
     "tier": "official",
     "published": "2026-11-17T12:00:00.000Z",
     "score": 3.6,
+    "category_hint": null,
+    "related": []
+  },
+  {
+    "id": "87ac98f9ec",
+    "title": "Introducing Genie 4 in the Gemini API and Google AI Studio, the first world model for developers.",
+    "url": "https://aistudio.google.com/social_preview/page/genie",
+    "publisher": "@OfficialLoganK",
+    "tier": "official",
+    "published": "2026-11-19T17:24:26.000Z",
+    "score": 3.5,
+    "category_hint": "product",
+    "text": "Introducing Genie 4 in the Gemini API + @GoogleAIStudio, our first world model for developers to build with and create new world model experiences 🔮\n\n Try it out: https://aistudio.google.com/social_preview/page/genie",
+    "via": "https://x.com/OfficialLoganK/status/2123467449257623770",
+    "related": []
+  },
+  {
+    "id": "6f6a6b07f1",
+    "title": "Google Will Make AI Agents Use Its MCP Servers. The Gmail One Can't Send Email",
+    "url": "https://techstackups.com/articles/google-workspace-ai-agents-mcp/",
+    "publisher": "Hacker News",
+    "tier": "discovery",
+    "published": "2026-11-26T09:44:23.000Z",
+    "score": 3.4,
     "category_hint": null,
     "related": []
   }
