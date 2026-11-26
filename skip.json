@@ -250,5 +250,59 @@
     "reason": "演示页（Watch a walkthrough），不是发布稿；候选标注 2026-11-19，已超过 72 小时",
     "title": "See PR scans in action",
     "at": "2026-11-26T01:57:23.410Z"
+  },
+  {
+    "id": "ce0bee1618",
+    "reason": "只是小范围内测通知（CEO 推文），没有正式发布稿、定价或全面上线信息；产品页已把 Private Inference 列为 Alpha",
+    "title": "OpenAI is testing Private Inference with a small group of customers",
+    "at": "2026-11-26T08:06:30.832Z"
+  },
+  {
+    "id": "d749a29fc5",
+    "reason": "官方博客日期 November 16, 2026，已超过 72 小时；11 月 25 日的推文是同一轮 66 个地区音色上线的重复宣传，不是新发布",
+    "title": "Gemini adds 60+ new expressive voices with local accents",
+    "at": "2026-11-26T08:06:30.878Z"
+  },
+  {
+    "id": "e29ac258c0",
+    "reason": "演示页（Watch a demo），不是发布稿；候选标注 2026-11-19，已超过 72 小时",
+    "title": "Explore the Codex Security Plugin",
+    "at": "2026-11-26T08:06:30.921Z"
+  },
+  {
+    "id": "a2fb003440",
+    "reason": "开通走查页（Watch a walkthrough），不是新发布；候选标注 2026-11-19，已超过 72 小时",
+    "title": "Get started with Daybreak Blue",
+    "at": "2026-11-26T08:06:30.962Z"
+  },
+  {
+    "id": "e683d40fba",
+    "reason": "作者本人观点的演讲改写（文首注明不代表 OpenAI 立场），纯观点，不是新产品或带完整方法的实证研究；官方页面日期 November 18, 2026，已超过 72 小时",
+    "title": "The Silent Consensus",
+    "at": "2026-11-26T08:06:30.998Z"
+  },
+  {
+    "id": "9fa731b0ef",
+    "reason": "官方页面日期 November 18, 2026，已超过 72 小时",
+    "title": "Research acceleration: The jagged frontier",
+    "at": "2026-11-26T08:06:31.042Z"
+  },
+  {
+    "id": "b527b6f0dd",
+    "reason": "OpenAI 客户案例（Customer stories：Sumitomo Life 如何推广 ChatGPT Enterprise），按规范不写；官方页面日期 November 18, 2026，已超过 72 小时",
+    "title": "How Sumitomo Life’s leaders helped teams adopt ChatGPT Enterprise",
+    "at": "2026-11-26T08:06:31.089Z"
+  },
+  {
+    "id": "53f2a14376",
+    "reason": "官方页面日期 November 18, 2026，已超过 72 小时；是 Codex 沙箱机制说明，不是新发布",
+    "title": "Inside the Codex sandbox",
+    "at": "2026-11-26T08:06:31.130Z"
+  },
+  {
+    "id": "8b6ac2940f",
+    "reason": "官方页面日期 November 18, 2026，已超过 72 小时",
+    "title": "Managing frontier AI risk: From training to deployment",
+    "at": "2026-11-26T08:06:31.170Z"
   }
 ]
