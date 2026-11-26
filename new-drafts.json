@@ -1,10 +1,37 @@
 [
   {
-    "slug": "perplexity-time-machine-api",
-    "title": "Perplexity 上线 Time Machine：API 可按日期看网页历史，最远 365 天",
-    "file": "content/articles/perplexity-time-machine-api.json",
+    "slug": "mass-spec-skills-antigravity",
+    "title": "Google Antigravity 推出质谱技能：把分子鉴定准确率从不到 4% 拉到约 97%",
+    "file": "content/articles/mass-spec-skills-antigravity.json",
     "errors": 0,
-    "warnings": 0,
+    "warnings": 1,
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro"
+  },
+  {
+    "slug": "le-groupe-figaro-openai-partnership",
+    "title": "Figaro 与 OpenAI 合作：ChatGPT 可读到新闻摘要、摘录和原文链接",
+    "file": "content/articles/le-groupe-figaro-openai-partnership.json",
+    "errors": 0,
+    "warnings": 1,
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro"
+  },
+  {
+    "slug": "openai-daybreak-nato-cyber-defence",
+    "title": "OpenAI 帮北约和盟友做网络防守：每月最高 3,000 亿 token，复核 88 个问题 95% 属实",
+    "file": "content/articles/openai-daybreak-nato-cyber-defence.json",
+    "errors": 0,
+    "warnings": 3,
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro"
+  },
+  {
+    "slug": "astra-for-law-legal-intelligence",
+    "title": "Astra for Law 更新：LAB-AA 满分率 20.8%，幻觉率 0.03 次/任务",
+    "file": "content/articles/astra-for-law-legal-intelligence.json",
+    "errors": 0,
+    "warnings": 6,
     "provider": "deepseek",
     "model": "deepseek-v4-pro"
   }
