@@ -8,8 +8,8 @@
   ],
   "readMinutes": 8,
   "title": "Astra for Law 更新：LAB-AA 满分率 20.8%，幻觉率 0.03 次/任务",
-  "summary": "做法律检索最怕两件事：AI 编出不存在判例，和为查一个问题烧掉大量 token。OpenAI 更新 Astra for Law 后，在这两项上都给出了可查的数据，并开放给所有 ChatGPT Enterprise 客户申请。",
-  "ai_summary": "11 月 17 日，OpenAI 更新法律专用配置 Astra for Law，开放给所有 ChatGPT Enterprise 客户申请（含 API）。它在 Artificial Analysis 的 LAB-AA 评测中拿到 20.8% 的满分率，排第一；平均每次任务输出约 64,000 个 token，比 Muse Wonder Full 少 54%。实质幻觉率每次任务 0.03 次，Claude Opus 5.5 为 0.59 次。Vals 全过率从约 46% 升到 53.8%。对法务和律所来说，这些是 OpenAI 引用的第三方榜单，官方未公布价格，实际表现需自行验证。",
+  "summary": "做法律检索最怕两件事：AI 编出不存在判例，和为查一个问题烧掉大量 token。OpenAI 更新 Astra for Law 后，在这两项上都给出了可查的数据，并开放给所有 ChatGPT Enterprise 客户通过 Trusted Access Program 申请。",
+  "ai_summary": "11 月 17 日，OpenAI 更新法律专用配置 Astra for Law，开放给所有 ChatGPT Enterprise 客户通过 Trusted Access Program 申请（含 API）。它在 Artificial Analysis 的 LAB-AA 评测中拿到 20.8% 的满分率，排第一；平均每次任务输出约 64,000 个 token，比 Muse Wonder Full 少 54%。实质幻觉率每次任务 0.03 次，Claude Opus 5.5 为 0.59 次。Vals 全过率从约 46% 升到 53.8%。对法务和律所来说，这些是 OpenAI 引用的第三方榜单，官方未公布价格，实际表现需自行验证。",
   "brief": [
     "LAB-AA 满分率 20.8%，比 GPT-6.2 Astra（15.0%）高近四成，比 Muse Wonder Full（13.1%）高约 59%。",
     "实质幻觉率每次任务 0.03 次，Claude Opus 5.5 为 0.59 次，约 20 倍之差。",
@@ -18,7 +18,7 @@
   ],
   "cover": {
     "headline": "Astra for Law 更新",
-    "highlight": "幻觉率 0.03，满分率 20.8%",
+    "highlight": "幻觉率 0.03 次/任务，满分 20.8%",
     "big": {
       "value": "20.8",
       "unit": "%",
@@ -50,7 +50,7 @@
           "p": "Astra for Law 是 OpenAI 在 2026 年 11 月 17 日更新的法律专用模型配置，底层是 GPT-6.2 Astra。它做的事可以理解为：给通用模型配上一套法律检索和写作的「工作方法」——一个扩充过的法律搜索索引，加上研究问题、权衡判例、写答案的指令。"
         },
         {
-          "p": "对使用者来说，「配置」和「新模型」的区别很实际：它不需要重训一整个法律大模型，而是骑在 frontier 模型（当前能力最强的通用模型）的更新上，再叠加法律专用部件。9 月它只开放给 Cooley、Ropes & Gray、Sullivan & Cromwell 等一小批律所试用，这次更新后，所有 ChatGPT Enterprise 客户都能申请。"
+          "p": "对使用者来说，「配置」意味着它叠在 frontier 模型（OpenAI 所称当前最强的通用模型 GPT-6.2 Astra）之上，再加法律检索和写作指令。9 月它只开放给 Cooley、Ropes & Gray、Sullivan & Cromwell 等一小批律所试用，这次更新后，所有 ChatGPT Enterprise 客户都可以通过 Trusted Access Program 申请。"
         },
         {
           "fig": {
@@ -113,9 +113,9 @@
               },
               {
                 "value": 310,
-                "unit": "百万 URL",
+                "unit": "百万+ URL",
                 "label": "法律搜索索引",
-                "note": "9 月以来 +34%"
+                "note": "超过 3.1 亿，9 月以来 +34%"
               }
             ]
           }
@@ -164,7 +164,7 @@
       "h": "省 token：每次任务约 64,000 个输出 token",
       "blocks": [
         {
-          "p": "对按量付费的团队，满分率之外还有一个直接相关数：答案有多长。Astra for Law 拿第一的同时，平均每次任务只输出约 64,000 个 token；榜单里的高分模型 Muse Wonder Full 平均要 139,000 个，也就是 Astra for Law 少用 54% 的输出。输出 token 包括模型推理和写答案时生成的所有文字，通常直接换算成 API 费用。"
+          "p": "对按量付费的团队，满分率之外还有一个直接相关数：答案有多长。Astra for Law 拿第一的同时，平均每次任务只输出约 64,000 个 token；榜单里的高分模型 Muse Wonder Full 平均要 139,000 个，也就是 Astra for Law 少用 54% 的输出。输出 token 包括模型推理和写答案时生成的所有文字；对按量付费的团队，输出更短通常意味着费用更低。"
         },
         {
           "fig": {
@@ -219,7 +219,7 @@
             "type": "bars",
             "title": "实质幻觉率 0.03 次/任务，约为 Opus 5.5 的二十分之一",
             "subtitle": "单位：每次任务平均实质错误数；琥珀色是本次更新，蓝色是不加法律配置的基础模型",
-            "note": "来源：Artificial Analysis；Claude Opus 5.5 无公开 API",
+            "note": "来源：Artificial Analysis",
             "legend": [
               {
                 "tone": "hi",
@@ -431,14 +431,14 @@
       "value": "nearly 40%",
       "source_url": "https://openai.com/index/astra-law-6-2",
       "as_written": "近 40%",
-      "quote": "Today's configuration earned full credit on the LAB-AA tests nearly 40% more often than did the runner-up, GPT‑6.2 Astra."
+      "quote": "Today’s configuration earned full credit on the LAB-AA tests nearly 40% more often than did the runner-up, GPT‑6.2 Astra."
     },
     {
       "text": "Astra for Law 拿满分的频率比得分最高的非 OpenAI 模型 Muse Wonder Full 高约 59%。",
       "value": "about 59%",
       "source_url": "https://openai.com/index/astra-law-6-2",
       "as_written": "约 59%",
-      "quote": "Astra for Law ranked first at 20.8%, earning full credit about 59% more often than Muse Wonder Full, the highest-scoring non-OpenAI model."
+      "quote": "Astra for Law ranked first at 20.8%, earning full credit about 59% more often than Muse Wonder Full , the highest-scoring non-OpenAI model."
     },
     {
       "text": "Astra for Law 每次任务平均输出约 64,000 个 token。",
@@ -459,7 +459,7 @@
       "value": "54%",
       "source_url": "https://openai.com/index/astra-law-6-2",
       "as_written": "54%",
-      "quote": "Astra for Law also earned that top score with 54% less output per assignment than the highest-scoring non-OpenAI model in the evaluation."
+      "quote": "Astra for Law also earned that top score with 54% less output per assignment than the highest-scoring non-OpenAI model in the evaluation"
     },
     {
       "text": "Astra for Law 每次任务平均有 0.03 次实质幻觉。",
@@ -480,14 +480,14 @@
       "value": "0.59",
       "source_url": "https://openai.com/index/astra-law-6-2",
       "as_written": "0.59",
-      "quote": "Claude Opus 5.5 averaged 0.59 material and 0.51 minor hallucinations per assignment."
+      "quote": "Claude Opus 5.5 averaged 0.59 material and 0.51 minor hallucinations per assignment"
     },
     {
       "text": "Claude Opus 5.5 每次任务平均有 0.51 次轻微幻觉。",
       "value": "0.51",
       "source_url": "https://openai.com/index/astra-law-6-2",
       "as_written": "0.51",
-      "quote": "Claude Opus 5.5 averaged 0.59 material and 0.51 minor hallucinations per assignment."
+      "quote": "Claude Opus 5.5 averaged 0.59 material and 0.51 minor hallucinations per assignment"
     },
     {
       "text": "Claude Opus 5.5 的实质幻觉次数约为 Astra for Law 的 20 倍。",
@@ -529,7 +529,7 @@
       "value": "53.8%",
       "source_url": "https://openai.com/index/astra-law-6-2",
       "as_written": "53.8%",
-      "quote": "In Vals AI's November 16 evaluation, it earned full credit on 112 of 208 questions (53.8%)."
+      "quote": "In Vals AI’s November 16 evaluation, it earned full credit on 112 of 208 questions (53.8%)"
     },
     {
       "text": "两个月内 Vals 全过率提升约 8 个百分点。",
@@ -543,7 +543,7 @@
       "value": "112 of 208",
       "source_url": "https://openai.com/index/astra-law-6-2",
       "as_written": "208 道中的 112 道",
-      "quote": "In Vals AI's November 16 evaluation, it earned full credit on 112 of 208 questions (53.8%)."
+      "quote": "In Vals AI’s November 16 evaluation, it earned full credit on 112 of 208 questions (53.8%)"
     },
     {
       "text": "计入部分得分后，Astra for Law 拿到 90.9% 的可用分数。",
@@ -557,14 +557,14 @@
       "value": "34%",
       "source_url": "https://openai.com/index/astra-law-6-2",
       "as_written": "34%",
-      "quote": "Since September, we've grown the index by 34%, adding over 80 million new URLs"
+      "quote": "Since September, we’ve grown the index by 34%, adding over 80 million new URLs"
     },
     {
       "text": "法律搜索索引新增了超过 8,000 万个 URL。",
       "value": "over 80 million",
       "source_url": "https://openai.com/index/astra-law-6-2",
       "as_written": "超过 8,000 万",
-      "quote": "Since September, we've grown the index by 34%, adding over 80 million new URLs"
+      "quote": "Since September, we’ve grown the index by 34%, adding over 80 million new URLs"
     },
     {
       "text": "目前法律搜索索引覆盖超过 3.1 亿个 URL。",
@@ -585,7 +585,7 @@
       "value": "4.6%",
       "source_url": "https://openai.com/index/astra-law-6-2",
       "as_written": "4.6%",
-      "quote": "On Harvey's own Legal Agent Benchmark, GPT‑6 Astra met every requirement on 4.6% of assignments."
+      "quote": "On Harvey’s own Legal Agent Benchmark, GPT‑6 Astra met every requirement on 4.6% of assignments."
     },
     {
       "text": "GPT-6.2 Astra 在 Harvey LAB 上的满分率为 14.6%。",
@@ -641,7 +641,7 @@
       "value": "September",
       "source_url": "https://openai.com/index/astra-law-6-2",
       "as_written": "9 月",
-      "quote": "Since we introduced Astra for Law in September to a small group of firms"
+      "quote": "Since we introduced Astra for Law in September ⁠ to a small group of firms"
     },
     {
       "text": "GPT-6.2 Astra 在 Harvey LAB 上的满分率约是 GPT-6 Astra 的 3 倍。",
@@ -656,10 +656,17 @@
       "source_url": "https://openai.com/index/astra-law-6-2",
       "as_written": "0 次",
       "quote": "Astra for Law's performance on this eval included zero material hallucinations for tasks that met the all-pass criteria"
+    },
+    {
+      "text": "Vals AI 对 9 月版本的评测是在 10 月进行的，该分数为近似值。",
+      "value": "October",
+      "source_url": "https://openai.com/index/astra-law-6-2",
+      "as_written": "10 月",
+      "quote": "The September release was evaluated in October, and its score is approximate."
     }
   ],
   "status": "published",
-  "verified": false,
+  "verified": true,
   "pipeline": {
     "origin": "auto",
     "candidate": "0604bc2b50",
