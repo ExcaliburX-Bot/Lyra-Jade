@@ -89,7 +89,9 @@
    "year": 2018,
    "org": "OpenAI",
    "area": "frontier",
-   "group": "GPT 系列"
+   "group": "GPT 系列",
+   "title": "Improving Language Understanding by Generative Pre-Training",
+   "url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf"
   },
   {
    "id": "gpt-2",
@@ -97,7 +99,9 @@
    "year": 2019,
    "org": "OpenAI",
    "area": "frontier",
-   "group": "GPT 系列"
+   "group": "GPT 系列",
+   "title": "Language Models are Unsupervised Multitask Learners",
+   "url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf"
   },
   {
    "id": "gpt-3",

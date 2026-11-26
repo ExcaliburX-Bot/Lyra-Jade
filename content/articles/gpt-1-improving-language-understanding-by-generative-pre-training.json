@@ -1,0 +1,1237 @@
+{
+  "slug": "gpt-1-improving-language-understanding-by-generative-pre-training",
+  "category": "paper",
+  "publisher": "Radford 等 · OpenAI",
+  "date": "2018-06-11",
+  "title": "精读《GPT-1》：先猜下一个词，再做具体任务，“预训练 ＋ 微调”从这里定型",
+  "summary": "GPT-1 先让一个 12 层 Transformer 解码器在 7000 多本书上“猜下一个词”，再把各种任务拼成一条文本微调，一个通用模型在 12 个数据集里的 9 个上刷新纪录。我们拆开预训练和微调的公式、输入变换、消融实验和零样本的苗头，再看它怎样分出 BERT 和 GPT-2 两条路。",
+  "ai_summary": "《Improving Language Understanding by Generative Pre-Training》（OpenAI，2018）先在 7000 多本书上用语言模型目标预训练一个 12 层、768 维的 Transformer 解码器，再在各任务的标注数据上微调，只新增一个线性输出层，并把句子对、问题和选项等输入拼成一条带分隔符的文本。在 12 个数据集中的 9 个上刷新纪录，Story Cloze 提高 8.9 个百分点、RACE 提高 5.7 个，GLUE 总分 72.8。去掉预训练平均分从 74.7 跌到 59.9；不微调的零样本实验也随预训练稳步变好，预示了 GPT-2。",
+  "brief": [
+    "问题：标注数据少，无标注文本多；预训练词向量只迁移了词这一层，更高层的知识怎么迁移还没有好办法。",
+    "方法：12 层 Transformer 解码器在 BooksCorpus 上“猜下一个词”预训练，再把各任务输入拼成一条文本、加一个线性层微调。",
+    "结果：12 个数据集里 9 个刷新纪录；去掉预训练平均分少 14.8，换成 LSTM 少 5.6；零样本能力随预训练稳步上升。",
+    "局限：单向、每个任务仍需微调、规模小；BERT 改成双向，GPT-2 选择放大并去掉微调。"
+  ],
+  "paper": {
+    "title": "Improving Language Understanding by Generative Pre-Training",
+    "authors": "Alec Radford, Karthik Narasimhan, Tim Salimans, Ilya Sutskever",
+    "org": "OpenAI",
+    "venue": "OpenAI 预印本",
+    "year": 2018,
+    "url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf"
+  },
+  "cover": {
+    "headline": "GPT-1 原论文精读",
+    "highlight": "先猜下一个词，再做具体任务",
+    "glyph": {
+      "kind": "flow",
+      "nodes": [
+        {
+          "label": "7000 本书"
+        },
+        {
+          "label": "猜下一个词",
+          "tone": "hi"
+        },
+        {
+          "label": "微调到任务"
+        }
+      ]
+    }
+  },
+  "sections": [
+    {
+      "h": "先说结论：这篇论文到底做了什么",
+      "blocks": [
+        {
+          "p": "2018 年 6 月，OpenAI 的 Alec Radford、Karthik Narasimhan、Tim Salimans 和 Ilya Sutskever 发布了这篇 12 页的论文。它没有发在 arXiv 上，只是 OpenAI 网站上的一份预印本，后来被大家叫作 **GPT-1**：GPT 就是标题里的 Generative Pre-Training，“生成式预训练”。"
+        },
+        {
+          "p": "它的做法分两步。第一步，**预训练**：拿一个 12 层的 Transformer 解码器，在 7000 多本未出版的小说上训练它“猜下一个词”，不需要任何人工标注。第二步，**微调**：在具体任务（判断两句话是否矛盾、做阅读理解选择题、判断情感等）的少量标注数据上，接一个简单的输出层继续训练。为了让各种任务都能套进同一个模型，论文把句子对、问题和选项等结构化输入**拼成一条文本**送进去，模型结构几乎不用改。"
+        },
+        {
+          "p": "结果是：一个不针对任何任务设计的通用模型，在 12 个数据集中的 9 个上刷新了最好成绩，常识推理（Story Cloze）提高 8.9 个百分点，阅读理解（RACE）提高 5.7 个。去掉预训练，平均分一下子掉了 14.8。"
+        },
+        {
+          "p": "这篇论文确立了此后几年 NLP 的标准做法：**先在海量无标注文本上预训练，再在具体任务上微调**。四个月后的 BERT 沿用了这个框架，换成了双向编码器；GPT-2、GPT-3 则沿着“只用解码器、不断放大”的方向一路走到了今天的大语言模型。"
+        },
+        {
+          "callout": {
+            "kind": "takeaway",
+            "title": "一句话版本",
+            "text": "GPT-1 ＝ 在 7000 多本书上用“猜下一个词”预训练一个 12 层 Transformer 解码器 ＋ 把每个任务的输入拼成一条文本、接一个线性层微调。一个通用模型在 12 个任务里的 9 个上超过了专门设计的模型，证明了“生成式预训练”学到的东西可以迁移。"
+          }
+        },
+        {
+          "callout": {
+            "kind": "prereq",
+            "title": "读这篇需要的三个小概念",
+            "text": "不懂也没关系，这三条够用了：",
+            "list": [
+              "**Transformer 解码器**：Transformer 里负责“生成”的那一半，每个位置只能看见它前面的词（被“遮住”的自注意力）。详见我们的《Transformer》精读。",
+              "**语言模型**：根据前文猜下一个词。训练它不需要人工标注，任何文本都可以用。",
+              "**微调**：把预训练好的模型拿来，在新任务的数据上继续训练一会儿，让参数朝新目标稍作调整。"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "问题：标注数据太少，而无标注文本几乎无穷",
+      "blocks": [
+        {
+          "p": "自然语言理解包括很多任务：文本蕴含（判断一句话能否从另一句推出）、问答、语义相似度、文本分类。每个任务都需要人工标注的数据，而标注又慢又贵。论文开头指出：大规模的无标注文本俯拾皆是，标注数据却很稀缺，只靠标注数据训练的模型难以做好。"
+        },
+        {
+          "p": "当时利用无标注文本最成功的办法，是本主线第一篇讲过的**预训练词向量**（word2vec 一类）。但它只迁移了“词”这一层的信息。想迁移更高层的东西（句子结构、语义、常识），有两个难题："
+        },
+        {
+          "list": [
+            "**用什么目标来预训练**：语言模型、机器翻译、篇章连贯性……当时的研究各有胜负，没有定论。",
+            "**怎么迁移到下游任务**：有的在预训练模型上搭一套任务专用结构，有的用复杂的训练流程，有的加辅助目标，都很麻烦。"
+          ]
+        },
+        {
+          "callout": {
+            "kind": "intuition",
+            "title": "先读万卷书，再做专项题",
+            "text": "让一个学生先大量阅读（预训练），他会在不知不觉中学到语法、常识、故事的走向；之后再给他少量专项练习题（微调），他很快就能上手。这比让一个从没读过书的学生只靠几千道练习题学会阅读理解要容易得多。GPT-1 就是把这个直觉做成了一个能在 9 个任务上刷新纪录的系统。"
+          }
+        },
+        {
+          "p": "在 GPT-1 之前已经有人尝试类似思路，比如 Dai 和 Le（2015）、Howard 和 Ruder（ULMFiT，2018）用 LSTM 语言模型预训练再做文本分类。论文认为，LSTM 能利用的上下文范围太短，而 Transformer 能捕捉更长距离的结构；同时，它要在比文本分类更广的任务上证明这条路可行。"
+        }
+      ]
+    },
+    {
+      "h": "第一步：用“猜下一个词”预训练",
+      "blocks": [
+        {
+          "p": "预训练的目标就是标准的语言模型：给定一大段无标注文本 U ＝ {u_{1}, …, u_{n}}，最大化每个词在它前面 k 个词条件下出现的对数概率之和。"
+        },
+        {
+          "formula": {
+            "expr": "L_{1}(U) ＝ Σ_{i} log P(u_{i} | u_{i−k}, …, u_{i−1}; Θ)",
+            "parts": [
+              {
+                "sym": "u_{i}",
+                "desc": "文本里的第 i 个词元（token）"
+              },
+              {
+                "sym": "k",
+                "desc": "上下文窗口大小：模型最多往前看多少个词元。GPT-1 是 512"
+              },
+              {
+                "sym": "Θ",
+                "desc": "神经网络的全部参数"
+              },
+              {
+                "sym": "Σ log P",
+                "desc": "把每个位置“猜对”的对数概率加起来。最大化它，就是让模型尽量准确地预测下一个词"
+              }
+            ]
+          }
+        },
+        {
+          "p": "模型是一个**只有解码器的 Transformer**：把词元向量和位置向量相加作为输入，经过 12 个 Transformer 块，最后乘以词元向量矩阵的转置、做 softmax，得到下一个词的概率。"
+        },
+        {
+          "formula": {
+            "expr": "h_{0} ＝ U W_{e} ＋ W_{p}\nh_{l} ＝ transformer_block(h_{l−1})，l ＝ 1, …, n\nP(u) ＝ softmax(h_{n} W_{e}^{⊤})",
+            "parts": [
+              {
+                "sym": "W_{e}",
+                "desc": "词元嵌入矩阵：每个词元一行向量"
+              },
+              {
+                "sym": "W_{p}",
+                "desc": "位置嵌入矩阵：GPT-1 用的是可学习的位置向量，而不是原版 Transformer 的正弦函数"
+              },
+              {
+                "sym": "transformer_block",
+                "desc": "一个 Transformer 块：带遮罩的多头自注意力 ＋ 逐位置前馈网络"
+              },
+              {
+                "sym": "W_{e}^{⊤}",
+                "desc": "输出层直接复用嵌入矩阵的转置，不另设参数：输入时“词 → 向量”，输出时“向量 → 词”用的是同一张表"
+              }
+            ]
+          }
+        },
+        {
+          "callout": {
+            "kind": "intuition",
+            "title": "为什么只要解码器",
+            "text": "原版 Transformer 有编码器（读）和解码器（写）两半，是为翻译设计的。语言模型只需要“根据前文猜下一个词”，所以只用解码器那一半：每个位置只能看见它左边的词，这由一个遮罩实现，保证模型不会偷看答案。这种“只有解码器”的结构，一直沿用到今天的 GPT 系列和绝大多数大语言模型。"
+          }
+        },
+        {
+          "p": "**预训练数据**是 BooksCorpus：7000 多本未出版的书，涵盖冒险、奇幻、言情等题材。论文特别强调选它的理由：书里有**大段连续的文本**，模型能学会利用很长的上下文。同等规模的另一个候选，ELMo 用的 10 亿词基准，是按句子打乱的，长距离结构已被破坏。GPT-1 在这个语料上的困惑度低到 18.4。"
+        }
+      ]
+    },
+    {
+      "h": "模型和训练配置",
+      "blocks": [
+        {
+          "fig": {
+            "type": "table",
+            "title": "GPT-1 的配置：12 层、768 维、12 个注意力头",
+            "subtitle": "来自论文第 4.1 节",
+            "columns": [
+              "项目",
+              "设置"
+            ],
+            "rows": [
+              [
+                "结构",
+                "12 层只有解码器的 Transformer，带遮罩的自注意力"
+              ],
+              [
+                "隐藏维度 / 注意力头",
+                "768 维，12 个头"
+              ],
+              [
+                "前馈层中间维度",
+                "3072"
+              ],
+              [
+                "上下文长度",
+                "512 个词元"
+              ],
+              [
+                "分词",
+                "BPE，4 万次合并"
+              ],
+              [
+                "优化器",
+                "Adam，最大学习率 2.5 × 10^{−4}，前 2000 步线性预热，再余弦退火到 0"
+              ],
+              [
+                "训练量",
+                "100 轮，每批 64 条连续的 512 词元序列"
+              ],
+              [
+                "正则化",
+                "残差、嵌入、注意力都有 0.1 的 dropout；改进版 L2 正则 w ＝ 0.01"
+              ],
+              [
+                "其他",
+                "激活函数 GELU；权重按 N(0, 0.02) 初始化；可学习的位置向量"
+              ]
+            ]
+          }
+        },
+        {
+          "p": "论文没有直接给出参数量。按 Transformer 的算法（每层约 12 × d^{2} 个参数）可以估一下："
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "GPT-1 大约 1.17 亿参数，其中约四分之一在词表里",
+            "subtitle": "示意：由本站按论文配置估算；词表大小按 BPE 4 万次合并取约 4 万",
+            "columns": [
+              "部分",
+              "怎么算",
+              "约多少"
+            ],
+            "rows": [
+              [
+                "12 个 Transformer 块",
+                "12 层 × 12 × 768^{2}",
+                "8500 万"
+              ],
+              [
+                "词元嵌入",
+                "约 4 万 × 768",
+                "3100 万"
+              ],
+              [
+                "位置嵌入",
+                "512 × 768",
+                "39 万"
+              ],
+              [
+                "输出层",
+                "复用词元嵌入，不另算",
+                "0"
+              ],
+              [
+                "合计",
+                "",
+                "约 1.16 亿"
+              ]
+            ],
+            "highlight": {
+              "row": 4
+            },
+            "note": "GPT-2 论文说它最小的模型（1.17 亿参数）“和最初的 GPT 相当”，与这里的估算吻合。作为对照，上一篇的 Seq2Seq 有 3.84 亿参数，GPT-3 有 1750 亿。"
+          }
+        },
+        {
+          "p": "**微调设置**：大多数任务沿用预训练的超参数，分类器加 0.1 的 dropout，学习率 6.25 × 10^{−5}，批大小 32，学习率在前 0.2% 的步数里预热、之后线性衰减。模型微调得很快，**大多数任务 3 轮就够了**。"
+        }
+      ]
+    },
+    {
+      "h": "第二步：微调，以及把各种任务“拼成一条文本”",
+      "blocks": [
+        {
+          "p": "微调时，把带标签的样本（输入词元 x_{1}, …, x_{m} 和标签 y）送进预训练好的模型，取最后一层、最后一个位置的输出 h_{l}^{m}，接一个新的线性层 W_{y} 做分类："
+        },
+        {
+          "formula": {
+            "expr": "P(y | x_{1}, …, x_{m}) ＝ softmax(h_{l}^{m} W_{y})\nL_{2}(C) ＝ Σ_{(x,y)} log P(y | x_{1}, …, x_{m})\nL_{3}(C) ＝ L_{2}(C) ＋ λ · L_{1}(C)",
+            "parts": [
+              {
+                "sym": "h_{l}^{m}",
+                "desc": "最后一层 Transformer 在最后一个输入词元上的输出。因为解码器只能往左看，最后一个位置“看过”了整个输入"
+              },
+              {
+                "sym": "W_{y}",
+                "desc": "微调时唯一新增的权重矩阵（另外只有几个分隔符的向量）"
+              },
+              {
+                "sym": "L_{2}",
+                "desc": "任务本身的目标：把标签预测对"
+              },
+              {
+                "sym": "L_{3}",
+                "desc": "实际优化的目标：任务目标 ＋ λ 倍的语言模型目标，λ ＝ 0.5。在任务数据上继续“猜下一个词”作为辅助"
+              }
+            ],
+            "note": "论文说加入辅助的语言模型目标有两个好处：提高监督模型的泛化能力，加快收敛。不过后面的消融实验会显示，这个好处并不总是成立。"
+          }
+        },
+        {
+          "p": "真正巧妙的是**输入变换**。预训练时模型只见过连续的文本，可很多任务的输入是结构化的：一对句子、一篇文章加一个问题加几个选项。以前的做法是在预训练模型上再搭一套专用结构，这又引入了大量没经过预训练的参数。GPT-1 的做法是：**把结构化输入拼接成一条序列**，用特殊的分隔符隔开，所有变换都在开头和结尾加上随机初始化的起始、结束标记。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "四类任务，全都拼成一条文本送进同一个模型",
+            "subtitle": "示意：根据论文第 3.3 节和图 1 整理；<s> 是起始标记，$ 是分隔符，<e> 是结束标记（取它位置的输出做分类）",
+            "columns": [
+              "任务",
+              "原始输入",
+              "拼成什么",
+              "怎么出结果"
+            ],
+            "rows": [
+              [
+                "分类",
+                "一段文本",
+                "<s> 文本 <e>",
+                "线性层 ＋ softmax"
+              ],
+              [
+                "文本蕴含",
+                "前提 p、假设 h",
+                "<s> p $ h <e>",
+                "线性层判断蕴含、矛盾、中立"
+              ],
+              [
+                "语义相似",
+                "句子 A、句子 B（没有先后之分）",
+                "<s> A $ B <e> 和 <s> B $ A <e> 各算一次",
+                "两个输出逐元素相加，再接线性层"
+              ],
+              [
+                "问答 / 多选",
+                "文章 z、问题 q、候选答案 a_{k}",
+                "每个答案一条：<s> z q $ a_{k} <e>",
+                "每条算一个分数，对所有候选做 softmax"
+              ]
+            ],
+            "note": "相似度任务的两句话没有天然顺序，所以两种顺序都算一遍再相加，让结果对顺序不敏感。"
+          }
+        },
+        {
+          "callout": {
+            "kind": "intuition",
+            "title": "用格式代替结构",
+            "text": "这是一个影响深远的思路：与其为每个任务改模型，不如把任务改写成模型熟悉的格式。GPT-1 只走了半步，仍要为每个任务训练一个线性层。到 GPT-2 和 GPT-3，连这一步也省了：直接把任务写成一段文字（“翻译成法语：……”），让语言模型接着往下写。今天的“提示词”，就是这个思路的极致。"
+          }
+        },
+        {
+          "quiz": {
+            "q": "微调 GPT-1 时，模型需要新增哪些参数？",
+            "options": [
+              "一整套新的 Transformer 层",
+              "只有输出层 W_{y} 和几个分隔符、起止标记的向量",
+              "新的词表",
+              "不需要任何新参数"
+            ],
+            "answer": 1,
+            "why": "论文强调，微调时唯一的额外参数就是 W_{y} 和分隔符的嵌入。这正是输入变换的好处：结构化输入被拼成文本，就不用再搭任务专用的网络。到 GPT-3 的少样本学习，才做到连 W_{y} 都不要。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "结果：12 个数据集里 9 个刷新纪录",
+      "blocks": [
+        {
+          "p": "论文在四类任务、12 个数据集上评测，数据量从约 5700 条（STS-B）到约 55 万条（SNLI）不等。很多对手是专门为某个任务设计的模型，有些还是多个模型的集成。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "自然语言推理：五个数据集里四个领先，RTE 例外",
+            "subtitle": "准确率 %，来自论文表 2。“5x”指 5 个模型集成。蓝色列是 GPT-1",
+            "columns": [
+              "数据集",
+              "此前最好",
+              "GPT-1",
+              "提高"
+            ],
+            "rows": [
+              [
+                "MNLI-m",
+                "80.6（3 个模型集成）",
+                "82.1",
+                "＋1.5"
+              ],
+              [
+                "SNLI",
+                "89.3（5 个模型集成）",
+                "89.9",
+                "＋0.6"
+              ],
+              [
+                "SciTail",
+                "83.3",
+                "88.3",
+                "＋5.0"
+              ],
+              [
+                "QNLI",
+                "82.3",
+                "88.1",
+                "＋5.8"
+              ],
+              [
+                "RTE",
+                "61.7（多任务 BiLSTM）",
+                "56.0",
+                "−5.7"
+              ]
+            ],
+            "highlight": {
+              "col": 2
+            },
+            "note": "RTE 只有 2490 个样本，是最小的数据集之一。论文推测多任务训练会有帮助，但没有尝试。"
+          }
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "问答和常识推理：Story Cloze 提高 8.9，RACE 提高 5.7",
+            "subtitle": "准确率 %，来自论文表 3。“9x”指 9 个模型集成。琥珀色是 GPT-1",
+            "columns": [
+              "方法",
+              "Story Cloze",
+              "RACE-m（初中）",
+              "RACE-h（高中）",
+              "RACE 总体"
+            ],
+            "rows": [
+              [
+                "Hidden Coherence Model",
+                "77.6",
+                "—",
+                "—",
+                "—"
+              ],
+              [
+                "BiAttention MRU（9 个集成）",
+                "—",
+                "60.2",
+                "50.3",
+                "53.3"
+              ],
+              [
+                "GPT-1（单个模型）",
+                "86.5",
+                "62.9",
+                "57.4",
+                "59.0"
+              ]
+            ],
+            "highlight": {
+              "row": 2
+            },
+            "note": "RACE 是中国初高中英语考试的阅读理解题，比 SQuAD 等数据集包含更多需要推理的问题。Story Cloze 要从两个结尾里选出故事的正确结局。"
+          }
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "分类和语义相似：CoLA 从 35.0 跳到 45.4，GLUE 总分 72.8",
+            "subtitle": "来自论文表 4，都在 GLUE 基准上评测。mc 是马修斯相关系数，acc 是准确率，pc 是皮尔逊相关系数。蓝色列是 GPT-1",
+            "columns": [
+              "数据集",
+              "此前最好",
+              "GPT-1"
+            ],
+            "rows": [
+              [
+                "CoLA（语法是否可接受，mc）",
+                "35.0",
+                "45.4"
+              ],
+              [
+                "SST-2（情感，acc）",
+                "93.2",
+                "91.3"
+              ],
+              [
+                "MRPC（复述判断，F1）",
+                "86.0",
+                "82.3"
+              ],
+              [
+                "STS-B（语义相似，pc）",
+                "81.0",
+                "82.0"
+              ],
+              [
+                "QQP（Quora 重复问题，F1）",
+                "66.1",
+                "70.3"
+              ],
+              [
+                "GLUE 总分",
+                "68.9",
+                "72.8"
+              ]
+            ],
+            "highlight": {
+              "col": 2
+            },
+            "note": "SST-2 和 MRPC 没有超过此前最好。CoLA 的提升最大，论文认为这显示了模型从预训练中学到的“语言直觉”。"
+          }
+        },
+        {
+          "p": "把三张表合起来：SNLI、MNLI、QNLI、SciTail、RACE、Story Cloze、STS-B、QQP、CoLA 这 9 个刷新了纪录；RTE、MRPC、SST-2 这 3 个没有。很多时候，GPT-1 这一个模型赢过了对手的多模型集成。"
+        }
+      ]
+    },
+    {
+      "h": "分析：预训练到底带来了什么",
+      "blocks": [
+        {
+          "p": "**每一层都有用**。论文只把预训练模型的前几层迁移到下游任务，看效果怎样变化。只迁移词嵌入就有提升；每多迁移一层 Transformer，效果都继续变好，在 MultiNLI 上，完整迁移比只迁移嵌入多出 9 个百分点。这说明预训练模型的每一层都学到了对下游任务有用的东西，而不只是词向量那一层。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "消融实验：去掉预训练，平均分从 74.7 跌到 59.9",
+            "subtitle": "来自论文表 5，几个 GLUE 任务和 RTE 的未加权平均分。琥珀色是完整模型",
+            "columns": [
+              "方法",
+              "平均分",
+              "CoLA",
+              "SST-2",
+              "STS-B",
+              "MNLI",
+              "QNLI"
+            ],
+            "rows": [
+              [
+                "Transformer ＋ 辅助语言模型目标（完整）",
+                "74.7",
+                "45.4",
+                "91.3",
+                "82.0",
+                "81.8",
+                "88.1"
+              ],
+              [
+                "Transformer，不预训练",
+                "59.9",
+                "18.9",
+                "84.0",
+                "30.9",
+                "75.7",
+                "71.2"
+              ],
+              [
+                "Transformer，不加辅助目标",
+                "75.0",
+                "47.9",
+                "92.0",
+                "83.2",
+                "81.1",
+                "86.9"
+              ],
+              [
+                "单层 2048 单元 LSTM ＋ 辅助目标",
+                "69.1",
+                "30.3",
+                "90.5",
+                "71.8",
+                "73.7",
+                "81.1"
+              ]
+            ],
+            "highlight": {
+              "row": 0
+            },
+            "note": "原表还有 MRPC、QQP、RTE 三列，这里略去。LSTM 只在 MRPC 一个数据集上胜过 Transformer。"
+          }
+        },
+        {
+          "list": [
+            "**预训练是关键**：不预训练，平均分少了 14.8，所有任务都变差，STS-B 从 82.0 跌到 30.9。",
+            "**Transformer 比 LSTM 好**：用同样的框架换成单层 2048 单元的 LSTM，平均分少了 5.6。",
+            "**辅助目标的作用不一致**：它在自然语言推理和 QQP 这些大数据集上有帮助，但在小数据集上没有。论文正文说加入辅助目标能提高泛化，但表 5 里**不加**辅助目标的平均分（75.0）反而略高于完整模型（74.7）。"
+          ]
+        },
+        {
+          "p": "**零样本的苗头**。这一节最有远见的是“零样本行为”实验：完全不微调，只用预训练好的语言模型，靠一些巧妙的“启发式”去做任务："
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "不微调，只靠语言模型本身也能做任务",
+            "subtitle": "根据论文第 5 节整理",
+            "columns": [
+              "任务",
+              "零样本的做法"
+            ],
+            "rows": [
+              [
+                "SST-2 情感分类",
+                "在句子后面加一个 very，只比较模型接下来写 positive 和 negative 的概率，哪个大选哪个"
+              ],
+              [
+                "CoLA 语法可接受性",
+                "算模型给这句话每个词元的平均对数概率，超过阈值就判为合乎语法"
+              ],
+              [
+                "RACE 阅读理解",
+                "以文章和问题为条件，选模型给出平均对数概率最高的那个答案"
+              ],
+              [
+                "DPRD 指代消解",
+                "把代词分别替换成两个候选对象，看哪种替换让后文的概率更高"
+              ]
+            ]
+          }
+        },
+        {
+          "p": "论文发现，随着预训练的进行，这些零样本方法的效果**稳定地持续上升**；LSTM 的零样本表现则波动更大。作者的推测是：语言模型为了把下一个词猜得更准，不得不顺带学会许多任务。这句话几乎就是 GPT-2 的论文提纲。"
+        },
+        {
+          "quiz": {
+            "q": "零样本做 SST-2 时，为什么要在句子后面加一个 very？",
+            "options": [
+              "为了让句子更长",
+              "为了让下一个词自然地是一个形容词，再比较 positive 和 negative 哪个更可能出现",
+              "为了触发模型的分类层",
+              "因为 very 是情感词"
+            ],
+            "answer": 1,
+            "why": "“This movie was great. very ___”后面接 positive 比接 negative 更自然。通过构造一个前缀，把分类问题改写成“下一个词是什么”的问题，就能直接用语言模型作答。这正是后来提示工程的核心思路。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "几处值得留意的细节",
+      "blocks": [
+        {
+          "list": [
+            "**GLUE 的提升幅度对不上**：引言说在 GLUE 上提高了 5.5 个百分点，但表 4 里 GLUE 总分是 72.8 对 68.9，只差 3.9。",
+            "**辅助目标的说法和数据不一致**：第 3.2 节说辅助的语言模型目标能提高泛化、加快收敛，表 5 里不加它的平均分却略高。第 5 节的说法更准确：大数据集受益，小数据集不受益。",
+            "**同一个任务两个数**：表 2 里 MNLI-m 是 82.1，表 5 消融实验里完整模型的 MNLI 是 81.8。论文没说明两者用的是否是同一个评测集。",
+            "**“14.8% 下降”其实是分数差**：去掉预训练后平均分从 74.7 到 59.9，差的是 14.8 分，按比例算约下降 20%。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "局限，以及之后的故事",
+      "blocks": [
+        {
+          "list": [
+            "**单向**：解码器只能从左往右看，每个位置看不到后文。做分类、问答这类“理解”任务时，这其实是个限制。",
+            "**仍需要每个任务单独微调**：虽然结构改动很小，但每个任务都要准备标注数据、训练一个线性层。",
+            "**规模小**：约 1.17 亿参数、7000 多本书。论文结论提示，模型和长文本数据都是成功的关键，但还没有回答“继续放大会怎样”。"
+          ]
+        },
+        {
+          "p": "**之后的故事**来得很快："
+        },
+        {
+          "list": [
+            "**四个月后，BERT（2018 年 10 月）**：Google 沿用“预训练 ＋ 微调”的框架，但换成双向的 Transformer 编码器，用“完形填空”式的遮罩语言模型预训练，在理解类任务上大幅超过 GPT-1。BERT 的论文直接把 GPT-1 作为主要对照，还特意把 BERT-BASE 的大小设成和 GPT-1 一样。",
+            "**八个月后，GPT-2（2019 年 2 月）**：OpenAI 选择了另一条路：不改结构，把模型放大到 15 亿参数、数据换成 40GB 网页文本，并且**完全不微调**，直接用零样本的方式做任务。这正是 GPT-1 第 5 节那几个零样本实验的放大版，也是本主线的下一篇。",
+            "**之后**：GPT-3 用少样本学习彻底甩掉了微调；InstructGPT 又把“微调”以另一种形式请了回来，用来对齐人的意图。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "检验一下：你吃透了吗",
+      "blocks": [
+        {
+          "quiz": {
+            "q": "论文为什么选 BooksCorpus 而不是同样大小的 10 亿词基准做预训练？",
+            "options": [
+              "因为书的质量更高",
+              "因为书里有大段连续的文本，而 10 亿词基准是按句子打乱的，长距离结构被破坏了",
+              "因为 10 亿词基准太大",
+              "因为书是免费的"
+            ],
+            "answer": 1,
+            "why": "GPT-1 要学的是利用长上下文。按句子打乱的数据里，相邻两句话之间没有联系，模型学不到跨句子的结构。这也是论文认为它比 LSTM 方法更能利用长距离信息的前提。"
+          }
+        },
+        {
+          "quiz": {
+            "q": "做文本蕴含任务时，GPT-1 怎样把前提和假设送进模型？",
+            "options": [
+              "分别送进两个模型",
+              "拼成一条序列：起始标记、前提、分隔符、假设、结束标记",
+              "只送假设",
+              "把前提和假设的词向量平均"
+            ],
+            "answer": 1,
+            "why": "这就是论文的“输入变换”：把结构化输入拼成一条文本，用分隔符隔开，再取结束标记位置的输出接线性层。这样就不用为蕴含任务专门设计网络结构。"
+          }
+        },
+        {
+          "p": "读完这篇，你应该能回答下面这些问题："
+        },
+        {
+          "list": [
+            "“预训练 ＋ 微调”分别做什么？为什么预训练不需要标注数据？",
+            "GPT-1 为什么只用 Transformer 的解码器？",
+            "输出层为什么可以复用词嵌入矩阵？",
+            "辅助的语言模型目标是什么？它的效果为什么不一致？",
+            "四类任务分别怎样拼成一条文本？相似度任务为什么要算两遍？",
+            "消融实验说明了哪三件事？",
+            "零样本实验是怎么做的？它预示了什么？",
+            "BERT 和 GPT-2 分别从 GPT-1 出发，走向了哪两个方向？"
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Improving Language Understanding by Generative Pre-Training（OpenAI 预印本）",
+      "publisher": "Radford 等 · OpenAI",
+      "date": "2018-06-11",
+      "url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf"
+    },
+    "note": "本文依据 OpenAI 发布的论文 PDF（2018 年 6 月）。参数量的拆分由本站按论文配置估算；“和最初的 GPT 相当”的 1.17 亿参数来自 GPT-2 论文。BERT 的情况来自其论文，见我们的《BERT》精读。"
+  },
+  "claims": [
+    {
+      "text": "12 个任务里 9 个刷新纪录",
+      "value": "9 out of the 12",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "significantly improving upon the state of the art in 9 out of the 12 tasks studied",
+      "as_written": "9 个"
+    },
+    {
+      "text": "Story Cloze 8.9、RACE 5.7、MultiNLI 1.5",
+      "value": "8.9%",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "we achieve absolute improvements of 8.9% on commonsense reasoning (Stories Cloze Test), 5.7% on question answering (RACE), and 1.5% on textual entailment (MultiNLI)",
+      "as_written": "8.9 个百分点"
+    },
+    {
+      "text": "RACE 5.7",
+      "value": "5.7%",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "5.7% on question answering (RACE)",
+      "as_written": "5.7 个"
+    },
+    {
+      "text": "GLUE 5.5%",
+      "value": "5.5%",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "5.5% on the recently introduced GLUE multi-task benchmark",
+      "as_written": "5.5 个百分点"
+    },
+    {
+      "text": "7000 多本书",
+      "value": "7,000",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "It contains over 7,000 unique unpublished books from a variety of genres",
+      "as_written": "7000 多本"
+    },
+    {
+      "text": "10 亿词基准",
+      "value": "1B Word Benchmark",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "An alternative dataset, the 1B Word Benchmark",
+      "as_written": "10 亿"
+    },
+    {
+      "text": "困惑度 18.4",
+      "value": "18.4",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "Our language model achieves a very low token level perplexity of 18.4 on this corpus",
+      "as_written": "18.4"
+    },
+    {
+      "text": "12 层、768 维、12 头",
+      "value": "12-layer",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "We trained a 12-layer decoder-only transformer with masked self-attention heads (768 dimensional states and 12 attention heads)",
+      "as_written": "12 层"
+    },
+    {
+      "text": "768 维",
+      "value": "768",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "768 dimensional states",
+      "as_written": "768"
+    },
+    {
+      "text": "前馈 3072",
+      "value": "3072",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "we used 3072 dimensional inner states",
+      "as_written": "3072"
+    },
+    {
+      "text": "学习率 2.5e-4、预热 2000",
+      "value": "2.5e-4",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "with a max learning rate of 2.5e-4",
+      "as_written": "2.5 × 10^{−4}"
+    },
+    {
+      "text": "预热 2000 步",
+      "value": "2000",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "increased linearly from zero over the first 2000 updates",
+      "as_written": "2000 步"
+    },
+    {
+      "text": "100 轮、64 条、512 词元",
+      "value": "100 epochs",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "We train for 100 epochs on minibatches of 64 randomly sampled, contiguous sequences of 512 tokens",
+      "as_written": "100 轮"
+    },
+    {
+      "text": "512 词元",
+      "value": "512 tokens",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "contiguous sequences of 512 tokens",
+      "as_written": "512"
+    },
+    {
+      "text": "N(0, 0.02)",
+      "value": "0.02",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "a simple weight initialization of N (0, 0.02) was sufficient",
+      "as_written": "0.02"
+    },
+    {
+      "text": "BPE 4 万次合并",
+      "value": "40,000",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "We used a bytepair encoding (BPE) vocabulary with 40,000 merges",
+      "as_written": "4 万"
+    },
+    {
+      "text": "dropout 0.1、L2 w=0.01",
+      "value": "0.01",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "with w = 0.01 on all non bias or gain weights",
+      "as_written": "0.01"
+    },
+    {
+      "text": "dropout 0.1",
+      "value": "0.1",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "attention dropouts with a rate of 0.1 for regularization",
+      "as_written": "0.1"
+    },
+    {
+      "text": "微调学习率 6.25e-5、批大小 32",
+      "value": "6.25e-5",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "For most tasks, we use a learning rate of 6.25e-5 and a batchsize of 32",
+      "as_written": "6.25 × 10^{−5}"
+    },
+    {
+      "text": "批大小 32",
+      "value": "32",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "a batchsize of 32",
+      "as_written": "32"
+    },
+    {
+      "text": "3 轮就够",
+      "value": "3 epochs",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "3 epochs of training was sufficient for most cases",
+      "as_written": "3 轮"
+    },
+    {
+      "text": "预热 0.2%",
+      "value": "0.2%",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "warmup over 0.2% of training",
+      "as_written": "0.2%"
+    },
+    {
+      "text": "λ = 0.5",
+      "value": "0.5",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "λ was set to 0.5",
+      "as_written": "0.5"
+    },
+    {
+      "text": "RTE 2490 个样本、56%、61.7%",
+      "value": "2490",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "On RTE, one of the smaller datasets we evaluate on (2490 examples), we achieve an accuracy of 56%, which is below the 61.7% reported by a multi-task biLSTM model",
+      "as_written": "2490"
+    },
+    {
+      "text": "RTE 61.7",
+      "value": "61.7%",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "below the 61.7% reported by a multi-task biLSTM model",
+      "as_written": "61.7"
+    },
+    {
+      "text": "RTE 56.0",
+      "value": "56.0",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "56.0",
+      "as_written": "56.0"
+    },
+    {
+      "text": "表 2：MNLI-m 82.1、SNLI 89.9、SciTail 88.3、QNLI 88.1",
+      "value": "82.1",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "82.1",
+      "as_written": "82.1"
+    },
+    {
+      "text": "SNLI 89.9",
+      "value": "89.9",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "89.9",
+      "as_written": "89.9"
+    },
+    {
+      "text": "SciTail 88.3",
+      "value": "88.3",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "88.3",
+      "as_written": "88.3"
+    },
+    {
+      "text": "QNLI 88.1",
+      "value": "88.1",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "88.1",
+      "as_written": "88.1"
+    },
+    {
+      "text": "此前 MNLI 80.6",
+      "value": "80.6",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "80.6",
+      "as_written": "80.6"
+    },
+    {
+      "text": "此前 SNLI 89.3",
+      "value": "89.3",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "89.3",
+      "as_written": "89.3"
+    },
+    {
+      "text": "此前 SciTail 83.3",
+      "value": "83.3",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "83.3",
+      "as_written": "83.3"
+    },
+    {
+      "text": "此前 QNLI 82.3",
+      "value": "82.3",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "82.3",
+      "as_written": "82.3"
+    },
+    {
+      "text": "表 3：Story Cloze 86.5、RACE 59.0",
+      "value": "86.5",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "86.5",
+      "as_written": "86.5"
+    },
+    {
+      "text": "RACE 59.0",
+      "value": "59.0",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "59.0",
+      "as_written": "59.0"
+    },
+    {
+      "text": "RACE-m 62.9 / RACE-h 57.4",
+      "value": "62.9",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "62.9",
+      "as_written": "62.9"
+    },
+    {
+      "text": "RACE-h 57.4",
+      "value": "57.4",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "57.4",
+      "as_written": "57.4"
+    },
+    {
+      "text": "Hidden Coherence 77.6",
+      "value": "77.6",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "77.6",
+      "as_written": "77.6"
+    },
+    {
+      "text": "MRU 60.2 / 50.3 / 53.3",
+      "value": "53.3",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "53.3",
+      "as_written": "53.3"
+    },
+    {
+      "text": "CoLA 45.4 对 35.0",
+      "value": "45.4",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "Our model obtains an score of 45.4 on CoLA, which is an especially big jump over the previous best result of 35.0",
+      "as_written": "45.4"
+    },
+    {
+      "text": "CoLA 此前 35.0",
+      "value": "35.0",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "the previous best result of 35.0",
+      "as_written": "35.0"
+    },
+    {
+      "text": "SST-2 91.3",
+      "value": "91.3%",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "The model also achieves 91.3% accuracy on SST-2",
+      "as_written": "91.3"
+    },
+    {
+      "text": "SST-2 此前 93.2",
+      "value": "93.2",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "93.2",
+      "as_written": "93.2"
+    },
+    {
+      "text": "GLUE 72.8 对 68.9",
+      "value": "72.8",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "We also achieve an overall score of 72.8 on the GLUE benchmark, which is significantly better than the previous best of 68.9",
+      "as_written": "72.8"
+    },
+    {
+      "text": "GLUE 此前 68.9",
+      "value": "68.9",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "the previous best of 68.9",
+      "as_written": "68.9"
+    },
+    {
+      "text": "STS-B 82.0 / 81.0",
+      "value": "81.0",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "81.0",
+      "as_written": "81.0"
+    },
+    {
+      "text": "STS-B 82.0",
+      "value": "82.0",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "82.0",
+      "as_written": "82.0"
+    },
+    {
+      "text": "QQP 70.3 / 66.1，高 4.2",
+      "value": "4.2%",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "The performance delta on QQP is significant, with a 4.2% absolute improvement",
+      "as_written": "4.2"
+    },
+    {
+      "text": "QQP 70.3",
+      "value": "70.3",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "70.3",
+      "as_written": "70.3"
+    },
+    {
+      "text": "QQP 66.1",
+      "value": "66.1",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "66.1",
+      "as_written": "66.1"
+    },
+    {
+      "text": "MRPC 86.0 / 82.3",
+      "value": "86.0",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "86.0",
+      "as_written": "86.0"
+    },
+    {
+      "text": "MRPC 82.3",
+      "value": "82.3",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "82.3",
+      "as_written": "82.3"
+    },
+    {
+      "text": "STS-B 约 5.7k、SNLI 约 550k",
+      "value": "5.7k",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "from smaller datasets such as STS-B (≈5.7k training examples) – to the largest one – SNLI (≈550k training examples)",
+      "as_written": "5700"
+    },
+    {
+      "text": "SNLI 约 55 万",
+      "value": "550k",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "SNLI (≈550k training examples)",
+      "as_written": "55 万"
+    },
+    {
+      "text": "每层迁移最多带来 9%",
+      "value": "9%",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "each transformer layer provides further benefits up to 9% for full transfer on MultiNLI",
+      "as_written": "9 个百分点"
+    },
+    {
+      "text": "表 5：完整 74.7、无预训练 59.9、无辅助 75.0、LSTM 69.1",
+      "value": "74.7",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "74.7",
+      "as_written": "74.7"
+    },
+    {
+      "text": "无预训练 59.9",
+      "value": "59.9",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "59.9",
+      "as_written": "59.9"
+    },
+    {
+      "text": "无辅助 75.0",
+      "value": "75.0",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "75.0",
+      "as_written": "75.0"
+    },
+    {
+      "text": "LSTM 69.1",
+      "value": "69.1",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "69.1",
+      "as_written": "69.1"
+    },
+    {
+      "text": "无预训练 STS-B 30.9",
+      "value": "30.9",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "30.9",
+      "as_written": "30.9"
+    },
+    {
+      "text": "无预训练下降 14.8",
+      "value": "14.8%",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "resulting in a 14.8% decrease compared to our full model",
+      "as_written": "14.8"
+    },
+    {
+      "text": "LSTM 少 5.6",
+      "value": "5.6",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "We observe a 5.6 average score drop when using the LSTM instead of the Transformer",
+      "as_written": "5.6"
+    },
+    {
+      "text": "LSTM 2048 单元",
+      "value": "2048 unit LSTM",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "comparing it with a single layer 2048 unit LSTM",
+      "as_written": "2048"
+    },
+    {
+      "text": "表 5：MNLI 81.8",
+      "value": "81.8",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "81.8",
+      "as_written": "81.8"
+    },
+    {
+      "text": "本站计算：GLUE 差 3.9",
+      "value": "72.8",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "72.8",
+      "as_written": "3.9"
+    },
+    {
+      "text": "本站计算：约下降 20%",
+      "value": "59.9",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "59.9",
+      "as_written": "20%"
+    },
+    {
+      "text": "GPT-2：最小模型相当于最初的 GPT",
+      "value": "original GPT",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "The smallest model is equivalent to the original GPT",
+      "as_written": "1.17 亿"
+    },
+    {
+      "text": "GPT-2：1.17 亿参数",
+      "value": "117M",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "117M",
+      "as_written": "117M"
+    },
+    {
+      "text": "GPT-2：40 GB",
+      "value": "40 GB",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "for a total of 40 GB of text",
+      "as_written": "40GB"
+    },
+    {
+      "text": "GPT-2：15 亿参数",
+      "value": "1.5B",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "1.5B",
+      "as_written": "15 亿"
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "tier": "primary",
+    "writer": "论文精读"
+  }
+}
