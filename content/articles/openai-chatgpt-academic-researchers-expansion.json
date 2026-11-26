@@ -1,0 +1,468 @@
+{
+  "slug": "openai-chatgpt-academic-researchers-expansion",
+  "date": "2026-11-16",
+  "category": "product",
+  "publisher": "OpenAI",
+  "topics": [
+    "openai"
+  ],
+  "title": "OpenAI 科研免费 ChatGPT 扩到 20 万研究者，新一轮发 5 万个名额",
+  "summary": "如果你在做科研、正在犹豫要不要花钱订 ChatGPT：OpenAI 把免费科研名额扩大到全球最多 20 万名研究者，新一轮 5 万个名额 11 月 23 日起先到先得。",
+  "ai_summary": "OpenAI 正在把「ChatGPT for Academic Researchers」从 7 月的小规模试点，扩成面向全球最多 20 万名研究者的免费计划。新一轮申请 11 月 23 日开放，发放 5 万个名额，先到先得；每个名额覆盖本人和最多两名合作者，本轮最多惠及 15 万人。和试点相比有两个变化：选拔从抽签改为先到先得；免费订阅从 ChatGPT Pro 换成 Plus，因为 OpenAI 复盘用量后说多数人用不到 Pro 的上限。默认情况下，计划内的数据不会拿去训练模型。适合想快速把前沿模型用于课题、又不想为订阅费操心的研究者；不过 Plus 的常规价格和具体资格条件，原文没有给出。",
+  "brief": [
+    "新一轮发 5 万个免费名额，11 月 23 日起先到先得，不再抽签。",
+    "每个名额覆盖本人加最多两名合作者，本轮最多惠及 15 万名研究者。",
+    "免费档位从试点期的 ChatGPT Pro 换成 ChatGPT Plus；默认不拿计划内数据训练模型。",
+    "试点已有 33 个国家的 2 万名研究者加入；受访者估计没有 AI 要花接近两倍时间。"
+  ],
+  "readMinutes": 6,
+  "sections": [
+    {
+      "h": "这是什么：OpenAI 把科研人员的免费 ChatGPT 名额从试点扩成更大计划",
+      "blocks": [
+        {
+          "p": "2026 年 11 月 16 日，OpenAI 宣布扩大「ChatGPT for Academic Researchers」计划。简单说，它给符合条件的科研人员免费开通 ChatGPT 使用权，让研究者把前沿模型用在课题上，而不是被订阅费挡在门外。这个计划 7 月先做了小规模试点，现在进入更大的一轮。"
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "四个数字看懂这次扩张的规模",
+            "subtitle": "单位分别标注；15 万是每个名额都带满合作者时的上限",
+            "items": [
+              {
+                "value": "200,000",
+                "unit": "位研究者",
+                "label": "计划整体目标",
+                "note": "全球范围，是 7 月试点启动时目标的两倍"
+              },
+              {
+                "value": "50,000",
+                "unit": "个名额",
+                "label": "新一轮发放",
+                "note": "先到先得，发给符合条件的申请者"
+              },
+              {
+                "value": "150,000",
+                "unit": "人",
+                "label": "本轮最多覆盖",
+                "note": "按 5 万个名额、每名额本人加最多两名合作者"
+              },
+              {
+                "value": "33",
+                "unit": "个国家",
+                "label": "试点已覆盖",
+                "note": "自 7 月试点以来"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "新一轮怎么申请：先到先得，一个名额带本人加两名合作者",
+      "blocks": [
+        {
+          "p": "申请从 11 月 23 日（周一）开始。和试点最大的不同是：不再抽签，改为先到先得——先提交的前 5 万个符合条件申请直接拿到名额。如果你之前已经在等待名单里、而且符合条件，OpenAI 会在开放前发邮件，告诉你怎么激活账号。"
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "试点期和这一轮，规则改了这三点",
+            "subtitle": "琥珀色是这一轮的新变化；普通色是试点期做法；灰色是原文没写",
+            "left": {
+              "label": "试点期（7 月起）",
+              "sub": "小规模验证",
+              "items": [
+                {
+                  "label": "选拔方式",
+                  "tag": "抽签",
+                  "state": "base"
+                },
+                {
+                  "label": "免费订阅档位",
+                  "tag": "ChatGPT Pro",
+                  "state": "base"
+                },
+                {
+                  "label": "每个名额覆盖",
+                  "tag": "原文未说明",
+                  "state": "dim"
+                }
+              ]
+            },
+            "right": {
+              "label": "这一轮（11 月 23 日起）",
+              "sub": "扩大到 5 万个名额",
+              "items": [
+                {
+                  "label": "选拔方式",
+                  "tag": "先到先得",
+                  "state": "hi"
+                },
+                {
+                  "label": "免费订阅档位",
+                  "tag": "ChatGPT Plus",
+                  "state": "hi"
+                },
+                {
+                  "label": "每个名额覆盖",
+                  "tag": "本人 + 最多 2 名合作者",
+                  "state": "hi"
+                }
+              ]
+            },
+            "footer": "先到先得意味着：符合条件后越早申请越稳，不再是看运气。"
+          }
+        },
+        {
+          "p": "关于名额大小：每个名额给获得者本人，再加最多两名合作者免费使用 ChatGPT Plus。所以本轮的上限是 15 万人——5 万个名额，每个最多带两个人。"
+        },
+        {
+          "fig": {
+            "type": "illustration",
+            "title": "一个名额，最多连到本人和两名合作者",
+            "subtitle": "示意：中心琥珀色是这一个免费名额，连到本人和最多两名合作者",
+            "glyph": {
+              "kind": "hub",
+              "center": {
+                "label": "1 个名额",
+                "tone": "hi"
+              },
+              "nodes": [
+                {
+                  "label": "获得者本人",
+                  "tone": "base"
+                },
+                {
+                  "label": "合作者 A",
+                  "tone": "base"
+                },
+                {
+                  "label": "合作者 B",
+                  "tone": "base"
+                }
+              ]
+            },
+            "note": "5 万个名额都带满时，最多覆盖 15 万名研究者。"
+          }
+        },
+        {
+          "callout": {
+            "kind": "takeaway",
+            "title": "15 万是上限，不是保底",
+            "text": "只有当每个名额都带满两名合作者时才到 15 万；实际覆盖人数取决于每个名额带了几个人。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "为什么把免费的 ChatGPT Pro 换成了 Plus？",
+      "blocks": [
+        {
+          "p": "试点期发的是 ChatGPT Pro，那是更贵的档位，额度和算力更高。OpenAI 复盘试点用量后说，大多数参与者其实用不到 Pro 的上限，留在 Plus 的额度内就够。于是这一轮改成发 ChatGPT Plus，把省下来的额度拿去覆盖更多团队。"
+        },
+        {
+          "callout": {
+            "kind": "note",
+            "title": "对多数课题够用，但重度计算要留神",
+            "text": "如果你的研究需要长时间跑大量计算，Plus 的额度可能比 Pro 紧。原文没有给两个档位的具体上限数字，无法直接对比。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "试点效果：2 万名研究者、33 个国家，省下近一半时间",
+      "blocks": [
+        {
+          "p": "从 7 月试点启动以来，已有 33 个国家的 2 万名研究者加入。OpenAI 的经济研究团队发了一份报告《Science at the Frontier: How Scientists Use ChatGPT》，调查了 1,800 多名试点参与者。"
+        },
+        {
+          "p": "一个值得注意的数字：受访者估计，如果没有 AI，完成同样质量和数量的研究工作要花接近两倍的时间。"
+        },
+        {
+          "callout": {
+            "kind": "note",
+            "title": "这个「接近两倍」怎么读",
+            "text": "它是受访者的自我估计，不是对照实验测出来的，读的时候留个余地。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "研究者具体拿 ChatGPT 做什么？",
+      "blocks": [
+        {
+          "p": "试点里有两个公开例子，一个偏医学、一个偏生物多样性。"
+        },
+        {
+          "fig": {
+            "type": "cards",
+            "title": "试点里的用法：从药物靶点到博物馆标本",
+            "subtitle": "卡片是原文提到的研究案例；另加一条计划通用权益",
+            "items": [
+              {
+                "icon": "search",
+                "title": "找新药靶点",
+                "desc": "Brigham and Women's Hospital 与哈佛医学院的研究者 Shuqi Li，探索 ChatGPT 能否连接实验室与患者数据、加快抗生素研发，目标之一是缩短结核病治疗时间。",
+                "tags": [
+                  "药物靶点",
+                  "结核病"
+                ],
+                "tone": "base"
+              },
+              {
+                "icon": "image",
+                "title": "把标本照片变数据库",
+                "desc": "佛罗里达自然历史博物馆的 Arthur Porto 团队，用 AI 把博物馆标本照片转成可检索数据库，还做了一个翅膀会随角度变色的 3D 蝴蝶模型。",
+                "tags": [
+                  "博物馆标本",
+                  "3D 模型"
+                ],
+                "tone": "base"
+              },
+              {
+                "icon": "robot",
+                "title": "前沿模型 + 培训",
+                "desc": "参与者可以使用 OpenAI 的前沿模型，并获得如何在研究里使用 ChatGPT 的培训。",
+                "tags": [
+                  "前沿模型",
+                  "培训"
+                ],
+                "tone": "base"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "除了这个计划，科研人员还有哪些入口？",
+      "blocks": [
+        {
+          "p": "ChatGPT for Academic Researchers 只是其中一条路。OpenAI 还提供 ChatGPT Edu，面向大学校园的科研、教学和学习，带数据分析工具和管理控制；以及 GPT-Rosalind，面向生物研究，把专业生物推理能力和科学工具、数据库接在一起。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "三个科研入口，面向的人和免费方式不一样",
+            "subtitle": "按原文信息整理；琥珀色是本文主角那一行",
+            "columns": [
+              "入口",
+              "面向谁",
+              "免费内容",
+              "备注"
+            ],
+            "rows": [
+              [
+                "ChatGPT for Academic Researchers",
+                "符合条件的全球研究者",
+                "本人 + 最多 2 名合作者免费 ChatGPT Plus",
+                "先到先得"
+              ],
+              [
+                "ChatGPT Edu",
+                "大学校园",
+                "面向科研、教学、学习的使用",
+                "含数据分析与管理控制"
+              ],
+              [
+                "GPT-Rosalind / Rosalind Academic Plan",
+                "符合条件的美国大学实验室",
+                "最多 30 席位、最长 12 个月免费",
+                "需可信访问审批"
+              ]
+            ],
+            "highlight": {
+              "row": 0
+            }
+          }
+        },
+        {
+          "p": "其中 Rosalind Academic Plan 给符合条件的美国大学实验室提供最多 30 个免费席位、最长 12 个月，但访问 GPT-Rosalind 需要先通过可信访问流程审批。"
+        },
+        {
+          "p": "另外在数学领域，OpenAI 向新的 Simons Foundation 计划捐了 500 万美元，用来帮数学家检查、理解并在 AI 产出的结果之上继续推进。"
+        }
+      ]
+    },
+    {
+      "h": "价格与隐私：免费到什么程度？数据会被训练吗？",
+      "blocks": [
+        {
+          "p": "价格方面：这一轮是免费发放 ChatGPT Plus，5 万个名额本身不收费。但 ChatGPT Plus 的常规订阅价格、以及试点期 ChatGPT Pro 的价格，原文都没有写，所以没法算出「省了多少钱」。"
+        },
+        {
+          "p": "隐私方面：默认情况下，通过该计划分享的数据不会被用来训练模型。注意这是「默认」，原文没有展开例外情形。"
+        }
+      ]
+    },
+    {
+      "h": "官方还没说的",
+      "blocks": [
+        {
+          "list": [
+            "ChatGPT Plus 的常规订阅价格、试点期 ChatGPT Pro 的价格：原文未写。",
+            "「符合条件（eligible）」的具体标准是什么：原文只说符合资格，没有列出细则。",
+            "5 万个名额预计多久发完、各国分配比例：原文未写。",
+            "试点期拿到 Pro 的研究者，这一轮是否自动续期或降级：原文未写。",
+            "申请截止时间：原文只写了 11 月 23 日开放，没有写截止。",
+            "「默认不训练」之外有没有例外或可选项：原文未写。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "适合谁",
+      "blocks": [
+        {
+          "p": "价值很直接：符合条件的科研人员，本人和最多两名合作者可以免费把 ChatGPT Plus 用在课题里，还配培训，默认不拿你的数据训练模型。代价是它只给 ChatGPT Plus 这个档位，重度计算场景可能不够用，而且要先抢到名额。"
+        },
+        {
+          "list": [
+            "如果你在做需要反复查资料、写代码、整理数据、起草论文的课题，且团队不超过本人加两名合作者，这一轮值得尽早申请。",
+            "如果你在等待名单里，先查邮箱：符合条件的会在开放前收到激活说明。",
+            "如果你是生物方向的美国大学实验室，可以同时看看 Rosalind Academic Plan 的 30 个免费席位。",
+            "如果你需要长时间跑大批量计算，先确认 Plus 的额度够不够——原文没给具体上限。"
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Broadening access to AI for scientists",
+      "publisher": "OpenAI",
+      "date": "2026-11-16",
+      "url": "https://openai.com/index/expanding-chatgpt-for-academic-researchers"
+    },
+    "more": [],
+    "note": "信息图基于 OpenAI 官方公告的数字绘制；hub 关系图为示意；150,000 是原文直接给出的上限（即 5 万个名额 × 每名额本人加最多两名合作者）。未引用二手来源。"
+  },
+  "claims": [
+    {
+      "text": "OpenAI 于 2026 年 11 月 16 日宣布扩大该计划",
+      "value": "November 16, 2026",
+      "source_url": "https://openai.com/index/expanding-chatgpt-for-academic-researchers",
+      "as_written": "2026 年 11 月 16 日",
+      "quote": "November 16, 2026 · Research · Science"
+    },
+    {
+      "text": "计划整体目标是让全球最多 20 万名研究者免费使用 ChatGPT",
+      "value": "200,000",
+      "source_url": "https://openai.com/index/expanding-chatgpt-for-academic-researchers",
+      "as_written": "20 万",
+      "quote": "We're expanding the ChatGPT for Academic Researchers program to give up to 200,000 researchers worldwide free access to ChatGPT."
+    },
+    {
+      "text": "该目标是 7 月试点启动时公布目标的两倍",
+      "value": "double",
+      "source_url": "https://openai.com/index/expanding-chatgpt-for-academic-researchers",
+      "as_written": "两倍",
+      "quote": "Our goal for the program as a whole is to reach 200,000 researchers, double the goal we announced when the pilot launched in July."
+    },
+    {
+      "text": "新一轮发放 5 万个新名额，先到先得",
+      "value": "50,000",
+      "source_url": "https://openai.com/index/expanding-chatgpt-for-academic-researchers",
+      "as_written": "5 万",
+      "quote": "We'll award 50,000 new grants to eligible researchers on a first-come, first-served basis."
+    },
+    {
+      "text": "新一轮申请于 11 月 23 日（周一）开放",
+      "value": "November 23",
+      "source_url": "https://openai.com/index/expanding-chatgpt-for-academic-researchers",
+      "as_written": "11 月 23 日",
+      "quote": "Applications for the next round open Monday, November 23."
+    },
+    {
+      "text": "每个名额覆盖获得者本人和最多两名合作者",
+      "value": "two",
+      "source_url": "https://openai.com/index/expanding-chatgpt-for-academic-researchers",
+      "as_written": "两名",
+      "quote": "Each grant gives the recipient and up to two collaborators free access to ChatGPT Plus."
+    },
+    {
+      "text": "本轮名额最多支持 15 万名研究者",
+      "value": "150,000",
+      "source_url": "https://openai.com/index/expanding-chatgpt-for-academic-researchers",
+      "as_written": "15 万",
+      "quote": "Each grant for this round covers the recipient and up to two collaborators, supporting up to 150,000 researchers."
+    },
+    {
+      "text": "试点自 7 月启动以来已有 2 万名研究者加入",
+      "value": "20,000",
+      "source_url": "https://openai.com/index/expanding-chatgpt-for-academic-researchers",
+      "as_written": "2 万",
+      "quote": "20,000 researchers in 33 countries have joined the program since the pilot began in July."
+    },
+    {
+      "text": "试点覆盖 33 个国家",
+      "value": "33",
+      "source_url": "https://openai.com/index/expanding-chatgpt-for-academic-researchers",
+      "as_written": "33 个",
+      "quote": "20,000 researchers in 33 countries have joined the program since the pilot began in July."
+    },
+    {
+      "text": "新研究调查了超过 1,800 名研究者",
+      "value": "1,800",
+      "source_url": "https://openai.com/index/expanding-chatgpt-for-academic-researchers",
+      "as_written": "1,800 多名",
+      "quote": "examining how more than 1,800 researchers used ChatGPT during the program's summer pilot."
+    },
+    {
+      "text": "受访者估计没有 AI 完成同样工作要花接近两倍时间",
+      "value": "nearly twice",
+      "source_url": "https://openai.com/index/expanding-chatgpt-for-academic-researchers",
+      "as_written": "接近两倍",
+      "quote": "the same research work at the same quality would have taken nearly twice as long."
+    },
+    {
+      "text": "试点从 7 月开始",
+      "value": "July",
+      "source_url": "https://openai.com/index/expanding-chatgpt-for-academic-researchers",
+      "as_written": "7 月",
+      "quote": "The program began as a pilot in July."
+    },
+    {
+      "text": "OpenAI 向 Simons Foundation 新计划捐赠 500 万美元",
+      "value": "$5 million",
+      "source_url": "https://openai.com/index/expanding-chatgpt-for-academic-researchers",
+      "as_written": "500 万美元",
+      "quote": "we contributed $5 million to a new Simons Foundation initiative"
+    },
+    {
+      "text": "Rosalind Academic Plan 提供最多 30 个免费席位",
+      "value": "30",
+      "source_url": "https://openai.com/index/expanding-chatgpt-for-academic-researchers",
+      "as_written": "30 个",
+      "quote": "offering up to 30 seats at no cost for up to 12 months."
+    },
+    {
+      "text": "这些免费席位最长 12 个月",
+      "value": "12 months",
+      "source_url": "https://openai.com/index/expanding-chatgpt-for-academic-researchers",
+      "as_written": "12 个月",
+      "quote": "offering up to 30 seats at no cost for up to 12 months."
+    }
+  ],
+  "cover": {
+    "headline": "科研免费 ChatGPT 扩到 20 万",
+    "highlight": "新一轮 5 万个名额，先到先得",
+    "big": {
+      "value": "200,000",
+      "unit": "位研究者",
+      "label": "计划整体目标"
+    }
+  },
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "origin": "auto",
+    "candidate": "f26f2a4dfd",
+    "tier": "official",
+    "via": null,
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "generated_at": "2026-11-26T19:49:10.620Z"
+  }
+}
