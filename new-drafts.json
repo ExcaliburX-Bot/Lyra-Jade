@@ -1,37 +1,37 @@
 [
   {
-    "slug": "mass-spec-skills-antigravity",
-    "title": "Google Antigravity 推出质谱技能：把分子鉴定准确率从不到 4% 拉到约 97%",
-    "file": "content/articles/mass-spec-skills-antigravity.json",
+    "slug": "qwen-audio-3-1-multilingual-chinese-dialects",
+    "title": "Qwen-Audio-3.1 多语言升级：ASR 覆盖 59 种语言、8 种中文方言",
+    "file": "content/articles/qwen-audio-3-1-multilingual-chinese-dialects.json",
+    "errors": 0,
+    "warnings": 0,
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro"
+  },
+  {
+    "slug": "llamacpp-amd-benchmark-dashboard",
+    "title": "llama.cpp × AMD 跑分面板上线：按硬件、模型、量化跟踪 PP512 与 TG128",
+    "file": "content/articles/llamacpp-amd-benchmark-dashboard.json",
+    "errors": 0,
+    "warnings": 0,
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro"
+  },
+  {
+    "slug": "swarms-flocks-gangs-part1",
+    "title": "四只 Agent 共用一只小模型：成功率从 6.6% 升到 82.3%，token 省 37.4%",
+    "file": "content/articles/swarms-flocks-gangs-part1.json",
+    "errors": 0,
+    "warnings": 0,
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro"
+  },
+  {
+    "slug": "openai-chatgpt-academic-researchers-expansion",
+    "title": "OpenAI 科研免费 ChatGPT 扩到 20 万研究者，新一轮发 5 万个名额",
+    "file": "content/articles/openai-chatgpt-academic-researchers-expansion.json",
     "errors": 0,
     "warnings": 1,
-    "provider": "deepseek",
-    "model": "deepseek-v4-pro"
-  },
-  {
-    "slug": "le-groupe-figaro-openai-partnership",
-    "title": "Figaro 与 OpenAI 合作：ChatGPT 可读到新闻摘要、摘录和原文链接",
-    "file": "content/articles/le-groupe-figaro-openai-partnership.json",
-    "errors": 0,
-    "warnings": 1,
-    "provider": "deepseek",
-    "model": "deepseek-v4-pro"
-  },
-  {
-    "slug": "openai-daybreak-nato-cyber-defence",
-    "title": "OpenAI 帮北约和盟友做网络防守：每月最高 3,000 亿 token，复核 88 个问题 95% 属实",
-    "file": "content/articles/openai-daybreak-nato-cyber-defence.json",
-    "errors": 0,
-    "warnings": 3,
-    "provider": "deepseek",
-    "model": "deepseek-v4-pro"
-  },
-  {
-    "slug": "astra-for-law-legal-intelligence",
-    "title": "Astra for Law 更新：LAB-AA 满分率 20.8%，幻觉率 0.03 次/任务",
-    "file": "content/articles/astra-for-law-legal-intelligence.json",
-    "errors": 0,
-    "warnings": 6,
     "provider": "deepseek",
     "model": "deepseek-v4-pro"
   }
