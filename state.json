@@ -17,19 +17,19 @@
   "openai-news": {
     "etag": null,
     "lastModified": null,
-    "lastOk": "2026-11-26T03:24:50.560Z",
+    "lastOk": "2026-11-26T12:57:37.855Z",
     "lastNew": "2026-11-25T02:52:26.247Z"
   },
   "deepmind-blog": {
-    "etag": "\"a9uNBw\"",
+    "etag": "\"I5BRVw\"",
     "lastModified": null,
-    "lastOk": "2026-11-26T03:24:50.560Z",
+    "lastOk": "2026-11-26T12:57:37.855Z",
     "lastNew": "2026-11-25T20:59:09.179Z"
   },
   "google-innovation-ai": {
     "etag": null,
     "lastModified": null,
-    "lastOk": "2026-11-26T03:24:50.560Z",
+    "lastOk": "2026-11-26T12:57:37.855Z",
     "lastNew": "2026-11-20T19:11:53.348Z"
   },
   "nvidia-blog": {
@@ -44,15 +44,15 @@
     "lastOk": "2026-11-24T18:45:38.092Z"
   },
   "hf-blog": {
-    "etag": "W/\"423e7-FgEpTr0GADOjZC0u+WdnKI0aJ0U\"",
+    "etag": "W/\"42554-LX2l54tnYn4kVUChXgg1busOxBs\"",
     "lastModified": null,
-    "lastOk": "2026-11-26T03:24:50.560Z",
-    "lastNew": "2026-11-25T20:59:09.179Z"
+    "lastOk": "2026-11-26T12:57:37.855Z",
+    "lastNew": "2026-11-26T12:57:37.855Z"
   },
   "anthropic-news": {
     "etag": null,
     "lastModified": null,
-    "lastOk": "2026-11-26T03:24:50.560Z",
+    "lastOk": "2026-11-26T12:57:37.855Z",
     "seen": [
       "https://anthropic.com/news/public-benefit-fund",
       "https://anthropic.com/news/s1-sec",
@@ -80,7 +80,7 @@
   "microsoft-ai-news": {
     "etag": null,
     "lastModified": null,
-    "lastOk": "2026-11-26T03:24:50.560Z",
+    "lastOk": "2026-11-26T12:57:37.855Z",
     "lastNew": "2026-11-23T23:08:33.508Z",
     "seen": [
       "https://microsoft.ai/news/microsoft-ignite-2026",
@@ -96,7 +96,7 @@
   "meta-research": {
     "etag": null,
     "lastModified": null,
-    "lastOk": "2026-11-26T03:24:50.560Z",
+    "lastOk": "2026-11-26T12:57:37.855Z",
     "lastNew": "2026-11-20T07:04:20.911Z",
     "seen": [
       "https://research.meta.ai/blog/muse-ember",
@@ -108,7 +108,7 @@
   "kimi-blog": {
     "etag": null,
     "lastModified": null,
-    "lastOk": "2026-11-26T03:24:50.560Z",
+    "lastOk": "2026-11-26T12:57:37.855Z",
     "seen": [
       "https://kimi.ai/blog/kimi-k3-1-pro",
       "https://kimi.ai/blog/kimi-k3",

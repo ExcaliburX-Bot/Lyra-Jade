@@ -1,22 +1,10 @@
-# 候选清单（2026-11-26 03:24 UTC）
+# 候选清单（2026-11-26 12:57 UTC）
 
 | 分数 | 标题 | 发布方 | 层级 | 相关报道 |
 | --- | --- | --- | --- | --- |
-| 5.9 | [Guided Vision in Gemini Live is now available on iOS](https://x.com/GeminiApp/status/2125685936344236471) | @GeminiApp | official | 0 |
-| 5.1 | [OpenAI is testing Private Inference with a small group of customers](https://x.com/sama/status/2125638790593274259) | @sama | official | 0 |
-| 5.1 | [Gemini adds 60+ new expressive voices with local accents](https://x.com/GeminiApp/status/2125629066006950339) | @GeminiApp | official | 0 |
-| 4.9 | [Where scientists draw the line on AI agents](https://huggingface.co/blog/allenai/where-scientists-draw-the-line-on-ai-agents) | Hugging Face | primary | 0 |
-| 4.7 | [From spectrum to structure: Identifying molecules with Mass Spec Skills for Google Antigravity](https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/) | Google DeepMind | official | 0 |
-| 4.2 | [Explore the Codex Security Plugin](https://openai.com/business/learn/codex-security-plugin-demo) | OpenAI | official | 0 |
-| 4.2 | [Get started with Daybreak Blue](https://openai.com/business/learn/daybreak-blue-onboarding-demo) | OpenAI | official | 0 |
-| 4.2 | [The Silent Consensus](https://openai.com/index/the-silent-consensus) | OpenAI | official | 0 |
-| 4.2 | [Research acceleration: The jagged frontier](https://openai.com/index/research-acceleration-jagged-frontier) | OpenAI | official | 0 |
-| 4.2 | [How Sumitomo Life’s leaders helped teams adopt ChatGPT Enterprise](https://openai.com/business/customer-stories/sumitomo-life) | OpenAI | official | 0 |
-| 4.2 | [Inside the Codex sandbox](https://openai.com/index/inside-the-codex-sandbox) | OpenAI | official | 0 |
-| 4.2 | [Managing frontier AI risk: From training to deployment](https://openai.com/index/managing-frontier-ai-risk) | OpenAI | official | 0 |
-| 4.2 | [Le Groupe Figaro and OpenAI partner to bring Le Figaro journalism to ChatGPT](https://openai.com/index/le-groupe-figaro-and-openai-announce-partnership) | OpenAI | official | 0 |
-| 4.2 | [Strengthening NATO and allied cyber defenses with AI](https://openai.com/index/strengthening-nato-allied-cyber-defences-ai) | OpenAI | official | 0 |
-| 4.2 | [Astra for Law leads in legal intelligence](https://openai.com/index/astra-law-6-2) | OpenAI | official | 0 |
+| 5.1 | [🎙️ New multilingual capabilities are here for Qwen-Audio-3.1! Especially for Chinese dialects.](https://x.com/Alibaba_Qwen/status/2125798914490249411) | @Alibaba_Qwen | official | 0 |
+| 4.9 | [Introducing the llama.cpp benchmark dashboard for AMD Ryzen and Radeon](https://huggingface.co/blog/ggml-org/llamacpp-amd-bench) | Hugging Face | primary | 0 |
+| 4.4 | [Swarms, Flocks, Gangs: How to build, train, and evaluate multi-agent systems](https://huggingface.co/blog/training-swarms) | Hugging Face | primary | 0 |
 | 4.2 | [Broadening access to AI for scientists](https://openai.com/index/expanding-chatgpt-for-academic-researchers) | OpenAI | official | 0 |
 | 4.2 | [Strengthening the fight against online child sexual abuse with new tools and support](https://openai.com/index/strengthening-online-child-safety) | OpenAI | official | 0 |
 | 4.2 | [Science at the Frontier: How scientists use ChatGPT](https://openai.com/index/science-at-the-frontier) | OpenAI | official | 0 |
@@ -25,7 +13,7 @@
 | 4.2 | [More ways to move care forward with ChatGPT for Healthcare](https://openai.com/index/more-ways-to-move-care-forward-with-chatgpt-for-healthcare) | OpenAI | official | 0 |
 | 4.2 | [At Holiday Extras, dots get to work before anyone asks](https://openai.com/business/customer-stories/holiday-extras-dots) | OpenAI | official | 0 |
 | 4.2 | [Our new blog for science](https://openai.com/index/our-new-blog-for-science) | OpenAI | official | 0 |
-| 4.1 | [Freeze the web with Perplexity Time Machine](https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine) | Perplexity | official | 0 |
+| 4.1 | [Building on Nemotron 3.5 Parse: Open Data, Fine-Tuning, and Faster Inference](https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin) | Hugging Face | primary | 0 |
 | 4.1 | [Migrating our Messages API to Rust](https://www.anthropic.com/research/migrating-api-to-rust) | Anthropic | official | 0 |
 | 4.1 | [Connectors and skills come together as plugins](https://x.com/claudeai/status/2124970294523945328) | @claudeai | official | 0 |
 | 4.1 | [If you’re in Europe, you get a month of Vibe Pro for free](https://x.com/MistralAI/status/2124905610386780451) | @MistralAI | official | 0 |
@@ -42,5 +30,17 @@
 | 3.6 | [Notion 团队 AI 工作指南：100 人各写一份技能，不如 2 人搭一座全队共用的工厂](https://www.notion.com/a-new-shape-for-work) | notion.com | official | 0 |
 | 3.6 | [a16z 每周图表：Z 世代观点全重合不到一成，过半基金经理预计巨头半年内砍 AI 开支](https://www.a16z.news/p/charts-of-the-week-there-is-no-gen) | a16z.news | official | 0 |
 | 3.6 | [Perplexity Computer now works directly in Chromium browsers via the extension.](https://pplx.ai/chrome-extension) | @perplexity_ai | official | 0 |
+| 3.6 | [NVIDIA published eight design guidelines for efficient sparse attention.](https://developer.nvidia.com/blog/co-designing-sparse-attention-for-efficient-long-context-inference/) | @NVIDIAAI | official | 0 |
+| 3.6 | [Skill lemo-animi：一句话让 Codex 做出带配乐和拟音的定格短片](https://x.com/lemomo_ai/status/2123038832815907084) | @lemomo_ai | official | 0 |
+| 3.6 | [NVIDIA published a technical blog on cutting RL rollout bottlenecks with Dynamo](https://developer.nvidia.com/blog/reducing-rollout-bottlenecks-in-reinforcement-learning-with-nvidia-dynamo/?ncid=so-face-545758) | @NVIDIAAI | official | 0 |
+| 3.6 | [Perplexity Computer Brain now auto-creates self-improving agent skills](https://x.com/perplexity_ai/status/2123449395882701224) | @perplexity_ai | official | 1 |
+| 3.6 | [Kling 4.0 now supports native 4K and 10-bit HDR output.](https://kling.ai/) | @Kling_ai | official | 0 |
+| 3.6 | [Google 公开 5 个 Gemini 4 Carbon 作品：52,000 根随风摆的草、超百万个粒子、会碎的玻璃叠叠乐](https://blog.google/products-and-platforms/products/gemini/gemini-4-carbon-builders/) | Google | official | 0 |
+| 3.6 | [SpaceXSI 会计部给 Grok Bot 办入职：写操作手册、分级放权、带三周，开票从约 24 小时缩到几分钟](https://x.ai/news/grok-bot-accounting) | xAI | official | 0 |
+| 3.6 | [Google 免费开放 Gemini 任务模式：后台替你办事，美国用户还能让它打电话、限额下单](https://blog.google/innovation-and-ai/products/gemini-app/tasks-in-gemini-free-new-features/) | Google | official | 0 |
+| 3.6 | [MAI Code 2 and Code 2 Flash: Everyday coding at scalable prices](https://microsoft.ai/news/introducing-mai-code-2-and-mai-code-2-flash/) | Microsoft AI | official | 0 |
+| 3.6 | [MAI Cyber 2 Flash: Leading security. Lower cost](https://microsoft.ai/news/introducing-mai-cyber-2-flash/) | Microsoft AI | official | 0 |
+| 3.6 | [MAI Licensed Weights: Frontier performance you control](https://microsoft.ai/news/introducing-mai-licensed-weights/) | Microsoft AI | official | 0 |
+| 3.6 | [Microsoft Ignite 2026: MAI keynote transcript](https://microsoft.ai/news/microsoft-ignite-2026-mai-keynote/) | Microsoft AI | official | 0 |
 
 **超过 30 天没有新内容的源**：Mistral 新闻、Kimi 博客

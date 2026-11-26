@@ -3422,5 +3422,61 @@
     "weight": 1,
     "category_hint": "product",
     "fetched_at": "2026-11-26T03:24:50.560Z"
+  },
+  "02a088434703": {
+    "id": "02a088434703",
+    "key": "https://huggingface.co/blog/ggml-org/llamacpp-amd-bench",
+    "title": "Introducing the llama.cpp benchmark dashboard for AMD Ryzen and Radeon",
+    "url": "https://huggingface.co/blog/ggml-org/llamacpp-amd-bench",
+    "published": "2026-11-26T11:37:17.000Z",
+    "summary": "",
+    "source": "hf-blog",
+    "publisher": "Hugging Face",
+    "tier": "primary",
+    "weight": 0.8,
+    "category_hint": null,
+    "fetched_at": "2026-11-26T12:57:37.855Z"
+  },
+  "d3aa48daa62d": {
+    "id": "d3aa48daa62d",
+    "key": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+    "title": "Building on Nemotron 3.5 Parse: Open Data, Fine-Tuning, and Faster Inference",
+    "url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+    "published": "2026-11-26T05:05:36.000Z",
+    "summary": "",
+    "source": "hf-blog",
+    "publisher": "Hugging Face",
+    "tier": "primary",
+    "weight": 0.8,
+    "category_hint": null,
+    "fetched_at": "2026-11-26T12:57:37.855Z"
+  },
+  "c01600d41603": {
+    "id": "c01600d41603",
+    "key": "https://huggingface.co/blog/training-swarms",
+    "title": "Swarms, Flocks, Gangs: How to build, train, and evaluate multi-agent systems",
+    "url": "https://huggingface.co/blog/training-swarms",
+    "published": "2026-11-26T00:00:00.000Z",
+    "summary": "",
+    "source": "hf-blog",
+    "publisher": "Hugging Face",
+    "tier": "primary",
+    "weight": 0.8,
+    "category_hint": null,
+    "fetched_at": "2026-11-26T12:57:37.855Z"
+  },
+  "0f70c64888a7": {
+    "id": "0f70c64888a7",
+    "key": "https://x.com/Alibaba_Qwen/status/2125798914490249411",
+    "title": "🎙️ New multilingual capabilities are here for Qwen-Audio-3.1! Especially for Chinese dialects.",
+    "url": "https://x.com/Alibaba_Qwen/status/2125798914490249411",
+    "published": "2026-11-26T03:48:51.305Z",
+    "summary": "🎙️ New multilingual capabilities are here for Qwen-Audio-3.1! Especially for Chinese dialects.\n\nWe previously released the Qwen-Audio-3.1 series of speech foundation models. Today, we are bringing the enhanced multilingual capabilities, with a strong focus on Chinese dialects.\n\n",
+    "source": "bot:x:x-labs-cn",
+    "publisher": "@Alibaba_Qwen",
+    "tier": "official",
+    "weight": 1,
+    "category_hint": "product",
+    "fetched_at": "2026-11-26T12:57:37.855Z"
   }
 }
