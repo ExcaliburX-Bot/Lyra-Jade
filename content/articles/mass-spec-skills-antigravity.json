@@ -1,0 +1,669 @@
+{
+  "slug": "mass-spec-skills-antigravity",
+  "category": "product",
+  "date": "2026-11-25",
+  "publisher": "Google DeepMind",
+  "topics": [
+    "gemini"
+  ],
+  "title": "Google Antigravity 推出质谱技能：把分子鉴定准确率从不到 4% 拉到约 97%",
+  "summary": "做质谱的人常被一个问题卡住：仪器能测到很多分子信号，但常规谱库搜索平均只能标出约 5%。Google DeepMind 给 Antigravity 加了一套质谱技能，让 AI 助手调用现成化学工具、查公共数据库，把谱图直接解析成分子结构。",
+  "ai_summary": "Google DeepMind 发布 Antigravity 的 Mass Spec Skills：让 AI 助手调成熟质谱工具、查公共化学库，把质谱解析成分子结构。常规谱库搜索平均只标出约 5% 的谱，人类样本约 10%。在 100 个有公共谱库参考的化合物基准上，无网无技能的模型准确率不到 4%；加上技能后，三个模型都在约 97% 的尝试里识别并验证出正确分子，轻量模型也追平旗舰。技能还大幅降低每次尝试生成的 token：轻量模型降近 4 倍，旗舰模型降一半到近五分之一。对代谢组学、天然产物和药物发现研究者最有用。限制：互为镜像的分子、相近异构体和数据库没有的新分子，仍不能只靠谱图确认。",
+  "brief": [
+    "常规谱库搜索平均只标注约 5% 的测量谱，人类样本约 10%，其余被称为质谱的“暗物质”。",
+    "一个端到端例子：从 1,761 个原始峰里筛出 19 个有效峰，在 845 个 PubChem 异构体中锁定正确结构，解释了 97.7% 的碎片峰强。",
+    "100 个化合物的基准里，无技能准确率不到 4%，加技能后约 97%，轻量模型追平旗舰模型。",
+    "DeepMind 面向 10,000 名科学家提供 Antigravity 最高使用档位免费 6 个月，滚动入选。"
+  ],
+  "readMinutes": 7,
+  "sections": [
+    {
+      "h": "这是什么：一句话背景",
+      "blocks": [
+        {
+          "p": "Mass Spec Skills 是 Google Antigravity 里的一套领域技能。Antigravity 是 Google 的 AI 智能体（agent）产品，你可以把它理解成一位会自己调工具的助手；技能就是给它装上的“专业工具包”：让它能跑成熟的质谱软件、替你查公共化学数据库，再用 Gemini 的推理把结果拼成可复核的结论。"
+        },
+        {
+          "p": "一句话说：过去要分析化学家一步步手动做的谱图解析，现在可以用自然语言交代任务，让智能体自己选技能、串流程、出报告。"
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "四个数字，看懂这次发布",
+            "subtitle": "单位：百分比和个数；“不到 4%”是上限，不是精确值",
+            "items": [
+              {
+                "value": 5,
+                "unit": "%",
+                "label": "平均标注率",
+                "note": "常规谱库搜索；人类样本约 10%"
+              },
+              {
+                "value": 97,
+                "unit": "%",
+                "label": "加技能后的识别准确率",
+                "note": "约 97%，100 个化合物基准"
+              },
+              {
+                "value": 4,
+                "unit": "%",
+                "label": "无技能时的准确率上限",
+                "note": "三个模型都不到 4%"
+              },
+              {
+                "value": 845,
+                "unit": "个",
+                "label": "一个例子排查的候选",
+                "note": "PubChem 里的同分子式异构体"
+              }
+            ]
+          }
+        },
+        {
+          "fig": {
+            "type": "illustration",
+            "title": "Antigravity 当指挥，技能去跑具体工具",
+            "subtitle": "示意：琥珀色是这次新增的 Mass Spec Skills 会调用的工具，蓝色是 Antigravity 本身",
+            "note": "工具名均为原文提到的社区工具",
+            "glyph": {
+              "kind": "hub",
+              "center": {
+                "label": "Antigravity",
+                "tone": "def"
+              },
+              "nodes": [
+                {
+                  "label": "matchms 去噪",
+                  "tone": "hi"
+                },
+                {
+                  "label": "GNPS/MoNA 查谱",
+                  "tone": "hi"
+                },
+                {
+                  "label": "SIRIUS 定式",
+                  "tone": "hi"
+                },
+                {
+                  "label": "MAGMa 对峰",
+                  "tone": "hi"
+                },
+                {
+                  "label": "RDKit 验证",
+                  "tone": "hi"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "callout": {
+            "kind": "note",
+            "title": "现在就能用",
+            "text": "Mass Spec Skills 已在 Google Antigravity 上线：下载 App、安装 Mass Spec 插件即可；企业用户可用 Google Cloud 凭据登录。DeepMind 还面向 10,000 名科学家提供 Antigravity 最高使用档位免费 6 个月，滚动入选、需要申请。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "为什么质谱这么难认：谱库只覆盖 5%",
+      "blocks": [
+        {
+          "p": "血液、土壤或植物组织里都有大量小分子：营养物质、激素、药物及其代谢物、污染物，以及可能有药用价值的活性物。一台现代质谱仪能从一滴样品提取物里测到数以万计的分子信号；串联质谱（MS/MS，先把分子打碎再测碎片质量）还能测出它们裂成了什么。"
+        },
+        {
+          "p": "但测到信号不等于知道它是什么分子。常规做法是拿每个谱去和已知分子的参考谱比对。问题是：参考谱库已经扩了十年，平均仍只有约 5% 的测量谱能被标注；人类样本稍好，约 10%。剩下没被标注的，业内叫质谱的“暗物质”。"
+        },
+        {
+          "callout": {
+            "kind": "intuition",
+            "title": "把 MS/MS 谱想成什么？",
+            "text": "就像你只知道一辆车撞碎后的零件清单（各碎片的质量），却不知道原车长什么样。谱库匹配相当于查“有没有同款车的零件清单”；查不到时，就得根据零件反推原车结构。"
+          }
+        },
+        {
+          "p": "很多没被标注的分子其实已经收录在公共化学数据库里，只是从没测过谱，所以没有参考谱可比。要认出它们，得直接从碎片离子反推结构。分析化学家有一套成熟流程：查谱库、定分子式、从数据库取候选结构、再拿每个候选去对碎片峰。工具都是现成开源的，但每个谱都要专家花不少时间，而一次研究可能产生大量谱图，手动根本做不过来。"
+        }
+      ]
+    },
+    {
+      "h": "一个完整例子：从 1,761 个峰到 1 个结构",
+      "blocks": [
+        {
+          "p": "DeepMind 用一个负离子模式的谱（通常比正离子模式更难标注）演示了端到端流程。原始谱有 1,761 个峰，先用 matchms 清掉超过 1,700 个低强度噪声尖峰，剩下 19 个有效碎片峰。"
+        },
+        {
+          "p": "接着用 SIRIUS 定分子式：C20H21ClN6O，质量误差 −1.5 ppm，评分 37.86，明显高于第二名 28.33。分子式一旦确定，就能去数据库找同分子式的候选。"
+        },
+        {
+          "p": "智能体从 PubChem 捞出并逐一评分了 845 个同分子式异构体。几个高分候选都能解释 19 个峰里的 14 个、占峰强总和 97.7%——只按“质量对不对得上”看，它们几乎一样好。"
+        },
+        {
+          "p": "这时靠的是化学推理。观察到的中性丢失显示，分子中央有一个尿素连接：先丢 HCl、再丢异氰酸 HNCO，还能反过来形成闭环。没有尿素连接的异构体直接被排除。尿素键裂开成两个互补半段，峰强分别占 45.1% 和 6.8%，两个半段分子式加起来正好是完整母体。"
+        },
+        {
+          "p": "区分最像的两个候选时还要看“键断裂代价”：正确结构累计键断裂分数 26.0，第二名 49.0，分数越低越省事。最后用 RDKit 验证结构合法、质量匹配，画出二维结构并标出关键裂解位点，附一份可复核的报告。"
+        },
+        {
+          "fig": {
+            "type": "steps",
+            "title": "认出一个分子，要串起六步",
+            "subtitle": "示意：流程对应官方 Figure 1，工具为原文提到的社区工具",
+            "steps": [
+              {
+                "name": "预处理",
+                "tool": "matchms",
+                "desc": "去掉噪声尖峰，找到母离子"
+              },
+              {
+                "name": "查参考谱库",
+                "tool": "GNPS / MoNA",
+                "desc": "按余弦相似度比已知化合物"
+              },
+              {
+                "name": "定分子式",
+                "tool": "SIRIUS",
+                "desc": "用碎片树评分锁定元素组成"
+              },
+              {
+                "name": "排候选结构",
+                "tool": "MAGMa / MetFrag",
+                "desc": "给数据库候选对峰、算覆盖"
+              },
+              {
+                "name": "交叉验证",
+                "tool": "中性丢失分析",
+                "desc": "用丢失的 HCl、HNCO 等筛异构体"
+              },
+              {
+                "name": "复核出报告",
+                "tool": "RDKit",
+                "desc": "验证结构合法，标出裂解位点"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "准确率怎么测的：100 个化合物",
+      "blocks": [
+        {
+          "p": "为了测可靠性，DeepMind 从 MoNA 的 Enamine REAL MS/MS 集合里抽了 100 个化合物（结构也收录在 PubChem），先过滤掉那些几乎没打碎的记录。每个谱试 3 次，超过 1 小时预算的尝试算失败。"
+        },
+        {
+          "p": "对比三种设置：完全无网无技能、只开联网、联网加技能。完全无网无技能时，三个模型的准确率都不到 4%——说明光靠看峰列表，模型自己推不出结构。"
+        },
+        {
+          "p": "只开联网时，模型能查在线谱库，但它自己写的临时搜索脚本在母离子窗口、加合物、噪声峰上容易出错：旗舰模型漏掉四分之一到三分之一的谱，轻量模型漏掉超过四分之三。"
+        },
+        {
+          "p": "加上 Mass Spec Skills 后，三个模型都在约 97% 的尝试里识别并验证出正确分子，轻量模型追上旗舰模型。"
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "没有技能时模型推不出来，加了技能轻量模型也追平旗舰",
+            "subtitle": "琥珀色是加上技能后的表现",
+            "left": {
+              "label": "无网络、无技能",
+              "sub": "只看峰列表",
+              "items": [
+                {
+                  "label": "识别准确率",
+                  "tag": "不到 4%",
+                  "state": "dim"
+                },
+                {
+                  "label": "查谱库 / 数据库",
+                  "tag": "不能",
+                  "state": "dim"
+                },
+                {
+                  "label": "每次生成 token",
+                  "tag": "最多",
+                  "state": "dim"
+                },
+                {
+                  "label": "证据报告",
+                  "tag": "无",
+                  "state": "dim"
+                }
+              ]
+            },
+            "right": {
+              "label": "联网 + Mass Spec Skills",
+              "sub": "调用现成技能",
+              "items": [
+                {
+                  "label": "识别准确率",
+                  "tag": "约 97%",
+                  "state": "hi"
+                },
+                {
+                  "label": "查谱库 / 数据库",
+                  "tag": "能",
+                  "state": "hi"
+                },
+                {
+                  "label": "每次生成 token",
+                  "tag": "大幅下降",
+                  "state": "hi"
+                },
+                {
+                  "label": "证据报告",
+                  "tag": "可复核",
+                  "state": "hi"
+                }
+              ]
+            },
+            "footer": "中间的“只联网”设置原文没给总体准确率，只有漏谱比例。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "token 成本：技能怎么省",
+      "blocks": [
+        {
+          "p": "技能不只提升准确率，还省钱。没有网和技能时，模型想从原始峰列表硬推结构，每次尝试生成的 token 最多；只开联网时，它还得现编 API 查询、调试一次性脚本，token 也不少。"
+        },
+        {
+          "p": "有了 Mass Spec Skills，Antigravity 调用的是现成、验证过的技能，每次尝试生成的 token 在所有模型上都降了：轻量模型 Gemini 3.8 Flash 降了近 4 倍，旗舰模型 Gemini 4 Argon 降了一半，Gemini 4 Carbon 降了近五分之一。"
+        },
+        {
+          "fig": {
+            "type": "bars",
+            "title": "加了技能，每次尝试的生成 token 明显下降",
+            "subtitle": "示意估算：原文只说降了近 4 倍 / 一半 / 近五分之一，这里按比例折成相对基线的值",
+            "legend": [
+              {
+                "tone": "ref",
+                "label": "Argon 联网基线"
+              },
+              {
+                "tone": "hi",
+                "label": "加技能后（相对值）"
+              }
+            ],
+            "groups": [
+              {
+                "label": "生成 token / 每次尝试",
+                "items": [
+                  {
+                    "label": "Gemini 4 Argon 联网",
+                    "sub": "基线",
+                    "value": 1,
+                    "display": "1.0×",
+                    "tone": "ref"
+                  },
+                  {
+                    "label": "Gemini 3.8 Flash",
+                    "sub": "轻量模型",
+                    "value": 0.25,
+                    "display": "≈0.25×",
+                    "tone": "hi",
+                    "calc": "1.0 ÷ 4"
+                  },
+                  {
+                    "label": "Gemini 4 Argon",
+                    "sub": "旗舰模型",
+                    "value": 0.5,
+                    "display": "≈0.5×",
+                    "tone": "hi",
+                    "calc": "1.0 ÷ 2"
+                  },
+                  {
+                    "label": "Gemini 4 Carbon",
+                    "sub": "旗舰模型",
+                    "value": 0.8,
+                    "display": "≈0.8×",
+                    "tone": "hi",
+                    "calc": "1.0 × (1 − 0.2)"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "合作者怎么看",
+      "blocks": [
+        {
+          "p": "几位合作者给了具体使用感受。南非比勒陀利亚大学的 Phanankosi Moyo 说，这套技能有潜力改变天然产物药物发现流程，在他们大多数评估里，连高度复杂结构的预测准确率都超过 90%。"
+        },
+        {
+          "fig": {
+            "type": "quote",
+            "title": "合作者：多数评估里复杂结构预测准确率超过 90%",
+            "subtitle": "这是合作方自己的评估口径，不是正式基准",
+            "text": "Their remarkable accuracy in predicting even highly complex molecular structures (>90% in most of our evaluations)",
+            "zh": "在他们大多数评估里，对高度复杂分子结构的预测准确率超过 90%",
+            "who": "Dr Phanankosi Moyo",
+            "role": "University of Pretoria",
+            "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/"
+          }
+        },
+        {
+          "p": "丹麦技术大学助理教授 Scott Jarmusch 说，以前需要几天到几个月才能完成的分析加文献调研，现在几小时就能做完，能让化学家更快给数据里的特征排优先级。普林斯顿大学的 Xi Xing 把它比作一个“黄金三角”：Gemini、AI Agent 和技能组合起来，像雇了一支会算、会查、会提方案的小团队。"
+        }
+      ]
+    },
+    {
+      "h": "官方还没说的",
+      "blocks": [
+        {
+          "list": [
+            "免费 6 个月的“最高使用档位”具体包含多少 token 或多少次解析，原文没写。",
+            "10,000 个免费名额怎么筛、通过率多少，只说“滚动入选”，没有细则。",
+            "Enterprise 企业版和个人付费档的价格没有公布。",
+            "100 个化合物的基准数据集是否公开、能否复现，原文没有给链接。",
+            "支持哪些质谱仪厂商的原始数据格式，没有列。",
+            "和单独使用 SIRIUS、GNPS 等开源工具的直接耗时与准确率对比，没有量化数据。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "适合谁",
+      "blocks": [
+        {
+          "p": "先说价值：这套技能把“查谱库 → 定分子式 → 筛候选 → 验证”的一整套体力活自动化，还保留了可复核的证据链。对每天被大量未标注谱淹没的组学研究者，省下的是实打实的时间。"
+        },
+        {
+          "p": "代价是：它目前是 Antigravity 里的技能，需要下载 App、装插件，企业用户要用 Google Cloud 凭据登录；免费档之外的收费未知。它认不出互为镜像的分子（手性）和部分相近异构体，也不能凭空确认数据库里没有的新分子。"
+        },
+        {
+          "p": "如果你做代谢组学、环境样品或天然产物筛选，手上有一堆未标注的谱，值得申请免费额度试试；如果你是刚接触计算工具的分析化学家或学生，它把技术门槛降了下来；如果你需要权威合规鉴定或新结构确认，它给的是起点和证据，不是替代 NMR 等正交测量的最终结论。"
+        },
+        {
+          "fig": {
+            "type": "cards",
+            "title": "三类人最适合先试",
+            "subtitle": "示意图：人群和标签是概括，不是原文原话",
+            "items": [
+              {
+                "icon": "search",
+                "title": "组学研究者",
+                "desc": "批量处理大量未标注谱，把时间从手工解析里省出来",
+                "tags": [
+                  "代谢组学",
+                  "环境",
+                  "天然产物"
+                ]
+              },
+              {
+                "icon": "user",
+                "title": "不熟工具的分析化学家",
+                "desc": "用自然语言交代任务，不必逐个配置底层工具",
+                "tags": [
+                  "低门槛",
+                  "可审计报告"
+                ]
+              },
+              {
+                "icon": "chart",
+                "title": "药物发现团队",
+                "desc": "更快给候选活性物排优先级",
+                "tags": [
+                  "天然产物",
+                  "候选排序"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "From spectrum to structure: Identifying molecules with Mass Spec Skills for Google Antigravity",
+      "publisher": "Google DeepMind",
+      "date": "2026-11-25",
+      "url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/"
+    },
+    "note": "所有数字均来自 Google DeepMind 官方博客；“>90%”等说法来自合作者引言，非正式基准；bars 图为示意估算，按原文“降了近 4 倍 / 一半 / 近五分之一”折成相对值；示意图按原文描述绘制。"
+  },
+  "claims": [
+    {
+      "text": "常规谱库搜索平均只能标注约 5% 的测量谱",
+      "value": "5%",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "约 5%",
+      "quote": "spectral searches annotate on average only about 5% of measured spectra"
+    },
+    {
+      "text": "人类样本的标注率约 10%",
+      "value": "10%",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "约 10%",
+      "quote": "and 10% for human samples"
+    },
+    {
+      "text": "一台现代质谱仪能从一滴样品提取物里测到数以万计的分子信号",
+      "value": "tens of thousands",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "数以万计",
+      "quote": "A modern mass spectrometer can detect tens of thousands of these molecular signals in a single drop of sample extract"
+    },
+    {
+      "text": "例子中的原始谱有 1,761 个峰",
+      "value": "1,761",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "1,761 个",
+      "quote": "1,761 raw peaks filtered to 19 preprocessed peaks"
+    },
+    {
+      "text": "清理后剩下 19 个有效碎片峰",
+      "value": "19",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "19 个",
+      "quote": "1,761 raw peaks filtered to 19 preprocessed peaks"
+    },
+    {
+      "text": "清理掉超过 1,700 个低强度噪声尖峰",
+      "value": "1,700",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "超过 1,700 个",
+      "quote": "it strips out over 1,700 low-intensity background noise spikes"
+    },
+    {
+      "text": "SIRIUS 给出的分子式质量误差为 −1.5 ppm",
+      "value": "−1.5 ppm",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "−1.5 ppm",
+      "quote": "the agent identifies the chlorinated formula C 20 H 21 ClN 6 O at −1.5 ppm mass error"
+    },
+    {
+      "text": "SIRIUS 碎片树评分 37.86",
+      "value": "37.86",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "37.86",
+      "quote": "score 37.86, well ahead of the runner-up at 28.33"
+    },
+    {
+      "text": "第二名评分 28.33",
+      "value": "28.33",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "28.33",
+      "quote": "score 37.86, well ahead of the runner-up at 28.33"
+    },
+    {
+      "text": "从 PubChem 捞出并评分了 845 个同分子式异构体",
+      "value": "845",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "845 个",
+      "quote": "the agent retrieved and scored all 845 C 20 H 21 ClN 6 O isomers in PubChem"
+    },
+    {
+      "text": "候选结构能解释 19 个峰中的 14 个",
+      "value": "14 of 19",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "19 个峰里的 14 个",
+      "quote": "mapping predicted fragment substructures onto 14 of the 19 signal peaks"
+    },
+    {
+      "text": "解释的碎片峰强总和占 97.7%",
+      "value": "97.7%",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "97.7%",
+      "quote": "14 of the 19 signal peaks (97.7% of summed fragment intensity)"
+    },
+    {
+      "text": "中央尿素键裂开的互补半段峰强占 45.1%",
+      "value": "45.1%",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "45.1%",
+      "quote": "the two complementary halves from central urea cleavage at m/z 162.1037 (45.1%) and m/z 232.0283 (6.8%)"
+    },
+    {
+      "text": "另一个互补半段峰强占 6.8%",
+      "value": "6.8%",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "6.8%",
+      "quote": "the two complementary halves from central urea cleavage at m/z 162.1037 (45.1%) and m/z 232.0283 (6.8%)"
+    },
+    {
+      "text": "正确结构的累计键断裂分数 26.0",
+      "value": "26.0",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "26.0",
+      "quote": "sum bond-break score 26.0"
+    },
+    {
+      "text": "第二名的键断裂分数 49.0，分数越低越好",
+      "value": "49.0",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "49.0",
+      "quote": "sum bond-break score 49.0; lower indicates a lower cleavage penalty"
+    },
+    {
+      "text": "基准从 MoNA 的 Enamine REAL MS/MS 集合里抽了 100 个化合物",
+      "value": "100",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "100 个",
+      "quote": "we evaluated it on 100 compounds sampled from the Enamine REAL MS/MS collection in MoNA"
+    },
+    {
+      "text": "每个谱试 3 次",
+      "value": "three attempts",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "3 次",
+      "quote": "three attempts per spectrum"
+    },
+    {
+      "text": "超过 1 小时预算的尝试算失败",
+      "value": "one-hour",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "1 小时",
+      "quote": "Attempts exceeding the one-hour wall-clock budget were scored as failures"
+    },
+    {
+      "text": "无网络和技能时三个模型准确率都不到 4%",
+      "value": "below 4%",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "不到 4%",
+      "quote": "With no internet access or skills, accuracy remained below 4% across all three models"
+    },
+    {
+      "text": "只开联网时旗舰模型漏掉四分之一到三分之一的谱",
+      "value": "a quarter to a third",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "四分之一到三分之一",
+      "quote": "causing the frontier models to miss a quarter to a third of the spectra"
+    },
+    {
+      "text": "轻量模型漏掉超过四分之三的谱",
+      "value": "three-quarters",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "超过四分之三",
+      "quote": "and the lightweight model to miss more than three-quarters"
+    },
+    {
+      "text": "加技能后三个模型都在约 97% 的尝试里识别并验证出正确分子",
+      "value": "around 97%",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "约 97%",
+      "quote": "all three models identified and verified the exact molecule in around 97% of attempts"
+    },
+    {
+      "text": "加技能后每次尝试生成的 token 在 Flash 上降了近 4 倍",
+      "value": "nearly four times",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "近 4 倍",
+      "quote": "cutting generated tokens per attempt across every model: by nearly four times on Flash, by half on Argon, and by nearly a fifth on Carbon"
+    },
+    {
+      "text": "在 Argon 上降了一半",
+      "value": "by half",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "一半",
+      "quote": "cutting generated tokens per attempt across every model: by nearly four times on Flash, by half on Argon, and by nearly a fifth on Carbon"
+    },
+    {
+      "text": "在 Carbon 上降了近五分之一",
+      "value": "nearly a fifth",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "近五分之一",
+      "quote": "cutting generated tokens per attempt across every model: by nearly four times on Flash, by half on Argon, and by nearly a fifth on Carbon"
+    },
+    {
+      "text": "合作者称在他们大多数评估里复杂结构预测准确率超过 90%",
+      "value": ">90%",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "超过 90%",
+      "quote": "Their remarkable accuracy in predicting even highly complex molecular structures (>90% in most of our evaluations)"
+    },
+    {
+      "text": "合作者称过去需要几天到几个月才能完成分析加文献调研",
+      "value": "days or months",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "几天到几个月",
+      "quote": "reduces a complicated process - one that previously required days or months of analysis and literature review - to a matter of hours"
+    },
+    {
+      "text": "现在几小时就能完成",
+      "value": "hours",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "几小时",
+      "quote": "reduces a complicated process - one that previously required days or months of analysis and literature review - to a matter of hours"
+    },
+    {
+      "text": "DeepMind 面向 10,000 名科学家提供最高使用档位",
+      "value": "10,000",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "10,000 名",
+      "quote": "we're offering 10,000 scientists the highest usage tier in Google Antigravity free of charge for 6 months"
+    },
+    {
+      "text": "免费期 6 个月",
+      "value": "6 months",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "6 个月",
+      "quote": "we're offering 10,000 scientists the highest usage tier in Google Antigravity free of charge for 6 months"
+    }
+  ],
+  "cover": {
+    "headline": "Antigravity 质谱技能",
+    "highlight": "准确率从不到 4% 到约 97%",
+    "big": {
+      "value": "97",
+      "unit": "%",
+      "label": "加技能后识别准确率"
+    }
+  },
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "origin": "auto",
+    "candidate": "f14a6f6dfd",
+    "tier": "official",
+    "via": null,
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "generated_at": "2026-11-26T08:33:26.939Z"
+  }
+}
