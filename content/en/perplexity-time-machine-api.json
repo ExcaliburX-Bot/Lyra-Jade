@@ -1,0 +1,527 @@
+{
+  "slug": "perplexity-time-machine-api",
+  "date": "2026-11-25",
+  "category": "product",
+  "publisher": "Perplexity",
+  "title": "Perplexity launches Time Machine for date-stamped web history, up to 365 days back",
+  "summary": "On Nov. 25, Perplexity added a snapshot_as_of parameter to the Search and Context APIs, so search and full-page reading use only saved copies from on or before the chosen date, up to 365 days back.",
+  "ai_summary": "Perplexity launched Time Machine for the Search and Context APIs, adding a snapshot_as_of parameter that limits search and full-page reading to saved page copies from on or before a chosen date, up to 365 days back. It prevents hindsight leakage: a model searching today's web can see already-published outcomes, making it impossible to test forecasts fairly. After using it to train GLM-5.3 Flash to forecast 2026 events, the company says held-out scores rose from 0.77 to 0.80, above the market's 0.79. Historical queries cost no extra (Search: $5 per 1,000 requests; Context: $1 per 1,000 URLs). It's aimed at teams doing prediction markets, financial backtests, and reproducible evaluation; the lookback cap is currently 365 days.",
+  "brief": [
+    "Add snapshot_as_of to an existing request and search and reading use only page copies saved on or before that time — no new endpoint required.",
+    "You can look back up to 365 days, and history keeps accumulating after that; earlier dates aren't queryable yet.",
+    "No price premium: the Search API costs $5 per 1,000 requests, the Context API costs $1 per 1,000 URLs, and existing API keys work as-is.",
+    "Perplexity compared it with Exa Snapshot: across 1,000 random queries, only 0.25% of Time Machine pages were flagged as containing hindsight information."
+  ],
+  "readMinutes": 6,
+  "sections": [
+    {
+      "h": "What it is: a parameter that sends search and reading back in time",
+      "blocks": [
+        {
+          "p": "A common way to evaluate an agent — an AI that can search the web, reason, and give an answer — is to ask a question about the past and see whether its judgment at the time matches what actually happened. For example, \"Who will win this election?\" But to be fair, the agent must see only what was available then, not the results published later."
+        },
+        {
+          "p": "On Nov. 25, Perplexity launched Time Machine for the Search API and Context API: developers add a snapshot_as_of parameter to a request, and search and full-page reading use only page copies saved at or before that moment — essentially a back-in-time switch for the web."
+        },
+        {
+          "p": "The key number up front: you can go back up to 365 days from today, and the history keeps growing with every crawl. There's no new endpoint — just a parameter on existing requests."
+        }
+      ]
+    },
+    {
+      "h": "How it works: each URL builds a timestamped history, and queries read copies at or before the cutoff",
+      "blocks": [
+        {
+          "p": "Each time Perplexity crawls a page, it saves a copy and records when it was saved. Over time, each URL accumulates a version history; Time Machine answers from that history and never touches the live web."
+        },
+        {
+          "p": "snapshot_as_of is the cutoff for that history. In search, retrieval only considers pages published or first crawled by the cutoff; each candidate is swapped for the latest copy saved at or before the cutoff, and ranking scores the query against that older text. A page that was later updated with the outcome can't rank on future information, and the returned title, date, and snippet all come from that same older copy."
+        },
+        {
+          "p": "Full-page reading works through the Context API: it returns each URL's full-text copy at the cutoff and never contacts the live site. A typical workflow searches first and then reads pages, so the same cutoff applies to both steps."
+        },
+        {
+          "fig": {
+            "type": "illustration",
+            "title": "A single URL accumulates timestamped copies; queries read only copies at or before the cutoff",
+            "subtitle": "Illustrative: amber marks the new cutoff; anything after it is excluded from both search and reading",
+            "glyph": {
+              "kind": "context",
+              "total": 100,
+              "segments": [
+                {
+                  "size": 73,
+                  "tone": "base",
+                  "label": "Copies at or before cutoff"
+                },
+                {
+                  "size": 2,
+                  "tone": "hi",
+                  "label": "Cutoff"
+                },
+                {
+                  "size": 25,
+                  "tone": "dim",
+                  "label": "Blocked after cutoff"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "Search and full-page reading share the same cutoff",
+            "subtitle": "Amber marks the cutoff behavior added by Time Machine",
+            "left": {
+              "label": "Search API",
+              "sub": "Retrieve and rank by cutoff",
+              "items": [
+                {
+                  "label": "Only pages published or first crawled by the cutoff",
+                  "state": "hi"
+                },
+                {
+                  "label": "Each result uses the latest copy at or before the cutoff",
+                  "state": "hi"
+                },
+                {
+                  "label": "Title, date, and snippet come from that copy",
+                  "state": "base"
+                },
+                {
+                  "label": "Ranking scores against the older text",
+                  "state": "base"
+                }
+              ]
+            },
+            "right": {
+              "label": "Context API",
+              "sub": "Full-page reading",
+              "items": [
+                {
+                  "label": "Returns the page's full-text copy at the cutoff",
+                  "state": "hi"
+                },
+                {
+                  "label": "Never contacts the live site",
+                  "state": "base"
+                },
+                {
+                  "label": "Can read the same URL at two timestamps",
+                  "state": "base"
+                }
+              ]
+            },
+            "footer": "A single snapshot_as_of applies to both search and reading"
+          }
+        }
+      ]
+    },
+    {
+      "h": "Why going back matters: today's web hands the answer to the model",
+      "blocks": [
+        {
+          "p": "Why does this matter? Because the live web already knows how everything turned out. Ask a model today what people knew before an election, and what it finds is often an article that already reports the result. Time Machine lets an agent work at that point in the past, and lets developers score it against what happened later."
+        },
+        {
+          "p": "That score measures how well the agent researches and forecasts, and whether a new model, prompt, or retrieval setup improves it."
+        },
+        {
+          "p": "The scoring logic follows the example Perplexity gives: a model estimates an 80% chance that a candidate wins. If the candidate does win, forecasting 80% earns a higher score than forecasting 50%; if the candidate loses, forecasting 80% earns a lower score. That score is the reward signal in reinforcement learning — the feedback that gradually improves the model."
+        }
+      ]
+    },
+    {
+      "h": "Testing it: training a forecasting agent lifts 0.77 to 0.80, above the market's 0.79",
+      "blocks": [
+        {
+          "p": "Perplexity used reinforcement learning to train GLM-5.3 Flash to forecast real 2026 political events listed on Polymarket, a prediction-market platform. For each question, the task was to estimate the probability of the event as of the day the question was asked."
+        },
+        {
+          "p": "Before training, the model scored 0.94 on held-out questions while searching the live web — but that's closer to looking up the answer, because the pages it found already reported the outcomes. With search swapped for Time Machine, the same questions scored 0.77; the market itself, using Polymarket prices on the day each question was asked and scored the same way, scored 0.79."
+        },
+        {
+          "p": "They then trained the model twice: once with the live web and once with Time Machine. With the live web, every question could find the answer directly, so about 90% of training batches had zero gradient and taught the model nothing; with Time Machine, only about 25% did. Finally, held-out questions were retested under Time Machine, and the score rose from 0.77 to 0.80, above the market's 0.79."
+        },
+        {
+          "fig": {
+            "type": "columns",
+            "title": "Removing hindsight drops the score from 0.94 to 0.77; training lifts it to 0.80",
+            "subtitle": "Unit: reward score from the source (higher is better; formula not disclosed). Amber is the post-training result.",
+            "items": [
+              {
+                "label": "Before training + live web",
+                "sub": "Could look up answers directly",
+                "value": 0.94,
+                "display": "0.94",
+                "tone": "ref"
+              },
+              {
+                "label": "Before training + Time Machine",
+                "sub": "Only saw information available at the time",
+                "value": 0.77,
+                "display": "0.77",
+                "tone": "base"
+              },
+              {
+                "label": "Market (Polymarket same-day price)",
+                "sub": "Scored the same way",
+                "value": 0.79,
+                "display": "0.79",
+                "tone": "ref"
+              },
+              {
+                "label": "After training + Time Machine",
+                "sub": "Retested on held-out questions",
+                "value": 0.8,
+                "display": "0.80",
+                "tone": "hi"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "Versus Exa Snapshot: fewer pages contain hindsight",
+      "blocks": [
+        {
+          "p": "Perplexity compared Time Machine with Exa Snapshot, another service that provides historical page snapshots, across three sets of 1,000 queries each: random Time Machine queries, news queries, and prediction-market research queries. Both services used the same cutoff for each query."
+        },
+        {
+          "p": "First, they checked whether returned pages carried publication dates. Time Machine attached dates to 98.8% to 99.5% of returned pages across the three sets, compared with 66.1% to 77.7% for Exa."
+        },
+        {
+          "p": "A publication date alone isn't enough — an article published before an election could be updated later to declare the winner. So Perplexity had an automated judge read every page and flag any content from after the query's cutoff. Fewer than 0.5% of Time Machine pages were flagged in each set, a lower rate than Exa's in all three. The biggest gap was in the random sample: 0.25% of Time Machine pages were flagged, versus 1.10% of Exa's. Across those 1,000 queries, 18 returned at least one flagged page with Time Machine, versus 62 with Exa."
+        },
+        {
+          "fig": {
+            "type": "bars",
+            "title": "Share of pages flagged as containing hindsight information, across 1,000 random queries",
+            "subtitle": "Unit: %. Lower is better. Amber is Time Machine; gray is Exa Snapshot.",
+            "legend": [
+              {
+                "tone": "hi",
+                "label": "Time Machine"
+              },
+              {
+                "tone": "ref",
+                "label": "Exa Snapshot"
+              }
+            ],
+            "groups": [
+              {
+                "label": "Random sample (1,000 queries each)",
+                "items": [
+                  {
+                    "label": "Time Machine",
+                    "value": 0.25,
+                    "display": "0.25%",
+                    "tone": "hi"
+                  },
+                  {
+                    "label": "Exa Snapshot",
+                    "value": 1.1,
+                    "display": "1.10%",
+                    "tone": "ref"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "Pricing: same as the standard API, no surcharge",
+      "blocks": [
+        {
+          "p": "Historical queries carry no surcharge and cost the same as any other Perplexity API call: the Search API is $5 per 1,000 requests, and the Context API is $1 per 1,000 URLs fetched. Existing API keys work right away."
+        },
+        {
+          "p": "Time Machine requests have a default rate limit; contact the Perplexity API team for higher limits. Pricing for higher tiers isn't stated in the source."
+        },
+        {
+          "fig": {
+            "type": "bars",
+            "title": "Historical queries cost no extra; pricing matches the standard API",
+            "subtitle": "Amber marks the two APIs opened with this update. Units: US dollars; Search per 1,000 requests, Context per 1,000 URLs.",
+            "groups": [
+              {
+                "label": "API",
+                "items": [
+                  {
+                    "label": "Search API",
+                    "value": 5,
+                    "display": "$5",
+                    "tone": "hi"
+                  },
+                  {
+                    "label": "Context API",
+                    "value": 1,
+                    "display": "$1",
+                    "tone": "hi"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "How to use it: same endpoint, one parameter",
+      "blocks": [
+        {
+          "p": "No new endpoint or extra setup: add snapshot_as_of to an existing Search API or Context API request, and the response reflects the web at that time. Leave it out, and the request returns today's web."
+        },
+        {
+          "p": "Below is the official Search API example: set the cutoff to 2026-10-20, restrict the search to python.org, and each result's title and snippet come from the copy saved that day."
+        },
+        {
+          "fig": {
+            "type": "code",
+            "title": "Search API: add snapshot_as_of and search returns that day's web",
+            "subtitle": "Code reproduced verbatim from the official example",
+            "lang": "python",
+            "code": "from perplexity import Perplexity\n\nclient = Perplexity()\n\nsearch = client.search.create(\n    query=\"Latest Python 3 Release on the Python Source Releases page\",\n    snapshot_as_of=\"2026-10-20T00:00:00Z\",\n    search_domain_filter=[\"python.org\"],\n    max_results=5,\n)\n\nfor result in search.results:\n    print(result.title, result.url)",
+            "highlight": [
+              7
+            ]
+          }
+        },
+        {
+          "p": "The Context API works the same way: add a cutoff to a known URL and you can read the full text as it was then. In the official example, the Python Source Releases page on 2026-10-20 still listed Python 3.15 as the latest release, rather than the newer version on today's page."
+        }
+      ]
+    },
+    {
+      "h": "What Perplexity hasn't said",
+      "blocks": [
+        {
+          "list": [
+            "Whether history older than 365 days can be queried: the source only says the lookback reaches \"up to 365 days back from today\"; earlier dates are currently outside the queryable range.",
+            "What the exact rate limit is: the source only says there's a default and that higher limits require contacting the team; per-second or per-minute figures aren't given.",
+            "How the 0.94, 0.77, and 0.80 scores are calculated or what units they use: the source only says higher is better and doesn't disclose the scoring formula.",
+            "Exa's exact out-of-bound rates for the news and prediction-market query sets: the source gives only 0.25% versus 1.10% for the random sample; for the other two sets it only says Time Machine was lower.",
+            "Whether higher rate limits cost extra: the source only says to contact the API team and doesn't list a price.",
+            "Whether it's available on all plans and in all regions: the source only says existing API keys can use it and doesn't mention plan differences."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Who it's for",
+      "blocks": [
+        {
+          "p": "Value: it keeps hindsight answers out of search, so scores reflect a model's actual research and forecasting ability, and evaluations become reproducible."
+        },
+        {
+          "p": "Cost: you pay per API call; there's a default rate limit; the lookback cap is currently 365 days."
+        },
+        {
+          "list": [
+            "If you're training forecasting or research agents, backtesting financial signals, or building reproducible benchmarks: worth trying, especially for separating \"lookup\" from actual prediction.",
+            "If you need to audit historical pages — what a pricing page, terms of service, or changelog said on different dates — the Context API's point-in-time full-text reading covers it.",
+            "If you just want to occasionally see an old page and avoid API billing: it works, but estimate your call volume first.",
+            "If you need history from more than a year ago: not yet possible; the lookback cap is 365 days."
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Freeze the web with Perplexity Time Machine",
+      "publisher": "Perplexity",
+      "date": "2026-11-25",
+      "url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine"
+    },
+    "more": [],
+    "note": "Site note: all figures are drawn from data in the original post; bar charts compare data rather than being illustrative, while schematic component diagrams and the cover are abstract illustrations. In the Exa Snapshot comparison, the original post does not disclose exact out-of-bound rates for the news and prediction-market query sets. Code figures are reproduced verbatim from the official examples."
+  },
+  "claims": [
+    {
+      "text": "Time Machine's cutoff can reach up to 365 days back from today",
+      "value": "365 days",
+      "source_url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine",
+      "as_written": "365 days",
+      "quote": "Add snapshot_as_of to a request and it becomes a cutoff, up to 365 days back today, and that history keeps growing."
+    },
+    {
+      "text": "Search API pricing is $5 per 1,000 requests",
+      "value": "$5 per 1,000 requests",
+      "source_url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine",
+      "as_written": "$5 per 1,000 requests",
+      "quote": "$5 per 1,000 requests"
+    },
+    {
+      "text": "Context API pricing is $1 per 1,000 URLs fetched",
+      "value": "$1 per 1,000 URLs fetched",
+      "source_url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine",
+      "as_written": "$1 per 1,000 URLs",
+      "quote": "$1 per 1,000 URLs fetched"
+    },
+    {
+      "text": "Before training, held-out questions scored 0.94 with live-web search",
+      "value": "0.94",
+      "source_url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine",
+      "as_written": "0.94",
+      "quote": "Before any training, it scores 0.94 on held-out questions with the live web and 0.77 with Time Machine."
+    },
+    {
+      "text": "Before training, the same questions scored 0.77 with Time Machine",
+      "value": "0.77",
+      "source_url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine",
+      "as_written": "0.77",
+      "quote": "Before any training, it scores 0.94 on held-out questions with the live web and 0.77 with Time Machine."
+    },
+    {
+      "text": "The market itself, using Polymarket prices on the day each question was asked and scored the same way, scored 0.79",
+      "value": "0.79",
+      "source_url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine",
+      "as_written": "0.79",
+      "quote": "The market scores 0.79 (the Polymarket price on the day each question was asked, scored the same way)."
+    },
+    {
+      "text": "After training with Time Machine, held-out reward score rose to 0.80",
+      "value": "0.80",
+      "source_url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine",
+      "as_written": "0.80",
+      "quote": "and held-out reward rises from 0.77 to 0.80, above the market."
+    },
+    {
+      "text": "When training with the live web, about 90% of training batches had zero gradient",
+      "value": "about 90%",
+      "source_url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine",
+      "as_written": "about 90%",
+      "quote": "so about 90% of training groups have zero gradient and teach the model nothing"
+    },
+    {
+      "text": "When training with Time Machine, about 25% of training batches had zero gradient",
+      "value": "about 25%",
+      "source_url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine",
+      "as_written": "about 25%",
+      "quote": "with Time Machine only about 25% do"
+    },
+    {
+      "text": "The comparison used three sets of 1,000 queries each",
+      "value": "1,000",
+      "source_url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine",
+      "as_written": "1,000 queries",
+      "quote": "Across those 1,000 queries, 18 returned at least one flagged page with Time Machine, compared with 62 with Exa."
+    },
+    {
+      "text": "Time Machine attached publication dates to 98.8% to 99.5% of returned pages",
+      "value": "98.8% to 99.5%",
+      "source_url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine",
+      "as_written": "98.8% to 99.5%",
+      "quote": "Time Machine included a date on 98.8% to 99.5% of returned pages across the three sets, compared with 66.1% to 77.7% for Exa."
+    },
+    {
+      "text": "Exa attached publication dates to 66.1% to 77.7% of returned pages",
+      "value": "66.1% to 77.7%",
+      "source_url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine",
+      "as_written": "66.1% to 77.7%",
+      "quote": "Time Machine included a date on 98.8% to 99.5% of returned pages across the three sets, compared with 66.1% to 77.7% for Exa."
+    },
+    {
+      "text": "Fewer than 0.5% of Time Machine pages were flagged as containing hindsight information in each set",
+      "value": "0.5%",
+      "source_url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine",
+      "as_written": "under 0.5%",
+      "quote": "The judge flagged fewer than 0.5% of Time Machine pages in each set, a lower rate than Exa in all three."
+    },
+    {
+      "text": "In the random sample, 0.25% of Time Machine pages were flagged",
+      "value": "0.25%",
+      "source_url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine",
+      "as_written": "0.25%",
+      "quote": "The largest gap was on the random sample: 0.25% of Time Machine pages were flagged, compared with 1.10% of Exa pages."
+    },
+    {
+      "text": "In the random sample, 1.10% of Exa pages were flagged",
+      "value": "1.10%",
+      "source_url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine",
+      "as_written": "1.10%",
+      "quote": "The largest gap was on the random sample: 0.25% of Time Machine pages were flagged, compared with 1.10% of Exa pages."
+    },
+    {
+      "text": "Across the random 1,000 queries, 18 Time Machine queries returned at least one out-of-bound page",
+      "value": "18",
+      "source_url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine",
+      "as_written": "18 queries",
+      "quote": "Across those 1,000 queries, 18 returned at least one flagged page with Time Machine, compared with 62 with Exa."
+    },
+    {
+      "text": "Across the same queries, Exa had 62",
+      "value": "62",
+      "source_url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine",
+      "as_written": "62 queries",
+      "quote": "Across those 1,000 queries, 18 returned at least one flagged page with Time Machine, compared with 62 with Exa."
+    },
+    {
+      "text": "In the official scoring example, the model estimated an 80% chance the candidate would win",
+      "value": "80%",
+      "source_url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine",
+      "as_written": "80%",
+      "quote": "Its forecast might be: “The candidate has an 80% chance of winning.”"
+    },
+    {
+      "text": "In the example, an 80% forecast scores higher or lower than a 50% forecast depending on the outcome",
+      "value": "50%",
+      "source_url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine",
+      "as_written": "50%",
+      "quote": "If the candidate wins, an 80% forecast earns a higher score than a 50% forecast."
+    },
+    {
+      "text": "The official code example sets the cutoff to 2026-10-20",
+      "value": "2026-10-20T00:00:00Z",
+      "source_url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine",
+      "as_written": "2026-10-20",
+      "quote": "snapshot_as_of=\"2026-10-20T00:00:00Z\","
+    },
+    {
+      "text": "The official code example sets max_results to 5",
+      "value": "5",
+      "source_url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine",
+      "as_written": "5",
+      "quote": "max_results=5,"
+    }
+  ],
+  "cover": {
+    "headline": "Perplexity Time Machine is live",
+    "highlight": "Take the API back to the web as it was 365 days ago",
+    "big": {
+      "value": "365",
+      "unit": "days",
+      "label": "Max lookback"
+    },
+    "glyph": {
+      "kind": "context",
+      "total": 100,
+      "segments": [
+        {
+          "size": 73,
+          "tone": "base",
+          "label": "Past"
+        },
+        {
+          "size": 2,
+          "tone": "hi",
+          "label": "Cutoff"
+        },
+        {
+          "size": 25,
+          "tone": "dim",
+          "label": "Blocked"
+        }
+      ]
+    }
+  },
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "b3f5dadc14c53c13"
+}
