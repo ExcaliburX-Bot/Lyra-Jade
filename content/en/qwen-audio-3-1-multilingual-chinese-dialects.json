@@ -1,0 +1,336 @@
+{
+  "slug": "qwen-audio-3-1-multilingual-chinese-dialects",
+  "date": "2026-11-26",
+  "category": "product",
+  "publisher": "Alibaba_Qwen",
+  "topics": [
+    "qwen"
+  ],
+  "title": "Qwen-Audio-3.1 goes multilingual: ASR now covers 59 languages and 8 Chinese dialects",
+  "summary": "Want AI to understand your hometown dialect — or speak it back? Qwen has rolled out a multilingual upgrade for the three speech models in its Qwen-Audio-3.1 family, with the emphasis on Chinese dialects.",
+  "ai_summary": "On November 26, Qwen announced multilingual capabilities for the Qwen-Audio-3.1 family, with a focus on Chinese dialects. The upgrade spans three product tracks: speech recognition (ASR, speech to text) supports 59 languages and 8 Chinese dialects; speech synthesis (TTS, text to speech) supports 65 languages and 6 Chinese dialects; and Realtime (live voice, back-and-forth conversation) supports 53 languages and 6 Chinese dialects. For teams building customer service, subtitles, voiceover, or voice assistants, this adds a ready-made multilingual/dialect entry point — especially useful for serving users who speak different dialects. One caveat: the numbers come from Qwen's announcement, and the post does not say which dialects are covered or provide benchmark results, so validate with real audio before deploying.",
+  "brief": [
+    "ASR (speech recognition) now supports 59 languages and 8 Chinese dialects.",
+    "TTS (text-to-speech) supports 65 languages and 6 Chinese dialects — the widest language coverage of the three.",
+    "Realtime (live speech) supports 53 languages and 6 Chinese dialects.",
+    "All three models are available through Qwen's official channels, and each can be tried separately."
+  ],
+  "readMinutes": 3,
+  "sections": [
+    {
+      "h": "What this is: a multilingual upgrade for Qwen-Audio-3.1's three speech models",
+      "blocks": [
+        {
+          "p": "Qwen-Audio-3.1 is Qwen's previously released family of speech foundation models. On November 26, the company announced multilingual capabilities for the family, with a strong focus on Chinese dialects. Think of a speech foundation model as the base layer for voice applications: recognition, synthesis, and real-time conversation each get their own track."
+        },
+        {
+          "p": "ASR (automatic speech recognition) turns audio into text; TTS (text-to-speech) turns text into audio; and Realtime is live speech for back-and-forth conversation. Qwen says this update strengthens Chinese dialect support in both recognition and synthesis."
+        }
+      ]
+    },
+    {
+      "h": "How many languages and dialects does each model cover?",
+      "blocks": [
+        {
+          "p": "Qwen gives three sets of numbers. By language count, TTS covers the most, ASR comes next, and Realtime covers the fewest. For Chinese dialects, ASR covers two more than the other two."
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "TTS leads on languages, Realtime has the fewest, and ASR adds two more dialects",
+            "subtitle": "Unit: count; figures from Qwen's announcement",
+            "items": [
+              {
+                "value": "59",
+                "unit": "languages",
+                "label": "ASR speech recognition"
+              },
+              {
+                "value": "8",
+                "unit": "Chinese dialects",
+                "label": "ASR speech recognition"
+              },
+              {
+                "value": "65",
+                "unit": "languages",
+                "label": "TTS speech synthesis"
+              },
+              {
+                "value": "6",
+                "unit": "Chinese dialects",
+                "label": "TTS speech synthesis"
+              },
+              {
+                "value": "53",
+                "unit": "languages",
+                "label": "Realtime live voice"
+              },
+              {
+                "value": "6",
+                "unit": "Chinese dialects",
+                "label": "Realtime live voice"
+              }
+            ]
+          }
+        },
+        {
+          "p": "These figures come from Qwen's announcement and reflect the vendor's own numbers. The post includes no third-party evaluations, and the totals don't mean every language or dialect performs equally well."
+        }
+      ]
+    },
+    {
+      "h": "Why the focus on Chinese dialects?",
+      "blocks": [
+        {
+          "p": "Dialects are a real challenge for speech models: the same meaning can sound very different across dialects, many dialects lack a standardized written form, and training data is relatively scarce. Qwen frames the headline of this update as \"enhanced Chinese dialect recognition and synthesis\" — both dialect recognition and synthesis are stronger, and the improvement spans all three product tracks."
+        },
+        {
+          "p": "But the post gives only the number of dialects, not which ones. The charts below show Chinese dialects as a share of each model's total language count, making clear that dialects are a small slice of the whole."
+        },
+        {
+          "fig": {
+            "type": "schematic",
+            "title": "Chinese dialects are only a small slice of the total languages",
+            "subtitle": "Illustrative: amber shows Chinese dialects, the outer ring shows total languages; figures from Qwen's announcement",
+            "items": [
+              {
+                "glyph": {
+                  "kind": "ring",
+                  "value": 8,
+                  "max": 59,
+                  "label": "ASR",
+                  "display": "8/59"
+                },
+                "title": "ASR speech recognition",
+                "sub": "Speech → text",
+                "rows": [
+                  {
+                    "k": "Languages",
+                    "v": "59"
+                  },
+                  {
+                    "k": "Chinese dialects",
+                    "v": "8"
+                  }
+                ]
+              },
+              {
+                "glyph": {
+                  "kind": "ring",
+                  "value": 6,
+                  "max": 65,
+                  "label": "TTS",
+                  "display": "6/65"
+                },
+                "title": "TTS speech synthesis",
+                "sub": "Text → speech",
+                "rows": [
+                  {
+                    "k": "Languages",
+                    "v": "65"
+                  },
+                  {
+                    "k": "Chinese dialects",
+                    "v": "6"
+                  }
+                ]
+              },
+              {
+                "glyph": {
+                  "kind": "ring",
+                  "value": 6,
+                  "max": 53,
+                  "label": "Realtime",
+                  "display": "6/53"
+                },
+                "title": "Realtime live voice",
+                "sub": "Back-and-forth conversation",
+                "rows": [
+                  {
+                    "k": "Languages",
+                    "v": "53"
+                  },
+                  {
+                    "k": "Chinese dialects",
+                    "v": "6"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "How to get started with the three models",
+      "blocks": [
+        {
+          "p": "Qwen's post gives three entry points — one each for ASR, TTS, and Realtime — all as shortened links."
+        },
+        {
+          "fig": {
+            "type": "cards",
+            "title": "Three product tracks, each with its own entry point",
+            "subtitle": "Capability descriptions from Qwen's announcement; links are the shortened URLs in the official post",
+            "note": "Before clicking through, check the license and usage terms on the model page.",
+            "items": [
+              {
+                "icon": "audio",
+                "title": "ASR speech recognition",
+                "desc": "Turns speech into text across 59 languages and 8 Chinese dialects.",
+                "tags": [
+                  "59 languages",
+                  "8 dialects"
+                ],
+                "tone": "base"
+              },
+              {
+                "icon": "doc",
+                "title": "TTS speech synthesis",
+                "desc": "Synthesizes speech from text across 65 languages and 6 Chinese dialects.",
+                "tags": [
+                  "65 languages",
+                  "6 dialects"
+                ],
+                "tone": "base"
+              },
+              {
+                "icon": "chat",
+                "title": "Realtime live voice",
+                "desc": "Back-and-forth real-time conversation across 53 languages and 6 Chinese dialects.",
+                "tags": [
+                  "53 languages",
+                  "6 dialects"
+                ],
+                "tone": "base"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "What Qwen hasn't said",
+      "blocks": [
+        {
+          "list": [
+            "Which specific dialects are included in the 8 or 6 Chinese dialects — for example, whether Cantonese or Hokkien are covered.",
+            "Which languages are included in the multilingual coverage.",
+            "Benchmark figures such as recognition error rate, synthesis naturalness, and real-time latency.",
+            "Whether it costs anything, plus API pricing and rate limits.",
+            "How much this improves on the previous Qwen-Audio-3.1 before the multilingual upgrade.",
+            "Dialect test conditions, such as noisy environments or accent strength."
+          ],
+          "p": "The post doesn't provide any of this; you'll need to verify it yourself before deployment or wait for Qwen's follow-up."
+        }
+      ]
+    },
+    {
+      "h": "Who it's for",
+      "blocks": [
+        {
+          "p": "The value is clear: if your product serves users across multiple languages or dialects, these three tracks give you ready-made entry points — ASR for transcription, TTS for voice synthesis and narration, and Realtime for live conversation."
+        },
+        {
+          "p": "The trade-off is that, for now, there are only Qwen's own counts and no public benchmarks, pricing, or specific dialect list — so you shouldn't launch based on the numbers alone."
+        },
+        {
+          "list": [
+            "If you're building multilingual subtitles or customer-service transcription, start with ASR.",
+            "If you need audiobooks, voiceover, or multilingual announcements, look at TTS.",
+            "If you're building a voice assistant or real-time translation, look at Realtime.",
+            "If your users speak a specific dialect, first confirm it's on the list of 8 or 6 dialects."
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "New multilingual capabilities are here for Qwen-Audio-3.1! Especially for Chinese dialects.",
+      "publisher": "Alibaba_Qwen",
+      "date": "2026-11-26",
+      "url": "https://x.com/Alibaba_Qwen/status/2125798914490249411"
+    },
+    "more": [
+      {
+        "label": "Qwen-Audio-3.1-ASR",
+        "url": "https://t.co/S3zi6LBBai"
+      },
+      {
+        "label": "Qwen-Audio-3.1-TTS",
+        "url": "https://t.co/PcnbjnrEGl"
+      },
+      {
+        "label": "Qwen-Audio-3.1-Realtime",
+        "url": "https://t.co/5SYe9Bv5eE"
+      }
+    ],
+    "note": "This article is based solely on Qwen's official X post. The ring charts are illustrative, and the figures come from Qwen's announcement; the post does not include the specific dialect list, benchmarks, or pricing."
+  },
+  "claims": [
+    {
+      "text": "Speech recognition (ASR) covers 59 languages.",
+      "value": "59",
+      "source_url": "https://x.com/Alibaba_Qwen/status/2125798914490249411",
+      "as_written": "59 languages",
+      "quote": "ASR: 59 languages, 8 Chinese dialects."
+    },
+    {
+      "text": "Speech recognition (ASR) covers 8 Chinese dialects.",
+      "value": "8",
+      "source_url": "https://x.com/Alibaba_Qwen/status/2125798914490249411",
+      "as_written": "8 dialects",
+      "quote": "ASR: 59 languages, 8 Chinese dialects."
+    },
+    {
+      "text": "Speech synthesis (TTS) covers 65 languages.",
+      "value": "65",
+      "source_url": "https://x.com/Alibaba_Qwen/status/2125798914490249411",
+      "as_written": "65 languages",
+      "quote": "TTS: 65 languages, 6 Chinese dialects."
+    },
+    {
+      "text": "Speech synthesis (TTS) covers 6 Chinese dialects.",
+      "value": "6",
+      "source_url": "https://x.com/Alibaba_Qwen/status/2125798914490249411",
+      "as_written": "6 dialects",
+      "quote": "TTS: 65 languages, 6 Chinese dialects."
+    },
+    {
+      "text": "Realtime live voice covers 53 languages.",
+      "value": "53",
+      "source_url": "https://x.com/Alibaba_Qwen/status/2125798914490249411",
+      "as_written": "53 languages",
+      "quote": "Realtime: 53 languages, 6 Chinese dialects."
+    },
+    {
+      "text": "Realtime live voice covers 6 Chinese dialects.",
+      "value": "6",
+      "source_url": "https://x.com/Alibaba_Qwen/status/2125798914490249411",
+      "as_written": "6 dialects",
+      "quote": "Realtime: 53 languages, 6 Chinese dialects."
+    },
+    {
+      "text": "Qwen announced the upgrade on November 26, 2026.",
+      "value": "2026-11-26",
+      "source_url": "https://x.com/Alibaba_Qwen/status/2125798914490249411",
+      "as_written": "November 26, 2026"
+    }
+  ],
+  "cover": {
+    "headline": "Qwen speech models get a dialect upgrade",
+    "highlight": "ASR: 59 languages, 8 dialects",
+    "glyph": {
+      "kind": "ring",
+      "value": 8,
+      "max": 59,
+      "label": "ASR",
+      "display": "8/59"
+    }
+  },
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "29ae9df9d0c63416"
+}

@@ -1,0 +1,441 @@
+{
+  "slug": "llamacpp-amd-benchmark-dashboard",
+  "category": "product",
+  "date": "2026-11-26",
+  "publisher": "Hugging Face",
+  "title": "llama.cpp × AMD benchmark dashboard goes live: track PP512 and TG128 by hardware, model, and quantization",
+  "summary": "Developers running llama.cpp on AMD hardware now have a public dashboard: pick a hardware target, model, and build to compare prompt processing speed (PP512) and generation speed (TG128) across quantizations, and see how performance changes as context grows.",
+  "ai_summary": "The llama.cpp team has published the llama.cpp × AMD Benchmark dashboard on Hugging Face, letting AMD users track local inference performance by hardware, model, and build. It centers on two tests: PP512 processes 512 input tokens, and TG128 generates 128 tokens; both are measured in tokens per second and report mean throughput from context depth zero. Benchmarks run weekly with 10 repetitions per configuration, covering quantization levels such as Q4_K_M, Q8_0, BF16, and F16. It's aimed at developers choosing hardware, models, or quantizations; for now, hardware is limited to the Radeon 8060S and Radeon AI Pro R9700S.",
+  "brief": [
+    "The dashboard currently covers the Radeon 8060S (gfx1151) and Radeon AI Pro R9700S (gfx1201).",
+    "PP512 measures processing 512 input tokens, and TG128 measures generating 128 tokens; both start from context depth zero.",
+    "Benchmarks run automatically every week, with 10 repetitions per configuration and Flash Attention tested both on and off.",
+    "Raw results live in the public ggml-org/install.sh-benches-data bucket and can be reused directly."
+  ],
+  "readMinutes": 6,
+  "sections": [
+    {
+      "h": "What this is: a public llama.cpp × AMD benchmark dashboard",
+      "blocks": [
+        {
+          "p": "The llama.cpp team (ggml-org) has published a benchmark dashboard on Hugging Face for tracking local inference performance on AMD Ryzen and Radeon hardware. It's straightforward to use: pick the hardware, model, and llama.cpp build in the sidebar, and the dashboard shows the corresponding prompt processing and text generation speed, lets you compare quantization levels, and shows how performance changes from build to build."
+        },
+        {
+          "p": "Unlike many dashboards that only show conclusions, this one also publishes the benchmark workflow and the underlying raw results, so you can both read the data and verify how a number was produced."
+        },
+        {
+          "p": "Why build this? The post says local inference performance changes as models, kernels (the low-level compute code), and builds evolve, and the team wants AMD developers to see those changes easily: pick hardware, a model, and a build, compare quantizations, and follow performance over time."
+        }
+      ]
+    },
+    {
+      "h": "What you can see on the dashboard: three tabs",
+      "blocks": [
+        {
+          "p": "Open the dashboard and start in the Configuration sidebar by choosing Hardware, Model, and llama.cpp build. For now, the hardware choices are the Radeon 8060S (gfx1151) and Radeon AI Pro R9700S (gfx1201)."
+        },
+        {
+          "fig": {
+            "type": "schematic",
+            "title": "In the configuration panel, choose hardware, model, build, and quantization before reading performance data",
+            "subtitle": "Schematic: the sidebar choices determine which curve you compare",
+            "items": [
+              {
+                "glyph": {
+                  "kind": "window",
+                  "title": "Hardware",
+                  "items": [
+                    {
+                      "label": "Radeon 8060S",
+                      "tone": "base"
+                    },
+                    {
+                      "label": "Radeon AI Pro R9700S",
+                      "tone": "base"
+                    }
+                  ]
+                },
+                "title": "Hardware",
+                "sub": "Currently available",
+                "rows": [
+                  {
+                    "k": "8060S",
+                    "v": "`gfx1151`"
+                  },
+                  {
+                    "k": "R9700S",
+                    "v": "`gfx1201`"
+                  }
+                ]
+              },
+              {
+                "glyph": {
+                  "kind": "window",
+                  "title": "Model",
+                  "items": [
+                    {
+                      "label": "Inkling 2 Mini",
+                      "tone": "base"
+                    },
+                    {
+                      "label": "Qwen / Gemma",
+                      "tone": "base"
+                    },
+                    {
+                      "label": "gpt-oss / LFM",
+                      "tone": "base"
+                    }
+                  ]
+                },
+                "title": "Model",
+                "sub": "Model set evolves over time",
+                "rows": [
+                  {
+                    "k": "Architecture",
+                    "v": "Dense and MoE"
+                  }
+                ]
+              },
+              {
+                "glyph": {
+                  "kind": "window",
+                  "title": "Build",
+                  "items": [
+                    {
+                      "label": "llama.cpp build",
+                      "tone": "base"
+                    }
+                  ]
+                },
+                "title": "Build",
+                "sub": "Prebuilt binaries",
+                "rows": [
+                  {
+                    "k": "Source",
+                    "v": "`llama-install.sh`"
+                  }
+                ]
+              },
+              {
+                "glyph": {
+                  "kind": "window",
+                  "title": "Quantization",
+                  "items": [
+                    {
+                      "label": "Q4_K_M",
+                      "tone": "base"
+                    },
+                    {
+                      "label": "Q8_0",
+                      "tone": "base"
+                    },
+                    {
+                      "label": "BF16 / F16",
+                      "tone": "base"
+                    }
+                  ]
+                },
+                "title": "Quantization",
+                "sub": "From quantized to high precision",
+                "rows": [
+                  {
+                    "k": "Formats",
+                    "v": "`Q4_K_M`, `Q8_0`, `BF16`, `F16`, and more"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "p": "After you make a selection, the dashboard is organized into Overview, Build history, and Context scaling tabs. Overview compares PP512 and TG128 across quantizations for one hardware, model, and build; Build history tracks those two readings across recorded builds for your chosen combination; Context scaling shows how token-generation throughput changes as the existing context grows."
+        },
+        {
+          "fig": {
+            "type": "cards",
+            "title": "The dashboard's main tabs each answer a different question",
+            "subtitle": "Amber marks the context-scaling view introduced here; the rest are the usual comparison and build tracking views",
+            "items": [
+              {
+                "icon": "chart",
+                "title": "Overview",
+                "desc": "Compare PP512 and TG128 across quantizations for one hardware, model, and build",
+                "tags": [
+                  "Compare quantizations"
+                ],
+                "tone": "base"
+              },
+              {
+                "icon": "clock",
+                "title": "Build history",
+                "desc": "Track PP512 and TG128 across recorded builds for the selected hardware, model, and quantization",
+                "tags": [
+                  "Track builds"
+                ],
+                "tone": "base"
+              },
+              {
+                "icon": "layers",
+                "title": "Context scaling",
+                "desc": "See how token-generation throughput changes as the existing context grows",
+                "tags": [
+                  "Context scaling"
+                ],
+                "tone": "hi"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "PP512 and TG128: how to read the two numbers",
+      "blocks": [
+        {
+          "p": "The dashboard shows two tests, both measured in tokens per second—the number of tokens the model can process or generate each second."
+        },
+        {
+          "p": "PP512 processes 512 input tokens without generating anything, so it answers how fast the model ingests a prompt. TG128 generates 128 tokens with no pre-existing context, so it answers how fast the model produces output."
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "Two core readings, both measured in tokens per second",
+            "subtitle": "PP512 covers prompt ingestion, TG128 covers output; 10 repetitions per configuration are averaged",
+            "items": [
+              {
+                "value": 512,
+                "unit": "Input tokens",
+                "label": "PP512",
+                "note": "Processing only, no generation"
+              },
+              {
+                "value": 128,
+                "unit": "Generated tokens",
+                "label": "TG128",
+                "note": "No pre-existing context"
+              },
+              {
+                "value": 10,
+                "unit": "Repetitions",
+                "label": "Per configuration",
+                "note": "Tested with Flash Attention on and off"
+              }
+            ]
+          }
+        },
+        {
+          "p": "Both tests start at context depth zero (`n_depth=0`), and the plotted value is mean throughput (`avg_ts`)—an average over repeated runs, not the best single run. PP512 and TG128 are good for quick cross-comparisons; to see whether generation slows down when the context is already long, use the Context scaling tab."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "PP512 covers prompt processing, TG128 covers output generation",
+            "subtitle": "Both are measured in tokens per second and start at context depth zero",
+            "columns": [
+              "Test",
+              "Workload",
+              "What it helps you assess"
+            ],
+            "rows": [
+              [
+                "PP512",
+                "Process 512 input tokens, no generation",
+                "How quickly the model processes a prompt"
+              ],
+              [
+                "TG128",
+                "Generate 128 tokens, no pre-existing context",
+                "How quickly the model produces output"
+              ]
+            ],
+            "highlight": {
+              "col": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "h": "How these numbers are produced",
+      "blocks": [
+        {
+          "p": "The benchmarks run the prebuilt binaries distributed through `llama-install.sh`, the build and installation project behind llama.app. The point is to test the same binaries users actually download and install, not a specially tuned build."
+        },
+        {
+          "p": "The public gfx1151 and gfx1201 workflows run automatically every week, using the `llama-bench` tool for the standard benchmarks. Flash Attention—a technique that lowers the cost of attention computation—is tested both on and off, with 10 repetitions per configuration."
+        },
+        {
+          "fig": {
+            "type": "steps",
+            "title": "The standard pipeline from build to dashboard, run weekly",
+            "subtitle": "Schematic: the public workflows run automatically each week",
+            "steps": [
+              {
+                "name": "Fetch build",
+                "tool": "llama-install.sh",
+                "desc": "Use the prebuilt binaries, the same version users install"
+              },
+              {
+                "name": "Run benchmarks",
+                "tool": "llama-bench",
+                "desc": "Test with Flash Attention on and off, 10 repetitions per configuration"
+              },
+              {
+                "name": "Write results",
+                "tool": "ggml-org/install.sh-benches-data",
+                "desc": "Public storage bucket, jsonl files"
+              },
+              {
+                "name": "Dashboard reads",
+                "tool": "Benchmark dashboard",
+                "desc": "Displays by hardware, model, build, and quantization"
+              }
+            ]
+          }
+        },
+        {
+          "callout": {
+            "kind": "note",
+            "title": "A note on reading the numbers",
+            "text": "The post only says each configuration is repeated 10 times and the plotted value is mean throughput; it doesn't report standard deviation or minimum/maximum values. So treat the dashboard numbers as averages across repeated runs, not as single-run scores."
+          }
+        }
+      ]
+    },
+    {
+      "h": "Which models and quantizations are covered",
+      "blocks": [
+        {
+          "p": "The model set will evolve over time and currently includes Inkling 2 Mini, Qwen, Gemma, gpt-oss, and LFM, spanning dense architectures (where every parameter participates in each computation) and mixture-of-experts (MoE, where only a subset of expert sub-networks is activated at a time)."
+        },
+        {
+          "p": "Available GGUF formats include `Q4_K_M`, `Q8_0`, other quantizations, and higher-precision formats such as `BF16` and `F16`. The post groups them into 'quantized' and 'higher precision' categories but doesn't elaborate on the exact bit widths or resource costs of each level."
+        }
+      ]
+    },
+    {
+      "h": "Want to inspect the data yourself: how to get the raw results",
+      "blocks": [
+        {
+          "p": "The dashboard reads directly from the public `ggml-org/install.sh-benches-data` storage bucket on Hugging Face. The data source link next to each chart title opens the folder for the selected build, hardware, and model."
+        },
+        {
+          "p": "Standard results use the path `<build>/<hardware>/<model>/<quant>.jsonl`; workload sweeps such as the Context scaling charts use the filename `<quant>-tg.jsonl` in the same folder. JSONL is a text format with one JSON object per line, which makes it easy to process with scripts."
+        },
+        {
+          "fig": {
+            "type": "code",
+            "lang": "text",
+            "title": "Standard results and context sweeps each follow a filename pattern",
+            "subtitle": "Path structure from the post; angle brackets indicate variables",
+            "code": "<build>/<hardware>/<model>/<quant>.jsonl\n<build>/<hardware>/<model>/<quant>-tg.jsonl",
+            "highlight": [
+              1,
+              2
+            ]
+          }
+        },
+        {
+          "p": "You can use this data to verify a result, create your own charts, or compare against numbers from a local run on your own machine. The post also invites feedback on which models and workloads to add next."
+        }
+      ]
+    },
+    {
+      "h": "What the llama.cpp team hasn't said",
+      "blocks": [
+        {
+          "list": [
+            "The hardware sample is small: only the Radeon 8060S and Radeon AI Pro R9700S are listed, with no other Ryzen CPU or Radeon GPU tiers.",
+            "It doesn't give any concrete throughput numbers or 'which is faster' conclusions; this is a dashboard introduction, not a benchmark report.",
+            "It doesn't say when new models or hardware will be added.",
+            "It doesn't say whether the different hardware options can be directly compared with each other.",
+            "Pricing or fees: the post doesn't mention them; the dashboard and data appear to be public, but no usage terms are stated."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Who it's for",
+      "blocks": [
+        {
+          "p": "The value: if you already run llama.cpp on AMD hardware, this dashboard does the work of downloading builds, running benchmarks, and organizing the data for you—and the data is public and checkable, so the most immediate benefit is time saved."
+        },
+        {
+          "p": "The trade-off: hardware coverage is limited to the Radeon 8060S and Radeon AI Pro R9700S for now, so the sample is small. The interface is in English, and it assumes a little background—at least knowing that higher tokens/s is better and what PP and TG stand for."
+        },
+        {
+          "list": [
+            "You're running local models on AMD hardware and want to choose a quantization level or model: open the dashboard and filter by hardware and model.",
+            "You want to track whether a build update got faster or slower: use the Build history tab.",
+            "You care about speed with long context: use the Context scaling tab.",
+            "You want raw data for your own analysis: go to the ggml-org/install.sh-benches-data storage bucket."
+          ]
+        },
+        {
+          "p": "If your hardware or model isn't listed, the post invites feedback on what you'd like to see next."
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Introducing the llama.cpp benchmark dashboard for AMD Ryzen and Radeon",
+      "publisher": "Hugging Face",
+      "date": "2026-11-26",
+      "url": "https://huggingface.co/blog/ggml-org/llamacpp-amd-bench"
+    },
+    "more": [],
+    "note": "All numbers in this piece come from the primary source. The kpi, cards, schematic, and steps figures are illustrative diagrams of the dashboard structure and benchmark methodology, not measured throughput values. The code figure shows the file path examples given in the source."
+  },
+  "claims": [
+    {
+      "text": "PP512 measures processing 512 input tokens, with no generation.",
+      "value": "512",
+      "source_url": "https://huggingface.co/blog/ggml-org/llamacpp-amd-bench",
+      "as_written": "512",
+      "quote": "PP512 (512 input tokens, no generation)"
+    },
+    {
+      "text": "TG128 measures generating 128 tokens with no pre-existing context.",
+      "value": "128",
+      "source_url": "https://huggingface.co/blog/ggml-org/llamacpp-amd-bench",
+      "as_written": "128",
+      "quote": "TG128 (128 generated tokens)"
+    },
+    {
+      "text": "Each configuration is repeated 10 times, and the plotted value is mean throughput.",
+      "value": "10",
+      "source_url": "https://huggingface.co/blog/ggml-org/llamacpp-amd-bench",
+      "as_written": "10",
+      "quote": "with 10 repetitions per configuration"
+    },
+    {
+      "text": "The dashboard shows two tests, both measured in tokens per second.",
+      "value": "two",
+      "source_url": "https://huggingface.co/blog/ggml-org/llamacpp-amd-bench",
+      "as_written": "two",
+      "quote": "The dashboard shows two separate tests, both measured in tokens per second"
+    },
+    {
+      "text": "Both tests start at context depth zero (`n_depth=0`).",
+      "value": "zero",
+      "source_url": "https://huggingface.co/blog/ggml-org/llamacpp-amd-bench",
+      "as_written": "zero",
+      "quote": "Both tests start at context depth zero"
+    }
+  ],
+  "cover": {
+    "headline": "llama.cpp AMD benchmark dashboard",
+    "highlight": "Tracking PP512 and TG128",
+    "big": {
+      "value": "512",
+      "unit": "Input tokens",
+      "label": "PP512, one pass"
+    }
+  },
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "06675d063bdad110"
+}
