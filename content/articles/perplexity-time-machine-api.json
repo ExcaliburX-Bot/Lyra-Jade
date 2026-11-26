@@ -1,0 +1,534 @@
+{
+  "slug": "perplexity-time-machine-api",
+  "date": "2026-11-25",
+  "category": "product",
+  "publisher": "Perplexity",
+  "title": "Perplexity 上线 Time Machine：API 可按日期看网页历史，最远 365 天",
+  "summary": "11 月 25 日，Perplexity 给 Search 和 Context API 加了一个 snapshot_as_of 参数，让搜索和整页阅读都只认选定日期之前保存的网页副本，最远回看 365 天。",
+  "ai_summary": "Perplexity 为 Search 和 Context API 上线 Time Machine：加 snapshot_as_of 参数，搜索和整页阅读只认该日期前的网页副本，最远回看 365 天。它解决事后信息泄漏：模型搜现在的网会看到已公布结果，没法公平测试预测。官方用它训练 GLM-5.3 Flash 预测 2026 年事件后，留出题得分 0.77 升到 0.80，超过市场 0.79。历史查询不另收费（Search 5 美元/千次，Context 1 美元/千 URL）。适合预测市场、金融回测和可复现评估的团队；回看上限目前 365 天。",
+  "brief": [
+    "给现有请求加 snapshot_as_of 参数，搜索和阅读就只认该时间点之前保存的网页副本，不用换接口。",
+    "最远回看 365 天，之后历史会继续累积；更早的日期现在还查不到。",
+    "价格不另收费：Search API 每 1,000 次 5 美元，Context API 每 1,000 个 URL 1 美元，现有 API key 就能用。",
+    "官方对比 Exa Snapshot：随机 1,000 条查询里，Time Machine 被判含事后信息的页面只占 0.25%。"
+  ],
+  "readMinutes": 6,
+  "sections": [
+    {
+      "h": "这是什么：一个让搜索和阅读「回到过去」的参数",
+      "blocks": [
+        {
+          "p": "评测一个智能体（能自己搜网页、推理并给结论的 AI）研究得好不好，常用办法是出一道过去的问题，看它当时的判断和后来事实对不对得上。比如「这场选举谁会赢」——但要公平，智能体只能看到当时的资料，不能偷看已经公布的结果。"
+        },
+        {
+          "p": "Perplexity 在 11 月 25 日给 Search API 和 Context API 上线了 Time Machine：开发者只要在请求里加一个 snapshot_as_of 参数，搜索和整页阅读就只认这个时间点及之前保存的网页副本，相当于给网页加了个「回到过去」的开关。"
+        },
+        {
+          "p": "关键数字先说：最远可以回到今天往前 365 天，而且历史会随着每次爬取不断累积。它不换接口，只是给现有请求加参数。"
+        }
+      ]
+    },
+    {
+      "h": "怎么工作：每个 URL 攒一份带时间戳的历史，查询只取截止点前的副本",
+      "blocks": [
+        {
+          "p": "Perplexity 每爬一次网页，就把当时内容存一份，并记下保存时间。同一个 URL 攒多了，就有了一条版本历史；Time Machine 回答问题时只读这条历史，不碰现在的线上网页。"
+        },
+        {
+          "p": "snapshot_as_of 就是这条历史的截止点。搜索时，只考虑在截止点前已经发布或首次被爬取的页面；每个候选页换成截止点前最新那份副本，排序也针对这份旧文本打分。于是，一个后来更新过、写上了结果的页面，没法靠「未来信息」排到前面，返回的标题、日期、摘要也都来自同一份旧副本。"
+        },
+        {
+          "p": "整页阅读走 Context API：返回每个 URL 在截止点的全文副本，完全不联系线上网站。典型的流程是先搜索再读正文，所以同一个截止点同时作用于这两步。"
+        },
+        {
+          "fig": {
+            "type": "illustration",
+            "title": "同一个 URL 会攒出一串带时间戳的副本，查询只取截止点前的",
+            "subtitle": "示意：琥珀色是这次新增的截止点，其后内容不进搜索也不进阅读",
+            "glyph": {
+              "kind": "context",
+              "total": 100,
+              "segments": [
+                {
+                  "size": 73,
+                  "tone": "base",
+                  "label": "截止点前可用副本"
+                },
+                {
+                  "size": 2,
+                  "tone": "hi",
+                  "label": "截止点"
+                },
+                {
+                  "size": 25,
+                  "tone": "dim",
+                  "label": "截止点后屏蔽"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "搜索和整页阅读，共用同一个截止点",
+            "subtitle": "琥珀色是 Time Machine 新增的截止点行为",
+            "left": {
+              "label": "Search API",
+              "sub": "按截止点检索并排序",
+              "items": [
+                {
+                  "label": "只考虑截止点前发布/首次爬取的页面",
+                  "state": "hi"
+                },
+                {
+                  "label": "每条结果换成截止点前最新的副本",
+                  "state": "hi"
+                },
+                {
+                  "label": "标题、日期、摘要都来自该副本",
+                  "state": "base"
+                },
+                {
+                  "label": "排序针对旧文本打分",
+                  "state": "base"
+                }
+              ]
+            },
+            "right": {
+              "label": "Context API",
+              "sub": "整页阅读",
+              "items": [
+                {
+                  "label": "返回页面在截止点的全文副本",
+                  "state": "hi"
+                },
+                {
+                  "label": "不接触线上网站",
+                  "state": "base"
+                },
+                {
+                  "label": "可读同一 URL 在两个时间点的版本",
+                  "state": "base"
+                }
+              ]
+            },
+            "footer": "同一个 snapshot_as_of 同时作用于搜索和阅读两步"
+          }
+        }
+      ]
+    },
+    {
+      "h": "为什么「回到过去」重要：现在的网会把答案直接喂给模型",
+      "blocks": [
+        {
+          "p": "这为什么重要？因为现在的网什么结果都知道了。今天问模型「选举前大家知道什么」，它搜到的往往是已经写明结果的文章。Time Machine 让智能体站在过去那个时间点工作，开发者再用后来发生的事给它打分。"
+        },
+        {
+          "p": "这个分数衡量的是：智能体研究和预测得怎么样，换模型、换提示词、换检索配置之后有没有变好。"
+        },
+        {
+          "p": "评分逻辑可以看官方给的例子：预测某候选人当选，模型估计 80% 概率。如果后来真当选，报 80% 比报 50% 得分高；如果落选，报 80% 比报 50% 得分低。这个分数就是强化学习（让模型靠奖励反馈逐步变好）里的奖励信号。"
+        }
+      ]
+    },
+    {
+      "h": "实测：训练预测代理，0.77 升到 0.80，超过市场 0.79",
+      "blocks": [
+        {
+          "p": "官方用强化学习训练 GLM-5.3 Flash，让它预测 Polymarket（一个预测市场平台）上 2026 年的真实政治事件。每个问题的任务是估计「提问当天」事件发生的概率。"
+        },
+        {
+          "p": "训练开始前，模型用实时网搜索时，留出题得 0.94——但这更像「查到答案」，因为搜到的页面已经写了结果。把搜索换成 Time Machine，同样的题得 0.77；市场本身（Polymarket 提问当天的价格，按同一套方式评分）是 0.79。"
+        },
+        {
+          "p": "然后各训练一遍：一次用实时网，一次用 Time Machine。用实时网时，每道题都能直接找到答案，约 90% 的训练批次梯度为零，等于没学到东西；用 Time Machine 只有约 25% 的批次这样。最后在 Time Machine 环境下复测留出题，分数从 0.77 升到 0.80，超过市场的 0.79。"
+        },
+        {
+          "fig": {
+            "type": "columns",
+            "title": "去掉事后信息后分数从 0.94 掉到 0.77，训练后升到 0.80",
+            "subtitle": "单位：原文给的奖励分（越高越好，未公布算法）；琥珀色是训练后的结果",
+            "items": [
+              {
+                "label": "训练前 + 实时网",
+                "sub": "能直接查到答案",
+                "value": 0.94,
+                "display": "0.94",
+                "tone": "ref"
+              },
+              {
+                "label": "训练前 + Time Machine",
+                "sub": "只看到当时信息",
+                "value": 0.77,
+                "display": "0.77",
+                "tone": "base"
+              },
+              {
+                "label": "市场（Polymarket 当日价）",
+                "sub": "同一套评分",
+                "value": 0.79,
+                "display": "0.79",
+                "tone": "ref"
+              },
+              {
+                "label": "训练后 + Time Machine",
+                "sub": "留出题复测",
+                "value": 0.8,
+                "display": "0.80",
+                "tone": "hi"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "对比 Exa Snapshot：越界页面更少",
+      "blocks": [
+        {
+          "p": "官方把 Time Machine 和 Exa Snapshot（另一家提供历史网页快照的服务）放在三组各 1,000 条查询上比较：随机 Time Machine 查询、新闻查询、预测市场研究查询，两边用同一个截止点。"
+        },
+        {
+          "p": "先看返回页面带不带发布日期：Time Machine 在三组里给 98.8% 到 99.5% 的页面附了日期，Exa 是 66.1% 到 77.7%。"
+        },
+        {
+          "p": "但光有发布日期还不够——一篇文章可能发布在选举前，后来被改成宣布胜者。于是官方让一个自动评审逐页读，标记任何出现「查询截止点之后」内容的页面。Time Machine 每组被标记页面都不到 0.5%，三组都低于 Exa；差距最大的是随机样本：Time Machine 0.25%，Exa 1.10%。在这 1,000 条查询里，至少返回一个越界页面的查询数，Time Machine 是 18 条，Exa 是 62 条。"
+        },
+        {
+          "fig": {
+            "type": "bars",
+            "title": "随机 1,000 条查询里，被判含事后信息的页面比例",
+            "subtitle": "单位：%。越低越好。琥珀色是 Time Machine，灰色是 Exa Snapshot",
+            "legend": [
+              {
+                "tone": "hi",
+                "label": "Time Machine"
+              },
+              {
+                "tone": "ref",
+                "label": "Exa Snapshot"
+              }
+            ],
+            "groups": [
+              {
+                "label": "随机样本（各 1,000 条查询）",
+                "items": [
+                  {
+                    "label": "Time Machine",
+                    "value": 0.25,
+                    "display": "0.25%",
+                    "tone": "hi"
+                  },
+                  {
+                    "label": "Exa Snapshot",
+                    "value": 1.1,
+                    "display": "1.10%",
+                    "tone": "ref"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "价格：和普通 API 一样，不另收费",
+      "blocks": [
+        {
+          "p": "价格上，历史查询不另收费，和普通 Perplexity API 调用一个价：Search API 每 1,000 次请求 5 美元；Context API 每 1,000 个 URL 抓取 1 美元。现有 API key 就能直接用。"
+        },
+        {
+          "p": "Time Machine 请求有默认速率限制，想更高要联系 Perplexity API 团队；更高档位的价格原文没写。"
+        },
+        {
+          "fig": {
+            "type": "bars",
+            "title": "历史查询不另收费，价格和普通 API 一致",
+            "subtitle": "琥珀色是这次开放的两个接口；单位：美元，Search 按每 1,000 次，Context 按每 1,000 个 URL",
+            "groups": [
+              {
+                "label": "API",
+                "items": [
+                  {
+                    "label": "Search API",
+                    "value": 5,
+                    "display": "5 美元",
+                    "tone": "hi"
+                  },
+                  {
+                    "label": "Context API",
+                    "value": 1,
+                    "display": "1 美元",
+                    "tone": "hi"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "怎么用：同一个接口，加一个参数",
+      "blocks": [
+        {
+          "p": "不用新接口，也不用额外配置：在已有的 Search API 或 Context API 请求里加 snapshot_as_of，返回的就是那个时间点的网页；不填，就还是今天的网。"
+        },
+        {
+          "p": "下面是官方 Search API 示例：把截止点设成 2026-10-20，只搜 python.org，每条结果的标题和摘要都来自当天保存的副本。"
+        },
+        {
+          "fig": {
+            "type": "code",
+            "title": "Search API：加一个 snapshot_as_of，搜索结果就回到那天",
+            "subtitle": "代码逐字来自官方示例",
+            "lang": "python",
+            "code": "from perplexity import Perplexity\n\nclient = Perplexity()\n\nsearch = client.search.create(\n    query=\"Latest Python 3 Release on the Python Source Releases page\",\n    snapshot_as_of=\"2026-10-20T00:00:00Z\",\n    search_domain_filter=[\"python.org\"],\n    max_results=5,\n)\n\nfor result in search.results:\n    print(result.title, result.url)",
+            "highlight": [
+              7
+            ]
+          }
+        },
+        {
+          "p": "Context API 同理：给已知 URL 加截止点，就能读到当时的全文。官方示例里，Python 源码发布页在 2026-10-20 还写着 Python 3.15 是最新版，而不是今天页面上的更新版本。"
+        }
+      ]
+    },
+    {
+      "h": "官方还没说的",
+      "blocks": [
+        {
+          "list": [
+            "365 天之前的历史能不能查：原文只说「最远回到今天往前 365 天」，更早的日期目前不在可查范围内。",
+            "具体速率限制是多少：原文只说有默认值、更高需联系团队，没写每秒/每分钟次数。",
+            "0.94、0.77、0.80 这些分数的算法和量纲：原文只说分数越高越好，没公布具体评分公式。",
+            "Exa 在新闻和预测市场两组查询里的具体越界率：原文只给了随机样本的 0.25% 对 1.10%，另外两组只说 Time Machine 更低。",
+            "更高速率限制要不要加钱：原文只说联系 API 团队，没写价格。",
+            "是否所有套餐和地区都可用：原文只说现有 API key 可用，未说明套餐差异。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "适合谁",
+      "blocks": [
+        {
+          "p": "价值：把「事后答案」挡在搜索之外，让分数真正反映模型的研究和预测能力，也让评估可复现。"
+        },
+        {
+          "p": "代价：按 API 调用量付费；有默认速率限制；回看上限目前是 365 天。"
+        },
+        {
+          "list": [
+            "如果你在训练预测型或研究型代理、回测金融信号、做可复现基准：值得一试，尤其适合把「查答案」和「真预测」分开。",
+            "如果你需要审计历史页面（定价页、服务条款、更新日志在不同日期的说法）：Context API 的按时间点读全文正好够用。",
+            "如果你只是想偶尔看一个旧网页、且不想碰 API 计费：可以用，但要先算一下调用量。",
+            "如果你要查一年多以前的历史：目前还做不到，回看上限是 365 天。"
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Freeze the web with Perplexity Time Machine",
+      "publisher": "Perplexity",
+      "date": "2026-11-25",
+      "url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine"
+    },
+    "more": [],
+    "note": "本站说明：所有配图均基于原文数据绘制，柱状/条形图为数据对比，非示意图；示意零件图和封面为抽象示意。Exa Snapshot 对比中，新闻与预测市场两组的具体越界率原文未逐项公布。代码图逐字来自官方示例。"
+  },
+  "claims": [
+    {
+      "text": "Time Machine 的截止点最远可以回到今天往前 365 天",
+      "value": "365 days",
+      "source_url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine",
+      "as_written": "365 天",
+      "quote": "Add snapshot_as_of to a request and it becomes a cutoff, up to 365 days back today, and that history keeps growing."
+    },
+    {
+      "text": "Search API 价格为每 1,000 次请求 5 美元",
+      "value": "$5 per 1,000 requests",
+      "source_url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine",
+      "as_written": "5 美元 / 每 1,000 次",
+      "quote": "$5 per 1,000 requests"
+    },
+    {
+      "text": "Context API 价格为每 1,000 个 URL 抓取 1 美元",
+      "value": "$1 per 1,000 URLs fetched",
+      "source_url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine",
+      "as_written": "1 美元 / 每 1,000 个 URL",
+      "quote": "$1 per 1,000 URLs fetched"
+    },
+    {
+      "text": "训练前用实时网搜索，留出题得 0.94",
+      "value": "0.94",
+      "source_url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine",
+      "as_written": "0.94",
+      "quote": "Before any training, it scores 0.94 on held-out questions with the live web and 0.77 with Time Machine."
+    },
+    {
+      "text": "训练前用 Time Machine，同样题得 0.77",
+      "value": "0.77",
+      "source_url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine",
+      "as_written": "0.77",
+      "quote": "Before any training, it scores 0.94 on held-out questions with the live web and 0.77 with Time Machine."
+    },
+    {
+      "text": "市场本身（Polymarket 提问当天价格按同一套方式评分）得 0.79",
+      "value": "0.79",
+      "source_url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine",
+      "as_written": "0.79",
+      "quote": "The market scores 0.79 (the Polymarket price on the day each question was asked, scored the same way)."
+    },
+    {
+      "text": "用 Time Machine 训练后，留出题奖励分升到 0.80",
+      "value": "0.80",
+      "source_url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine",
+      "as_written": "0.80",
+      "quote": "and held-out reward rises from 0.77 to 0.80, above the market."
+    },
+    {
+      "text": "用实时网训练时，约 90% 的训练批次梯度为零",
+      "value": "about 90%",
+      "source_url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine",
+      "as_written": "约 90%",
+      "quote": "so about 90% of training groups have zero gradient and teach the model nothing"
+    },
+    {
+      "text": "用 Time Machine 训练时，约 25% 的训练批次梯度为零",
+      "value": "about 25%",
+      "source_url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine",
+      "as_written": "约 25%",
+      "quote": "with Time Machine only about 25% do"
+    },
+    {
+      "text": "对比实验用了三组各 1,000 条查询",
+      "value": "1,000",
+      "source_url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine",
+      "as_written": "1,000 条",
+      "quote": "Across those 1,000 queries, 18 returned at least one flagged page with Time Machine, compared with 62 with Exa."
+    },
+    {
+      "text": "Time Machine 给 98.8% 到 99.5% 的返回页面附了发布日期",
+      "value": "98.8% to 99.5%",
+      "source_url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine",
+      "as_written": "98.8% 到 99.5%",
+      "quote": "Time Machine included a date on 98.8% to 99.5% of returned pages across the three sets, compared with 66.1% to 77.7% for Exa."
+    },
+    {
+      "text": "Exa 给 66.1% 到 77.7% 的返回页面附了发布日期",
+      "value": "66.1% to 77.7%",
+      "source_url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine",
+      "as_written": "66.1% 到 77.7%",
+      "quote": "Time Machine included a date on 98.8% to 99.5% of returned pages across the three sets, compared with 66.1% to 77.7% for Exa."
+    },
+    {
+      "text": "Time Machine 每组被标记含事后信息的页面都不到 0.5%",
+      "value": "0.5%",
+      "source_url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine",
+      "as_written": "不足 0.5%",
+      "quote": "The judge flagged fewer than 0.5% of Time Machine pages in each set, a lower rate than Exa in all three."
+    },
+    {
+      "text": "随机样本里 Time Machine 被标记页面占 0.25%",
+      "value": "0.25%",
+      "source_url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine",
+      "as_written": "0.25%",
+      "quote": "The largest gap was on the random sample: 0.25% of Time Machine pages were flagged, compared with 1.10% of Exa pages."
+    },
+    {
+      "text": "随机样本里 Exa 被标记页面占 1.10%",
+      "value": "1.10%",
+      "source_url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine",
+      "as_written": "1.10%",
+      "quote": "The largest gap was on the random sample: 0.25% of Time Machine pages were flagged, compared with 1.10% of Exa pages."
+    },
+    {
+      "text": "随机 1,000 条查询里，至少返回一个越界页面的查询数 Time Machine 是 18 条",
+      "value": "18",
+      "source_url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine",
+      "as_written": "18 条",
+      "quote": "Across those 1,000 queries, 18 returned at least one flagged page with Time Machine, compared with 62 with Exa."
+    },
+    {
+      "text": "同一批查询里 Exa 是 62 条",
+      "value": "62",
+      "source_url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine",
+      "as_written": "62 条",
+      "quote": "Across those 1,000 queries, 18 returned at least one flagged page with Time Machine, compared with 62 with Exa."
+    },
+    {
+      "text": "官方评分示例里，模型估计候选人胜率 80%",
+      "value": "80%",
+      "source_url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine",
+      "as_written": "80%",
+      "quote": "Its forecast might be: “The candidate has an 80% chance of winning.”"
+    },
+    {
+      "text": "示例里 80% 的预测比 50% 的预测得分更高或更低，取决于结果",
+      "value": "50%",
+      "source_url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine",
+      "as_written": "50%",
+      "quote": "If the candidate wins, an 80% forecast earns a higher score than a 50% forecast."
+    },
+    {
+      "text": "官方代码示例把截止点设为 2026-10-20",
+      "value": "2026-10-20T00:00:00Z",
+      "source_url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine",
+      "as_written": "2026-10-20",
+      "quote": "snapshot_as_of=\"2026-10-20T00:00:00Z\","
+    },
+    {
+      "text": "官方代码示例里 max_results 设为 5",
+      "value": "5",
+      "source_url": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine",
+      "as_written": "5",
+      "quote": "max_results=5,"
+    }
+  ],
+  "cover": {
+    "headline": "Perplexity 时间机上线",
+    "highlight": "让 API 回到 365 天前的网",
+    "big": {
+      "value": "365",
+      "unit": "天",
+      "label": "最远回看"
+    },
+    "glyph": {
+      "kind": "context",
+      "total": 100,
+      "segments": [
+        {
+          "size": 73,
+          "tone": "base",
+          "label": "过去"
+        },
+        {
+          "size": 2,
+          "tone": "hi",
+          "label": "截止点"
+        },
+        {
+          "size": 25,
+          "tone": "dim",
+          "label": "屏蔽"
+        }
+      ]
+    }
+  },
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "origin": "auto",
+    "candidate": "84b1f8c028",
+    "tier": "official",
+    "via": null,
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "generated_at": "2026-11-26T08:17:52.993Z"
+  }
+}
