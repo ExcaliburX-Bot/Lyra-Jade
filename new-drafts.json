@@ -1,36 +1,9 @@
 [
   {
-    "slug": "mcp-servers-ship-skills-tasks-and-more",
-    "title": "MCP 服务器现在能带技能、跑长任务、要确认、收文件",
-    "file": "content/articles/mcp-servers-ship-skills-tasks-and-more.json",
-    "errors": 0,
-    "warnings": 1,
-    "provider": "deepseek",
-    "model": "deepseek-v4-pro"
-  },
-  {
-    "slug": "magi-2-480b-video-model",
-    "title": "Sand.ai 发布 MAGI-2：480B 参数，能原生生成 30 秒 1080p 音画视频",
-    "file": "content/articles/magi-2-480b-video-model.json",
-    "errors": 0,
-    "warnings": 0,
-    "provider": "deepseek",
-    "model": "deepseek-v4-pro"
-  },
-  {
-    "slug": "claude-install-as-app-artifacts",
-    "title": "Claude artifacts 能一键装成 Mac/Windows 桌面应用，权限分三档",
-    "file": "content/articles/claude-install-as-app-artifacts.json",
+    "slug": "where-scientists-draw-the-line-on-ai-agents",
+    "title": "科学家给 AI 科研代理划界线：17 位受访者总结出 5 个信任维度",
+    "file": "content/articles/where-scientists-draw-the-line-on-ai-agents.json",
     "errors": 1,
-    "warnings": 0,
-    "provider": "deepseek",
-    "model": "deepseek-v4-pro"
-  },
-  {
-    "slug": "google-workspace-cli-gwscli",
-    "title": "谷歌发布 gwscli：AI 代理一句话查日程、回邮件、改文档",
-    "file": "content/articles/google-workspace-cli-gwscli.json",
-    "errors": 0,
     "warnings": 1,
     "provider": "deepseek",
     "model": "deepseek-v4-pro"
