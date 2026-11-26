@@ -1,0 +1,448 @@
+{
+  "slug": "llamacpp-amd-benchmark-dashboard",
+  "category": "product",
+  "date": "2026-11-26",
+  "publisher": "Hugging Face",
+  "title": "llama.cpp × AMD 跑分面板上线：按硬件、模型、量化跟踪 PP512 与 TG128",
+  "summary": "想在 AMD 硬件上跑 llama.cpp 的开发者，现在有了一个公开看板：选硬件、模型和构建版本，就能比较不同量化的提示处理速度（PP512）和生成速度（TG128），还能看性能随上下文变长怎么变化。",
+  "ai_summary": "llama.cpp 团队在 Hugging Face 上线 llama.cpp × AMD Benchmark 面板，供 AMD 用户按硬件、模型和构建跟踪本地推理性能。核心是两个测试：PP512 处理 512 个输入 token，TG128 生成 128 个 token，均以每秒 token 数计，从上下文深度零开始取平均吞吐。测试每周自动跑、每配置重复 10 次，量化档覆盖 Q4_K_M、Q8_0、BF16、F16 等。适合想选硬件、模型或量化的开发者；限制是硬件目前只有 Radeon 8060S 和 Radeon AI Pro R9700S。",
+  "brief": [
+    "面板覆盖的硬件目前是 Radeon 8060S（gfx1151）和 Radeon AI Pro R9700S（gfx1201）。",
+    "PP512 测处理 512 个输入 token，TG128 测生成 128 个 token，都从上下文深度零开始。",
+    "测试每周自动跑，每个配置重复 10 次，Flash Attention 开和关各测一遍。",
+    "原始结果在公开存储桶 ggml-org/install.sh-benches-data，可直接复用。"
+  ],
+  "readMinutes": 6,
+  "sections": [
+    {
+      "h": "这是什么：一个公开的 llama.cpp × AMD 跑分面板",
+      "blocks": [
+        {
+          "p": "llama.cpp 团队（ggml-org）在 Hugging Face 上线了一个跑分面板，用来观察本地推理在 AMD Ryzen 和 Radeon 硬件上的表现。用法很直接：在侧栏选好硬件、模型和 llama.cpp 构建版本，面板就给出对应的提示处理速度和文本生成速度，还能按量化档位对比、看性能随构建版本变化。"
+        },
+        {
+          "p": "和很多只给结论的看板不同，它把跑分流程和底层原始结果也公开了。也就是说，你既能直接看数据，也能自己复查某个数字是怎么来的。"
+        },
+        {
+          "p": "为什么做这件事？原文给的理由是：本地推理的性能会随模型、内核（kernel，负责底层计算的代码）和构建版本的变化而变化，他们想让 AMD 开发者方便地看到这些变化——挑一个硬件、一个模型、一个构建，比较量化，再跟着时间线看性能走势。"
+        }
+      ]
+    },
+    {
+      "h": "面板上能看什么：三个标签页",
+      "blocks": [
+        {
+          "p": "打开面板，先在 Configuration（配置）侧栏选 Hardware、Model 和 llama.cpp build。目前可选的硬件是 Radeon 8060S（gfx1151）和 Radeon AI Pro R9700S（gfx1201）。"
+        },
+        {
+          "fig": {
+            "type": "schematic",
+            "title": "配置面板先选硬件、模型、构建和量化，再读性能数据",
+            "subtitle": "示意：这是侧栏的选择项，决定对比哪条曲线",
+            "items": [
+              {
+                "glyph": {
+                  "kind": "window",
+                  "title": "硬件",
+                  "items": [
+                    {
+                      "label": "Radeon 8060S",
+                      "tone": "base"
+                    },
+                    {
+                      "label": "Radeon AI Pro R9700S",
+                      "tone": "base"
+                    }
+                  ]
+                },
+                "title": "Hardware",
+                "sub": "目前可选",
+                "rows": [
+                  {
+                    "k": "8060S",
+                    "v": "`gfx1151`"
+                  },
+                  {
+                    "k": "R9700S",
+                    "v": "`gfx1201`"
+                  }
+                ]
+              },
+              {
+                "glyph": {
+                  "kind": "window",
+                  "title": "模型",
+                  "items": [
+                    {
+                      "label": "Inkling 2 Mini",
+                      "tone": "base"
+                    },
+                    {
+                      "label": "Qwen / Gemma",
+                      "tone": "base"
+                    },
+                    {
+                      "label": "gpt-oss / LFM",
+                      "tone": "base"
+                    }
+                  ]
+                },
+                "title": "Model",
+                "sub": "模型集会演进",
+                "rows": [
+                  {
+                    "k": "架构",
+                    "v": "dense 与 MoE"
+                  }
+                ]
+              },
+              {
+                "glyph": {
+                  "kind": "window",
+                  "title": "构建",
+                  "items": [
+                    {
+                      "label": "llama.cpp build",
+                      "tone": "base"
+                    }
+                  ]
+                },
+                "title": "Build",
+                "sub": "预编译二进制",
+                "rows": [
+                  {
+                    "k": "来源",
+                    "v": "`llama-install.sh`"
+                  }
+                ]
+              },
+              {
+                "glyph": {
+                  "kind": "window",
+                  "title": "量化",
+                  "items": [
+                    {
+                      "label": "Q4_K_M",
+                      "tone": "base"
+                    },
+                    {
+                      "label": "Q8_0",
+                      "tone": "base"
+                    },
+                    {
+                      "label": "BF16 / F16",
+                      "tone": "base"
+                    }
+                  ]
+                },
+                "title": "Quantization",
+                "sub": "量化到高精度",
+                "rows": [
+                  {
+                    "k": "格式",
+                    "v": "`Q4_K_M`、`Q8_0`、`BF16`、`F16` 等"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "p": "选好组合后，面板分 Overview、Build history、Context scaling 几个标签页。Overview 在一个硬件、模型、构建下比较不同量化的 PP512 和 TG128；Build history 跟踪所选组合在历次构建中的这两个读数；Context scaling 单独看 token 生成吞吐随已有上下文变长怎么变化。"
+        },
+        {
+          "fig": {
+            "type": "cards",
+            "title": "面板的主要标签页，各回答一类问题",
+            "subtitle": "琥珀色是这次专门提供的上下文扩展视角；其余是常规对比与构建跟踪",
+            "items": [
+              {
+                "icon": "chart",
+                "title": "Overview",
+                "desc": "在一个硬件、模型、构建下，比较不同量化的 PP512 与 TG128",
+                "tags": [
+                  "对比量化"
+                ],
+                "tone": "base"
+              },
+              {
+                "icon": "clock",
+                "title": "Build history",
+                "desc": "跟踪所选硬件、模型、量化在历次构建中的 PP512 与 TG128",
+                "tags": [
+                  "跟踪构建"
+                ],
+                "tone": "base"
+              },
+              {
+                "icon": "layers",
+                "title": "Context scaling",
+                "desc": "看 token 生成吞吐随已有上下文变长如何变化",
+                "tags": [
+                  "上下文扩展"
+                ],
+                "tone": "hi"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "PP512 和 TG128：这两个数字怎么读",
+      "blocks": [
+        {
+          "p": "面板展示两个测试，单位都是 tokens per second（每秒 token 数，即每秒能处理或生成多少个 token；token 可以粗略理解成大模型读写文本的最小单位）。"
+        },
+        {
+          "p": "PP512 是「处理 512 个输入 token」，不做生成，回答的是模型「吃」一段提示有多快。TG128 是「生成 128 个 token」，没有预先存在的上下文，回答的是模型「吐」字有多快。"
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "两个核心读数，都按每秒 token 数计",
+            "subtitle": "PP512 看吃提示、TG128 看吐字；每配置跑 10 次取平均",
+            "items": [
+              {
+                "value": 512,
+                "unit": "输入 token",
+                "label": "PP512",
+                "note": "只处理，不生成"
+              },
+              {
+                "value": 128,
+                "unit": "生成 token",
+                "label": "TG128",
+                "note": "无预先上下文"
+              },
+              {
+                "value": 10,
+                "unit": "次重复",
+                "label": "每配置",
+                "note": "Flash Attention 开、关各测"
+              }
+            ]
+          }
+        },
+        {
+          "p": "两个测试都从上下文深度零（n_depth=0）开始，画的是平均吞吐（avg_ts），也就是多次运行后的均值，不是单次最好成绩。PP512 和 TG128 适合快速横向比较；想看「上下文已经很长时生成会不会变慢」，要去 Context scaling 标签页。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "PP512 看吃提示，TG128 看吐字",
+            "subtitle": "单位都是每秒 token 数，都从上下文深度零开始",
+            "columns": [
+              "测试",
+              "工作负载",
+              "帮你判断什么"
+            ],
+            "rows": [
+              [
+                "PP512",
+                "处理 512 个输入 token，不做生成",
+                "提示处理快不快"
+              ],
+              [
+                "TG128",
+                "生成 128 个 token，无预先上下文",
+                "输出快不快"
+              ]
+            ],
+            "highlight": {
+              "col": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "h": "这些数据是怎么跑出来的",
+      "blocks": [
+        {
+          "p": "基准跑的是 llama-install.sh 分发的预编译二进制。llama-install.sh 是 llama.app 背后的构建和安装项目，所以测的是用户实际会下载安装的那套二进制，而不是特殊调优的版本。"
+        },
+        {
+          "p": "公开的 gfx1151 和 gfx1201 工作流每周自动跑，用 llama-bench 工具跑标准基准。Flash Attention（一种降低注意力计算开销的技术）开和关各测一遍，每个配置重复 10 次。"
+        },
+        {
+          "fig": {
+            "type": "steps",
+            "title": "从构建到看板，一周一跑的标准流程",
+            "subtitle": "示意：公开工作流每周自动执行",
+            "steps": [
+              {
+                "name": "取构建",
+                "tool": "llama-install.sh",
+                "desc": "用预编译二进制，即用户实际安装的版本"
+              },
+              {
+                "name": "跑基准",
+                "tool": "llama-bench",
+                "desc": "Flash Attention 开、关各测，每配置重复 10 次"
+              },
+              {
+                "name": "写结果",
+                "tool": "ggml-org/install.sh-benches-data",
+                "desc": "公开存储桶，jsonl 文件"
+              },
+              {
+                "name": "看板读取",
+                "tool": "Benchmark dashboard",
+                "desc": "按硬件、模型、构建、量化展示"
+              }
+            ]
+          }
+        },
+        {
+          "callout": {
+            "kind": "note",
+            "title": "看数字时的口径",
+            "text": "原文只说每配置重复 10 次、画的是平均吞吐，没有给标准差或最大/最小值。所以把面板上的数字当「多次运行的均值」看就好，别当单次成绩。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "覆盖哪些模型和量化",
+      "blocks": [
+        {
+          "p": "模型集会随时间演进，目前包含 Inkling 2 Mini、Qwen、Gemma、gpt-oss 和 LFM，覆盖 dense（稠密，每次计算所有参数都参与）和 mixture-of-experts（混合专家，MoE，每次只激活一部分专家子网络）两种架构。"
+        },
+        {
+          "p": "可选 GGUF 格式有 Q4_K_M、Q8_0、其他量化，以及 BF16、F16 这样的更高精度格式。原文把它们分成「量化」和「更高精度」两类，但没展开讲各档位的具体位宽和资源开销。"
+        }
+      ]
+    },
+    {
+      "h": "想自己查数据：原始结果怎么拿",
+      "blocks": [
+        {
+          "p": "面板直接读 Hugging Face 上的公开存储桶 ggml-org/install.sh-benches-data。每个图表标题旁的数据源链接，会打开对应构建、硬件、模型的文件夹。"
+        },
+        {
+          "p": "标准结果的路径是 <build>/<hardware>/<model>/<quant>.jsonl；工作负载扫描（Context scaling 那类）用同目录下的 <quant>-tg.jsonl 文件名。jsonl 是每行一个 JSON 对象的文本格式，方便脚本处理。"
+        },
+        {
+          "fig": {
+            "type": "code",
+            "lang": "text",
+            "title": "标准结果和上下文扫描，各有一个文件名规律",
+            "subtitle": "原文给出的路径结构，尖括号里是变量",
+            "code": "<build>/<hardware>/<model>/<quant>.jsonl\n<build>/<hardware>/<model>/<quant>-tg.jsonl",
+            "highlight": [
+              1,
+              2
+            ]
+          }
+        },
+        {
+          "p": "你可以用这些数据去核实某个结果、画自己的图，或者和自己本机跑出来的数字对比。原文也欢迎大家反馈接下来想看哪些模型和工作负载。"
+        }
+      ]
+    },
+    {
+      "h": "官方还没说的",
+      "blocks": [
+        {
+          "list": [
+            "硬件样本很少：目前只列出 Radeon 8060S 和 Radeon AI Pro R9700S，没有其他 Ryzen CPU 或 Radeon GPU 的档位。",
+            "没有给出任何具体吞吐数字或「谁比谁快」的结论；这篇是面板介绍，不是跑分报告。",
+            "没有写下次什么时候加新模型、新硬件。",
+            "没有说明不同硬件之间是否可以直接横比。",
+            "价格或收费：原文没提；面板和数据看起来是公开的，但没写任何使用条款。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "适合谁",
+      "blocks": [
+        {
+          "p": "价值：如果你已经在 AMD 硬件上跑 llama.cpp，这个面板替你把「下载构建、跑基准、整理数据」这些活做掉了，而且数据公开可复查，省时间是最直接的好处。"
+        },
+        {
+          "p": "代价：目前覆盖的硬件是 Radeon 8060S 和 Radeon AI Pro R9700S，样本不多；界面是英文，而且需要一点基础——至少知道 tokens/s 越高越好，以及 PP 和 TG 分别代表什么。"
+        },
+        {
+          "list": [
+            "正在 AMD 硬件上跑本地模型、想挑量化档或模型：直接打开面板，按硬件和模型筛。",
+            "想跟踪某次构建更新有没有变快或变慢：用 Build history 标签页。",
+            "关心长上下文下的速度：用 Context scaling 标签页。",
+            "想拿原始数据做自己的分析：去 ggml-org/install.sh-benches-data 存储桶。"
+          ]
+        },
+        {
+          "p": "如果你的硬件或模型不在列表里，原文留了反馈口，可以告诉团队接下来想看什么。"
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Introducing the llama.cpp benchmark dashboard for AMD Ryzen and Radeon",
+      "publisher": "Hugging Face",
+      "date": "2026-11-26",
+      "url": "https://huggingface.co/blog/ggml-org/llamacpp-amd-bench"
+    },
+    "more": [],
+    "note": "文中所有数字均来自主材料；kpi、cards、schematic、steps 为示意图，说明面板结构与测试口径，不含实测吞吐值；code 图为原文给出的文件路径示例。"
+  },
+  "claims": [
+    {
+      "text": "PP512 测试处理 512 个输入 token，不做生成。",
+      "value": "512",
+      "source_url": "https://huggingface.co/blog/ggml-org/llamacpp-amd-bench",
+      "as_written": "512",
+      "quote": "PP512 (512 input tokens, no generation)"
+    },
+    {
+      "text": "TG128 测试生成 128 个 token，没有预先存在的上下文。",
+      "value": "128",
+      "source_url": "https://huggingface.co/blog/ggml-org/llamacpp-amd-bench",
+      "as_written": "128",
+      "quote": "TG128 (128 generated tokens)"
+    },
+    {
+      "text": "每个配置重复 10 次，画的是平均吞吐。",
+      "value": "10",
+      "source_url": "https://huggingface.co/blog/ggml-org/llamacpp-amd-bench",
+      "as_written": "10",
+      "quote": "with 10 repetitions per configuration"
+    },
+    {
+      "text": "面板展示两个测试，都以每秒 token 数计。",
+      "value": "two",
+      "source_url": "https://huggingface.co/blog/ggml-org/llamacpp-amd-bench",
+      "as_written": "两个",
+      "quote": "The dashboard shows two separate tests, both measured in tokens per second"
+    },
+    {
+      "text": "两个测试都从上下文深度零（n_depth=0）开始。",
+      "value": "zero",
+      "source_url": "https://huggingface.co/blog/ggml-org/llamacpp-amd-bench",
+      "as_written": "零",
+      "quote": "Both tests start at context depth zero"
+    }
+  ],
+  "cover": {
+    "headline": "llama.cpp AMD 跑分面板",
+    "highlight": "跟踪 PP512 与 TG128",
+    "big": {
+      "value": "512",
+      "unit": "输入 token",
+      "label": "PP512 一次处理"
+    }
+  },
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "origin": "auto",
+    "candidate": "02a0884347",
+    "tier": "primary",
+    "via": null,
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "generated_at": "2026-11-26T19:43:23.081Z"
+  }
+}
