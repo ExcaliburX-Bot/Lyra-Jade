@@ -1,0 +1,423 @@
+{
+  "slug": "gemini-4-agents-quantum-algorithms",
+  "category": "research",
+  "date": "2026-11-23",
+  "publisher": "Google DeepMind",
+  "title": "Gemini 4 智能体团队改进量子算法：聚变模拟成本降 11.8 倍",
+  "summary": "如果你在关注量子计算何时能真正跑动聚变、药物设计这类模拟，DeepMind 这次给出一个新信号：让 Gemini 4 智能体团队自己找更省资源的量子电路，再用数学证明保证正确。结果是几个关键算法都变便宜了。",
+  "ai_summary": "Google DeepMind 与 Google Quantum AI 用 Gemini 4 智能体团队改进量子算法，并以 Lean 做数学验证。聚变模拟成本降 11.8 倍，纠错量子比特从 5,650 降到 4,338；光敏分子模拟便宜 8 倍，P450 酶改进 2.5 倍；通用例程 arcsin 提速 290 倍、Grover 特定实现 2.57 倍。团队每 4 小时开一次虚拟会议交流，结果全部经证明验证，Lean 库与验证解已开源。限制是：这些算法所需资源仍超过第一批纠错量子计算机预计能提供的量，目前停在证明与设计层面。",
+  "brief": [
+    "聚变模拟计算成本降 11.8 倍，所需纠错量子比特从 5,650 降到 4,338",
+    "arcsin 通用例程提速 290 倍，Grover 特定实现提速 2.57 倍",
+    "智能体团队每 4 小时开一次虚拟会议，每个结果都用 Lean 做数学验证",
+    "Lean 库、问题规范和验证解已开源到 GitHub"
+  ],
+  "readMinutes": 6,
+  "sections": [
+    {
+      "h": "这是什么：让 Gemini 4 智能体团队去改进量子算法",
+      "blocks": [
+        {
+          "p": "量子计算机理论上能解决经典超算做不了的问题，但有个现实卡点：哪怕用上目前最好的量子算法，一些重要应用需要的资源，仍然超过早期量子硬件能支持的量。Google DeepMind 与 Google Quantum AI 在 2026 年 11 月 23 日的博客中介绍一篇新论文里的方法，换了个思路：不再靠人一点点手工优化，而是让 Gemini 4 的智能体团队去改进已知量子算法，做出更高效的量子电路。"
+        },
+        {
+          "p": "量子电路可以理解成量子计算机执行算法的指令。优化后的电路，未来可能用于聚变能源、药物设计等模拟。团队把这次的工作开源了：Lean 库、问题规范和验证解都放到了 GitHub。"
+        }
+      ]
+    },
+    {
+      "h": "智能体团队是怎么工作的？",
+      "blocks": [
+        {
+          "p": "每个问题交给多个相互独立的智能体团队，各自去找算法层面的改进。每一条想法先由 Lean 验证，通过后才写进共享笔记本。每 4 小时，各团队的智能体在虚拟会议里交换、辩论、比较想法。随着团队产出越来越有效的想法，计算成本逐步下降，直到实验结束。"
+        },
+        {
+          "fig": {
+            "type": "storyboard",
+            "title": "智能体团队的工作循环：找想法、验证、共享、定期交流",
+            "subtitle": "示意：蓝色是待分派的问题（默认档）；琥珀色是每 4 小时一次的交流环节",
+            "note": "流程按原文描述绘制，团队数量为举例",
+            "panels": [
+              {
+                "glyph": {
+                  "kind": "hub",
+                  "center": {
+                    "label": "问题",
+                    "tone": "def"
+                  },
+                  "nodes": [
+                    {
+                      "label": "团队 A",
+                      "tone": "base"
+                    },
+                    {
+                      "label": "团队 B",
+                      "tone": "base"
+                    },
+                    {
+                      "label": "团队 C",
+                      "tone": "base"
+                    }
+                  ]
+                },
+                "title": "独立团队分头找改进",
+                "text": "每个问题交给多个互不依赖的团队",
+                "tone": "base"
+              },
+              {
+                "glyph": {
+                  "kind": "doc",
+                  "lines": 4,
+                  "select": [
+                    1,
+                    2
+                  ]
+                },
+                "title": "Lean 验证",
+                "text": "每个结果都要数学证明正确",
+                "tone": "base"
+              },
+              {
+                "glyph": {
+                  "kind": "window",
+                  "title": "共享笔记本",
+                  "items": [
+                    {
+                      "label": "已验证结果",
+                      "tone": "base"
+                    },
+                    {
+                      "label": "已验证结果",
+                      "tone": "base"
+                    },
+                    {
+                      "label": "待验证想法",
+                      "tone": "base"
+                    }
+                  ]
+                },
+                "title": "结果进共享笔记本",
+                "text": "验证通过后才写入",
+                "tone": "base"
+              },
+              {
+                "glyph": {
+                  "kind": "chat",
+                  "turns": [
+                    {
+                      "role": "ai",
+                      "text": "我的思路",
+                      "tone": "base"
+                    },
+                    {
+                      "role": "ai",
+                      "text": "反驳与改进",
+                      "tone": "base"
+                    }
+                  ]
+                },
+                "title": "每 4 小时虚拟会议",
+                "text": "交换、辩论、比较想法",
+                "tone": "hi"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "三个科学应用：聚变、光敏分子、药物代谢酶",
+      "blocks": [
+        {
+          "p": "这次选的应用都对准人类面对的大问题：清洁能源和药物设计。先说聚变。团队找到一种量子电路，能计算惯性约束聚变的一个重要性质——这是一种用激光压缩氢燃料直到点火的聚变方式。智能体把所需计算成本（一个同时考虑量子比特数和操作数的指标）降低了 11.8 倍，所需内存从 5,650 降到 4,338 个纠错量子比特。"
+        },
+        {
+          "p": "再说化学和药物。模拟药物代谢分子和某些光化学反应，对经典计算机很难，量子计算机有机会帮上忙。对一个常见光敏分子，智能体把量子模拟的成本降低了 8 倍；对 Cytochrome P450（一种分解大多数人类药物的酶，对药物设计重要），改进 2.5 倍，内存从 481 降到 333 个量子比特，方法是替换笨重的内存查找。"
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "三个应用的成本改进：聚变最明显",
+            "subtitle": "倍数是改进幅度，越高越好",
+            "items": [
+              {
+                "value": 11.8,
+                "unit": "×",
+                "label": "聚变模拟计算成本",
+                "note": "成本降低 11.8 倍"
+              },
+              {
+                "value": 8,
+                "unit": "×",
+                "label": "光敏分子模拟",
+                "note": "成本降低 8 倍"
+              },
+              {
+                "value": 2.5,
+                "unit": "×",
+                "label": "P450 酶模拟",
+                "note": "改进 2.5 倍"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "所需量子比特降了多少？数字越小越好",
+      "blocks": [
+        {
+          "p": "这里说的纠错量子比特，不是普通比特：它带纠错机制，比物理量子比特更可靠，但成本也更高。聚变模拟所需内存从 5,650 降到 4,338 个纠错量子比特；P450 酶模拟所需内存从 481 降到 333 个量子比特。这意味着同样一件事需要的硬件资源更少，离早期量子硬件能负担的边界更近一点。"
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "两种应用所需量子比特都降了",
+            "subtitle": "琥珀色是智能体改进后的结果；数字越小越好",
+            "left": {
+              "label": "改进前",
+              "sub": "智能体团队接手前",
+              "items": [
+                {
+                  "label": "聚变模拟",
+                  "tag": "5,650 纠错量子比特",
+                  "state": "base"
+                },
+                {
+                  "label": "P450 酶模拟",
+                  "tag": "481 量子比特",
+                  "state": "base"
+                }
+              ]
+            },
+            "right": {
+              "label": "改进后",
+              "sub": "经 Lean 验证的结果",
+              "items": [
+                {
+                  "label": "聚变模拟",
+                  "tag": "4,338 纠错量子比特",
+                  "state": "hi"
+                },
+                {
+                  "label": "P450 酶模拟",
+                  "tag": "333 量子比特",
+                  "state": "hi"
+                }
+              ]
+            },
+            "footer": "数字越小，需要的硬件资源越少"
+          }
+        }
+      ]
+    },
+    {
+      "h": "两个通用例程：arcsin 提速 290 倍",
+      "blocks": [
+        {
+          "p": "除了具体应用，团队还改进两个更底层、被很多算法复用的部件。Grover 算法是一种基础量子操作，能在无序列表里搜索目标，它的一个特定实现提速 2.57 倍。arcsin（反正弦函数）是很多量子算法把数字加载进量子态时用到的常见例程，这次提速 290 倍，是这批结果里幅度最大的一处。"
+        },
+        {
+          "fig": {
+            "type": "bars",
+            "title": "两个通用例程：arcsin 提速 290 倍，Grover 特定实现 2.57 倍",
+            "subtitle": "琥珀色是这次最明显的一处提速；横条越长提速越多",
+            "legend": [
+              {
+                "tone": "hi",
+                "label": "arcsin（重点）"
+              },
+              {
+                "tone": "ref",
+                "label": "Grover 特定实现"
+              }
+            ],
+            "groups": [
+              {
+                "label": "通用例程提速倍数",
+                "items": [
+                  {
+                    "label": "arcsin 例程",
+                    "sub": "常见于把数字加载进量子态",
+                    "value": 290,
+                    "display": "290×",
+                    "tone": "hi"
+                  },
+                  {
+                    "label": "Grover 特定实现",
+                    "sub": "无序列表搜索",
+                    "value": 2.57,
+                    "display": "2.57×",
+                    "tone": "ref"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "为什么每个结果都要数学证明，以及开源了什么",
+      "blocks": [
+        {
+          "p": "这些资源密集的量子电路，没法在经典计算机或今天的小型量子处理器上实测，所以必须用数学证明它们正确。团队用 Lean 这个形式化定理证明器证明每个结果，也让智能体可以安心在已验证的结果上继续叠加想法。"
+        },
+        {
+          "p": "他们还建了一个新的开源 Lean 库，供协作智能体团队使用，让想法有数学正确性保证。研究者可以指定问题、监督进度。博客作者说，这种经过证明检查的 AI 搜索，把过去需要多年手工设计的工作压缩下来，让研究者专注于选问题和解读结果。"
+        },
+        {
+          "p": "但要冷静看待：即使有这些改进，在科学模拟里运行这些算法，所需计算资源仍然超过第一批纠错量子计算机可能提供的量。也就是说，这些结果目前是数学证明和电路设计层面的进展，不是已经能上真机跑聚变模拟。"
+        },
+        {
+          "fig": {
+            "type": "quote",
+            "text": "Proof-checked AI search compresses work that once took years of manual design, empowering researchers to focus on choosing problems and interpreting results.",
+            "zh": "经过证明检查的 AI 搜索，把过去需要多年手工设计的工作压缩下来，让研究者专注于选择问题和解读结果。",
+            "who": "Google DeepMind 博客作者（Sergey Shirobokov、Ben Jaderberg、Ryan Babbush）",
+            "role": "研究团队",
+            "source_url": "https://deepmind.google/blog/finding-faster-quantum-algorithms-with-agents-and-formal-verification/"
+          }
+        }
+      ]
+    },
+    {
+      "h": "官方还没说的",
+      "blocks": [
+        {
+          "list": [
+            "这些改进对应的具体电路结构、量子门数量等细节，正文只给了倍数和量子比特数，没有展开",
+            "没有给出这些算法未来实际可运行的时间点，也没说完整模拟到底需要多少纠错量子比特",
+            "没有与人类手工设计的最新结果做逐项对照，只说改进幅度，没说对比基准是谁",
+            "开源 Lean 库的许可证、文档完备度和上手难度，正文没有写",
+            "智能体团队的规模、每个问题跑了多久、消耗多少算力，正文没有写"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "适合谁",
+      "blocks": [
+        {
+          "p": "价值在于，把量子算法的改进从手工设计变成可验证的自动化搜索，研究者的精力可以放到选问题和解读结果上。代价是门槛：理解这些结果需要量子计算和形式化验证的基础，而且改进目前还停在证明层面，离实际部署有距离。"
+        },
+        {
+          "list": [
+            "如果你在做量子算法研究，可以去看开源的 Lean 库和验证解，把自己的想法放进可验证的流程",
+            "如果你关注聚变或药物设计，这是一次成本下降的信号，但要记得它还没到能实际运行的阶段",
+            "如果你研究 AI 智能体，这是一次多智能体协作加形式化验证落地的案例，方法论上值得借鉴",
+            "如果你只是普通读者，记住一句就够：AI 正在帮忙找更省资源的量子算法，但离真机运行还有距离"
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Finding faster quantum algorithms with agents and formal verification",
+      "publisher": "Google DeepMind",
+      "date": "2026-11-23",
+      "url": "https://deepmind.google/blog/finding-faster-quantum-algorithms-with-agents-and-formal-verification/"
+    },
+    "note": "图中的倍数和量子比特数均来自 DeepMind 官方博客；智能体工作流图为示意，团队数量、任务名为举例。"
+  },
+  "claims": [
+    {
+      "text": "这篇博客由 Google DeepMind 发布于 2026 年 11 月 23 日",
+      "value": "November 23, 2026",
+      "source_url": "https://deepmind.google/blog/finding-faster-quantum-algorithms-with-agents-and-formal-verification/",
+      "as_written": "2026 年 11 月 23 日",
+      "quote": "November 23, 2026 Science"
+    },
+    {
+      "text": "惯性约束聚变模拟的计算成本降低了 11.8 倍（该指标综合了量子比特数和操作数）",
+      "value": "11.8×",
+      "source_url": "https://deepmind.google/blog/finding-faster-quantum-algorithms-with-agents-and-formal-verification/",
+      "as_written": "11.8 倍",
+      "quote": "Our agent teams cut the required computing cost (a metric that combines required qubits and operations) by 11.8×"
+    },
+    {
+      "text": "聚变模拟所需内存从 5,650 个纠错量子比特开始下降",
+      "value": "5,650",
+      "source_url": "https://deepmind.google/blog/finding-faster-quantum-algorithms-with-agents-and-formal-verification/",
+      "as_written": "5,650",
+      "quote": "lowered required memory from 5,650 to 4,338 error-corrected qubits"
+    },
+    {
+      "text": "聚变模拟所需内存降到 4,338 个纠错量子比特",
+      "value": "4,338",
+      "source_url": "https://deepmind.google/blog/finding-faster-quantum-algorithms-with-agents-and-formal-verification/",
+      "as_written": "4,338",
+      "quote": "lowered required memory from 5,650 to 4,338 error-corrected qubits"
+    },
+    {
+      "text": "常见光敏分子的量子模拟成本降低了 8 倍",
+      "value": "8×",
+      "source_url": "https://deepmind.google/blog/finding-faster-quantum-algorithms-with-agents-and-formal-verification/",
+      "as_written": "8 倍",
+      "quote": "the agent teams made quantum simulation 8× cheaper"
+    },
+    {
+      "text": "Cytochrome P450 酶的模拟改进了 2.5 倍",
+      "value": "2.5×",
+      "source_url": "https://deepmind.google/blog/finding-faster-quantum-algorithms-with-agents-and-formal-verification/",
+      "as_written": "2.5 倍",
+      "quote": "they found a 2.5× improvement and lowered memory from 481 to 333 qubits"
+    },
+    {
+      "text": "Cytochrome P450 酶模拟所需内存从 481 个量子比特下降",
+      "value": "481",
+      "source_url": "https://deepmind.google/blog/finding-faster-quantum-algorithms-with-agents-and-formal-verification/",
+      "as_written": "481",
+      "quote": "lowered memory from 481 to 333 qubits"
+    },
+    {
+      "text": "Cytochrome P450 酶模拟所需内存降到 333 个量子比特",
+      "value": "333",
+      "source_url": "https://deepmind.google/blog/finding-faster-quantum-algorithms-with-agents-and-formal-verification/",
+      "as_written": "333",
+      "quote": "lowered memory from 481 to 333 qubits"
+    },
+    {
+      "text": "Grover 算法的一个特定实现提速 2.57 倍",
+      "value": "2.57x",
+      "source_url": "https://deepmind.google/blog/finding-faster-quantum-algorithms-with-agents-and-formal-verification/",
+      "as_written": "2.57 倍",
+      "quote": "We found a 2.57x speedup for a specific implementation of Grover's algorithm"
+    },
+    {
+      "text": "arcsin 例程提速 290 倍",
+      "value": "290x",
+      "source_url": "https://deepmind.google/blog/finding-faster-quantum-algorithms-with-agents-and-formal-verification/",
+      "as_written": "290 倍",
+      "quote": "a 290x speedup for arcsin"
+    },
+    {
+      "text": "智能体团队每 4 小时开一次虚拟会议交流想法",
+      "value": "four hours",
+      "source_url": "https://deepmind.google/blog/finding-faster-quantum-algorithms-with-agents-and-formal-verification/",
+      "as_written": "每 4 小时",
+      "quote": "Every four hours, agents from each team met at a virtual conference to trade, debate and compare ideas."
+    }
+  ],
+  "cover": {
+    "headline": "DeepMind 智能体改进量子算法",
+    "highlight": "聚变模拟成本降 11.8 倍",
+    "big": {
+      "value": "11.8",
+      "unit": "倍",
+      "label": "聚变模拟计算成本降低"
+    }
+  },
+  "status": "published",
+  "verified": true,
+  "pipeline": {
+    "origin": "auto",
+    "candidate": "61dcf11694",
+    "tier": "official",
+    "via": null,
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "generated_at": "2026-11-24T10:20:01.806Z"
+  }
+}
