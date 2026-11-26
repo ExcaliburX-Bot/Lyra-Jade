@@ -1,0 +1,991 @@
+{
+  "slug": "seq2seq-sequence-to-sequence-learning-with-neural-networks",
+  "category": "paper",
+  "publisher": "Sutskever 等 · Google",
+  "date": "2014-09-10",
+  "title": "精读《Seq2Seq》：先把整句话读成向量，再写出译文，神经网络翻译胜过统计翻译",
+  "summary": "Seq2Seq 用一个 LSTM 把句子读成 8000 维向量，再用另一个 LSTM 写出译文，第一次在大规模翻译上胜过统计机器翻译。我们拆开编码器 – 解码器、倒序输入为什么有效、3.84 亿参数花在哪、束搜索怎么工作，再看固定长度向量这个瓶颈怎样引出注意力机制。",
+  "ai_summary": "《Sequence to Sequence Learning with Neural Networks》（Google，2014）用一个 4 层 LSTM 把输入句子编码成固定长度的向量，再用另一个 4 层 LSTM 从这个向量逐词生成译文。在 WMT'14 英译法上，5 个模型集成直接翻译得到 BLEU 34.81，超过短语式统计翻译基线的 33.30；给统计系统的 1000 个候选重新打分达到 36.5。把源句子倒过来输入，让单模型 BLEU 从 25.9 升到 30.6，作者认为是缩短了对应词之间的最小距离。它的主要局限是所有信息都要挤进一个固定长度的向量。",
+  "brief": [
+    "问题：神经网络只能处理固定大小的输入输出，翻译这类“序列到序列”的问题没有通用解法。",
+    "方法：编码器 LSTM 把整句读成一个向量，解码器 LSTM 从向量逐词生成译文；4 层、两个独立 LSTM、源句倒序输入。",
+    "结果：5 个模型集成 BLEU 34.81，第一次在大规模翻译上胜过统计机器翻译；重新打分达到 36.5，长句也没有崩。",
+    "局限：整句被压进固定长度的向量，词表有限，逐词计算难以并行；这些问题分别由注意力、子词切分和 Transformer 解决。"
+  ],
+  "paper": {
+    "title": "Sequence to Sequence Learning with Neural Networks",
+    "authors": "Ilya Sutskever, Oriol Vinyals, Quoc V. Le",
+    "org": "Google",
+    "venue": "NIPS 2014",
+    "year": 2014,
+    "arxiv": "1409.3215",
+    "url": "https://arxiv.org/abs/1409.3215"
+  },
+  "cover": {
+    "headline": "Seq2Seq 原论文精读",
+    "highlight": "先读成向量，再写成译文",
+    "glyph": {
+      "kind": "flow",
+      "nodes": [
+        {
+          "label": "英语句子"
+        },
+        {
+          "label": "8000 维向量",
+          "tone": "hi"
+        },
+        {
+          "label": "法语译文"
+        }
+      ]
+    }
+  },
+  "sections": [
+    {
+      "h": "先说结论：这篇论文到底做了什么",
+      "blocks": [
+        {
+          "p": "2014 年 9 月，Google 的 Ilya Sutskever、Oriol Vinyals 和 Quoc V. Le 发布了这篇只有 9 页的论文。它提出了一个今天看来再自然不过的结构：**用一个神经网络把一句话“读”成一个向量，再用另一个神经网络把这个向量“写”成另一句话**。这就是“序列到序列”（sequence to sequence，简称 Seq2Seq），也叫“编码器 – 解码器”结构。"
+        },
+        {
+          "p": "在英译法任务上，这个几乎不含任何语言学知识的模型，第一次在大规模翻译任务上明显超过了传统的短语式统计机器翻译系统（BLEU 34.8 对 33.3）。把它用来给传统系统的 1000 个候选译文重新打分，BLEU 达到 36.5，离当时的最好成绩 37.0 只差 0.5。"
+        },
+        {
+          "p": "论文还有一个出人意料的小技巧：**把源句子倒过来输入**，翻译质量大幅提高，BLEU 从 25.9 涨到 30.6。这个技巧背后的道理，直接引出了下一篇要讲的注意力机制。"
+        },
+        {
+          "callout": {
+            "kind": "takeaway",
+            "title": "一句话版本",
+            "text": "Seq2Seq ＝ 编码器 LSTM 把整句话压成一个 8000 维的向量 ＋ 解码器 LSTM 从这个向量出发一个词一个词地生成译文。它是第一个端到端的神经翻译系统，在大规模任务上打败了传统统计翻译。它的弱点也很清楚：无论句子多长，所有信息都要挤进一个固定长度的向量。"
+          }
+        },
+        {
+          "callout": {
+            "kind": "prereq",
+            "title": "读这篇需要的四个小概念",
+            "text": "不懂也没关系，这四条够用了：",
+            "list": [
+              "**词向量**：每个词用几百、上千个数字表示，意思相近的词向量也相近。详见本主线上一篇《word2vec》。",
+              "**循环神经网络（RNN）**：一次读一个词，读完一个就更新一下自己的“记忆”（隐藏状态），再读下一个。它天生适合处理长短不一的序列。",
+              "**LSTM**：一种带“闸门”的 RNN，能决定记住什么、忘掉什么，比普通 RNN 更能记住很久以前读到的信息。",
+              "**BLEU**：机器翻译最常用的自动评分，比较机器译文和人工参考译文里有多少词组重合。0 到 100，越高越好。"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "问题：神经网络只会处理“固定大小”的输入输出",
+      "blocks": [
+        {
+          "p": "到 2014 年，深度神经网络已经在语音识别、图像识别上大放异彩。论文开头举了一个例子说明它有多强：只用两层隐藏层，就能给 N 个 N 位数排好序。只要有足够多的标注数据，反向传播总能找到合适的参数。"
+        },
+        {
+          "p": "但它有一个根本限制：**输入和输出必须能编码成固定维度的向量**。一张图片可以缩放成固定大小，一句话却不行：要翻译的句子有长有短，译文的长度事先也不知道，而且两种语言的词序可能完全不同。语音识别、机器翻译、问答，本质上都是“一个序列变成另一个序列”，这类问题当时没有通用的神经网络解法。"
+        },
+        {
+          "p": "当时最好的翻译系统是**短语式统计机器翻译（SMT）**：把句子切成短语，查一张巨大的“短语对照表”，再用各种统计模型调整词序、挑选最通顺的组合。它由许多手工设计的部件拼成，效果不错，但复杂。神经网络在翻译里通常只当配角，比如给 SMT 产生的候选译文重新打分。"
+        },
+        {
+          "callout": {
+            "kind": "intuition",
+            "title": "像同声传译还是像笔译",
+            "text": "普通的 RNN 适合“读一个词、出一个词”，输入输出一一对应，就像逐字口译。但翻译需要先听完整句话、理解意思，再用另一种语言重新组织：英语的形容词在名词前，法语常在名词后；德语的动词可能跑到句末。Seq2Seq 的思路就是笔译：先读完，再写。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "模型：一个 LSTM 读，另一个 LSTM 写",
+      "blocks": [
+        {
+          "p": "核心想法非常直接：用一个 LSTM 一个词一个词地读输入句子，读完之后，它最后的隐藏状态就是整句话的向量表示 v；再用另一个 LSTM，以 v 作为初始状态，像语言模型一样一个词一个词地生成输出，直到生成句末标记 <EOS> 为止。"
+        },
+        {
+          "fig": {
+            "type": "steps",
+            "title": "Seq2Seq 的两段式：先把整句话读成一个向量，再从向量写出译文",
+            "subtitle": "示意：根据论文图 1 和第 2 节整理，输入“A B C”，输出“W X Y Z”",
+            "steps": [
+              {
+                "name": "编码器读入",
+                "tool": "LSTM ①",
+                "desc": "按（倒过来的）顺序读入 C、B、A、<EOS>，每读一个词就更新一次记忆。"
+              },
+              {
+                "name": "得到句子向量 v",
+                "tool": "固定长度",
+                "desc": "编码器读完后的隐藏状态就是整句话的表示。论文的模型里这是 8000 个数字。"
+              },
+              {
+                "name": "解码器生成",
+                "tool": "LSTM ②",
+                "desc": "从 v 出发，先生成 W，再把 W 作为下一步的输入生成 X，依次生成 Y、Z，直到输出 <EOS>。"
+              }
+            ]
+          }
+        },
+        {
+          "p": "写成概率，模型要估计的是：给定输入序列 x_{1}, …, x_{T}，输出序列 y_{1}, …, y_{T'} 的概率。两个序列长度可以不同。"
+        },
+        {
+          "formula": {
+            "expr": "p(y_{1}, …, y_{T'} | x_{1}, …, x_{T}) ＝ Π_{t=1}^{T'} p(y_{t} | v, y_{1}, …, y_{t−1})",
+            "parts": [
+              {
+                "sym": "v",
+                "desc": "编码器读完整个输入后的最后隐藏状态，是整句话的固定长度表示"
+              },
+              {
+                "sym": "p(y_{t} | v, y_{1}, …, y_{t−1})",
+                "desc": "已知句子向量和已经生成的前 t − 1 个词，下一个词是 y_{t} 的概率。用 softmax 在 8 万个法语词上算出来"
+              },
+              {
+                "sym": "Π",
+                "desc": "连乘：整句译文的概率，等于每一步选中那个词的概率相乘"
+              },
+              {
+                "sym": "<EOS>",
+                "desc": "句末标记。每个句子都以它结尾，模型因此能自己决定何时停止，输出任意长度的句子"
+              }
+            ],
+            "note": "解码器本质上就是一个“以输入句子为条件”的语言模型：普通语言模型根据前文猜下一个词，它还额外参考了源句子的向量 v。"
+          }
+        },
+        {
+          "p": "论文在这个基本框架上做了三处关键改动："
+        },
+        {
+          "list": [
+            "**两个独立的 LSTM**：编码器和解码器参数分开。这样几乎不增加计算量就多了一倍参数，还方便同时训练多种语言对。",
+            "**4 层深的 LSTM**：深层明显好于浅层，每多一层，困惑度（衡量预测有多“困惑”的指标，越低越好）下降近 10%。",
+            "**把输入句子倒过来**：不是把 a, b, c 翻译成 α, β, γ，而是把 c, b, a 翻译成 α, β, γ。这一条最出人意料，下一节专门讲。"
+          ]
+        },
+        {
+          "callout": {
+            "kind": "intuition",
+            "title": "LSTM 的“闸门”在干什么",
+            "text": "普通 RNN 每读一个词都把记忆整个改写一遍，读到句末时，句首的信息早已被冲淡；训练时梯度也会在长距离传递中迅速消失或爆炸。LSTM 给记忆加了几道可以学习的闸门：遗忘门决定丢掉多少旧记忆，输入门决定写入多少新信息，输出门决定这一步对外展示多少。需要长期保留的信息可以“关上门”一路带下去。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "关键技巧：把源句子倒过来",
+      "blocks": [
+        {
+          "p": "论文发现，只把**源句子**的词序倒过来（译文不倒），LSTM 就学得好得多：测试困惑度从 5.8 降到 4.7，单个模型解码出的译文 BLEU 从 25.9 升到 30.6。作者坦言没有完整的解释，但给出了一个很有说服力的猜想。"
+        },
+        {
+          "p": "训练时，源句子和译文首尾相接地送进网络。正常顺序下，源句的第一个词和译文的第一个词之间隔着整个源句子；梯度要跨越这么长的距离才能把它们“联系”起来。倒过来之后，源句子的第一个词变成最后一个被读入的，紧挨着译文的第一个词。**对应词之间的平均距离没变，但最短距离大大缩短了**，论文用的术语是“最小时间滞后”。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "倒序输入不改变平均距离，但让开头的词紧挨在一起",
+            "subtitle": "示意：由本站计算。源句 a b c，译文 α β γ，中间隔一个 <EOS>；距离指从源词到对应译文词要经过几步",
+            "columns": [
+              "对应词",
+              "正常顺序：a b c <EOS> α β γ",
+              "倒序：c b a <EOS> α β γ"
+            ],
+            "rows": [
+              [
+                "a → α",
+                "4",
+                "2"
+              ],
+              [
+                "b → β",
+                "4",
+                "4"
+              ],
+              [
+                "c → γ",
+                "4",
+                "6"
+              ],
+              [
+                "平均",
+                "4",
+                "4"
+              ],
+              [
+                "最短",
+                "4",
+                "2"
+              ]
+            ],
+            "highlight": {
+              "row": 4
+            },
+            "note": "句子越长，差别越大：10 个词的句子，正常顺序下每对词都隔 11 步；倒过来之后最短只有 2 步，平均仍是 11 步。先把开头几对词的联系学会，后面的就容易了。"
+          }
+        },
+        {
+          "p": "作者原本以为，倒序只会让译文开头更准、结尾更差。结果相反，用倒序训练的 LSTM 在长句子上表现好得多。他们推测，倒序让 LSTM 更好地利用了自己的记忆。"
+        },
+        {
+          "callout": {
+            "kind": "myth",
+            "title": "“LSTM 记性好，所以不需要倒序”",
+            "text": "LSTM 理论上能记住长距离信息，但“能表示”不等于“容易学会”。用随机梯度下降训练时，长距离的依赖在一开始几乎得不到有用的梯度。倒序给了模型一批“近距离的抓手”，先建立起源句和译文之间的联系。论文结论里说：要尽量找到一种编码方式，让问题里有最多的短距离依赖。"
+          }
+        },
+        {
+          "quiz": {
+            "q": "倒序输入时，源句子和译文对应词之间的平均距离怎样变化？",
+            "options": [
+              "变短",
+              "变长",
+              "不变，但最短的那几对变得很近",
+              "取决于句子长度"
+            ],
+            "answer": 2,
+            "why": "倒序只是重新排列：开头的词对变近了，结尾的词对变远了，平均不变。论文的解释是，关键不在平均距离，而在“最小时间滞后”：有了几对很近的词，梯度就能先在它们之间建立联系。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "训练：一个 3.84 亿参数的模型，8 块 GPU 训练 10 天",
+      "blocks": [
+        {
+          "p": "数据是 WMT'14 英法翻译数据集里经过挑选的 1200 万个句对（3.48 亿个法语词、3.04 亿个英语词）。词表固定：源语言（英语）取最常见的 16 万个词，目标语言（法语）取 8 万个，其他词一律替换成 UNK（未知词）。"
+        },
+        {
+          "p": "模型是 4 层 LSTM，每层 1000 个单元，词向量也是 1000 维。每层 LSTM 有一个 1000 维的隐藏状态和一个 1000 维的记忆单元，4 层加起来，**一句话被表示成 8000 个数字**。参数一共 3.84 亿个，可以这样拆开："
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "3.84 亿参数里，近八成是词表相关的参数",
+            "subtitle": "示意：由本站按论文第 3.4 节的配置计算，与论文给出的总数和循环部分完全吻合",
+            "columns": [
+              "部分",
+              "怎么算",
+              "参数量"
+            ],
+            "rows": [
+              [
+                "英语词向量",
+                "16 万词 × 1000 维",
+                "1.6 亿"
+              ],
+              [
+                "法语词向量",
+                "8 万词 × 1000 维",
+                "0.8 亿"
+              ],
+              [
+                "输出 softmax",
+                "1000 × 8 万词",
+                "0.8 亿"
+              ],
+              [
+                "编码器 LSTM",
+                "4 层 × 4 个门 × 1000 × (1000 ＋ 1000)",
+                "0.32 亿"
+              ],
+              [
+                "解码器 LSTM",
+                "同上",
+                "0.32 亿"
+              ],
+              [
+                "合计",
+                "",
+                "3.84 亿"
+              ]
+            ],
+            "highlight": {
+              "row": 5
+            },
+            "note": "论文说 3.84 亿参数里有 6400 万是“纯循环连接”，编码器、解码器各 3200 万，和这里按 LSTM 门数算出的一致。真正负责“理解”和“生成”的 LSTM 只占约六分之一。"
+          }
+        },
+        {
+          "p": "训练细节（论文第 3.4 节）："
+        },
+        {
+          "list": [
+            "参数在 −0.08 到 0.08 之间均匀随机初始化。",
+            "不带动量的随机梯度下降，学习率固定为 0.7；5 轮后每半轮减半，一共训练 7.5 轮。",
+            "每批 128 个句子。为了防止梯度爆炸，梯度的范数超过 5 就按比例缩小到 5。",
+            "大多数句子只有 20 到 30 个词，少数超过 100 个。随机组成一批会浪费很多计算在补齐短句上，所以让一批里的句子长度相近，速度提高了一倍。"
+          ]
+        },
+        {
+          "p": "单块 GPU 每秒只能处理约 1700 个词，太慢了。论文用一台 8 块 GPU 的机器做模型并行：4 层 LSTM 各占一块 GPU，算完就把结果传给下一层；另外 4 块分担 8 万词的 softmax，每块负责一个 1000 × 20000 的矩阵。这样每秒能处理 6300 个词，训练用了大约 10 天。"
+        },
+        {
+          "quiz": {
+            "q": "论文说“深层 LSTM 用 8000 个实数表示一句话”。这个 8000 是怎么来的？",
+            "options": [
+              "8000 个词的词表",
+              "4 层 × 每层（1000 维隐藏状态 ＋ 1000 维记忆单元）",
+              "8 块 GPU × 1000",
+              "1000 维词向量 × 8 个词"
+            ],
+            "answer": 1,
+            "why": "LSTM 每层同时保留隐藏状态和记忆单元两组向量，各 1000 维，4 层一共 8000 个数。这 8000 个数就是编码器交给解码器的全部信息。8 块 GPU 只是硬件配置，与表示的大小无关。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "解码：束搜索，用很小的“束”就够了",
+      "blocks": [
+        {
+          "p": "训练好之后，翻译就是找概率最大的译文：T̂ ＝ arg max_{T} p(T | S)。但所有可能的法语句子多到无法穷举，只能近似地搜。论文用的是**从左到右的束搜索**：始终只保留 B 个最有希望的“半句话”，每一步把它们各自接上所有可能的下一个词，再从中挑出概率最高的 B 个；某个候选接上 <EOS> 就算完成。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "为什么不每一步都选最好的词：贪心可能错过整体更好的句子",
+            "subtitle": "示意：概率是本站编的。束大小 B ＝ 1 就是贪心，B ＝ 2 多保留一个候选",
+            "columns": [
+              "第一个词",
+              "第一步概率",
+              "接下来最好的词",
+              "第二步概率",
+              "两步合计概率"
+            ],
+            "rows": [
+              [
+                "Le",
+                "0.4",
+                "chat",
+                "0.5",
+                "0.20"
+              ],
+              [
+                "La",
+                "0.3",
+                "maison",
+                "0.9",
+                "0.27"
+              ],
+              [
+                "Un",
+                "0.2",
+                "livre",
+                "0.6",
+                "0.12"
+              ]
+            ],
+            "highlight": {
+              "row": 1
+            },
+            "note": "贪心搜索第一步选概率最高的 Le，最后得到 0.20；束大小为 2 时同时保留 Le 和 La，就能发现 La maison 整体更好（0.27）。"
+          }
+        },
+        {
+          "p": "有意思的是，论文发现束根本不用很大：束大小为 1（就是贪心）已经不错，大小为 2 就拿到了束搜索的大部分好处。5 个模型的集成、束大小 2，BLEU 34.50，比束大小 12 的 34.81 只低 0.3，计算却便宜得多。"
+        },
+        {
+          "p": "论文的训练目标也很朴素：在所有训练句对上，最大化正确译文的对数概率的平均值，1/|S| · Σ log p(T | S)。没有任何翻译规则、对齐表或词序模型，一切都从数据里学。"
+        }
+      ]
+    },
+    {
+      "h": "结果：第一次在大规模翻译上胜过统计机器翻译",
+      "blocks": [
+        {
+          "fig": {
+            "type": "table",
+            "title": "直接翻译：5 个倒序 LSTM 集成，BLEU 34.81，超过统计翻译基线",
+            "subtitle": "WMT'14 英译法测试集，来自论文表 1。琥珀色是最好成绩",
+            "columns": [
+              "方法",
+              "BLEU"
+            ],
+            "rows": [
+              [
+                "Bahdanau 等（带注意力，下一篇精读）",
+                "28.45"
+              ],
+              [
+                "统计机器翻译基线",
+                "33.30"
+              ],
+              [
+                "单个 LSTM，正常顺序，束 12",
+                "26.17"
+              ],
+              [
+                "单个 LSTM，倒序，束 12",
+                "30.59"
+              ],
+              [
+                "5 个倒序 LSTM 集成，束 1",
+                "33.00"
+              ],
+              [
+                "2 个倒序 LSTM 集成，束 12",
+                "33.27"
+              ],
+              [
+                "5 个倒序 LSTM 集成，束 2",
+                "34.50"
+              ],
+              [
+                "5 个倒序 LSTM 集成，束 12",
+                "34.81"
+              ]
+            ],
+            "highlight": {
+              "row": 7
+            },
+            "note": "集成是指 5 个只在随机初始化和数据顺序上不同的模型一起投票。34.81 是在只有 8 万词的法语词表下取得的：参考译文里只要出现词表外的词，模型就必然丢分。"
+          }
+        },
+        {
+          "p": "论文强调，这是**纯神经网络的翻译系统第一次在大规模翻译任务上以明显优势超过短语式统计翻译**，而且这个神经网络的词表有限、几乎没有调优，统计翻译系统的词表却是无限的。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "给统计翻译的候选重新打分：36.5，离当时最好成绩只差 0.5",
+            "subtitle": "WMT'14 英译法测试集，来自论文表 2。琥珀色是 LSTM 重新打分的最好成绩",
+            "columns": [
+              "方法",
+              "BLEU"
+            ],
+            "rows": [
+              [
+                "统计机器翻译基线",
+                "33.30"
+              ],
+              [
+                "Cho 等（RNN 编码器 – 解码器 ＋ 统计翻译）",
+                "34.54"
+              ],
+              [
+                "单个正常顺序 LSTM 重新打分",
+                "35.61"
+              ],
+              [
+                "单个倒序 LSTM 重新打分",
+                "35.85"
+              ],
+              [
+                "5 个倒序 LSTM 集成重新打分",
+                "36.5"
+              ],
+              [
+                "WMT'14 当时最好成绩",
+                "37.0"
+              ],
+              [
+                "理想上限：总挑出最好的候选",
+                "约 45"
+              ]
+            ],
+            "highlight": {
+              "row": 4
+            },
+            "note": "重新打分时，LSTM 给统计系统的 1000 个候选译文各算一个对数概率，再和统计系统自己的分数取平均。"
+          }
+        },
+        {
+          "p": "**长句子没有崩**。当时其他研究者用类似结构时，长句子的翻译质量明显下降（下一篇的 Bahdanau 等人正是为此引入了注意力）。这篇论文的模型却在长句上表现不错：按句长排序后，35 个词以内的句子完全没有退化，最长的那批句子也只是略有下降。作者认为这要归功于倒序输入。"
+        },
+        {
+          "p": "**句子向量有意义**。把一些短语的编码向量用主成分分析投影到二维平面上，意思相近的句子聚在一起：“Mary admires John”和“Mary is in love with John”挨着，而“John admires Mary”在另一边。这说明向量对词序敏感，不是简单的词袋。主动句和被动句（“她在花园里给了我一张卡片”和“我在花园里被她给了一张卡片”）则落在相近的位置。"
+        },
+        {
+          "quiz": {
+            "q": "论文为什么特别指出 34.81 这个成绩是在“词表外的词会被扣分”的条件下取得的？",
+            "options": [
+              "为了解释为什么没超过统计翻译",
+              "为了说明这个成绩被低估了：法语词表只有 8 万词，参考译文里的生僻词模型根本输出不了，改进空间还很大",
+              "因为 BLEU 不计算词表外的词",
+              "因为统计翻译也有同样的限制"
+            ],
+            "answer": 1,
+            "why": "模型遇到词表外的词只能输出 UNK，必然和参考译文对不上，所以这个成绩偏保守。统计翻译系统的词表没有这个限制。论文据此认为，一个相对没调优、词表有限的神经网络已经胜过统计翻译，进一步改进会更好。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "几处值得留意的细节",
+      "blocks": [
+        {
+          "list": [
+            "**倒序带来的提升，两处数字不一致**：第 3.3 节说单模型 BLEU 从 25.9 升到 30.6，表 1 里对应的两行却是 26.17 和 30.59。前者可能来自不同的设置或早期实验，论文没有说明。",
+            "**“长句子没有困难”说得有点满**：摘要说 LSTM 在长句上没有困难，图 3 的说明则写得更准确：35 个词以内没有退化，最长的句子有轻微下降。",
+            "**BLEU 的算法会影响结论**：论文说明它用的是 multi-bleu.pl 脚本。用同一个脚本算，WMT'14 最好系统是 37.0，比官方网站公布的 35.8 还高。不同的 BLEU 脚本之间可能差一个点以上，比较不同论文的分数要格外小心。",
+            "**引用了下一篇**：论文正文已经提到 Bahdanau 等人带注意力机制的翻译模型，还把它的 28.45 放进了表 1。两篇论文几乎同时出现，读下一篇时可以对照着看。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "局限，以及之后的故事",
+      "blocks": [
+        {
+          "list": [
+            "**固定长度的瓶颈**：无论输入是 5 个词还是 50 个词，编码器都要把它压进同样的 8000 个数字。句子越长，越可能丢信息。倒序缓解了训练困难，但没有消除这个瓶颈。",
+            "**词表有限**：8 万词的法语词表，生僻词只能输出 UNK。后来的子词切分（比如书单里的 BPE）解决了这个问题。",
+            "**慢**：LSTM 必须一个词接一个词地算，训练很难并行，3.84 亿参数的模型在 8 块 GPU 上训练了约 10 天。",
+            "**只在一个语言对上验证**：论文相信它能推广到其他序列问题，但这里只做了英译法。"
+          ]
+        },
+        {
+          "p": "**之后的故事**。论文的结论很有远见：一个几乎不对问题结构做假设的大型深度 LSTM，只要数据足够，就能胜过精心设计的专用系统。编码器 – 解码器的框架后来被用于摘要、对话、语音识别、图像描述等几乎所有“输入一段、输出一段”的任务。"
+        },
+        {
+          "p": "但那个固定长度的向量始终是一个瓶颈。下一篇《Bahdanau 注意力》的思路是：解码器每生成一个词，都回头看一遍源句子的所有词，自己决定该关注哪几个，而不是只依赖一个压缩后的向量。三年后的 Transformer 更进一步，干脆去掉了 LSTM，只留下注意力。今天的大语言模型，正是 Transformer 的解码器那一半。"
+        },
+        {
+          "p": "第一作者 Ilya Sutskever 后来成为 OpenAI 的联合创始人和首席科学家，GPT 系列就出自那里。"
+        }
+      ]
+    },
+    {
+      "h": "检验一下：你吃透了吗",
+      "blocks": [
+        {
+          "quiz": {
+            "q": "解码器为什么需要 <EOS> 句末标记？",
+            "options": [
+              "为了让编码器知道句子读完了",
+              "为了让模型能自己决定什么时候停，从而输出任意长度的句子",
+              "为了计算 BLEU",
+              "为了标记词表外的词"
+            ],
+            "answer": 1,
+            "why": "解码器一次生成一个词，如果没有“结束”这个选项，它就不知道何时停止。把 <EOS> 当作一个普通的词来预测，模型就能为不同长度的句子分配概率。编码器端的 <EOS> 也有用，但这里问的是解码器。词表外的词用的是 UNK。"
+          }
+        },
+        {
+          "quiz": {
+            "q": "如果把源句子长度从 10 个词增加到 50 个词，Seq2Seq 的句子向量 v 的大小会怎样？",
+            "options": [
+              "变为 5 倍",
+              "不变，仍是 8000 个数字",
+              "变为 2 倍",
+              "取决于词表大小"
+            ],
+            "answer": 1,
+            "why": "这正是 Seq2Seq 的核心弱点：v 的长度是固定的，句子再长也只能用同样多的数字表示。下一篇的注意力机制就是为了打破这个限制。"
+          }
+        },
+        {
+          "p": "读完这篇，你应该能回答下面这些问题："
+        },
+        {
+          "list": [
+            "为什么普通的深度神经网络不能直接做翻译？",
+            "编码器和解码器分别做什么？句子向量 v 在哪里产生、交给谁？",
+            "p(y | x) 为什么可以写成每一步概率的连乘？<EOS> 起什么作用？",
+            "倒序输入为什么有效？“最小时间滞后”是什么意思？",
+            "3.84 亿参数分别花在哪里？",
+            "束搜索比贪心好在哪？为什么束大小 2 就够了？",
+            "为什么说 34.81 这个成绩是被“低估”的？",
+            "固定长度的句子向量带来了什么问题？注意力机制怎样解决它？"
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Sequence to Sequence Learning with Neural Networks（arXiv:1409.3215 第 3 版）",
+      "publisher": "Sutskever 等 · Google",
+      "date": "2014-12-14",
+      "url": "https://arxiv.org/abs/1409.3215"
+    },
+    "note": "本文依据论文 arXiv 第 3 版（2014 年 12 月），首版发布于 2014 年 9 月。标注「示意」的图表由本站按论文配置计算或编写。LSTM 闸门的介绍是通用知识，论文只说采用了 Graves 的 LSTM 写法；Ilya Sutskever 后来的经历不在这篇论文里。"
+  },
+  "claims": [
+    {
+      "text": "arXiv 第 3 版",
+      "value": "1409.3215v3",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "arXiv:1409.3215v3 [cs.CL] 14 Dec 2014",
+      "as_written": "第 3 版"
+    },
+    {
+      "text": "BLEU 34.8",
+      "value": "34.8",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "achieve a BLEU score of 34.8 on the entire test set",
+      "as_written": "34.8"
+    },
+    {
+      "text": "SMT 33.3",
+      "value": "33.3",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "a phrase-based SMT system achieves a BLEU score of 33.3 on the same dataset",
+      "as_written": "33.3"
+    },
+    {
+      "text": "重新打分 36.5",
+      "value": "36.5",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "its BLEU score increases to 36.5",
+      "as_written": "36.5"
+    },
+    {
+      "text": "1000 个候选",
+      "value": "1000 hypotheses",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "rerank the 1000 hypotheses produced by the aforementioned SMT system",
+      "as_written": "1000 个"
+    },
+    {
+      "text": "当时最好 37.0",
+      "value": "37.0",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "close to the previous best published result on this task (which is 37.0 [9])",
+      "as_written": "37.0"
+    },
+    {
+      "text": "提高 3.2 BLEU",
+      "value": "3.2 BLEU points",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "which improves the baseline by 3.2 BLEU points",
+      "as_written": "3.2"
+    },
+    {
+      "text": "34.81、5 个 LSTM、384M、8000 维",
+      "value": "34.81",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "we obtained a BLEU score of 34.81 by directly extracting translations from an ensemble of 5 deep LSTMs (with 384M parameters and 8,000 dimensional state each)",
+      "as_written": "34.81"
+    },
+    {
+      "text": "3.84 亿参数",
+      "value": "384M",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "The resulting LSTM has 384M parameters",
+      "as_written": "3.84 亿"
+    },
+    {
+      "text": "6400 万循环连接，各 3200 万",
+      "value": "64M",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "of which 64M are pure recurrent connections (32M for the “encoder” LSTM and 32M for the “decoder” LSTM)",
+      "as_written": "6400 万"
+    },
+    {
+      "text": "3200 万",
+      "value": "32M",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "32M for the “encoder” LSTM",
+      "as_written": "3200 万"
+    },
+    {
+      "text": "8000 个实数",
+      "value": "8000",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "the deep LSTM uses 8000 real numbers to represent a sentence",
+      "as_written": "8000"
+    },
+    {
+      "text": "80k 词表",
+      "value": "80k",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "The 34.81 BLEU score was achieved by an LSTM with a vocabulary of 80k words",
+      "as_written": "8 万"
+    },
+    {
+      "text": "SMT 基线 33.30",
+      "value": "33.30",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "the BLEU score of an SMT baseline on this dataset is 33.30",
+      "as_written": "33.30"
+    },
+    {
+      "text": "相差 0.5",
+      "value": "0.5 BLEU",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "The LSTM is within 0.5 BLEU points of the best WMT’14 result",
+      "as_written": "0.5"
+    },
+    {
+      "text": "困惑度 5.8→4.7，BLEU 25.9→30.6",
+      "value": "4.7",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "the LSTM’s test perplexity dropped from 5.8 to 4.7, and the test BLEU scores of its decoded translations increased from 25.9 to 30.6",
+      "as_written": "4.7"
+    },
+    {
+      "text": "困惑度 5.8",
+      "value": "5.8",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "dropped from 5.8 to 4.7",
+      "as_written": "5.8"
+    },
+    {
+      "text": "BLEU 25.9",
+      "value": "25.9",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "increased from 25.9 to 30.6",
+      "as_written": "25.9"
+    },
+    {
+      "text": "BLEU 30.6",
+      "value": "30.6",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "increased from 25.9 to 30.6",
+      "as_written": "30.6"
+    },
+    {
+      "text": "1200 万句对、3.48 亿法语词、3.04 亿英语词",
+      "value": "12M",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "a subset of 12M sentences consisting of 348M French words and 304M English words",
+      "as_written": "1200 万"
+    },
+    {
+      "text": "3.48 亿",
+      "value": "348M",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "348M French words",
+      "as_written": "3.48 亿"
+    },
+    {
+      "text": "3.04 亿",
+      "value": "304M",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "304M English words",
+      "as_written": "3.04 亿"
+    },
+    {
+      "text": "16 万源词表、8 万目标词表",
+      "value": "160,000",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "We used 160,000 of the most frequent words for the source language and 80,000 of the most frequent words for the target language",
+      "as_written": "16 万"
+    },
+    {
+      "text": "8 万",
+      "value": "80,000",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "80,000 of the most frequent words for the target language",
+      "as_written": "8 万"
+    },
+    {
+      "text": "4 层、1000 单元、1000 维词向量",
+      "value": "1000 cells",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "We used deep LSTMs with 4 layers, with 1000 cells at each layer and 1000 dimensional word embeddings",
+      "as_written": "1000 个单元"
+    },
+    {
+      "text": "每层降近 10%",
+      "value": "10%",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "each additional layer reduced perplexity by nearly 10%",
+      "as_written": "10%"
+    },
+    {
+      "text": "初始化 ±0.08",
+      "value": "0.08",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "uniform distribution between -0.08 and 0.08",
+      "as_written": "0.08"
+    },
+    {
+      "text": "学习率 0.7、5 轮后减半、7.5 轮",
+      "value": "0.7",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "with a fixed learning rate of 0.7",
+      "as_written": "0.7"
+    },
+    {
+      "text": "5 轮",
+      "value": "5 epochs",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "After 5 epochs, we begun halving the learning rate every half epoch",
+      "as_written": "5 轮"
+    },
+    {
+      "text": "7.5 轮",
+      "value": "7.5 epochs",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "We trained our models for a total of 7.5 epochs",
+      "as_written": "7.5 轮"
+    },
+    {
+      "text": "每批 128",
+      "value": "128",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "We used batches of 128 sequences",
+      "as_written": "128 个"
+    },
+    {
+      "text": "梯度范数阈值 5",
+      "value": "s > 5",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "If s > 5, we set g",
+      "as_written": "5"
+    },
+    {
+      "text": "句长 20–30、超过 100",
+      "value": "20-30",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "Most sentences are short (e.g., length 20-30) but some sentences are long (e.g., length > 100)",
+      "as_written": "20 到 30"
+    },
+    {
+      "text": "提速一倍",
+      "value": "2x speedup",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "yielding a 2x speedup",
+      "as_written": "一倍"
+    },
+    {
+      "text": "单 GPU 1700 词/秒",
+      "value": "1,700",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "a single GPU processes a speed of approximately 1,700 words per second",
+      "as_written": "1700"
+    },
+    {
+      "text": "8 GPU",
+      "value": "8-GPU",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "we parallelized our model using an 8-GPU machine",
+      "as_written": "8 块"
+    },
+    {
+      "text": "1000 × 20000",
+      "value": "1000 × 20000",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "each GPU was responsible for multiplying by a 1000 × 20000 matrix",
+      "as_written": "1000 × 20000"
+    },
+    {
+      "text": "6300 词/秒、约 10 天",
+      "value": "6,300",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "achieved a speed of 6,300 (both English and French) words per second",
+      "as_written": "6300"
+    },
+    {
+      "text": "训练约 10 天",
+      "value": "ten days",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "Training took about a ten days with this implementation",
+      "as_written": "10 天"
+    },
+    {
+      "text": "官方 35.8",
+      "value": "35.8",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "which is greater than the 35.8 reported by",
+      "as_written": "35.8"
+    },
+    {
+      "text": "表 1：Bahdanau 28.45",
+      "value": "28.45",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "28.45",
+      "as_written": "28.45"
+    },
+    {
+      "text": "表 1：正常 26.17",
+      "value": "26.17",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "26.17",
+      "as_written": "26.17"
+    },
+    {
+      "text": "表 1：倒序 30.59",
+      "value": "30.59",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "30.59",
+      "as_written": "30.59"
+    },
+    {
+      "text": "表 1：集成束 1 33.00",
+      "value": "33.00",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "33.00",
+      "as_written": "33.00"
+    },
+    {
+      "text": "表 1：2 个集成 33.27",
+      "value": "33.27",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "33.27",
+      "as_written": "33.27"
+    },
+    {
+      "text": "表 1：束 2 34.50",
+      "value": "34.50",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "34.50",
+      "as_written": "34.50"
+    },
+    {
+      "text": "表 2：Cho 34.54",
+      "value": "34.54",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "34.54",
+      "as_written": "34.54"
+    },
+    {
+      "text": "表 2：35.61",
+      "value": "35.61",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "35.61",
+      "as_written": "35.61"
+    },
+    {
+      "text": "表 2：35.85",
+      "value": "35.85",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "35.85",
+      "as_written": "35.85"
+    },
+    {
+      "text": "表 2：理想上限约 45",
+      "value": "∼45",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "∼45",
+      "as_written": "45"
+    },
+    {
+      "text": "35 个词以内无退化",
+      "value": "35 words",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "There is no degradation on sentences with less than 35 words, there is only a minor degradation on the longest sentences",
+      "as_written": "35 个"
+    },
+    {
+      "text": "两层排序",
+      "value": "2 hidden layers",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "sort N N -bit numbers using only 2 hidden layers of quadratic size",
+      "as_written": "两层"
+    },
+    {
+      "text": "束 2 便宜",
+      "value": "beam of size 2",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "an ensemble of 5 LSTMs with a beam of size 2 is cheaper than of a single LSTM with a beam of size 12",
+      "as_written": "束大小 2"
+    },
+    {
+      "text": "相差 0.3（本站计算 34.81 − 34.50）",
+      "value": "34.50",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "34.50",
+      "as_written": "0.3"
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "tier": "primary",
+    "writer": "论文精读"
+  }
+}
