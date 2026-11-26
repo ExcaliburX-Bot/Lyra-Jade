@@ -1,0 +1,263 @@
+{
+  "slug": "le-groupe-figaro-openai-partnership",
+  "date": "2026-11-18",
+  "category": "product",
+  "publisher": "OpenAI",
+  "topics": [
+    "openai"
+  ],
+  "title": "Figaro 与 OpenAI 合作：ChatGPT 可读到新闻摘要、摘录和原文链接",
+  "summary": "以后你在 ChatGPT 里问法国新闻、商业或文化话题，可能会看到 Le Figaro 的报道摘要和摘录，点击链接回到原报道。这是双方 2026 年 11 月 18 日宣布的合作。",
+  "ai_summary": "2026 年 11 月 18 日，Le Groupe Figaro 与 OpenAI 宣布合作：ChatGPT 会以摘要和摘录的方式展示 Le Figaro 及关联刊物的报道，并附原文链接，覆盖当前报道和历史档案，横跨新闻、商业、文化、生活方式。Le Figaro 强调其团队有 600 多名记者，并保留完整编辑独立性；同时计划在多个团队引入 ChatGPT Enterprise。对读者来说，这多了一个在对话里发现可靠法国新闻的入口；但官方尚未公布具体上线时间、先覆盖哪些刊物和商业条款。",
+  "brief": [
+    "这次合作把 Le Figaro 的当前报道和历史档案都纳入，并覆盖新闻、商业、文化与生活方式。",
+    "ChatGPT 里展示的是摘要和摘录，并附原报道链接，不是全文搬运。",
+    "Le Figaro 保留完整编辑独立性，并计划在多个团队引入 ChatGPT Enterprise。",
+    "官方没有公布具体上线时间和先覆盖的刊物名单。"
+  ],
+  "readMinutes": 5,
+  "sections": [
+    {
+      "h": "这是什么：一次内容合作，不是新模型",
+      "blocks": [
+        {
+          "p": "2026 年 11 月 18 日，Le Groupe Figaro 与 OpenAI 宣布达成战略合作。核心很简单：Le Figaro 的报道会进入 ChatGPT，以摘要和摘录的形式被读者发现，并附上原文链接。"
+        },
+        {
+          "p": "它和我们常说的“模型更新”不是一回事——不改变 ChatGPT 的回答能力，而是增加一类内容来源。对读者来说，更像是多了一个在对话里发现 Le Figaro 报道的入口。"
+        }
+      ]
+    },
+    {
+      "h": "和之前有什么不同：多了一条发现入口",
+      "blocks": [
+        {
+          "p": "合作之前，读者想了解 Le Figaro 的报道，通常要离开对话、自己去官网搜索。合作之后，ChatGPT 可以在相关话题的回答里给出 Le Figaro 的摘要、摘录和链接。"
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "合作前要自己找，合作后 ChatGPT 直接给摘要和链接",
+            "subtitle": "示意：琥珀色是这次合作带来的呈现方式",
+            "left": {
+              "label": "合作前",
+              "sub": "读者想找 Le Figaro 报道",
+              "items": [
+                {
+                  "label": "在对话里看到 Le Figaro 摘要",
+                  "state": "dim"
+                },
+                {
+                  "label": "需要离开对话去官网搜索",
+                  "state": "base"
+                }
+              ]
+            },
+            "right": {
+              "label": "合作后",
+              "sub": "ChatGPT 里的 Le Figaro 内容",
+              "items": [
+                {
+                  "label": "摘要和摘录",
+                  "state": "hi"
+                },
+                {
+                  "label": "附原文链接",
+                  "state": "hi"
+                },
+                {
+                  "label": "当前报道和历史档案",
+                  "state": "hi"
+                },
+                {
+                  "label": "新闻、商业、文化、生活方式",
+                  "state": "base"
+                }
+              ]
+            },
+            "footer": "链接让读者能回到 Le Figaro 官网读全文",
+            "note": "触发条件和展示位置官方未公布，此图为示意对比"
+          }
+        }
+      ]
+    },
+    {
+      "h": "在对话里长什么样：摘要、摘录、链接",
+      "blocks": [
+        {
+          "p": "官方没有放出截图，但从公告能拼出大概形态：你提问后，ChatGPT 可能先给一段总结，再引用一句原文摘录，并放上“查看原报道”的链接。链接会回到 Le Figaro 官网，读者可以继续读全文。"
+        },
+        {
+          "fig": {
+            "type": "illustration",
+            "title": "你问一句，ChatGPT 给摘要、摘录和原报道链接",
+            "subtitle": "示意：对话与回答为举例；琥珀色是这次合作带来的摘要、摘录和链接",
+            "note": "官方未提供截图，对话为示意",
+            "glyph": {
+              "kind": "chat",
+              "turns": [
+                {
+                  "role": "user",
+                  "text": "最近法国经济有什么大新闻？"
+                },
+                {
+                  "role": "ai",
+                  "text": "摘要：……（大意）",
+                  "tone": "hi"
+                },
+                {
+                  "role": "ai",
+                  "text": "摘录：“……”",
+                  "tone": "hi"
+                },
+                {
+                  "role": "ai",
+                  "text": "查看原报道 →",
+                  "tone": "hi"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "callout": {
+            "kind": "note",
+            "title": "别把摘录当全文",
+            "text": "公告说的是 summaries and excerpts——总结和片段，不是整篇文章搬运。想读完整报道，要点链接去官网。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "覆盖什么：当前报道、历史档案和关联刊物",
+      "blocks": [
+        {
+          "p": "公告把范围说得比较宽：不只有 Le Figaro 当天的报道，还有历史档案，以及 Le Figaro 集团的关联刊物；主题横跨新闻、商业、文化和生活方式。也就是说，读者可能遇到的不只是突发新闻，还有过去积累的报道和不同领域的选题。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "合作覆盖当前报道、历史档案和关联刊物",
+            "subtitle": "根据公告整理",
+            "columns": [
+              "覆盖范围",
+              "公告对应内容"
+            ],
+            "rows": [
+              [
+                "内容来源",
+                "Le Figaro 及关联刊物"
+              ],
+              [
+                "时间范围",
+                "当前报道和历史档案"
+              ],
+              [
+                "内容方向",
+                "新闻、商业、文化、生活方式"
+              ]
+            ],
+            "note": "信息来自 OpenAI 公告"
+          }
+        }
+      ]
+    },
+    {
+      "h": "对 Le Figaro 意味着什么：保留编辑独立，内部引入 ChatGPT Enterprise",
+      "blocks": [
+        {
+          "p": "Le Figaro 明确会保留完整的编辑独立性和对报道的控制权。换句话说，OpenAI 不会替它决定写什么，内容仍由编辑部负责。"
+        },
+        {
+          "fig": {
+            "type": "quote",
+            "title": "Le Figaro 集团 CEO：用内容能力和技术覆盖创造长期价值",
+            "text": "This partnership reflects Groupe Figaro's ambition to build meaningful relationships with a leader in artificial intelligence research and deployment. Combining Groupe Figaro's editorial heritage and trusted brands supported by a team of more than 600 journalists who provide a reliable source of information with OpenAI's technological expertise and global reach will bring new opportunities for innovation and create long-term value for our readers.",
+            "zh": "这次合作体现了 Le Figaro 集团与人工智能研究及应用领域领先者建立有意义关系的目标。把 Le Figaro 集团的编辑传统和可信品牌——背后有 600 多名记者提供可靠信息来源——与 OpenAI 的技术专长和全球覆盖结合起来，将为创新带来新机会，并为读者创造长期价值。",
+            "who": "Marc Feuillée",
+            "role": "CEO, Groupe Figaro",
+            "source_url": "https://openai.com/index/le-groupe-figaro-and-openai-announce-partnership"
+          }
+        },
+        {
+          "p": "同时，Le Figaro 计划把 ChatGPT Enterprise（面向企业团队的 ChatGPT 版本）引入多个团队，用于支持日常工作；未来还会在自身工作流和读者服务里探索更多 OpenAI 技术，但会以它的 AI 章程和编辑标准为前提。OpenAI 的媒体合作副总裁 Varun Shetty 则表示，Le Figaro 的报道帮助读者理解法国和更广阔世界的议题，他们希望 AI 帮助更多人发现这些内容。"
+        }
+      ]
+    },
+    {
+      "h": "官方还没说的",
+      "blocks": [
+        {
+          "list": [
+            "具体上线时间：公告只说了 11 月 18 日宣布合作，没说什么时候在 ChatGPT 里真正可见。",
+            "先覆盖哪些关联刊物：公告提到 associated publications，但没有列出名单。",
+            "触发条件和展示位置：没有说哪些问题会触发、在哪些界面出现。",
+            "商业与授权条款：没有披露费用、分成或内容授权细节。",
+            "语言和地区：没有说明是否只针对法语内容、是否仅限法国或全球可用。",
+            "ChatGPT Enterprise 的部署规模和开始时间：只说 plans to introduce 和 various teams，没有数字。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "适合谁：常看法国新闻的人可以先关注，但别急着期待全文",
+      "blocks": [
+        {
+          "p": "对普通读者，最大价值是省去“离开对话去找新闻”这一步。如果你常问法国商业、文化或生活方式话题，之后可能会在 ChatGPT 里看到 Le Figaro 的摘要、摘录和链接；想读全文，点回官网。"
+        },
+        {
+          "p": "需要提醒的是，官方展示的是摘要和摘录，不是完整文章；具体上线时间和触发方式还没公布。所以现在更像“值得关注”，还不能当作已经可用的功能。"
+        },
+        {
+          "p": "如果你是 Le Figaro 员工，可以留意公司引入 ChatGPT Enterprise 的计划，但部署范围和开始时间同样待定。"
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Le Groupe Figaro and OpenAI partner to bring Le Figaro journalism to ChatGPT",
+      "publisher": "OpenAI",
+      "date": "2026-11-18",
+      "url": "https://openai.com/index/le-groupe-figaro-and-openai-announce-partnership"
+    },
+    "more": [],
+    "note": "文章只依据这一篇 OpenAI 官方公告；正文中的对话示意为举例，不是官方截图；600 多名记者来自 Le Figaro 集团 CEO 在公告中的原话。"
+  },
+  "claims": [
+    {
+      "text": "双方合作于 2026 年 11 月 18 日宣布。",
+      "value": "November 18, 2026",
+      "source_url": "https://openai.com/index/le-groupe-figaro-and-openai-announce-partnership",
+      "as_written": "2026 年 11 月 18 日",
+      "quote": "OpenAI November 18, 2026"
+    },
+    {
+      "text": "Le Figaro 集团的采编团队有 600 多名记者。",
+      "value": "more than 600",
+      "source_url": "https://openai.com/index/le-groupe-figaro-and-openai-announce-partnership",
+      "as_written": "600 多名记者",
+      "quote": "supported by a team of more than 600 journalists who provide a reliable source of information"
+    }
+  ],
+  "cover": {
+    "headline": "Figaro 与 OpenAI 合作",
+    "highlight": "新闻以摘要、摘录和链接出现",
+    "big": {
+      "value": "600",
+      "unit": "名记者",
+      "label": "Le Figaro 采编团队"
+    }
+  },
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "origin": "auto",
+    "candidate": "6cab9c8cd3",
+    "tier": "official",
+    "via": null,
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "generated_at": "2026-11-26T08:36:28.953Z"
+  }
+}
