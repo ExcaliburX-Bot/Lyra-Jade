@@ -14,7 +14,7 @@
   ],
   "paper": {
     "title": "DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning",
-    "authors": "DeepSeek-AI（核心贡献者包括郭达雅、杨德健、张昊苇、宋俊潇、王培易等）",
+    "authors": "DeepSeek-AI（核心贡献者包括 Daya Guo、Dejian Yang、Haowei Zhang、Junxiao Song、Peiyi Wang 等）",
     "org": "DeepSeek（深度求索）",
     "venue": "Nature 645（2025）",
     "year": 2025,
