@@ -178,6 +178,23 @@ function buildLang(L) {
       desc: en ? `Every Lyra-Jade explainer about ${tp.name} (${tp.sub}), from primary sources.` : `玲珑玉关于 ${tp.name}（${tp.sub}）的全部解读，只用一手来源。`, main: listingTpl, data: { ...data, topic: tp.k } });
   }
 
+  /* 论文精读的路线导航：这篇论文在哪几条路线里，前后各是哪篇（已精读链到文章，没精读链到书单） */
+  function pathNav(a) {
+    if (a.category !== "paper") return "";
+    const me = libItems.find(p => p.art === a);
+    if (!me) return "";
+    const rows = (LIBRARY.tracks || []).map((t, ti) => ({ t, ti, items: t.ids.map(id => byId.get(id)).filter(Boolean) }))
+      .map(r => ({ ...r, i: r.items.findIndex(p => p.id === me.id) })).filter(r => r.i >= 0);
+    if (!rows.length) return "";
+    const nm = p => esc(en ? (p.name_en || p.name) : p.name);
+    const link = (p, dir) => !p ? `<span class="pn-${dir} pn-none"></span>`
+      : `<a class="pn-${dir}${p.art ? "" : " pn-todo"}" href="${p.art ? `${p.art.slug}.html` : `../papers.html#p-${esc(p.id)}`}"><small>${dir === "prev" ? (en ? "← Previous" : "← 上一篇") : (en ? "Next →" : "下一篇 →")}</small><b>${nm(p)}</b>${p.art ? "" : `<i>${en ? "Coming up" : "待精读"}</i>`}</a>`;
+    return `<nav class="pathnav" aria-label="${en ? "Learning path" : "学习路线"}">${rows.map(({ t, ti, items, i }) => {
+      const last = i === items.length - 1;
+      return `<div class="pn"><div class="pn-h"><a href="../papers.html#path-${esc(t.k)}"><span class="tr-n">${en ? `Path ${ti + 1}` : `主线${NUM[ti] || ti + 1}`}</span>${esc(en ? t.en : t.zh)}</a><small>${en ? `${i + 1} of ${items.length}` : `第 ${i + 1} / ${items.length} 篇`}</small></div>
+        <div class="pn-row">${link(items[i - 1], "prev")}${last ? `<a class="pn-next pn-end" href="../papers.html#paths"><small>${en ? "End of this path" : "这条路线读完了"}</small><b>${en ? "Pick the next path →" : "选下一条路线 →"}</b></a>` : link(items[i + 1], "next")}</div></div>`; }).join("")}</nav>`;
+  }
+
   /* 文章页 */
   for (const a of list) {
     const rel = list.filter(x => x.slug !== a.slug && x.category === a.category).slice(0, 4);
@@ -196,6 +213,7 @@ function buildLang(L) {
     <h1>${esc(a.title)}</h1>
     <div class="rmeta-row"><div class="rmeta"><span>${esc(T.pub)}</span>${T.src ? `<span>${esc(T.src)}</span>` : ""}<span>${esc(T.min)}</span><span>${esc(T.from)}</span></div>${shareHtml(L, a, abs(L, `a/${a.slug}.html`), "top")}</div>
     ${renderArticleBody(a, { lang: L.lang })}
+    ${pathNav(a)}
     <div class="share-end"><p>${en ? "Found this useful? Pass it on." : "觉得有用？转给需要的朋友。"}</p>${shareHtml(L, a, abs(L, `a/${a.slug}.html`), "end")}</div>
     <aside class="disclose"><svg class="i"><use href="#i-info"/></svg><p>${T.disclose}</p></aside>
     ${rel.length ? `<div class="rel"><h3>${T.more}</h3><div class="toc">${rel.map(x => `<a href="${x.slug}.html"><span>${x._day.slice(5)}</span><span>${esc(x.title)}</span><span>${esc(L.cat[x.category] || "")}</span></a>`).join("")}</div></div>` : ""}

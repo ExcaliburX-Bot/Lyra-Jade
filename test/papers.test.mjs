@@ -54,7 +54,12 @@ test("构建：论文精读页有书单，精读过的论文链到文章；论�
   assert.match(page, /<a href="#p-word2vec"><i>1<\/i>/);
   assert.match(page, /已精读 1 \/ 13/);
   assert.ok(fs.existsSync(path.join(dist, "en/papers.html")));
-  assert.match(fs.readFileSync(path.join(dist, "a/p.html"), "utf8"), /论文 NIPS 2017/);
+  const art = fs.readFileSync(path.join(dist, "a/p.html"), "utf8");
+  assert.match(art, /论文 NIPS 2017/);
+  /* 文章底部的路线导航：Transformer 是主线一第 4 篇，前后两篇都没精读，链到书单 */
+  assert.match(art, /class="pathnav"[\s\S]*主线一[\s\S]*第 4 \/ 13 篇/);
+  assert.match(art, /class="pn-prev pn-todo" href="\.\.\/papers\.html#p-bahdanau-attention"/);
+  assert.match(art, /class="pn-next pn-todo" href="\.\.\/papers\.html#p-gpt-1"/);
   const api = JSON.parse(fs.readFileSync(path.join(dist, "api/v1/articles.json"), "utf8"));
   assert.deepEqual(api.articles[0].topics, []);
   fs.rmSync(tmp, { recursive: true, force: true });
