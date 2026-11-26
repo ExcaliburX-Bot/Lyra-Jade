@@ -1,0 +1,826 @@
+{
+  "slug": "bahdanau-attention-neural-machine-translation-align-and-translate",
+  "category": "paper",
+  "publisher": "Bahdanau 等 · 蒙特利尔大学",
+  "date": "2014-09-01",
+  "title": "精读《Bahdanau 注意力》：翻译每个词时都回头看一遍原文，注意力机制从这里开始",
+  "summary": "Seq2Seq 要把整句话压进一个固定长度的向量，句子一长就丢信息。Bahdanau 等人让解码器每生成一个词都回头给源句子的每个词打分、加权求和，注意力机制由此诞生。我们手算一步注意力，拆开双向编码器和对齐图，再看它怎样通向 Transformer。",
+  "ai_summary": "《Neural Machine Translation by Jointly Learning to Align and Translate》（蒙特利尔大学，2014）认为编码器 – 解码器把整句话压成固定长度向量是瓶颈。它让双向 RNN 编码器为每个源词留下一个注释向量，解码器每生成一个词，都用一个小网络给所有注释打分、softmax 成权重、加权求和得到专属的上下文向量，对齐和翻译一起训练。在 WMT'14 英译法上，RNNsearch-50 的 BLEU 为 26.75，没有注意力的模型只有 17.82；训练更久后达到 28.45，在无生僻词的句子上以 36.15 超过 Moses 的 35.63。长句上也不退化，权重还能画成对齐图。",
+  "brief": [
+    "问题：编码器 – 解码器把整句话压进一个固定长度的向量，句子一长翻译质量就迅速下降。",
+    "方法：双向 RNN 给每个源词留一个向量；解码器每一步对它们打分、softmax、加权求和，得到这一步专属的上下文。",
+    "结果：BLEU 从 17.82 提高到 26.75，长句不再退化；无生僻词的句子上超过统计翻译 Moses；权重可以画成对齐图。",
+    "局限：计算量随两个句长相乘，生僻词处理差，仍是难以并行的循环网络；后来由 Transformer 发扬光大。"
+  ],
+  "paper": {
+    "title": "Neural Machine Translation by Jointly Learning to Align and Translate",
+    "authors": "Dzmitry Bahdanau, Kyunghyun Cho, Yoshua Bengio",
+    "org": "蒙特利尔大学、不来梅雅各布大学",
+    "venue": "ICLR 2015",
+    "year": 2014,
+    "arxiv": "1409.0473",
+    "url": "https://arxiv.org/abs/1409.0473"
+  },
+  "cover": {
+    "headline": "Bahdanau 注意力精读",
+    "highlight": "每译一个词，都回头看原文",
+    "glyph": {
+      "kind": "flow",
+      "nodes": [
+        {
+          "label": "打分"
+        },
+        {
+          "label": "softmax"
+        },
+        {
+          "label": "加权求和",
+          "tone": "hi"
+        }
+      ]
+    }
+  },
+  "sections": [
+    {
+      "h": "先说结论：这篇论文到底做了什么",
+      "blocks": [
+        {
+          "p": "2014 年 9 月，蒙特利尔大学的 Dzmitry Bahdanau、Kyunghyun Cho 和 Yoshua Bengio 发布了这篇论文，后来发表在 ICLR 2015。它针对上一篇精读《Seq2Seq》的那个弱点：**编码器必须把整句话压进一个固定长度的向量**。"
+        },
+        {
+          "p": "论文的办法是：编码器不再只交出最后一个向量，而是给源句子的**每个词**都留下一个向量；解码器每生成一个词，都回头把这些向量看一遍，算出“现在该关注哪几个词”，按关注程度加权平均，得到一个专门为这一步准备的上下文向量。论文自己的说法是，这“在解码器里实现了一种**注意力**机制”。"
+        },
+        {
+          "p": "效果最明显的是长句子：没有注意力的模型，句子一长翻译质量就直线下降；有注意力的模型，到 50 个词以上都不退化。单个模型的 BLEU 从 17.82 提高到 26.75，训练更久后达到 28.45；只看不含生僻词的句子，它甚至超过了传统统计翻译系统 Moses（36.15 对 35.63）。"
+        },
+        {
+          "p": "这是“注意力”第一次在机器翻译里大获成功。三年后的 Transformer 把这个想法推到极致，去掉了循环网络，只保留注意力。今天每个大语言模型的每一层，都在做这篇论文开创的那件事：**为当前要输出的内容，去输入里找相关的部分**。"
+        },
+        {
+          "callout": {
+            "kind": "takeaway",
+            "title": "一句话版本",
+            "text": "不要把整句话压成一个向量，而是给每个词各留一个向量；解码器每走一步，都用一个小网络给这些向量打分、softmax 成权重、加权求和，得到这一步专属的上下文。权重本身就是一张“软对齐”表，告诉你每个译文词是从哪几个源词翻译来的。"
+          }
+        },
+        {
+          "callout": {
+            "kind": "prereq",
+            "title": "读这篇需要的三个小概念",
+            "text": "不懂也没关系，这三条够用了：",
+            "list": [
+              "**编码器 – 解码器**：一个循环网络把源句子读成向量，另一个从向量生成译文。详见本主线上一篇《Seq2Seq》。",
+              "**softmax**：把一组任意的分数变成一组加起来等于 1 的正数，分数越高的分到的比例越大。",
+              "**加权平均**：每个向量乘以一个权重再相加。权重加起来等于 1 时，结果就落在这些向量“中间”，偏向权重大的那个。"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "问题：固定长度的向量是瓶颈",
+      "blocks": [
+        {
+          "p": "论文开头就点出了编码器 – 解码器结构的潜在问题：神经网络必须把源句子所有必要的信息压缩进一个固定长度的向量。这对长句子很难，尤其是比训练数据里的句子还长的那些。同组的 Cho 等人此前已经观察到，基本的编码器 – 解码器在输入句子变长时，翻译质量**迅速变差**。"
+        },
+        {
+          "callout": {
+            "kind": "intuition",
+            "title": "像只准记一张便签的翻译员",
+            "text": "让一个翻译员先听完一整段话，只允许他在一张便签上写下要点，然后不看原文，凭便签译出全文。短句子没问题；句子一长，便签写不下，后半句的细节就会丢失或被他“脑补”。注意力机制相当于允许翻译员一边写译文、一边随时回头翻原文，需要哪段看哪段。"
+          }
+        },
+        {
+          "p": "《Seq2Seq》用“把源句子倒过来”缓解了训练上的困难，并报告长句子没有崩。但那篇论文的模型有 8000 维的句子向量和 4 层 LSTM；这篇论文要解决的是结构本身的瓶颈：**无论句子多长，表示都一样大**。"
+        }
+      ]
+    },
+    {
+      "h": "核心想法：每生成一个词，都回头“软搜索”一遍源句子",
+      "blocks": [
+        {
+          "p": "论文把新模型叫做 **RNNsearch**（会搜索的 RNN），对照组是没有注意力的 RNNencdec。和基本的编码器 – 解码器相比，最重要的区别是：它**不试图把整句话编码成一个固定长度的向量**，而是编码成一串向量，在解码时自适应地挑选其中的一部分。"
+        },
+        {
+          "p": "在原来的编码器 – 解码器里，生成每个词都用同一个句子向量 c。新模型里，生成第 i 个词时用的是**专门为它计算的上下文向量** c_{i}："
+        },
+        {
+          "formula": {
+            "expr": "p(y_{i} | y_{1}, …, y_{i−1}, x) ＝ g(y_{i−1}, s_{i}, c_{i})，  s_{i} ＝ f(s_{i−1}, y_{i−1}, c_{i})",
+            "parts": [
+              {
+                "sym": "y_{i}",
+                "desc": "要生成的第 i 个译文词"
+              },
+              {
+                "sym": "s_{i}",
+                "desc": "解码器在第 i 步的隐藏状态，相当于“目前译到哪了、接下来想说什么”"
+              },
+              {
+                "sym": "c_{i}",
+                "desc": "第 i 步专属的上下文向量。旧模型里所有步共用一个 c，这是两者最关键的不同"
+              },
+              {
+                "sym": "g, f",
+                "desc": "两个非线性函数：g 输出下一个词的概率，f 更新解码器状态"
+              }
+            ]
+          }
+        },
+        {
+          "p": "c_{i} 怎么来？分三步：**打分、归一化、加权求和**。"
+        },
+        {
+          "formula": {
+            "expr": "e_{ij} ＝ a(s_{i−1}, h_{j})\nα_{ij} ＝ exp(e_{ij}) / Σ_{k=1}^{T_{x}} exp(e_{ik})\nc_{i} ＝ Σ_{j=1}^{T_{x}} α_{ij} h_{j}",
+            "parts": [
+              {
+                "sym": "h_{j}",
+                "desc": "源句子第 j 个词的“注释”（annotation）：编码器为这个词留下的向量，包含整句话的信息，但重点在第 j 个词附近"
+              },
+              {
+                "sym": "e_{ij}",
+                "desc": "对齐分数：解码器在生成第 i 个词之前的状态 s_{i−1}，和源词 h_{j} 有多“匹配”"
+              },
+              {
+                "sym": "a",
+                "desc": "对齐模型：一个小的前馈网络，和整个翻译模型一起训练"
+              },
+              {
+                "sym": "α_{ij}",
+                "desc": "注意力权重：对所有源词的分数做 softmax，每一步的权重加起来等于 1"
+              },
+              {
+                "sym": "c_{i}",
+                "desc": "按权重把所有源词的注释加权平均，得到这一步的上下文"
+              }
+            ],
+            "note": "论文的另一种解读：把 α_{ij} 看成“第 i 个译文词是从第 j 个源词翻译来的概率”，那么 c_{i} 就是在所有可能的对齐方式下，注释的期望值。"
+          }
+        },
+        {
+          "p": "对齐模型 a 的具体形式（附录 A.1.2）是 a(s_{i−1}, h_{j}) ＝ v_{a}^{⊤} tanh(W_{a} s_{i−1} ＋ U_{a} h_{j})：把解码器状态和源词注释各自变换后相加，过一个 tanh，再投影成一个数。因为 U_{a} h_{j} 和 i 无关，可以对每个源词提前算好，省掉大量重复计算。这种形式后来被称为**加性注意力**，以区别于 Transformer 用的点积注意力。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "手算一步注意力：生成“zone”时，模型把 81% 的注意力给了“Area”",
+            "subtitle": "示意：分数和二维注释向量都是本站编的，用来演示计算过程；真实模型的注释有 2000 维",
+            "columns": [
+              "源词 j",
+              "对齐分数 e_{ij}",
+              "exp(e_{ij})",
+              "注意力权重 α_{ij}",
+              "注释 h_{j}（示意，二维）"
+            ],
+            "rows": [
+              [
+                "European",
+                "0.3",
+                "1.35",
+                "0.089",
+                "(1.0, 0.0)"
+              ],
+              [
+                "Economic",
+                "0.2",
+                "1.22",
+                "0.081",
+                "(0.8, 0.4)"
+              ],
+              [
+                "Area",
+                "2.5",
+                "12.18",
+                "0.806",
+                "(0.1, 1.0)"
+              ],
+              [
+                "<end>",
+                "−1.0",
+                "0.37",
+                "0.024",
+                "(0, 0)"
+              ],
+              [
+                "合计 / 上下文 c_{i}",
+                "",
+                "15.12",
+                "1",
+                "(0.23, 0.84)"
+              ]
+            ],
+            "highlight": {
+              "row": 2
+            },
+            "note": "分数之间只差 2 左右，经过指数放大后，Area 拿走了八成的权重。上下文 c_{i} 因此落在 Area 的注释附近，但也带着一点另外几个词的信息。这就是“软”对齐：不是非此即彼地选一个词，而是给每个词一个比例。"
+          }
+        },
+        {
+          "callout": {
+            "kind": "intuition",
+            "title": "为什么叫“软”搜索",
+            "text": "传统的统计翻译要先决定“哪个源词对应哪个译文词”，这是一个硬性的、离散的选择，没法直接求梯度，只能当作隐藏变量用别的算法估计。这里的权重是连续的、可求导的，翻译误差的梯度可以一路传回对齐模型。于是，**对齐和翻译在同一个目标下一起学**，这正是论文标题“联合学习对齐和翻译”的意思。"
+          }
+        },
+        {
+          "quiz": {
+            "q": "注意力权重 α_{ij} 是用 softmax 算出来的。这保证了什么？",
+            "options": [
+              "每个源词的权重都相等",
+              "对每个译文词 i，所有源词的权重都是正数且加起来等于 1",
+              "只有一个源词的权重不为零",
+              "权重和句子长度无关"
+            ],
+            "answer": 1,
+            "why": "softmax 把任意分数变成和为 1 的正数，所以 c_{i} 是注释的加权平均，模型可以把注意力集中在一个词上，也可以分散在几个词上。它不强制只选一个词，这正是“软”的意思。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "编码器：双向 RNN，让每个词的向量都“看得到”前后文",
+      "blocks": [
+        {
+          "p": "注意力机制要求编码器为每个源词留下一个好的向量 h_{j}。普通 RNN 从左读到右，第 j 个位置的状态只知道前面的词。但翻译一个词常常要看后文，比如英语的 the 该译成法语的 le、la、les 还是 l'，取决于后面的名词。"
+        },
+        {
+          "p": "所以论文用**双向 RNN**：一个 RNN 从左往右读，一个从右往左读，把两边在第 j 个位置的状态拼起来，就是 h_{j}。这样每个词的注释既概括了前文，也概括了后文；又因为 RNN 更擅长记住最近读到的内容，h_{j} 会以第 j 个词附近为重点。"
+        },
+        {
+          "formula": {
+            "expr": "h_{j} ＝ [ →h_{j} ; ←h_{j} ]",
+            "parts": [
+              {
+                "sym": "→h_{j}",
+                "desc": "从左往右读到第 j 个词时的状态（1000 维），概括了 x_{1} 到 x_{j}"
+              },
+              {
+                "sym": "←h_{j}",
+                "desc": "从右往左读到第 j 个词时的状态（1000 维），概括了 x_{j} 到 x_{T}"
+              },
+              {
+                "sym": "[ ; ]",
+                "desc": "拼接：两个 1000 维向量首尾相连，得到 2000 维的注释"
+              }
+            ]
+          }
+        },
+        {
+          "p": "循环网络单元用的是 Cho 等人刚提出的**门控隐藏单元**（后来通称 GRU）：它有“更新门”和“重置门”两道闸门，作用和 LSTM 类似，让梯度能在长距离上流动而不至于消失，但结构更简单。论文说这里换成 LSTM 也可以。"
+        },
+        {
+          "quiz": {
+            "q": "为什么编码器要用双向 RNN，而不是普通的从左往右的 RNN？",
+            "options": [
+              "为了加快训练速度",
+              "为了让每个源词的注释同时包含前文和后文的信息",
+              "为了让句子向量更短",
+              "为了处理生僻词"
+            ],
+            "answer": 1,
+            "why": "注意力会直接取用每个位置的注释，所以每个注释最好都“看过”整句话。单向 RNN 在第 j 个位置只看到了前面的词。双向 RNN 的计算量其实更大，也不改变词表。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "实验：同样的数据，有没有注意力",
+      "blocks": [
+        {
+          "p": "论文在 WMT'14 英译法任务上比较了两类模型：没有注意力的 RNNencdec 和有注意力的 RNNsearch。两者用同样的数据、同样的训练流程。WMT'14 的英法平行语料共 8.5 亿词，按 Cho 等人的方法筛选到 3.48 亿词；测试集是不在训练数据里的 3003 个句子。每种语言只用最常见的 3 万个词，其余换成 [UNK]。"
+        },
+        {
+          "p": "每种模型都训练两次：一次只用不超过 30 个词的句子（-30），一次用不超过 50 个词的句子（-50）。模型规模（附录 A.2.3）："
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "RNNsearch 的规模：隐藏层 1000、词向量 620、对齐模型 1000",
+            "subtitle": "来自论文第 4.2 节和附录 A.2.3",
+            "columns": [
+              "部件",
+              "设置"
+            ],
+            "rows": [
+              [
+                "编码器",
+                "双向，前向和后向 RNN 各 1000 个门控隐藏单元；注释 h_{j} 为 2000 维"
+              ],
+              [
+                "解码器",
+                "1000 个门控隐藏单元"
+              ],
+              [
+                "词向量维度",
+                "620"
+              ],
+              [
+                "对齐模型隐藏层",
+                "1000"
+              ],
+              [
+                "输出层",
+                "一层 500 个 maxout 单元，再接 3 万词的 softmax"
+              ],
+              [
+                "训练",
+                "每批 80 个句子，随机梯度下降 ＋ Adadelta，每个模型训练约 5 天"
+              ],
+              [
+                "解码",
+                "束搜索"
+              ]
+            ]
+          }
+        },
+        {
+          "callout": {
+            "kind": "note",
+            "title": "和《Seq2Seq》不完全可比",
+            "text": "两篇论文几乎同时发表，用的是同一份筛选过的 WMT'14 数据，但设置差别不小：Seq2Seq 是 4 层 LSTM、8 万词的法语词表、5 个模型集成、源句倒序；这里是单层门控单元、3 万词词表、单个模型。所以 Seq2Seq 的 34.81 和这里的 28.45 不能直接比较。Seq2Seq 论文的表 1 里也列了这个 28.45。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "结果：长句子不再崩溃",
+      "blocks": [
+        {
+          "fig": {
+            "type": "table",
+            "title": "有注意力的模型全面领先；只看无生僻词的句子，甚至超过了统计翻译",
+            "subtitle": "BLEU，来自论文表 1。“无生僻词”指源句和参考译文里都没有词表外的词，此时也禁止模型输出 [UNK]。蓝色列是无生僻词的成绩",
+            "columns": [
+              "模型",
+              "全部句子",
+              "无生僻词的句子"
+            ],
+            "rows": [
+              [
+                "RNNencdec-30",
+                "13.93",
+                "24.19"
+              ],
+              [
+                "RNNsearch-30",
+                "21.50",
+                "31.44"
+              ],
+              [
+                "RNNencdec-50",
+                "17.82",
+                "26.71"
+              ],
+              [
+                "RNNsearch-50",
+                "26.75",
+                "34.16"
+              ],
+              [
+                "RNNsearch-50（训练更久）",
+                "28.45",
+                "36.15"
+              ],
+              [
+                "Moses（短语式统计翻译）",
+                "33.30",
+                "35.63"
+              ]
+            ],
+            "highlight": {
+              "col": 2
+            },
+            "note": "训练更久的那个版本一直训练到验证集不再提升，用了 252 小时，约为其他模型的两倍多。Moses 还额外用了 4.18 亿词的单语语料，神经网络模型没用。"
+          }
+        },
+        {
+          "p": "几个值得注意的对比：只用 30 词以内句子训练的 RNNsearch-30（21.50），已经超过了用 50 词以内句子训练的 RNNencdec-50（17.82）。在无生僻词的句子上，训练更久的 RNNsearch-50 达到 36.15，高于 Moses 的 35.63。论文称之为一项重要成就，因为 Moses 还用了一份 4.18 亿词的单语语料。"
+        },
+        {
+          "p": "**长句子**是这篇论文最核心的证据。论文图 2 把测试句按长度排列：RNNencdec 的 BLEU 随句子变长急剧下降；RNNsearch-30 和 RNNsearch-50 都稳得多，**RNNsearch-50 在 50 个词以上的句子上也没有退化**。"
+        },
+        {
+          "p": "论文举了一个具体例子。源句子是：“An admitting privilege is the right of a doctor to admit a patient to a hospital or a medical centre to carry out a diagnosis or a procedure, based on his status as a health care worker at a hospital.” RNNencdec-50 译到“a medical centre”之前都正确，之后就跑偏了，把“基于他作为医院医护人员的身份”译成了“基于他的健康状况”。RNNsearch-50 则完整、准确地译出了整句。"
+        },
+        {
+          "quiz": {
+            "q": "RNNsearch-30 只用不超过 30 个词的句子训练，却超过了用 50 个词以内句子训练的 RNNencdec-50。这最能说明什么？",
+            "options": [
+              "30 个词以内的数据质量更高",
+              "注意力带来的结构改进，比多用长句子训练更重要",
+              "RNNencdec 训练得不够久",
+              "BLEU 偏爱短句子"
+            ],
+            "answer": 1,
+            "why": "RNNencdec-50 见过更长的句子，按理更擅长长句，但仍然输给了没见过长句的 RNNsearch-30。差别只在结构：有没有注意力。论文用这一点进一步证明了固定长度向量是瓶颈。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "打开模型看：注意力权重就是一张对齐图",
+      "blocks": [
+        {
+          "p": "注意力机制有一个意外的好处：**可以直接看到模型在想什么**。把每个译文词对每个源词的权重 α_{ij} 画成一张灰度图，就是一张“软对齐”图。论文图 3 展示了四张。"
+        },
+        {
+          "fig": {
+            "type": "heatmap",
+            "title": "形容词和名词的顺序在英法之间是反的，注意力自动“跳”了过去",
+            "subtitle": "示意：根据论文图 3(a) 的文字描述画出的简化版，数值是本站编的；行是生成的法语词，列是英语源词",
+            "rows": [
+              "zone",
+              "économique",
+              "européenne"
+            ],
+            "cols": [
+              "European",
+              "Economic",
+              "Area"
+            ],
+            "values": [
+              [
+                0.05,
+                0.1,
+                0.85
+              ],
+              [
+                0.1,
+                0.8,
+                0.1
+              ],
+              [
+                0.85,
+                0.1,
+                0.05
+              ]
+            ],
+            "highlight": {
+              "row": 0
+            },
+            "note": "英语说 European Economic Area，法语说 zone économique européenne，顺序正好相反。论文描述，模型生成 zone 时跳过两个词直接对准 Area，之后每次往回看一个词，补全整个短语。"
+          }
+        },
+        {
+          "p": "从这些图里能看到：英法之间的对齐**大体是单调的**，权重主要落在对角线上；但也有不少非单调的对齐，比如上面这种形容词和名词的语序差异。"
+        },
+        {
+          "p": "**软对齐比硬对齐好在哪**。论文图 3(d) 里，源短语 the man 被译成 l'homme。任何硬对齐都会把 the 对应 l'，把 man 对应 homme。但 the 该译成 le、la、les 还是 l'，取决于后面的词是什么、以什么字母开头。软对齐让模型生成 l' 时同时看着 the 和 man，自然地解决了这个问题。软对齐还能处理源短语和译文短语长度不同的情况，不需要硬对齐里那种把词对到“空”（[NULL]）上的别扭做法。"
+        },
+        {
+          "callout": {
+            "kind": "myth",
+            "title": "注意力权重 ＝ 模型的推理过程？",
+            "text": "注意力图很直观，但它只说明“生成这个词时，上下文向量主要来自哪些位置”，并不等于完整解释了模型为什么这样翻译。解码器的隐藏状态、输出层同样参与决定。后来的研究也发现，注意力权重和模型决策之间的关系比看起来复杂。把它当作一扇有用的窗户即可。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "代价和局限",
+      "blocks": [
+        {
+          "list": [
+            "**计算量随两个句长相乘**：对每个译文词，都要给源句子的每个词打一次分，一对句子要算 T_{x} × T_{y} 次。论文说翻译里大多数句子只有 15 到 40 个词，问题不大，但这可能限制它在其他任务上的应用。三年后的 Transformer 也有同样的平方级代价，长文本的注意力开销至今仍是研究热点。",
+            "**生僻词**：3 万词的词表让含生僻词的句子大幅丢分（全部句子 28.45 对无生僻词句子 36.15）。论文结论里说，更好地处理生僻词是未来的挑战。",
+            "**仍然是循环网络**：编码器和解码器都要一个词一个词地算，训练难以并行，每个模型训练了约 5 天，最好的那个约 10 天。",
+            "**只做了英译法**：论文提到英译德这类需要远距离调序的语言对会更难，但没有实验。"
+          ]
+        },
+        {
+          "p": "**文中几处小出入**：第 5.2.1 节描述对齐图时，同一个法语短语先写成 zone économique européen，几行之后又写成 européenne（后者才是正确的阴性形式）。第 4.2 节说每个模型训练约 5 天，附录表 2 里训练更久的 RNNsearch-50 用了 252 小时（约 10.5 天），表 1 的注释已经说明它训练得更久。"
+        }
+      ]
+    },
+    {
+      "h": "之后的故事：从“回头看”到“只看注意力”",
+      "blocks": [
+        {
+          "p": "论文提到，用一个可微分的注意力机制让网络关注输入的不同部分，Graves（2013）在手写体生成里已经做过，但那种注意力只能单调地往前移动，不适合需要调序的翻译。这篇论文的注意力可以在源句子里任意跳跃，这是它能在翻译里成功的关键。"
+        },
+        {
+          "p": "沿着学习主线往后看："
+        },
+        {
+          "list": [
+            "**2015 年起**：注意力几乎成了所有编码器 – 解码器模型的标配，用在翻译、摘要、图像描述、语音识别等任务上。",
+            "**2017 年《Transformer》**：如果注意力这么好用，为什么还要循环网络？Transformer 用“自注意力”让句子里的每个词都去关注其他所有词，完全去掉了 RNN，从而可以并行训练。它把这里的对齐模型换成了更简单的缩放点积，并把 s_{i−1} 和 h_{j} 的角色正式命名为查询（Query）、键（Key）和值（Value）。",
+            "**今天的大语言模型**：每一层都有几十个注意力头，每个头都在做这篇论文的那三步：打分、softmax、加权求和。"
+          ]
+        },
+        {
+          "p": "下一篇是 GPT-1（2018）：它把 Transformer 的解码器单独拿出来，先在大量无标注文本上预训练，再微调到具体任务上。从这里开始，主线从“翻译”转向“通用的语言模型”。"
+        }
+      ]
+    },
+    {
+      "h": "检验一下：你吃透了吗",
+      "blocks": [
+        {
+          "quiz": {
+            "q": "如果把 RNNsearch 每一步的上下文向量 c_{i} 都固定成编码器最后一个前向状态，模型会变成什么？",
+            "options": [
+              "Transformer",
+              "没有注意力的 RNN 编码器 – 解码器",
+              "统计机器翻译",
+              "双向语言模型"
+            ],
+            "answer": 1,
+            "why": "论文附录明确说：把 c_{i} 固定为 →h_{T_{x}}，模型就退化成 Cho 等人的 RNN 编码器 – 解码器。注意力的全部意义就在于 c_{i} 随 i 变化。"
+          }
+        },
+        {
+          "quiz": {
+            "q": "对齐模型里 U_{a} h_{j} 这一项可以“提前算好”。为什么？",
+            "options": [
+              "因为它很小",
+              "因为它只和源词有关，和正在生成第几个译文词无关",
+              "因为它是常数",
+              "因为 h_{j} 是随机初始化的"
+            ],
+            "answer": 1,
+            "why": "U_{a} h_{j} 只依赖源句子，生成每个译文词时都一样，所以每个源词只需算一次；每一步只需重新算和解码器状态有关的 W_{a} s_{i−1}。这是论文为了降低 T_{x} × T_{y} 次打分的成本而做的设计。"
+          }
+        },
+        {
+          "p": "读完这篇，你应该能回答下面这些问题："
+        },
+        {
+          "list": [
+            "固定长度的句子向量为什么是瓶颈？",
+            "上下文向量 c_{i} 是怎样通过打分、softmax、加权求和得到的？",
+            "α_{ij} 可以怎样理解？为什么说这是“软”对齐？",
+            "为什么编码器要用双向 RNN？h_{j} 包含了什么信息？",
+            "论文怎样证明注意力解决了长句子问题？",
+            "the man → l'homme 这个例子说明了软对齐的什么优点？",
+            "注意力的计算代价随什么增长？",
+            "这里的注意力和 Transformer 的注意力有哪些相同、哪些不同？"
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Neural Machine Translation by Jointly Learning to Align and Translate（arXiv:1409.0473 第 7 版）",
+      "publisher": "Bahdanau 等 · 蒙特利尔大学",
+      "date": "2016-05-19",
+      "url": "https://arxiv.org/abs/1409.0473"
+    },
+    "note": "本文依据论文 arXiv 第 7 版（2016 年 5 月，即 ICLR 2015 正式版），首版发布于 2014 年 9 月。标注「示意」的图表由本站编写，用来演示计算过程。和 Seq2Seq 的对比数字来自其论文；“注意力权重与模型决策关系复杂”是后续研究的一般结论，不在这篇论文里。"
+  },
+  "claims": [
+    {
+      "text": "ICLR 2015、arXiv 第 7 版",
+      "value": "1409.0473v7",
+      "source_url": "https://arxiv.org/abs/1409.0473",
+      "quote": "arXiv:1409.0473v7 [cs.CL] 19 May 2016",
+      "as_written": "第 7 版"
+    },
+    {
+      "text": "Cho 等观察到长句迅速变差",
+      "value": "deteriorates rapidly",
+      "source_url": "https://arxiv.org/abs/1409.0473",
+      "quote": "the performance of a basic encoder–decoder deteriorates rapidly as the length of an input sentence increases",
+      "as_written": "迅速变差"
+    },
+    {
+      "text": "WMT'14 共 8.5 亿词",
+      "value": "850M words",
+      "source_url": "https://arxiv.org/abs/1409.0473",
+      "quote": "totaling 850M words",
+      "as_written": "8.5 亿"
+    },
+    {
+      "text": "筛选到 3.48 亿词",
+      "value": "348M words",
+      "source_url": "https://arxiv.org/abs/1409.0473",
+      "quote": "we reduce the size of the combined corpus to have 348M words",
+      "as_written": "3.48 亿"
+    },
+    {
+      "text": "测试集 3003 句",
+      "value": "3003",
+      "source_url": "https://arxiv.org/abs/1409.0473",
+      "quote": "which consists of 3003 sentences not present in the training data",
+      "as_written": "3003 个"
+    },
+    {
+      "text": "3 万词",
+      "value": "30,000",
+      "source_url": "https://arxiv.org/abs/1409.0473",
+      "quote": "we use a shortlist of 30,000 most frequent words in each language",
+      "as_written": "3 万"
+    },
+    {
+      "text": "1000 个隐藏单元",
+      "value": "1000 hidden units",
+      "source_url": "https://arxiv.org/abs/1409.0473",
+      "quote": "The encoder of the RNNsearch consists of forward and backward recurrent neural networks (RNN) each having 1000 hidden units",
+      "as_written": "1000 个"
+    },
+    {
+      "text": "每批 80 句、约 5 天",
+      "value": "80",
+      "source_url": "https://arxiv.org/abs/1409.0473",
+      "quote": "Each SGD update direction is computed using a minibatch of 80 sentences",
+      "as_written": "80 个"
+    },
+    {
+      "text": "训练约 5 天",
+      "value": "5 days",
+      "source_url": "https://arxiv.org/abs/1409.0473",
+      "quote": "We trained each model for approximately 5 days",
+      "as_written": "5 天"
+    },
+    {
+      "text": "词向量 620、maxout 500、对齐 1000",
+      "value": "620",
+      "source_url": "https://arxiv.org/abs/1409.0473",
+      "quote": "the word embedding dimensionality m is 620 and the size of the maxout hidden layer in the deep output l is 500",
+      "as_written": "620"
+    },
+    {
+      "text": "maxout 500",
+      "value": "500",
+      "source_url": "https://arxiv.org/abs/1409.0473",
+      "quote": "the size of the maxout hidden layer in the deep output l is 500",
+      "as_written": "500"
+    },
+    {
+      "text": "表 1：RNNencdec-30 13.93 / 24.19",
+      "value": "13.93",
+      "source_url": "https://arxiv.org/abs/1409.0473",
+      "quote": "13.93",
+      "as_written": "13.93"
+    },
+    {
+      "text": "24.19",
+      "value": "24.19",
+      "source_url": "https://arxiv.org/abs/1409.0473",
+      "quote": "24.19",
+      "as_written": "24.19"
+    },
+    {
+      "text": "表 1：RNNsearch-30 21.50 / 31.44",
+      "value": "21.50",
+      "source_url": "https://arxiv.org/abs/1409.0473",
+      "quote": "21.50",
+      "as_written": "21.50"
+    },
+    {
+      "text": "31.44",
+      "value": "31.44",
+      "source_url": "https://arxiv.org/abs/1409.0473",
+      "quote": "31.44",
+      "as_written": "31.44"
+    },
+    {
+      "text": "表 1：RNNencdec-50 17.82 / 26.71",
+      "value": "17.82",
+      "source_url": "https://arxiv.org/abs/1409.0473",
+      "quote": "17.82",
+      "as_written": "17.82"
+    },
+    {
+      "text": "26.71",
+      "value": "26.71",
+      "source_url": "https://arxiv.org/abs/1409.0473",
+      "quote": "26.71",
+      "as_written": "26.71"
+    },
+    {
+      "text": "表 1：RNNsearch-50 26.75 / 34.16",
+      "value": "26.75",
+      "source_url": "https://arxiv.org/abs/1409.0473",
+      "quote": "26.75",
+      "as_written": "26.75"
+    },
+    {
+      "text": "34.16",
+      "value": "34.16",
+      "source_url": "https://arxiv.org/abs/1409.0473",
+      "quote": "34.16",
+      "as_written": "34.16"
+    },
+    {
+      "text": "表 1：RNNsearch-50* 28.45 / 36.15",
+      "value": "28.45",
+      "source_url": "https://arxiv.org/abs/1409.0473",
+      "quote": "28.45",
+      "as_written": "28.45"
+    },
+    {
+      "text": "36.15",
+      "value": "36.15",
+      "source_url": "https://arxiv.org/abs/1409.0473",
+      "quote": "36.15",
+      "as_written": "36.15"
+    },
+    {
+      "text": "表 1：Moses 33.30 / 35.63",
+      "value": "35.63",
+      "source_url": "https://arxiv.org/abs/1409.0473",
+      "quote": "35.63",
+      "as_written": "35.63"
+    },
+    {
+      "text": "Moses 33.30",
+      "value": "33.30",
+      "source_url": "https://arxiv.org/abs/1409.0473",
+      "quote": "33.30",
+      "as_written": "33.30"
+    },
+    {
+      "text": "Moses 多用 4.18 亿词单语语料",
+      "value": "418M",
+      "source_url": "https://arxiv.org/abs/1409.0473",
+      "quote": "Moses uses a separate monolingual corpus (418M words)",
+      "as_written": "4.18 亿"
+    },
+    {
+      "text": "表 2：252 小时",
+      "value": "252",
+      "source_url": "https://arxiv.org/abs/1409.0473",
+      "quote": "252",
+      "as_written": "252 小时"
+    },
+    {
+      "text": "句子多为 15–40 词",
+      "value": "15–40",
+      "source_url": "https://arxiv.org/abs/1409.0473",
+      "quote": "most of input and output sentences are only 15–40 words",
+      "as_written": "15 到 40"
+    },
+    {
+      "text": "50 词以上不退化",
+      "value": "50 or more",
+      "source_url": "https://arxiv.org/abs/1409.0473",
+      "quote": "shows no performance deterioration even with sentences of length 50 or more",
+      "as_written": "50 个词"
+    },
+    {
+      "text": "约 30 个词后开始跑偏",
+      "value": "30 words",
+      "source_url": "https://arxiv.org/abs/1409.0473",
+      "quote": "after generating approximately 30 words",
+      "as_written": "30 个"
+    },
+    {
+      "text": "Seq2Seq：34.81",
+      "value": "34.81",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "we obtained a BLEU score of 34.81",
+      "as_written": "34.81"
+    },
+    {
+      "text": "Seq2Seq：8 万词",
+      "value": "80k",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "an LSTM with a vocabulary of 80k words",
+      "as_written": "8 万"
+    },
+    {
+      "text": "Seq2Seq：8000 维",
+      "value": "8,000",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "with 384M parameters and 8,000 dimensional state each",
+      "as_written": "8000"
+    },
+    {
+      "text": "Seq2Seq：4 层",
+      "value": "4 layers",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "We used deep LSTMs with 4 layers",
+      "as_written": "4 层"
+    },
+    {
+      "text": "Seq2Seq：5 个集成",
+      "value": "5 deep LSTMs",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "an ensemble of 5 deep LSTMs",
+      "as_written": "5 个"
+    },
+    {
+      "text": "约 10 天（本站按 252 小时换算）",
+      "value": "252",
+      "source_url": "https://arxiv.org/abs/1409.0473",
+      "quote": "252",
+      "as_written": "10 天"
+    },
+    {
+      "text": "约 10.5 天（本站按 252 小时换算）",
+      "value": "252",
+      "source_url": "https://arxiv.org/abs/1409.0473",
+      "quote": "252",
+      "as_written": "10.5 天"
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "tier": "primary",
+    "writer": "论文精读"
+  }
+}
