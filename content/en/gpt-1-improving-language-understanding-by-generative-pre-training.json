@@ -1,0 +1,1235 @@
+{
+  "slug": "gpt-1-improving-language-understanding-by-generative-pre-training",
+  "category": "paper",
+  "publisher": "Radford et al. · OpenAI",
+  "date": "2018-06-11",
+  "title": "GPT-1: predict the next word, then fine-tune on the task — where pretraining + fine-tuning became the template",
+  "summary": "GPT-1 first trains a 12-layer Transformer decoder to predict the next word across more than 7,000 books, then converts every task into a single text sequence for fine-tuning. One general-purpose model sets new records on 9 of 12 datasets. We unpack the pretraining and fine-tuning equations, the input transformations, the ablations, and the early signs of zero-shot behavior — and show how it split the road toward BERT and GPT-2.",
+  "ai_summary": "“Improving Language Understanding by Generative Pre-Training” (OpenAI, 2018) first pretrains a 12-layer, 768-dimensional Transformer decoder on more than 7,000 books with a language modeling objective, then fine-tunes it on labeled data for each task. The only addition is a linear output layer, because sentence pairs, questions, and answer options are all assembled into a single delimited text sequence. It sets records on 9 of 12 datasets: +8.9 points on Story Cloze, +5.7 on RACE, and a 72.8 GLUE score. Removing pretraining drops the average score from 74.7 to 59.9; zero-shot experiments without fine-tuning improve steadily with pretraining, foreshadowing GPT-2.",
+  "brief": [
+    "Problem: labeled data is scarce, unlabeled text is abundant. Pretrained word vectors only transfer word-level information; there is no good way yet to transfer higher-level knowledge.",
+    "Method: pretrain a 12-layer Transformer decoder on BooksCorpus with next-word prediction, then convert each task's input into a text sequence and add a linear layer for fine-tuning.",
+    "Results: new records on 9 of 12 datasets. Removing pretraining costs 14.8 points on average; swapping in an LSTM costs 5.6. Zero-shot ability improves steadily with pretraining.",
+    "Limits: unidirectional, still requires fine-tuning per task, small scale. BERT went bidirectional; GPT-2 chose to scale up and drop fine-tuning."
+  ],
+  "paper": {
+    "title": "Improving Language Understanding by Generative Pre-Training",
+    "authors": "Alec Radford, Karthik Narasimhan, Tim Salimans, Ilya Sutskever",
+    "org": "OpenAI",
+    "venue": "OpenAI preprint",
+    "year": 2018,
+    "url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf"
+  },
+  "cover": {
+    "headline": "A close reading of the original GPT-1 paper",
+    "highlight": "Predict the next word first, then take on the task",
+    "glyph": {
+      "kind": "flow",
+      "nodes": [
+        {
+          "label": "7,000 books"
+        },
+        {
+          "label": "Predict the next word",
+          "tone": "hi"
+        },
+        {
+          "label": "Fine-tuned to the task"
+        }
+      ]
+    }
+  },
+  "sections": [
+    {
+      "h": "What this paper actually did",
+      "blocks": [
+        {
+          "p": "In June 2018, OpenAI's Alec Radford, Karthik Narasimhan, Tim Salimans, and Ilya Sutskever released this 12-page paper. It never appeared on arXiv; it was simply a preprint on OpenAI's website, and it came to be known as **GPT-1**. The GPT is the title's Generative Pre-Training."
+        },
+        {
+          "p": "The method has two steps. First, **pretraining**: take a 12-layer Transformer decoder and train it to predict the next word on more than 7,000 unpublished books, with no human labels needed. Second, **fine-tuning**: continue training on a small amount of labeled data for each task — deciding whether two sentences contradict, answering multiple-choice reading comprehension questions, detecting sentiment, among others — with only a simple output layer added. To fit every task into the same model, the paper assembles structured inputs such as sentence pairs, questions, and answer options into a single text sequence, leaving the model architecture almost unchanged."
+        },
+        {
+          "p": "The result: a general-purpose model designed for no particular task set new state-of-the-art scores on 9 of 12 datasets — up 8.9 points on commonsense reasoning (Story Cloze) and 5.7 points on reading comprehension (RACE). Remove pretraining and the average score drops by 14.8 points."
+        },
+        {
+          "p": "This paper established the standard NLP recipe for the next several years: **pretrain on massive unlabeled text, then fine-tune on a specific task**. Four months later, BERT adopted the same framework and swapped in a bidirectional encoder. GPT-2 and GPT-3 went the other way — decoder-only and ever larger — leading to today's large language models."
+        },
+        {
+          "callout": {
+            "kind": "takeaway",
+            "title": "One-sentence version",
+            "text": "GPT-1 = pretrain a 12-layer Transformer decoder on more than 7,000 books to predict the next word + fine-tune by converting each task's input into a text sequence and adding a linear layer. One general model outperforms task-specific systems on 9 of 12 tasks, proving that what generative pretraining learns can transfer."
+          }
+        },
+        {
+          "callout": {
+            "kind": "prereq",
+            "title": "Three small concepts you need before reading",
+            "text": "Don't worry if they're unfamiliar; these three are enough:",
+            "list": [
+              "**Transformer decoder**: the generation half of the Transformer, where each position can see only the words before it, via masked self-attention. See our close reading of Transformer for details.",
+              "**Language model**: predict the next word from the preceding text. Training one needs no human labels — any text will do.",
+              "**Fine-tuning**: take a pretrained model and train it a bit longer on new-task data, nudging the parameters toward the new objective."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "The problem: scarce labeled data, nearly unlimited unlabeled text",
+      "blocks": [
+        {
+          "p": "Natural language understanding covers many tasks: textual entailment (judging whether one sentence follows from another), question answering, semantic similarity, and text classification. Each task needs manually labeled data, and labeling is slow and expensive. The paper opens by noting that large-scale unlabeled text is everywhere while labeled data remains scarce, so models trained only on labeled data struggle."
+        },
+        {
+          "p": "At the time, the most successful way to use unlabeled text was **pretrained word vectors** (word2vec and the like), covered in the first article of this series. But they transfer only word-level information. Trying to transfer higher-level knowledge — sentence structure, semantics, common sense — hits two problems:"
+        },
+        {
+          "list": [
+            "**What objective to pretrain with**: language modeling, machine translation, discourse coherence — each had its wins in the research of the time, with no consensus.",
+            "**How to transfer to downstream tasks**: some added task-specific architecture on top of the pretrained model, some used intricate training schemes, some added auxiliary objectives — all cumbersome."
+          ]
+        },
+        {
+          "callout": {
+            "kind": "intuition",
+            "title": "First read widely, then do targeted drills",
+            "text": "Have a student read widely first (pretraining), and they will implicitly pick up grammar, common sense, and how stories unfold. Give them a small amount of targeted practice afterward (fine-tuning), and they catch on quickly. That is much easier than asking a student who has never read to master reading comprehension from a few thousand drill questions alone. GPT-1 turns this intuition into a system that set records on 9 tasks."
+          }
+        },
+        {
+          "p": "Similar ideas had been tried before GPT-1. Dai and Le (2015) and Howard and Ruder (ULMFiT, 2018) pretrained LSTM language models and fine-tuned them for text classification. The paper argues that LSTMs can use only a short context window, while Transformers capture longer-range structure, and that the approach had to be proven on a much wider set of tasks than text classification."
+        }
+      ]
+    },
+    {
+      "h": "Step one: pretraining by predicting the next word",
+      "blocks": [
+        {
+          "p": "The pretraining objective is a standard language model: given a long unlabeled text U = {u_{1}, …, u_{n}}, maximize the sum of the log probabilities of each token given the previous k tokens."
+        },
+        {
+          "formula": {
+            "expr": "L_{1}(U) = Σ_{i} log P(u_{i} | u_{i−k}, …, u_{i−1}; Θ)",
+            "parts": [
+              {
+                "sym": "u_{i}",
+                "desc": "The i-th token in the text"
+              },
+              {
+                "sym": "k",
+                "desc": "Context window size: how many tokens the model can look back. GPT-1 uses 512."
+              },
+              {
+                "sym": "Θ",
+                "desc": "All parameters of the neural network"
+              },
+              {
+                "sym": "Σ log P",
+                "desc": "Sum the log probability of getting each position right. Maximizing this means making the model predict the next word as accurately as possible."
+              }
+            ]
+          }
+        },
+        {
+          "p": "The model is a **decoder-only Transformer**: token embeddings and position embeddings are added as input, passed through 12 transformer blocks, then multiplied by the transpose of the token embedding matrix and softmaxed to produce the next-word probability."
+        },
+        {
+          "formula": {
+            "expr": "h_{0} = U W_{e} + W_{p}\nh_{l} = transformer_block(h_{l−1}), l = 1, …, n\nP(u) = softmax(h_{n} W_{e}^{⊤})",
+            "parts": [
+              {
+                "sym": "W_{e}",
+                "desc": "Token embedding matrix: one vector per row for each token."
+              },
+              {
+                "sym": "W_{p}",
+                "desc": "Position embedding matrix: GPT-1 uses learned position embeddings instead of the original Transformer's sinusoidal version."
+              },
+              {
+                "sym": "transformer_block",
+                "desc": "One transformer block: masked multi-head self-attention + position-wise feed-forward network."
+              },
+              {
+                "sym": "W_{e}^{⊤}",
+                "desc": "The output layer reuses the transpose of the embedding matrix rather than introducing new parameters: the same table maps words to vectors on input and vectors to words on output."
+              }
+            ]
+          }
+        },
+        {
+          "callout": {
+            "kind": "intuition",
+            "title": "Why decoder-only?",
+            "text": "The original Transformer had an encoder (reading) and a decoder (writing), designed for translation. A language model only needs to predict the next word from the preceding text, so it uses only the decoder half: each position can see only the words to its left, enforced by a mask so the model cannot peek at the answer. That decoder-only structure persists today in the GPT family and most large language models."
+          }
+        },
+        {
+          "p": "**Pretraining data** is BooksCorpus: more than 7,000 unpublished books across genres such as adventure, fantasy, and romance. The paper emphasizes the reason for this choice: books contain **long stretches of contiguous text**, so the model can learn to exploit very long context. The similarly sized alternative — the 1B Word Benchmark used by ELMo — is shuffled at the sentence level, destroying long-range structure. GPT-1 reaches a token-level perplexity as low as 18.4 on this corpus."
+        }
+      ]
+    },
+    {
+      "h": "Model and training configuration",
+      "blocks": [
+        {
+          "fig": {
+            "type": "table",
+            "title": "GPT-1's configuration: 12 layers, 768 dimensions, 12 attention heads",
+            "subtitle": "From section 4.1 of the paper.",
+            "columns": [
+              "Item",
+              "Setting"
+            ],
+            "rows": [
+              [
+                "Architecture",
+                "12-layer decoder-only Transformer with masked self-attention"
+              ],
+              [
+                "Hidden dimension / attention heads",
+                "768 dimensions, 12 heads"
+              ],
+              [
+                "Feed-forward inner dimension",
+                "3072"
+              ],
+              [
+                "Context length",
+                "512 tokens"
+              ],
+              [
+                "Tokenization",
+                "BPE, 40,000 merges"
+              ],
+              [
+                "Optimizer",
+                "Adam, max learning rate 2.5 × 10^{−4}; linear warmup for the first 2,000 updates, then cosine annealing to 0"
+              ],
+              [
+                "Training amount",
+                "100 epochs, batches of 64 contiguous 512-token sequences"
+              ],
+              [
+                "Regularization",
+                "Residual, embedding, and attention dropout at 0.1; modified L2 regularization with w = 0.01"
+              ],
+              [
+                "Other",
+                "GELU activation; weights initialized from N(0, 0.02); learned position embeddings"
+              ]
+            ]
+          }
+        },
+        {
+          "p": "The paper never states the parameter count directly. Using the Transformer's arithmetic (roughly 12 × d^{2} parameters per layer), we can estimate it:"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "GPT-1 has about 117 million parameters, roughly a quarter of them in the vocabulary.",
+            "subtitle": "Illustrative estimate by Lyra-Jade from the paper's configuration; vocabulary size is taken as about 40,000 based on the 40,000 BPE merges.",
+            "columns": [
+              "Component",
+              "Calculation",
+              "Approx. count"
+            ],
+            "rows": [
+              [
+                "12 transformer blocks",
+                "12 layers × 12 × 768^{2}",
+                "85 million"
+              ],
+              [
+                "Token embeddings",
+                "≈ 40,000 × 768",
+                "31 million"
+              ],
+              [
+                "Position embeddings",
+                "512 × 768",
+                "390,000"
+              ],
+              [
+                "Output layer",
+                "Reuses token embeddings; not counted separately",
+                "0"
+              ],
+              [
+                "Total",
+                "",
+                "About 116 million"
+              ]
+            ],
+            "highlight": {
+              "row": 4
+            },
+            "note": "The GPT-2 paper says its smallest model (117 million parameters) is 'equivalent to the original GPT,' which matches this estimate. For comparison, the Seq2Seq model in the previous article has 384 million parameters; GPT-3 has 175 billion."
+          }
+        },
+        {
+          "p": "**Fine-tuning setup**: most tasks reuse the pretraining hyperparameters. The classifier gets dropout of 0.1, the learning rate is 6.25 × 10^{−5}, batch size is 32, and the learning rate warms up over the first 0.2% of updates then decays linearly. Fine-tuning is fast: **3 epochs are enough for most tasks**."
+        }
+      ]
+    },
+    {
+      "h": "Step two: fine-tuning and turning every task into a single text sequence",
+      "blocks": [
+        {
+          "p": "For fine-tuning, pass each labeled example — input tokens x_{1}, …, x_{m} with label y — through the pretrained model, take the final layer's activation at the last position h_{l}^{m}, and feed it into a new linear output layer W_{y} for classification:"
+        },
+        {
+          "formula": {
+            "expr": "P(y | x_{1}, …, x_{m}) = softmax(h_{l}^{m} W_{y})\nL_{2}(C) = Σ_{(x,y)} log P(y | x_{1}, …, x_{m})\nL_{3}(C) = L_{2}(C) + λ · L_{1}(C)",
+            "parts": [
+              {
+                "sym": "h_{l}^{m}",
+                "desc": "The output of the final Transformer layer at the last input token. Because the decoder can only look left, the final position has effectively 'seen' the whole input."
+              },
+              {
+                "sym": "W_{y}",
+                "desc": "The only new weight matrix added during fine-tuning; the only other additions are a few delimiter and start/end embeddings."
+              },
+              {
+                "sym": "L_{2}",
+                "desc": "The task's own objective: predict the label correctly."
+              },
+              {
+                "sym": "L_{3}",
+                "desc": "The actual optimized objective: task objective + λ times the language-model objective, with λ = 0.5. The model keeps predicting the next word on task data as an auxiliary signal."
+              }
+            ],
+            "note": "The paper says the auxiliary language-model objective has two benefits: better generalization for the supervised model and faster convergence. But the ablations later will show this benefit does not always hold."
+          }
+        },
+        {
+          "p": "The clever part is the **input transformation**. During pretraining the model sees only continuous text, but many task inputs are structured: a pair of sentences, or a passage plus a question plus several options. The old approach was to build a task-specific architecture on top of the pretrained model, which introduced many parameters that were never pretrained. GPT-1 instead **assembles structured input into one sequence**, separated by special delimiter tokens, and every transformation adds randomly initialized start and end tokens."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Four task types, all assembled into one text sequence for the same model",
+            "subtitle": "Illustrative: based on paper section 3.3 and Figure 1; <s> is the start token, $ the delimiter, and <e> the end token (the output at its position is used for classification).",
+            "columns": [
+              "Task",
+              "Original input",
+              "Assembled input",
+              "How the output is produced"
+            ],
+            "rows": [
+              [
+                "Classification",
+                "A piece of text",
+                "<s> text <e>",
+                "Linear layer + softmax"
+              ],
+              [
+                "Textual entailment",
+                "Premise p, hypothesis h",
+                "<s> p $ h <e>",
+                "Linear layer decides entailment, contradiction, or neutral"
+              ],
+              [
+                "Semantic similarity",
+                "Sentence A, sentence B (no inherent order)",
+                "Compute both <s> A $ B <e> and <s> B $ A <e>",
+                "Add the two outputs element-wise, then feed into a linear layer"
+              ],
+              [
+                "Question answering / multiple choice",
+                "Passage z, question q, candidate answer a_{k}",
+                "One sequence per answer: <s> z q $ a_{k} <e>",
+                "Compute a score for each sequence, then softmax over all candidates"
+              ]
+            ],
+            "note": "Two sentences in a similarity task have no natural order, so both orders are computed and then added, making the result insensitive to order."
+          }
+        },
+        {
+          "callout": {
+            "kind": "intuition",
+            "title": "Format instead of architecture",
+            "text": "This idea had a long tail: instead of changing the model for each task, rewrite the task into a format the model already knows. GPT-1 took only half a step — it still trained a linear layer for each task. By GPT-2 and GPT-3, even that disappears: write the task as plain text (\"translate into French: …\") and let the language model continue. Today's prompts are the extreme version of this idea."
+          }
+        },
+        {
+          "quiz": {
+            "q": "When fine-tuning GPT-1, what new parameters does the model need?",
+            "options": [
+              "A whole new set of Transformer layers",
+              "Only the output layer W_{y} and a few vectors for delimiters and start/end tokens",
+              "A new vocabulary",
+              "No new parameters at all"
+            ],
+            "answer": 1,
+            "why": "The paper stresses that the only extra parameters during fine-tuning are W_{y} and the delimiter/start/end embeddings. That is the payoff of the input transformation: once structured input is assembled into text, there is no need for task-specific network architecture. It takes GPT-3's few-shot learning to go the final step and eliminate even W_{y}."
+          }
+        }
+      ]
+    },
+    {
+      "h": "Results: new records on 9 of 12 datasets",
+      "blocks": [
+        {
+          "p": "The paper evaluates on 12 datasets across four task types, ranging from about 5,700 examples (STS-B) to about 550,000 (SNLI). Many baselines are task-specific models, some of them ensembles."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Natural language inference: leads on four of five datasets, except RTE",
+            "subtitle": "Accuracy %, from Table 2 of the paper. '5x' means an ensemble of 5 models. Blue columns are GPT-1.",
+            "columns": [
+              "Dataset",
+              "Previous best",
+              "GPT-1",
+              "Improvement"
+            ],
+            "rows": [
+              [
+                "MNLI-m",
+                "80.6 (ensemble of 3 models)",
+                "82.1",
+                "+1.5"
+              ],
+              [
+                "SNLI",
+                "89.3 (ensemble of 5 models)",
+                "89.9",
+                "+0.6"
+              ],
+              [
+                "SciTail",
+                "83.3",
+                "88.3",
+                "+5.0"
+              ],
+              [
+                "QNLI",
+                "82.3",
+                "88.1",
+                "+5.8"
+              ],
+              [
+                "RTE",
+                "61.7 (multi-task BiLSTM)",
+                "56.0",
+                "−5.7"
+              ]
+            ],
+            "highlight": {
+              "col": 2
+            },
+            "note": "RTE has only 2,490 examples, one of the smallest datasets. The paper speculates that multi-task training would help but does not try it."
+          }
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Question answering and commonsense reasoning: +8.9 on Story Cloze, +5.7 on RACE",
+            "subtitle": "Accuracy %, from Table 3 of the paper. '9x' means an ensemble of 9 models. Amber shows GPT-1.",
+            "columns": [
+              "Method",
+              "Story Cloze",
+              "RACE-m (middle school)",
+              "RACE-h (high school)",
+              "RACE overall"
+            ],
+            "rows": [
+              [
+                "Hidden Coherence Model",
+                "77.6",
+                "—",
+                "—",
+                "—"
+              ],
+              [
+                "BiAttention MRU (ensemble of 9)",
+                "—",
+                "60.2",
+                "50.3",
+                "53.3"
+              ],
+              [
+                "GPT-1 (single model)",
+                "86.5",
+                "62.9",
+                "57.4",
+                "59.0"
+              ]
+            ],
+            "highlight": {
+              "row": 2
+            },
+            "note": "RACE consists of reading comprehension questions from Chinese middle- and high-school English exams, with more reasoning-heavy questions than datasets like SQuAD. Story Cloze requires choosing the correct ending of a story from two candidates."
+          }
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Classification and semantic similarity: CoLA jumps from 35.0 to 45.4; GLUE total 72.8",
+            "subtitle": "From Table 4 of the paper, all evaluated on the GLUE benchmark. mc = Matthews correlation coefficient, acc = accuracy, pc = Pearson correlation coefficient. Blue columns are GPT-1.",
+            "columns": [
+              "Dataset",
+              "Previous best",
+              "GPT-1"
+            ],
+            "rows": [
+              [
+                "CoLA (grammatical acceptability, mc)",
+                "35.0",
+                "45.4"
+              ],
+              [
+                "SST-2 (sentiment, acc)",
+                "93.2",
+                "91.3"
+              ],
+              [
+                "MRPC (paraphrase detection, F1)",
+                "86.0",
+                "82.3"
+              ],
+              [
+                "STS-B (semantic similarity, pc)",
+                "81.0",
+                "82.0"
+              ],
+              [
+                "QQP (Quora duplicate questions, F1)",
+                "66.1",
+                "70.3"
+              ],
+              [
+                "GLUE total",
+                "68.9",
+                "72.8"
+              ]
+            ],
+            "highlight": {
+              "col": 2
+            },
+            "note": "SST-2 and MRPC do not beat the previous best. CoLA improves the most, which the paper says reflects the \"language intuition\" learned during pretraining."
+          }
+        },
+        {
+          "p": "Combining the three tables: 9 benchmarks set new records — SNLI, MNLI, QNLI, SciTail, RACE, Story Cloze, STS-B, QQP, and CoLA — while 3 did not: RTE, MRPC, and SST-2. In many cases, GPT-1 alone beats the baselines' multi-model ensembles."
+        }
+      ]
+    },
+    {
+      "h": "Analysis: what pretraining actually contributed",
+      "blocks": [
+        {
+          "p": "**Every layer helps.** The paper transfers only the first few layers of the pretrained model to downstream tasks and watches how performance changes. Transferring just the word embeddings already helps; each additional transferred Transformer layer helps further. On MultiNLI, the full transfer is 9 points better than transferring only the embeddings. This suggests every layer of the pretrained model has learned something useful for downstream tasks, not just the word-embedding layer."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Ablation experiments: drop pretraining and the average falls from 74.7 to 59.9",
+            "subtitle": "From Table 5 of the paper: unweighted average across several GLUE tasks and RTE. Amber shows the full model.",
+            "columns": [
+              "Method",
+              "Average score",
+              "CoLA",
+              "SST-2",
+              "STS-B",
+              "MNLI",
+              "QNLI"
+            ],
+            "rows": [
+              [
+                "Transformer + auxiliary language-model objective (full)",
+                "74.7",
+                "45.4",
+                "91.3",
+                "82.0",
+                "81.8",
+                "88.1"
+              ],
+              [
+                "Transformer, no pretraining",
+                "59.9",
+                "18.9",
+                "84.0",
+                "30.9",
+                "75.7",
+                "71.2"
+              ],
+              [
+                "Transformer, no auxiliary objective",
+                "75.0",
+                "47.9",
+                "92.0",
+                "83.2",
+                "81.1",
+                "86.9"
+              ],
+              [
+                "Single-layer 2048-unit LSTM + auxiliary objective",
+                "69.1",
+                "30.3",
+                "90.5",
+                "71.8",
+                "73.7",
+                "81.1"
+              ]
+            ],
+            "highlight": {
+              "row": 0
+            },
+            "note": "The original table also includes MRPC, QQP, and RTE columns, which are omitted here. The LSTM beats the Transformer on only one dataset: MRPC."
+          }
+        },
+        {
+          "list": [
+            "**Pretraining is key**: without pretraining, the average score drops by 14.8 points, every task gets worse, and STS-B falls from 82.0 to 30.9.",
+            "**Transformer beats LSTM**: using the same framework but replacing it with a single-layer 2048-unit LSTM costs 5.6 points on average.",
+            "**The auxiliary objective's effects are inconsistent**: it helps on large datasets such as natural language inference and QQP, but not on small ones. The main text says the auxiliary objective improves generalization, but in Table 5 the average without the auxiliary objective (75.0) is actually slightly higher than the full model (74.7)."
+          ]
+        },
+        {
+          "p": "**The seeds of zero-shot.** The most prescient part of this section is the \"zero-shot behavior\" experiment: with no fine-tuning at all, using only the pretrained language model and some clever \"heuristics\" to solve tasks:"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Without fine-tuning, the language model alone can do tasks",
+            "subtitle": "Compiled from section 5 of the paper.",
+            "columns": [
+              "Task",
+              "Zero-shot approach"
+            ],
+            "rows": [
+              [
+                "SST-2 sentiment classification",
+                "Append \"very\" after the sentence, then compare the model's next-word probabilities for \"positive\" and \"negative\"; pick whichever is higher."
+              ],
+              [
+                "CoLA grammatical acceptability",
+                "Compute the model's average log probability for the sentence's tokens; if it passes a threshold, judge the sentence grammatical."
+              ],
+              [
+                "RACE reading comprehension",
+                "Condition on the passage and question, then choose the answer with the highest average log probability under the model."
+              ],
+              [
+                "DPRD coreference resolution",
+                "Replace the pronoun with each candidate referent and see which substitution makes the following text more probable."
+              ]
+            ]
+          }
+        },
+        {
+          "p": "The paper finds that these zero-shot methods improve steadily and continuously as pretraining progresses, while LSTM zero-shot behavior is more volatile. The authors' conjecture: to predict the next word more accurately, the language model is forced to learn many tasks along the way. That sentence is almost the outline of the GPT-2 paper."
+        },
+        {
+          "quiz": {
+            "q": "For zero-shot SST-2, why append \"very\" after the sentence?",
+            "options": [
+              "To make the sentence longer",
+              "To make the next word naturally an adjective, then compare whether \"positive\" or \"negative\" is more likely",
+              "To trigger the model's classification layer",
+              "Because \"very\" is a sentiment word"
+            ],
+            "answer": 1,
+            "why": "After \"This movie was great. very ___\", \"positive\" is more natural than \"negative\". By constructing a prefix, the classification problem becomes a next-word problem, so the language model can answer directly. This is the core idea behind later prompt engineering."
+          }
+        }
+      ]
+    },
+    {
+      "h": "A few details worth noting",
+      "blocks": [
+        {
+          "list": [
+            "**The GLUE improvement doesn't add up**: the introduction says GLUE improved by 5.5 points, but Table 4 shows a GLUE total of 72.8 vs. 68.9, a difference of only 3.9.",
+            "**The auxiliary objective's claim doesn't match the data**: Section 3.2 says the auxiliary language-model objective improves generalization and accelerates convergence, but Table 5 shows the average without it is slightly higher. Section 5's account is more accurate: large datasets benefit; small datasets don't.",
+            "**Two numbers for the same task**: Table 2 has MNLI-m at 82.1, while Table 5's ablation puts the full model's MNLI at 81.8. The paper doesn't say whether the two use the same evaluation set.",
+            "**The \"14.8% drop\" is actually a point difference**: removing pretraining takes the average score from 74.7 to 59.9, a gap of 14.8 points — about a 20% relative drop."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Limitations, and what came next",
+      "blocks": [
+        {
+          "list": [
+            "**Unidirectional**: the decoder reads only left-to-right, so each position cannot see what comes after it. That is a real limitation for understanding-style tasks such as classification and QA.",
+            "**Still needs per-task fine-tuning**: the architecture change is small, but each task still needs its own labeled data and a separately trained linear layer.",
+            "**Small scale**: about 117 million parameters and a little over 7,000 books. The conclusion suggests both model capacity and long-range text are keys to success, but it doesn't answer what happens if you keep scaling."
+          ]
+        },
+        {
+          "p": "**What followed** came quickly:"
+        },
+        {
+          "list": [
+            "**Four months later, BERT (October 2018)**: Google kept the \"pretraining + fine-tuning\" framework but switched to a bidirectional Transformer encoder, pretraining with a cloze-style masked language model, and beat GPT-1 substantially on understanding tasks. The BERT paper uses GPT-1 directly as its main baseline and deliberately sizes BERT-BASE to match GPT-1.",
+            "**Eight months later, GPT-2 (February 2019)**: OpenAI chose the other path: keep the architecture, scale the model to 1.5 billion parameters, switch the data to 40 GB of web text, and drop fine-tuning entirely, evaluating directly in a zero-shot way. This is the scaled-up version of the zero-shot experiments in GPT-1's Section 5, and the next article in this series.",
+            "**After that**: GPT-3 discarded fine-tuning altogether through few-shot learning; InstructGPT then brought \"fine-tuning\" back in another form, to align the model with human intent."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Test yourself: did you get it?",
+      "blocks": [
+        {
+          "quiz": {
+            "q": "Why did the paper choose BooksCorpus over the similarly sized 1B Word Benchmark for pretraining?",
+            "options": [
+              "Because the books are higher quality",
+              "Because books contain long contiguous passages, while the 1B Word Benchmark is shuffled at the sentence level, destroying long-range structure",
+              "Because the 1B Word Benchmark is too large",
+              "Because the books were free"
+            ],
+            "answer": 1,
+            "why": "GPT-1 needs to learn to exploit long context. In sentence-shuffled data, adjacent sentences have no relationship, so the model cannot learn cross-sentence structure. This is also the premise behind the paper's claim that it can capture longer-range information than LSTM-based methods."
+          }
+        },
+        {
+          "quiz": {
+            "q": "For textual entailment, how does GPT-1 feed the premise and hypothesis into the model?",
+            "options": [
+              "Into two separate models",
+              "As one sequence: start token, premise, delimiter, hypothesis, end token",
+              "Only the hypothesis",
+              "Average the premise and hypothesis word vectors"
+            ],
+            "answer": 1,
+            "why": "This is the paper's \"input transformation\": assemble structured input into a single text sequence with delimiters, then feed the output at the end token into a linear layer. That way, no task-specific network architecture is needed for entailment."
+          }
+        },
+        {
+          "p": "After reading this, you should be able to answer the following questions:"
+        },
+        {
+          "list": [
+            "What do \"pretraining\" and \"fine-tuning\" each do? Why does pretraining need no labeled data?",
+            "Why does GPT-1 use only the Transformer decoder?",
+            "Why can the output layer reuse the word embedding matrix?",
+            "What is the auxiliary language-model objective, and why is its effect inconsistent?",
+            "How are the four task types assembled into a single text sequence? Why does the similarity task run both orders?",
+            "What three things do the ablation experiments show?",
+            "How were the zero-shot experiments done, and what did they foreshadow?",
+            "BERT and GPT-2 each left GPT-1 in which direction?"
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Improving Language Understanding by Generative Pre-Training (OpenAI preprint)",
+      "publisher": "Radford et al. · OpenAI",
+      "date": "2018-06-11",
+      "url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf"
+    },
+    "note": "This article is based on the OpenAI paper PDF (June 2018). The parameter-count breakdown is Lyra-Jade's estimate from the paper's configuration; the 117M-parameter figure \"equivalent to the original GPT\" comes from the GPT-2 paper. The BERT details come from its paper; see our close reading of BERT."
+  },
+  "claims": [
+    {
+      "text": "9 of 12 tasks set new records",
+      "value": "9 out of the 12",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "significantly improving upon the state of the art in 9 out of the 12 tasks studied",
+      "as_written": "9"
+    },
+    {
+      "text": "Story Cloze 8.9, RACE 5.7, MultiNLI 1.5",
+      "value": "8.9%",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "we achieve absolute improvements of 8.9% on commonsense reasoning (Stories Cloze Test), 5.7% on question answering (RACE), and 1.5% on textual entailment (MultiNLI)",
+      "as_written": "8.9 percentage points"
+    },
+    {
+      "text": "RACE 5.7",
+      "value": "5.7%",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "5.7% on question answering (RACE)",
+      "as_written": "5.7 points"
+    },
+    {
+      "text": "GLUE 5.5%",
+      "value": "5.5%",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "5.5% on the recently introduced GLUE multi-task benchmark",
+      "as_written": "5.5 percentage points"
+    },
+    {
+      "text": "More than 7,000 books",
+      "value": "7,000",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "It contains over 7,000 unique unpublished books from a variety of genres",
+      "as_written": "more than 7,000"
+    },
+    {
+      "text": "1B Word Benchmark",
+      "value": "1B Word Benchmark",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "An alternative dataset, the 1B Word Benchmark",
+      "as_written": "1 billion"
+    },
+    {
+      "text": "Perplexity 18.4",
+      "value": "18.4",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "Our language model achieves a very low token level perplexity of 18.4 on this corpus",
+      "as_written": "18.4"
+    },
+    {
+      "text": "12 layers, 768 dimensions, 12 heads",
+      "value": "12-layer",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "We trained a 12-layer decoder-only transformer with masked self-attention heads (768 dimensional states and 12 attention heads)",
+      "as_written": "12 layers"
+    },
+    {
+      "text": "768 dimensions",
+      "value": "768",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "768 dimensional states",
+      "as_written": "768"
+    },
+    {
+      "text": "Feed-forward 3072",
+      "value": "3072",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "we used 3072 dimensional inner states",
+      "as_written": "3072"
+    },
+    {
+      "text": "Learning rate 2.5e-4, warmup 2000",
+      "value": "2.5e-4",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "with a max learning rate of 2.5e-4",
+      "as_written": "2.5 × 10^{−4}"
+    },
+    {
+      "text": "Warmup 2000 steps",
+      "value": "2000",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "increased linearly from zero over the first 2000 updates",
+      "as_written": "2000 steps"
+    },
+    {
+      "text": "100 epochs, 64 sequences, 512 tokens",
+      "value": "100 epochs",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "We train for 100 epochs on minibatches of 64 randomly sampled, contiguous sequences of 512 tokens",
+      "as_written": "100 epochs"
+    },
+    {
+      "text": "512 tokens",
+      "value": "512 tokens",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "contiguous sequences of 512 tokens",
+      "as_written": "512"
+    },
+    {
+      "text": "N(0, 0.02)",
+      "value": "0.02",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "a simple weight initialization of N (0, 0.02) was sufficient",
+      "as_written": "0.02"
+    },
+    {
+      "text": "BPE 40,000 merges",
+      "value": "40,000",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "We used a bytepair encoding (BPE) vocabulary with 40,000 merges",
+      "as_written": "40,000"
+    },
+    {
+      "text": "dropout 0.1, L2 w=0.01",
+      "value": "0.01",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "with w = 0.01 on all non bias or gain weights",
+      "as_written": "0.01"
+    },
+    {
+      "text": "dropout 0.1",
+      "value": "0.1",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "attention dropouts with a rate of 0.1 for regularization",
+      "as_written": "0.1"
+    },
+    {
+      "text": "Fine-tuning learning rate 6.25e-5, batch size 32",
+      "value": "6.25e-5",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "For most tasks, we use a learning rate of 6.25e-5 and a batchsize of 32",
+      "as_written": "6.25 × 10^{−5}"
+    },
+    {
+      "text": "Batch size 32",
+      "value": "32",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "a batchsize of 32",
+      "as_written": "32"
+    },
+    {
+      "text": "3 epochs are enough",
+      "value": "3 epochs",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "3 epochs of training was sufficient for most cases",
+      "as_written": "3 epochs"
+    },
+    {
+      "text": "Warmup 0.2%",
+      "value": "0.2%",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "warmup over 0.2% of training",
+      "as_written": "0.2%"
+    },
+    {
+      "text": "λ = 0.5",
+      "value": "0.5",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "λ was set to 0.5",
+      "as_written": "0.5"
+    },
+    {
+      "text": "RTE 2,490 examples, 56%, 61.7%",
+      "value": "2490",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "On RTE, one of the smaller datasets we evaluate on (2490 examples), we achieve an accuracy of 56%, which is below the 61.7% reported by a multi-task biLSTM model",
+      "as_written": "2490"
+    },
+    {
+      "text": "RTE 61.7",
+      "value": "61.7%",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "below the 61.7% reported by a multi-task biLSTM model",
+      "as_written": "61.7"
+    },
+    {
+      "text": "RTE 56.0",
+      "value": "56.0",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "56.0",
+      "as_written": "56.0"
+    },
+    {
+      "text": "Table 2: MNLI-m 82.1, SNLI 89.9, SciTail 88.3, QNLI 88.1",
+      "value": "82.1",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "82.1",
+      "as_written": "82.1"
+    },
+    {
+      "text": "SNLI 89.9",
+      "value": "89.9",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "89.9",
+      "as_written": "89.9"
+    },
+    {
+      "text": "SciTail 88.3",
+      "value": "88.3",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "88.3",
+      "as_written": "88.3"
+    },
+    {
+      "text": "QNLI 88.1",
+      "value": "88.1",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "88.1",
+      "as_written": "88.1"
+    },
+    {
+      "text": "Previous MNLI 80.6",
+      "value": "80.6",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "80.6",
+      "as_written": "80.6"
+    },
+    {
+      "text": "Previous SNLI 89.3",
+      "value": "89.3",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "89.3",
+      "as_written": "89.3"
+    },
+    {
+      "text": "Previous SciTail 83.3",
+      "value": "83.3",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "83.3",
+      "as_written": "83.3"
+    },
+    {
+      "text": "Previous QNLI 82.3",
+      "value": "82.3",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "82.3",
+      "as_written": "82.3"
+    },
+    {
+      "text": "Table 3: Story Cloze 86.5, RACE 59.0",
+      "value": "86.5",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "86.5",
+      "as_written": "86.5"
+    },
+    {
+      "text": "RACE 59.0",
+      "value": "59.0",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "59.0",
+      "as_written": "59.0"
+    },
+    {
+      "text": "RACE-m 62.9 / RACE-h 57.4",
+      "value": "62.9",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "62.9",
+      "as_written": "62.9"
+    },
+    {
+      "text": "RACE-h 57.4",
+      "value": "57.4",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "57.4",
+      "as_written": "57.4"
+    },
+    {
+      "text": "Hidden Coherence 77.6",
+      "value": "77.6",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "77.6",
+      "as_written": "77.6"
+    },
+    {
+      "text": "MRU 60.2 / 50.3 / 53.3",
+      "value": "53.3",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "53.3",
+      "as_written": "53.3"
+    },
+    {
+      "text": "CoLA 45.4 vs. 35.0",
+      "value": "45.4",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "Our model obtains an score of 45.4 on CoLA, which is an especially big jump over the previous best result of 35.0",
+      "as_written": "45.4"
+    },
+    {
+      "text": "Previous CoLA 35.0",
+      "value": "35.0",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "the previous best result of 35.0",
+      "as_written": "35.0"
+    },
+    {
+      "text": "SST-2 91.3",
+      "value": "91.3%",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "The model also achieves 91.3% accuracy on SST-2",
+      "as_written": "91.3"
+    },
+    {
+      "text": "Previous SST-2 93.2",
+      "value": "93.2",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "93.2",
+      "as_written": "93.2"
+    },
+    {
+      "text": "GLUE 72.8 vs. 68.9",
+      "value": "72.8",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "We also achieve an overall score of 72.8 on the GLUE benchmark, which is significantly better than the previous best of 68.9",
+      "as_written": "72.8"
+    },
+    {
+      "text": "Previous GLUE 68.9",
+      "value": "68.9",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "the previous best of 68.9",
+      "as_written": "68.9"
+    },
+    {
+      "text": "STS-B 82.0 / 81.0",
+      "value": "81.0",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "81.0",
+      "as_written": "81.0"
+    },
+    {
+      "text": "STS-B 82.0",
+      "value": "82.0",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "82.0",
+      "as_written": "82.0"
+    },
+    {
+      "text": "QQP 70.3 / 66.1, up 4.2",
+      "value": "4.2%",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "The performance delta on QQP is significant, with a 4.2% absolute improvement",
+      "as_written": "4.2"
+    },
+    {
+      "text": "QQP 70.3",
+      "value": "70.3",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "70.3",
+      "as_written": "70.3"
+    },
+    {
+      "text": "QQP 66.1",
+      "value": "66.1",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "66.1",
+      "as_written": "66.1"
+    },
+    {
+      "text": "MRPC 86.0 / 82.3",
+      "value": "86.0",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "86.0",
+      "as_written": "86.0"
+    },
+    {
+      "text": "MRPC 82.3",
+      "value": "82.3",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "82.3",
+      "as_written": "82.3"
+    },
+    {
+      "text": "STS-B ~5.7k, SNLI ~550k",
+      "value": "5.7k",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "from smaller datasets such as STS-B (≈5.7k training examples) – to the largest one – SNLI (≈550k training examples)",
+      "as_written": "5700"
+    },
+    {
+      "text": "SNLI about 550,000",
+      "value": "550k",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "SNLI (≈550k training examples)",
+      "as_written": "550,000"
+    },
+    {
+      "text": "Layer transfer adds up to 9 percentage points",
+      "value": "9%",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "each transformer layer provides further benefits up to 9% for full transfer on MultiNLI",
+      "as_written": "9 percentage points"
+    },
+    {
+      "text": "Table 5: full 74.7, no pretraining 59.9, no auxiliary 75.0, LSTM 69.1",
+      "value": "74.7",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "74.7",
+      "as_written": "74.7"
+    },
+    {
+      "text": "No pretraining 59.9",
+      "value": "59.9",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "59.9",
+      "as_written": "59.9"
+    },
+    {
+      "text": "No auxiliary 75.0",
+      "value": "75.0",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "75.0",
+      "as_written": "75.0"
+    },
+    {
+      "text": "LSTM 69.1",
+      "value": "69.1",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "69.1",
+      "as_written": "69.1"
+    },
+    {
+      "text": "No pretraining STS-B 30.9",
+      "value": "30.9",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "30.9",
+      "as_written": "30.9"
+    },
+    {
+      "text": "No pretraining drop 14.8",
+      "value": "14.8%",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "resulting in a 14.8% decrease compared to our full model",
+      "as_written": "14.8"
+    },
+    {
+      "text": "LSTM 5.6 lower",
+      "value": "5.6",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "We observe a 5.6 average score drop when using the LSTM instead of the Transformer",
+      "as_written": "5.6"
+    },
+    {
+      "text": "LSTM 2048 units",
+      "value": "2048 unit LSTM",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "comparing it with a single layer 2048 unit LSTM",
+      "as_written": "2048"
+    },
+    {
+      "text": "Table 5: MNLI 81.8",
+      "value": "81.8",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "81.8",
+      "as_written": "81.8"
+    },
+    {
+      "text": "Lyra-Jade calculation: GLUE difference 3.9",
+      "value": "72.8",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "72.8",
+      "as_written": "3.9"
+    },
+    {
+      "text": "Lyra-Jade calculation: about 20% drop",
+      "value": "59.9",
+      "source_url": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "quote": "59.9",
+      "as_written": "20%"
+    },
+    {
+      "text": "GPT-2: smallest model equivalent to the original GPT",
+      "value": "original GPT",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "The smallest model is equivalent to the original GPT",
+      "as_written": "117 million"
+    },
+    {
+      "text": "GPT-2: 117 million parameters",
+      "value": "117M",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "117M",
+      "as_written": "117M"
+    },
+    {
+      "text": "GPT-2: 40 GB",
+      "value": "40 GB",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "for a total of 40 GB of text",
+      "as_written": "40GB"
+    },
+    {
+      "text": "GPT-2: 1.5 billion parameters",
+      "value": "1.5B",
+      "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "quote": "1.5B",
+      "as_written": "1.5 billion"
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "79c57ae656bb7076"
+}

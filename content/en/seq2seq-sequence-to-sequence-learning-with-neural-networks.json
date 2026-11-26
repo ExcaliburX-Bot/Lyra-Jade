@@ -1,0 +1,989 @@
+{
+  "slug": "seq2seq-sequence-to-sequence-learning-with-neural-networks",
+  "category": "paper",
+  "publisher": "Sutskever et al. · Google",
+  "date": "2014-09-10",
+  "title": "Seq2Seq: read the whole sentence into a vector, then write the translation—neural beats statistical MT",
+  "summary": "Seq2Seq uses one LSTM to read a sentence into an 8,000-dimensional vector and another LSTM to write the translation—the first time a neural model beat statistical machine translation at scale. We unpack the encoder–decoder architecture, why reversing the input helps, where the 384 million parameters go, how beam search works, and how the fixed-length vector bottleneck leads to attention.",
+  "ai_summary": "Sequence to Sequence Learning with Neural Networks (Google, 2014) uses a 4-layer LSTM to encode the input sentence into a fixed-length vector, then another 4-layer LSTM to generate the translation word by word. On WMT'14 English-to-French, an ensemble of 5 models translating directly reaches BLEU 34.81, above the phrase-based statistical machine translation (SMT) baseline of 33.30; rescoring the SMT system's 1,000 candidates reaches 36.5. Reversing the source sentence lifts a single model's BLEU from 25.9 to 30.6, which the authors attribute to reducing the minimal distance between corresponding words. Its main limitation: all information has to fit into one fixed-length vector.",
+  "brief": [
+    "Problem: neural networks can only handle fixed-size inputs and outputs, and there was no general solution for sequence-to-sequence problems like translation.",
+    "Method: an encoder LSTM reads the whole sentence into a vector, and a decoder LSTM generates the translation word by word; 4 layers, two separate LSTMs, and the source sentence is fed in reverse.",
+    "Result: an ensemble of 5 models reaches BLEU 34.81, the first time a neural model beat statistical machine translation at scale; rescoring reaches 36.5, and long sentences don't collapse.",
+    "Limits: the whole sentence is squeezed into a fixed-length vector, the vocabulary is limited, and word-by-word computation is hard to parallelize; attention, subword tokenization, and the Transformer each solve one of these."
+  ],
+  "paper": {
+    "title": "Sequence to Sequence Learning with Neural Networks",
+    "authors": "Ilya Sutskever, Oriol Vinyals, Quoc V. Le",
+    "org": "Google",
+    "venue": "NIPS 2014",
+    "year": 2014,
+    "arxiv": "1409.3215",
+    "url": "https://arxiv.org/abs/1409.3215"
+  },
+  "cover": {
+    "headline": "Inside the Seq2Seq paper",
+    "highlight": "Read it into a vector, then write the translation",
+    "glyph": {
+      "kind": "flow",
+      "nodes": [
+        {
+          "label": "English sentence"
+        },
+        {
+          "label": "8,000-dim vector",
+          "tone": "hi"
+        },
+        {
+          "label": "French translation"
+        }
+      ]
+    }
+  },
+  "sections": [
+    {
+      "h": "What the paper actually did",
+      "blocks": [
+        {
+          "p": "In September 2014, Ilya Sutskever, Oriol Vinyals, and Quoc V. Le at Google released this nine-page paper. It proposed a structure that seems completely natural today: **one neural network reads a sentence into a vector, and another writes that vector out as another sentence**. This is sequence to sequence (Seq2Seq), also known as the encoder–decoder architecture."
+        },
+        {
+          "p": "On English-to-French translation, this model—which contains almost no linguistic knowledge—clearly beat a traditional phrase-based statistical machine translation system on a large-scale task for the first time (BLEU 34.8 vs. 33.3). Used to rescore 1,000 candidates from the traditional system, it reached BLEU 36.5, just 0.5 below the then-best result of 37.0."
+        },
+        {
+          "p": "The paper also has one surprising small trick: **reverse the source sentence before feeding it in**, and translation quality improves sharply, with BLEU rising from 25.9 to 30.6. The reasoning behind this trick leads directly to the attention mechanism in the next article."
+        },
+        {
+          "callout": {
+            "kind": "takeaway",
+            "title": "In one sentence",
+            "text": "Seq2Seq = an encoder LSTM compresses the whole sentence into an 8,000-dimensional vector + a decoder LSTM generates the translation word by word from that vector. It was the first end-to-end neural translation system to beat traditional statistical MT at scale. Its weakness is equally clear: no matter how long the sentence, all information has to fit into a fixed-length vector."
+          }
+        },
+        {
+          "callout": {
+            "kind": "prereq",
+            "title": "Four concepts to know before you read",
+            "text": "If you don't know them yet, these four are enough:",
+            "list": [
+              "**Word vectors**: each word is represented by hundreds or thousands of numbers; words with similar meanings have similar vectors. See the previous article in this series, word2vec.",
+              "**Recurrent neural network (RNN)**: reads one word at a time, updating its memory (hidden state) after each word before reading the next. It is naturally suited to sequences of varying length.",
+              "**LSTM**: a type of RNN with gates that decides what to remember and what to forget, and remembers information from much earlier in the sequence better than a plain RNN.",
+              "**BLEU**: the most common automatic metric for machine translation. It compares how many word sequences overlap between the machine translation and human reference translations. Scores range from 0 to 100, and higher is better."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "The problem: neural networks can only handle fixed-size inputs and outputs",
+      "blocks": [
+        {
+          "p": "By 2014, deep neural networks had already produced striking results in speech recognition and visual object recognition. The paper opens with an example of their strength: with only two hidden layers, they can sort N N-bit numbers. As long as there is enough labeled data, backpropagation can find the right parameters."
+        },
+        {
+          "p": "But there is a fundamental limitation: **inputs and outputs must be encoded as fixed-dimensional vectors**. An image can be resized to fixed dimensions; a sentence cannot. The sentences to be translated are of varying lengths, the length of the output is unknown in advance, and word order can be completely different between the two languages. Speech recognition, machine translation, and question answering are all essentially ways of turning one sequence into another, and at the time there was no general neural network approach for them."
+        },
+        {
+          "p": "At the time, the best translation systems were **phrase-based statistical machine translation (SMT)** systems: cut the sentence into phrases, look them up in a huge phrase table, then use various statistical models to adjust word order and pick the most fluent combination. They are built from many hand-designed components—effective, but complex. Neural networks usually played only a supporting role, for example rescoring candidate translations produced by SMT."
+        },
+        {
+          "callout": {
+            "kind": "intuition",
+            "title": "Like simultaneous interpretation or written translation?",
+            "text": "A plain RNN is good at “read one word, output one word” tasks, where inputs and outputs line up one-to-one—like word-by-word interpreting. But translation requires hearing the whole sentence first, understanding it, and then reorganizing it in another language: English puts adjectives before nouns, French often puts them after, and German verbs can land at the end of the sentence. Seq2Seq takes the written-translation approach: read first, then write."
+          }
+        }
+      ]
+    },
+    {
+      "h": "The model: one LSTM reads, another LSTM writes",
+      "blocks": [
+        {
+          "p": "The core idea is straightforward: use one LSTM to read the input sentence word by word. When it finishes, its final hidden state is the vector representation v of the whole sentence. Then use another LSTM, initialized with v, to generate the output word by word like a language model until it produces the end-of-sentence marker <EOS>."
+        },
+        {
+          "fig": {
+            "type": "steps",
+            "title": "Seq2Seq in two stages: read the whole sentence into a vector, then write the translation from that vector",
+            "subtitle": "Illustrative: adapted from Figure 1 and Section 2 of the paper, with input “A B C” and output “W X Y Z”.",
+            "steps": [
+              {
+                "name": "Encoder reads input",
+                "tool": "LSTM ①",
+                "desc": "Reads C, B, A, <EOS> in (reversed) order, updating its memory after each word."
+              },
+              {
+                "name": "Produces sentence vector v",
+                "tool": "Fixed length",
+                "desc": "The encoder's final hidden state is the representation of the whole sentence. In this paper's model, that means 8,000 numbers."
+              },
+              {
+                "name": "Decoder generates",
+                "tool": "LSTM ②",
+                "desc": "Starting from v, it generates W, then uses W as the next input to generate X, then Y and Z, until it outputs <EOS>."
+              }
+            ]
+          }
+        },
+        {
+          "p": "In probability terms, the model estimates: given an input sequence x_{1}, …, x_{T}, what is the probability of output sequence y_{1}, …, y_{T'}? The two sequences can have different lengths."
+        },
+        {
+          "formula": {
+            "expr": "p(y_{1}, …, y_{T'} | x_{1}, …, x_{T}) = Π_{t=1}^{T'} p(y_{t} | v, y_{1}, …, y_{t−1})",
+            "parts": [
+              {
+                "sym": "v",
+                "desc": "The encoder's final hidden state after reading the entire input is the fixed-length representation of the whole sentence."
+              },
+              {
+                "sym": "p(y_{t} | v, y_{1}, …, y_{t−1})",
+                "desc": "The probability that the next word is y_{t}, given the sentence vector and the first t − 1 generated words. It is computed by a softmax over 80,000 French words."
+              },
+              {
+                "sym": "Π",
+                "desc": "The product: the probability of the whole translation equals the product of the probability of choosing each word at each step."
+              },
+              {
+                "sym": "<EOS>",
+                "desc": "End-of-sentence marker. Every sentence ends with it, so the model can decide for itself when to stop and can output sentences of any length."
+              }
+            ],
+            "note": "The decoder is essentially a language model conditioned on the input sentence: a normal language model predicts the next word from what came before, but this one also looks at the source sentence vector v."
+          }
+        },
+        {
+          "p": "The paper makes three important changes to this basic framework:"
+        },
+        {
+          "list": [
+            "**Two separate LSTMs**: the encoder and decoder have separate parameters. This roughly doubles the parameter count at almost no extra computational cost and makes it easier to train on multiple language pairs at once.",
+            "**A 4-layer LSTM**: deeper models are clearly better than shallow ones; each additional layer reduces perplexity by nearly 10%. Perplexity measures how “confused” the model is when predicting the next word—lower is better.",
+            "**Reverse the input sentence**: instead of mapping a, b, c to α, β, γ, the model maps c, b, a to α, β, γ. This is the most surprising change and gets its own section below."
+          ]
+        },
+        {
+          "callout": {
+            "kind": "intuition",
+            "title": "What the LSTM’s gates actually do",
+            "text": "A plain RNN overwrites its memory at every word, so by the end of a sentence the information from the beginning is diluted; during training, gradients also tend to vanish or explode over long distances. LSTM adds several learnable gates to the memory: the forget gate decides how much old memory to drop, the input gate decides how much new information to write, and the output gate decides how much to reveal at this step. Information that needs to be kept for a long time can have its “door” closed and be carried forward."
+          }
+        }
+      ]
+    },
+    {
+      "h": "The key trick: reverse the source sentence",
+      "blocks": [
+        {
+          "p": "The paper finds that reversing only the **source sentence**—not the target—makes the LSTM learn much better: test perplexity drops from 5.8 to 4.7, and the BLEU of translations decoded by a single model rises from 25.9 to 30.6. The authors admit they don't have a complete explanation, but they offer a convincing hypothesis."
+        },
+        {
+          "p": "During training, the source sentence and target sentence are fed in back-to-back. In normal order, the first word of the source sentence and the first word of the target sentence are separated by the entire source sentence; gradients have to travel that whole distance to “connect” them. After reversing, the source sentence's first word becomes the last one read, so it sits right before the target sentence's first word. **The average distance between corresponding words is unchanged, but the shortest distance shrinks dramatically**—the paper calls this the “minimal time lag.”"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Reversing the input doesn't change the average distance, but it puts the first words right next to each other",
+            "subtitle": "Illustrative: computed by this site. Source sentence a b c, target α β γ, with <EOS> between them; distance is the number of steps from a source word to its corresponding target word.",
+            "columns": [
+              "Corresponding words",
+              "Normal order: a b c <EOS> α β γ",
+              "Reversed: c b a <EOS> α β γ"
+            ],
+            "rows": [
+              [
+                "a → α",
+                "4",
+                "2"
+              ],
+              [
+                "b → β",
+                "4",
+                "4"
+              ],
+              [
+                "c → γ",
+                "4",
+                "6"
+              ],
+              [
+                "Average",
+                "4",
+                "4"
+              ],
+              [
+                "Shortest",
+                "4",
+                "2"
+              ]
+            ],
+            "highlight": {
+              "row": 4
+            },
+            "note": "The longer the sentence, the bigger the difference. For a 10-word sentence, in normal order every corresponding pair is 11 steps apart; with reversed input, the shortest is only 2 steps, while the average is still 11. Learn the connections between the first few pairs, and the rest becomes easier."
+          }
+        },
+        {
+          "p": "The authors originally expected reversing to make the beginning of the translation more accurate and the ending worse. Instead, LSTMs trained on reversed source sentences did much better on long sentences. They suspect reversing lets the LSTM make better use of its memory."
+        },
+        {
+          "callout": {
+            "kind": "myth",
+            "title": "“LSTM has good memory, so it shouldn't need reversing”",
+            "text": "LSTM can in theory remember long-range information, but “can represent” is not the same as “easy to learn.” Under stochastic gradient descent, long-range dependencies get almost no useful gradient at the start. Reversing gives the model a set of close-range handholds, letting it first establish connections between source and target. As the paper's conclusion puts it: try to find an encoding that leaves the problem with as many short-term dependencies as possible."
+          }
+        },
+        {
+          "quiz": {
+            "q": "When the input is reversed, what happens to the average distance between corresponding words in the source and target sentences?",
+            "options": [
+              "It gets shorter",
+              "It gets longer",
+              "It stays the same, but the shortest pairs become much closer",
+              "It depends on sentence length"
+            ],
+            "answer": 2,
+            "why": "Reversing only rearranges the order: pairs near the beginning get closer, pairs near the end get farther, and the average is unchanged. The paper's explanation is that what matters is not the average distance but the “minimal time lag”: once a few pairs are very close, gradients can establish connections through those pairs first."
+          }
+        }
+      ]
+    },
+    {
+      "h": "Training: 384M parameters, 8 GPUs, 10 days",
+      "blocks": [
+        {
+          "p": "The data is a selected subset of the WMT'14 English-French translation dataset: 12 million sentence pairs (348 million French words and 304 million English words). The vocabularies are fixed: 160,000 of the most common words for the source language (English) and 80,000 for the target language (French); every other word is replaced with UNK (unknown)."
+        },
+        {
+          "p": "The model is a 4-layer LSTM with 1,000 cells per layer and 1,000-dimensional word vectors. Each LSTM layer has a 1,000-dimensional hidden state and a 1,000-dimensional memory cell, so across four layers **a sentence is represented by 8,000 numbers**. There are 384 million parameters in total, which break down like this:"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Nearly 80% of the 384M parameters are vocabulary-related",
+            "subtitle": "Illustrative: computed by this site from the configuration in Section 3.4 of the paper; matches the paper's total and recurrent-connection count exactly.",
+            "columns": [
+              "Component",
+              "Calculation",
+              "Parameters"
+            ],
+            "rows": [
+              [
+                "English word vectors",
+                "160,000 words × 1,000 dimensions",
+                "160M"
+              ],
+              [
+                "French word vectors",
+                "80,000 words × 1,000 dimensions",
+                "80M"
+              ],
+              [
+                "Output softmax",
+                "1000 × 80,000 words",
+                "80M"
+              ],
+              [
+                "Encoder LSTM",
+                "4 layers × 4 gates × 1000 × (1000 + 1000)",
+                "32M"
+              ],
+              [
+                "Decoder LSTM",
+                "Same as above",
+                "32M"
+              ],
+              [
+                "Total",
+                "",
+                "384M"
+              ]
+            ],
+            "highlight": {
+              "row": 5
+            },
+            "note": "The paper says 64 million of the 384M parameters are “pure recurrent connections”—32 million each for the encoder and decoder—which matches the gate-count calculation here. The LSTM circuitry that actually does the “understanding” and “generation” is only about one-sixth of the total."
+          }
+        },
+        {
+          "p": "Training details (Section 3.4 of the paper):"
+        },
+        {
+          "list": [
+            "All LSTM parameters are initialized uniformly at random between −0.08 and 0.08.",
+            "Stochastic gradient descent without momentum, with a fixed learning rate of 0.7. After 5 epochs, the learning rate is halved every half epoch, for 7.5 epochs total.",
+            "Batches of 128 sequences. To prevent exploding gradients, whenever the gradient norm exceeds 5, it is rescaled to 5.",
+            "Most sentences are only 20–30 words long, while a few are over 100. A random batch wastes a lot of computation padding short sentences, so the paper groups sentences of similar length into each batch, which doubles training speed."
+          ]
+        },
+        {
+          "p": "A single GPU processes only about 1,700 words per second—too slow. The paper uses an 8-GPU machine for model parallelism: each of the four LSTM layers gets its own GPU and passes its activations to the next layer as soon as they are ready; the other four GPUs split the 80,000-word softmax, each handling a 1000 × 20,000 matrix. This reaches 6,300 words per second, and training takes about 10 days."
+        },
+        {
+          "quiz": {
+            "q": "The paper says a deep LSTM represents a sentence with 8,000 real numbers. Where does that 8,000 come from?",
+            "options": [
+              "An 8,000-word vocabulary",
+              "4 layers × (1,000-dim hidden state + 1,000-dim memory cell) per layer",
+              "8 GPUs × 1,000",
+              "1,000-dimensional word vector × 8 words"
+            ],
+            "answer": 1,
+            "why": "Each LSTM layer keeps two vectors—a hidden state and a memory cell—each with 1,000 dimensions; across 4 layers that's 8,000 numbers. Those 8,000 numbers are everything the encoder hands to the decoder. The 8 GPUs are just hardware; they don't affect the size of the representation."
+          }
+        }
+      ]
+    },
+    {
+      "h": "Decoding: beam search with a very small beam",
+      "blocks": [
+        {
+          "p": "Once trained, translation means finding the most likely translation: T̂ = arg max_{T} p(T | S). But there are far too many possible French sentences to enumerate, so the search has to be approximate. The paper uses **left-to-right beam search**: always keep the B most promising partial translations. At each step, extend each partial hypothesis with every possible next word, then keep the B with the highest probability; once <EOS> is appended to a hypothesis, it is complete."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Why not choose the best word at every step? Greedy search can miss a better overall sentence",
+            "subtitle": "Illustrative: probabilities made up by this site. Beam size B = 1 is greedy search; B = 2 keeps one extra candidate.",
+            "columns": [
+              "First word",
+              "Step 1 probability",
+              "Best next word",
+              "Step 2 probability",
+              "Combined probability over two steps"
+            ],
+            "rows": [
+              [
+                "Le",
+                "0.4",
+                "chat",
+                "0.5",
+                "0.20"
+              ],
+              [
+                "La",
+                "0.3",
+                "maison",
+                "0.9",
+                "0.27"
+              ],
+              [
+                "Un",
+                "0.2",
+                "livre",
+                "0.6",
+                "0.12"
+              ]
+            ],
+            "highlight": {
+              "row": 1
+            },
+            "note": "Greedy search picks the highest-probability Le at the first step and ends up with 0.20 overall. With beam size 2, keeping both Le and La, it can discover that La maison is the better full phrase (0.27)."
+          }
+        },
+        {
+          "p": "Interestingly, the paper finds the beam doesn't need to be large: beam size 1 (greedy) is already decent, and size 2 captures most of the benefit of beam search. An ensemble of 5 models with beam size 2 reaches BLEU 34.50—only 0.3 below the 34.81 from beam size 12, at much lower computational cost."
+        },
+        {
+          "p": "The training objective is also simple: maximize the average log probability of the correct translation over all training sentence pairs, 1/|S| · Σ log p(T | S). There are no translation rules, alignment tables, or word-order models; everything is learned from data."
+        }
+      ]
+    },
+    {
+      "h": "Results: the first time a neural model beat statistical MT at scale",
+      "blocks": [
+        {
+          "fig": {
+            "type": "table",
+            "title": "Direct translation: an ensemble of 5 reversed LSTMs scores BLEU 34.81, above the SMT baseline",
+            "subtitle": "WMT'14 English-to-French test set, from Table 1 of the paper. Amber marks the best result.",
+            "columns": [
+              "Method",
+              "BLEU"
+            ],
+            "rows": [
+              [
+                "Bahdanau et al. (attention; the next article)",
+                "28.45"
+              ],
+              [
+                "SMT baseline",
+                "33.30"
+              ],
+              [
+                "Single LSTM, normal order, beam 12",
+                "26.17"
+              ],
+              [
+                "Single LSTM, reversed, beam 12",
+                "30.59"
+              ],
+              [
+                "Ensemble of 5 reversed LSTMs, beam 1",
+                "33.00"
+              ],
+              [
+                "Ensemble of 2 reversed LSTMs, beam 12",
+                "33.27"
+              ],
+              [
+                "Ensemble of 5 reversed LSTMs, beam 2",
+                "34.50"
+              ],
+              [
+                "Ensemble of 5 reversed LSTMs, beam 12",
+                "34.81"
+              ]
+            ],
+            "highlight": {
+              "row": 7
+            },
+            "note": "Ensembling means five models that differ only in random initialization and minibatch order vote together. The 34.81 score was achieved with a French vocabulary of only 80,000 words: whenever a reference translation contains a word outside that vocabulary, the model necessarily loses credit."
+          }
+        },
+        {
+          "p": "The paper stresses that this is the first time a **pure neural translation system** has outperformed a phrase-based statistical machine translation system on a large-scale translation task by a clear margin—and this neural network had a limited vocabulary and almost no tuning, while the SMT system's vocabulary was unlimited."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Rescoring the SMT candidates: 36.5, just 0.5 below the then-best result",
+            "subtitle": "WMT'14 English-to-French test set, from Table 2 of the paper. Amber marks the best LSTM rescoring result.",
+            "columns": [
+              "Method",
+              "BLEU"
+            ],
+            "rows": [
+              [
+                "SMT baseline",
+                "33.30"
+              ],
+              [
+                "Cho et al. (RNN encoder–decoder + SMT)",
+                "34.54"
+              ],
+              [
+                "Single forward LSTM rescoring",
+                "35.61"
+              ],
+              [
+                "Single reversed LSTM rescoring",
+                "35.85"
+              ],
+              [
+                "Ensemble of 5 reversed LSTMs rescoring",
+                "36.5"
+              ],
+              [
+                "Best WMT'14 result at the time",
+                "37.0"
+              ],
+              [
+                "Oracle: always pick the best candidate",
+                "About 45"
+              ]
+            ],
+            "highlight": {
+              "row": 4
+            },
+            "note": "For rescoring, the LSTM computes a log probability for each of the SMT system's 1,000 candidate translations and takes an even average with the SMT system's own score."
+          }
+        },
+        {
+          "p": "**Long sentences didn't collapse.** At the time, other researchers using similar architectures saw translation quality drop markedly on long sentences (the next article's Bahdanau et al. introduced attention for exactly this reason). The model here, however, did well on long sentences: sorted by sentence length, there is no degradation for sentences up to 35 words, and only the longest sentences degrade slightly. The authors attribute this to reversed input."
+        },
+        {
+          "p": "**The sentence vector is meaningful.** When encoded vectors of some phrases are projected onto a two-dimensional plane with PCA, sentences with similar meanings cluster together: “Mary admires John” and “Mary is in love with John” sit next to each other, while “John admires Mary” is on the other side. This shows the vector is sensitive to word order, not a simple bag-of-words. Active and passive versions (“she gave me a card in the garden” and “I was given a card by her in the garden”) land close together."
+        },
+        {
+          "quiz": {
+            "q": "Why does the paper specifically point out that 34.81 was achieved under the condition that out-of-vocabulary words were penalized?",
+            "options": [
+              "To explain why it didn't beat statistical MT",
+              "To show the score is underestimated: with only an 80,000-word French vocabulary, the model cannot output rare words that occur in the reference translations, so there is still plenty of room to improve.",
+              "Because BLEU does not count out-of-vocabulary words",
+              "Because SMT has the same limitation"
+            ],
+            "answer": 1,
+            "why": "When the model encounters an out-of-vocabulary word, it can only output UNK, which is guaranteed not to match the reference translation, so the score is conservative. The SMT system's vocabulary has no such limit. The paper argues from this that a relatively unoptimized neural network with a limited vocabulary has already outperformed SMT, and further improvements would do even better."
+          }
+        }
+      ]
+    },
+    {
+      "h": "A few details worth noting",
+      "blocks": [
+        {
+          "list": [
+            "**The improvement from reversing is reported with two inconsistent numbers.** Section 3.3 says a single model's BLEU rises from 25.9 to 30.6, but the corresponding rows in Table 1 are 26.17 and 30.59. The former may come from a different setting or earlier experiments; the paper does not say.",
+            "**“No difficulty with long sentences” is a little overstated.** The abstract says the LSTM did not have difficulty with long sentences, while the Figure 3 caption is more precise: no degradation up to 35 words, and the longest sentences drop slightly.",
+            "**The BLEU variant can change the conclusions.** The paper notes that it uses the multi-bleu.pl script. Evaluated with the same script, the best WMT'14 system scores 37.0, higher than the 35.8 published on the official site. Different BLEU scripts can differ by more than a point, so comparing scores across papers requires care.",
+            "**It already cites the next paper.** The body of the paper mentions Bahdanau et al.'s translation model with an attention mechanism and includes its 28.45 in Table 1. The two papers appeared almost at the same time, so they can be compared when reading the next article."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Limitations and what came after",
+      "blocks": [
+        {
+          "list": [
+            "**The fixed-length bottleneck.** Whether the input is 5 words or 50 words, the encoder has to compress it into the same 8,000 numbers. The longer the sentence, the more likely information is lost. Reversing eases training, but it does not remove this bottleneck.",
+            "**A limited vocabulary.** With an 80,000-word French vocabulary, rare words can only be output as UNK. Later subword tokenization (such as BPE in the reading list) solved this problem.",
+            "**Slow.** LSTM computes one word at a time, so training is hard to parallelize; the 384-million-parameter model took about 10 days to train on 8 GPUs.",
+            "**Only validated on one language pair.** The paper believes the method generalizes to other sequence problems, but here it was only tested on English-to-French."
+          ]
+        },
+        {
+          "p": "**What came next.** The paper's conclusion is prescient: a large deep LSTM that makes almost no assumptions about the structure of the problem can outperform carefully designed systems, provided there is enough data. The encoder–decoder framework was later used for summarization, dialogue, speech recognition, image captioning, and almost every other task that turns one sequence into another."
+        },
+        {
+          "p": "But that fixed-length vector remains a bottleneck. The next article, “Bahdanau Attention,” takes this approach: each time the decoder generates a word, it looks back at every word in the source sentence and decides for itself which ones to focus on, instead of relying only on one compressed vector. Three years later, the Transformer went further: it dropped the LSTM entirely and kept only attention. Today's large language models are exactly the decoder half of the Transformer."
+        },
+        {
+          "p": "First author Ilya Sutskever later became co-founder and Chief Scientist of OpenAI, where the GPT series was created."
+        }
+      ]
+    },
+    {
+      "h": "Check yourself: did you really get it?",
+      "blocks": [
+        {
+          "quiz": {
+            "q": "Why does the decoder need the <EOS> end-of-sentence marker?",
+            "options": [
+              "So the encoder knows when the sentence has been read to the end.",
+              "So the model can decide for itself when to stop and can output sentences of any length.",
+              "So that BLEU can be computed.",
+              "To mark out-of-vocabulary words."
+            ],
+            "answer": 1,
+            "why": "The decoder generates one word at a time, and without an “end” option it would not know when to stop. By predicting <EOS> as an ordinary word, the model can assign probabilities to sentences of different lengths. The encoder-side <EOS> is also useful, but this question asks about the decoder. Out-of-vocabulary words use UNK."
+          }
+        },
+        {
+          "quiz": {
+            "q": "If you increase the source sentence length from 10 words to 50 words, what happens to the size of Seq2Seq's sentence vector v?",
+            "options": [
+              "It becomes five times as large.",
+              "It stays the same, still 8,000 numbers.",
+              "It becomes twice as large.",
+              "It depends on the vocabulary size."
+            ],
+            "answer": 1,
+            "why": "This is exactly Seq2Seq's core weakness: the length of v is fixed, so no matter how long the sentence gets, it has to be represented with the same number of numbers. The attention mechanism in the next article is designed to break this limit."
+          }
+        },
+        {
+          "p": "After reading this article, you should be able to answer these questions:"
+        },
+        {
+          "list": [
+            "Why can't an ordinary deep neural network do translation directly?",
+            "What do the encoder and decoder each do? Where is the sentence vector v produced, and where does it go?",
+            "Why can p(y | x) be written as the product of probabilities at each step? What role does <EOS> play?",
+            "Why does reversing the input help? What does “minimal time lag” mean?",
+            "Where do the 384 million parameters go?",
+            "Why is beam search better than greedy search? Why is beam size 2 enough?",
+            "Why is the 34.81 score described as “underestimated”?",
+            "What problems does the fixed-length sentence vector cause? How does the attention mechanism solve them?"
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Sequence to Sequence Learning with Neural Networks (arXiv:1409.3215, version 3)",
+      "publisher": "Sutskever et al. · Google",
+      "date": "2014-12-14",
+      "url": "https://arxiv.org/abs/1409.3215"
+    },
+    "note": "This article is based on version 3 of the arXiv paper (December 2014); the first version was released in September 2014. Figures marked “Illustrative” were computed or created by this site from the paper's configuration. The introduction to LSTM gates is general background knowledge; the paper says only that it uses the LSTM formulation from Graves. Ilya Sutskever's later career is not covered in the paper."
+  },
+  "claims": [
+    {
+      "text": "arXiv version 3",
+      "value": "1409.3215v3",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "arXiv:1409.3215v3 [cs.CL] 14 Dec 2014",
+      "as_written": "version 3"
+    },
+    {
+      "text": "BLEU 34.8",
+      "value": "34.8",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "achieve a BLEU score of 34.8 on the entire test set",
+      "as_written": "34.8"
+    },
+    {
+      "text": "SMT 33.3",
+      "value": "33.3",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "a phrase-based SMT system achieves a BLEU score of 33.3 on the same dataset",
+      "as_written": "33.3"
+    },
+    {
+      "text": "Rescoring: 36.5",
+      "value": "36.5",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "its BLEU score increases to 36.5",
+      "as_written": "36.5"
+    },
+    {
+      "text": "1,000 candidates",
+      "value": "1000 hypotheses",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "rerank the 1000 hypotheses produced by the aforementioned SMT system",
+      "as_written": "1,000"
+    },
+    {
+      "text": "Then-best: 37.0",
+      "value": "37.0",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "close to the previous best published result on this task (which is 37.0 [9])",
+      "as_written": "37.0"
+    },
+    {
+      "text": "Improvement of 3.2 BLEU",
+      "value": "3.2 BLEU points",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "which improves the baseline by 3.2 BLEU points",
+      "as_written": "3.2"
+    },
+    {
+      "text": "34.81, 5 LSTMs, 384M, 8,000 dimensions",
+      "value": "34.81",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "we obtained a BLEU score of 34.81 by directly extracting translations from an ensemble of 5 deep LSTMs (with 384M parameters and 8,000 dimensional state each)",
+      "as_written": "34.81"
+    },
+    {
+      "text": "384 million parameters",
+      "value": "384M",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "The resulting LSTM has 384M parameters",
+      "as_written": "384 million"
+    },
+    {
+      "text": "64 million recurrent connections, 32 million each",
+      "value": "64M",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "of which 64M are pure recurrent connections (32M for the “encoder” LSTM and 32M for the “decoder” LSTM)",
+      "as_written": "64 million"
+    },
+    {
+      "text": "32 million",
+      "value": "32M",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "32M for the “encoder” LSTM",
+      "as_written": "32 million"
+    },
+    {
+      "text": "8,000 real numbers",
+      "value": "8000",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "the deep LSTM uses 8000 real numbers to represent a sentence",
+      "as_written": "8000"
+    },
+    {
+      "text": "80k-token vocabulary",
+      "value": "80k",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "The 34.81 BLEU score was achieved by an LSTM with a vocabulary of 80k words",
+      "as_written": "80,000"
+    },
+    {
+      "text": "SMT baseline 33.30",
+      "value": "33.30",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "the BLEU score of an SMT baseline on this dataset is 33.30",
+      "as_written": "33.30"
+    },
+    {
+      "text": "Difference of 0.5",
+      "value": "0.5 BLEU",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "The LSTM is within 0.5 BLEU points of the best WMT’14 result",
+      "as_written": "0.5"
+    },
+    {
+      "text": "Perplexity 5.8 → 4.7, BLEU 25.9 → 30.6",
+      "value": "4.7",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "the LSTM’s test perplexity dropped from 5.8 to 4.7, and the test BLEU scores of its decoded translations increased from 25.9 to 30.6",
+      "as_written": "4.7"
+    },
+    {
+      "text": "Perplexity 5.8",
+      "value": "5.8",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "dropped from 5.8 to 4.7",
+      "as_written": "5.8"
+    },
+    {
+      "text": "BLEU 25.9",
+      "value": "25.9",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "increased from 25.9 to 30.6",
+      "as_written": "25.9"
+    },
+    {
+      "text": "BLEU 30.6",
+      "value": "30.6",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "increased from 25.9 to 30.6",
+      "as_written": "30.6"
+    },
+    {
+      "text": "12 million sentence pairs, 348 million French words, 304 million English words",
+      "value": "12M",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "a subset of 12M sentences consisting of 348M French words and 304M English words",
+      "as_written": "12 million"
+    },
+    {
+      "text": "348 million",
+      "value": "348M",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "348M French words",
+      "as_written": "348 million"
+    },
+    {
+      "text": "304 million",
+      "value": "304M",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "304M English words",
+      "as_written": "304 million"
+    },
+    {
+      "text": "160,000-word source vocabulary, 80,000-word target vocabulary",
+      "value": "160,000",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "We used 160,000 of the most frequent words for the source language and 80,000 of the most frequent words for the target language",
+      "as_written": "160,000"
+    },
+    {
+      "text": "80,000",
+      "value": "80,000",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "80,000 of the most frequent words for the target language",
+      "as_written": "80,000"
+    },
+    {
+      "text": "4 layers, 1,000 cells, 1,000-dimensional word vectors",
+      "value": "1000 cells",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "We used deep LSTMs with 4 layers, with 1000 cells at each layer and 1000 dimensional word embeddings",
+      "as_written": "1,000 cells"
+    },
+    {
+      "text": "Each added layer cuts perplexity by nearly 10%",
+      "value": "10%",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "each additional layer reduced perplexity by nearly 10%",
+      "as_written": "10%"
+    },
+    {
+      "text": "Uniform initialization ±0.08",
+      "value": "0.08",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "uniform distribution between -0.08 and 0.08",
+      "as_written": "0.08"
+    },
+    {
+      "text": "Learning rate 0.7, halved after 5 epochs, 7.5 epochs total",
+      "value": "0.7",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "with a fixed learning rate of 0.7",
+      "as_written": "0.7"
+    },
+    {
+      "text": "5 epochs",
+      "value": "5 epochs",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "After 5 epochs, we begun halving the learning rate every half epoch",
+      "as_written": "5 epochs"
+    },
+    {
+      "text": "7.5 epochs",
+      "value": "7.5 epochs",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "We trained our models for a total of 7.5 epochs",
+      "as_written": "7.5 epochs"
+    },
+    {
+      "text": "Batch size 128",
+      "value": "128",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "We used batches of 128 sequences",
+      "as_written": "128"
+    },
+    {
+      "text": "Gradient norm threshold 5",
+      "value": "s > 5",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "If s > 5, we set g",
+      "as_written": "5"
+    },
+    {
+      "text": "Sentence lengths 20–30, some over 100",
+      "value": "20-30",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "Most sentences are short (e.g., length 20-30) but some sentences are long (e.g., length > 100)",
+      "as_written": "20 to 30"
+    },
+    {
+      "text": "Doubled speed",
+      "value": "2x speedup",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "yielding a 2x speedup",
+      "as_written": "doubled"
+    },
+    {
+      "text": "Single GPU: 1,700 words/second",
+      "value": "1,700",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "a single GPU processes a speed of approximately 1,700 words per second",
+      "as_written": "1700"
+    },
+    {
+      "text": "8 GPU",
+      "value": "8-GPU",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "we parallelized our model using an 8-GPU machine",
+      "as_written": "8"
+    },
+    {
+      "text": "1000 × 20000",
+      "value": "1000 × 20000",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "each GPU was responsible for multiplying by a 1000 × 20000 matrix",
+      "as_written": "1000 × 20000"
+    },
+    {
+      "text": "6,300 words/second, about 10 days",
+      "value": "6,300",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "achieved a speed of 6,300 (both English and French) words per second",
+      "as_written": "6300"
+    },
+    {
+      "text": "Training: about 10 days",
+      "value": "ten days",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "Training took about a ten days with this implementation",
+      "as_written": "10 days"
+    },
+    {
+      "text": "Official: 35.8",
+      "value": "35.8",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "which is greater than the 35.8 reported by",
+      "as_written": "35.8"
+    },
+    {
+      "text": "Table 1: Bahdanau 28.45",
+      "value": "28.45",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "28.45",
+      "as_written": "28.45"
+    },
+    {
+      "text": "Table 1: forward 26.17",
+      "value": "26.17",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "26.17",
+      "as_written": "26.17"
+    },
+    {
+      "text": "Table 1: reversed 30.59",
+      "value": "30.59",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "30.59",
+      "as_written": "30.59"
+    },
+    {
+      "text": "Table 1: ensemble, beam 1, 33.00",
+      "value": "33.00",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "33.00",
+      "as_written": "33.00"
+    },
+    {
+      "text": "Table 1: ensemble of 2, 33.27",
+      "value": "33.27",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "33.27",
+      "as_written": "33.27"
+    },
+    {
+      "text": "Table 1: beam 2, 34.50",
+      "value": "34.50",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "34.50",
+      "as_written": "34.50"
+    },
+    {
+      "text": "Table 2: Cho 34.54",
+      "value": "34.54",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "34.54",
+      "as_written": "34.54"
+    },
+    {
+      "text": "Table 2: 35.61",
+      "value": "35.61",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "35.61",
+      "as_written": "35.61"
+    },
+    {
+      "text": "Table 2: 35.85",
+      "value": "35.85",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "35.85",
+      "as_written": "35.85"
+    },
+    {
+      "text": "Table 2: oracle about 45",
+      "value": "∼45",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "∼45",
+      "as_written": "45"
+    },
+    {
+      "text": "No degradation up to 35 words",
+      "value": "35 words",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "There is no degradation on sentences with less than 35 words, there is only a minor degradation on the longest sentences",
+      "as_written": "35"
+    },
+    {
+      "text": "Two-layer sorting",
+      "value": "2 hidden layers",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "sort N N -bit numbers using only 2 hidden layers of quadratic size",
+      "as_written": "two layers"
+    },
+    {
+      "text": "Beam 2 is cheaper",
+      "value": "beam of size 2",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "an ensemble of 5 LSTMs with a beam of size 2 is cheaper than of a single LSTM with a beam of size 12",
+      "as_written": "beam size 2"
+    },
+    {
+      "text": "Difference of 0.3 (computed by this site: 34.81 − 34.50)",
+      "value": "34.50",
+      "source_url": "https://arxiv.org/abs/1409.3215",
+      "quote": "34.50",
+      "as_written": "0.3"
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "178461603c0e0f17"
+}
