@@ -979,7 +979,9 @@
    "id": "dpo",
    "name": "DPO",
    "year": 2023,
-   "area": "finetune"
+   "area": "finetune",
+   "title": "Direct Preference Optimization: Your Language Model is Secretly a Reward Model",
+   "arxiv": "2305.18290"
   },
   {
    "id": "ppo",
