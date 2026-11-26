@@ -1,0 +1,1102 @@
+{
+  "slug": "word2vec-efficient-estimation-of-word-representations",
+  "category": "paper",
+  "publisher": "Mikolov 等 · Google",
+  "date": "2013-01-16",
+  "title": "精读《word2vec》：词怎么变成向量，“国王 − 男人 ＋ 女人”为什么等于王后",
+  "summary": "word2vec 去掉了神经网络语言模型里最贵的隐藏层，用 CBOW 和 Skip-gram 在几十亿词上学出词向量，词义第一次可以用加减法来算。我们手算模型成本、用三维玩具向量演示类比题，再看论文自己展示的结果里藏着哪些错误。",
+  "ai_summary": "《Efficient Estimation of Word Representations in Vector Space》（Google，2013）提出 CBOW 和 Skip-gram 两个没有隐藏层的对数线性模型，用上下文猜中间词或用中间词猜上下文，从而在几十亿词的数据上快速学出几百维的词向量。论文设计了 8869 道语义类比题和 10675 道语法类比题，用“向量加减 ＋ 余弦相似度”作答。300 维 Skip-gram 总准确率 53.3%，远超此前公开词向量的 24.6%；在 60 亿词上训练的 1000 维版本达到 65.6%。论文还指出维度和数据应同时增加。它的局限是每个词只有一个与上下文无关的向量。",
+  "brief": [
+    "问题：词被当作孤立的编号，彼此没有相似度；能学词向量的神经网络语言模型太慢，用不了大数据。",
+    "方法：去掉非线性隐藏层，用 CBOW（上下文猜中间词）和 Skip-gram（中间词猜上下文）学词向量，配合分层 softmax。",
+    "结果：训练成本降了一两个数量级；Skip-gram 在语义类比题上大幅领先，“国王 − 男人 ＋ 女人 ≈ 王后”成为经典例子。",
+    "局限：每个词只有一个不随上下文变化的向量，不懂词的构成，学到的是共现关联而不是事实。"
+  ],
+  "paper": {
+    "title": "Efficient Estimation of Word Representations in Vector Space",
+    "authors": "Tomas Mikolov, Kai Chen, Greg Corrado, Jeffrey Dean",
+    "org": "Google",
+    "venue": "ICLR 2013 Workshop",
+    "year": 2013,
+    "arxiv": "1301.3781",
+    "url": "https://arxiv.org/abs/1301.3781"
+  },
+  "cover": {
+    "headline": "word2vec 原论文精读",
+    "highlight": "词义可以用加减法来算",
+    "glyph": {
+      "kind": "flow",
+      "nodes": [
+        {
+          "label": "国王 − 男人"
+        },
+        {
+          "label": "＋ 女人"
+        },
+        {
+          "label": "≈ 王后",
+          "tone": "hi"
+        }
+      ]
+    }
+  },
+  "sections": [
+    {
+      "h": "先说结论：这篇论文到底做了什么",
+      "blocks": [
+        {
+          "p": "2013 年 1 月，Google 的四位研究者 Tomas Mikolov、Kai Chen、Greg Corrado 和 Jeff Dean 发布了这篇 12 页的论文。它提出了两个极其简单的模型，**CBOW** 和 **Skip-gram**，用来把每个词变成一串几百个数字组成的向量。这两个模型和随后开源的工具一起，被统称为 **word2vec**。"
+        },
+        {
+          "p": "它的意义有两层。第一层是**快**：去掉了当时神经网络语言模型里最费时的隐藏层，同样的电脑能处理多得多的数据。论文说，在一个 16 亿词的数据集上学出高质量的词向量，用时不到一天。第二层是**好**：学出来的向量里藏着规律，最有名的例子是“国王 − 男人 ＋ 女人 ≈ 王后”，词的意思可以用加减法来算。"
+        },
+        {
+          "p": "这是我们“语言模型”学习主线的第一篇。从这里开始，词不再是一个孤立的编号，而是空间里的一个点；后面的 Seq2Seq、注意力、Transformer、GPT，全都建立在“词是向量”这个起点之上。今天大模型里的第一层，叫**词嵌入**（embedding），做的仍然是这件事。"
+        },
+        {
+          "callout": {
+            "kind": "takeaway",
+            "title": "一句话版本",
+            "text": "把每个词表示成一个几百维的向量，让“经常出现在相似上下文里的词”在空间里靠得近。CBOW 用周围的词猜中间的词，Skip-gram 用中间的词猜周围的词。去掉隐藏层之后，模型简单到可以在几十亿词的数据上训练，学到的向量能用加减法回答“法国之于巴黎，正如德国之于？”这类类比题。"
+          }
+        },
+        {
+          "callout": {
+            "kind": "prereq",
+            "title": "读这篇需要的三个小概念",
+            "text": "不懂也没关系，这三条够用了：",
+            "list": [
+              "**向量**：一串有顺序的数字，比如 (0.2, −1.3, 0.7)。两个向量可以相加、相减，也可以比较方向是否接近。",
+              "**语言模型**：根据前文猜下一个词的模型。在 2013 年，最好的语言模型是神经网络做的，但训练很慢。",
+              "**softmax**：把一堆分数变成一组加起来等于 1 的概率。词表有一百万个词，就要算一百万个分数，这是计算的大头。"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "问题：计算机眼里，“猫”和“狗”毫无关系",
+      "blocks": [
+        {
+          "p": "在 word2vec 之前，大多数自然语言处理系统把词当作**原子**：每个词就是词表里的一个编号，“猫”是 3051 号，“狗”是 8722 号。编号之间没有任何关系，“猫”和“狗”的距离，和“猫”和“民主”的距离一样远。"
+        },
+        {
+          "p": "论文承认这种做法有它的道理：简单、稳健，而且在海量数据上训练的简单模型往往打得过在少量数据上训练的复杂模型，比如当时流行的 N 元语法模型，已经可以在几万亿词上训练。但在语音识别、机器翻译这些高质量数据有限的领域，简单方法到了头，单纯堆数据已经带不来明显进步。"
+        },
+        {
+          "callout": {
+            "kind": "intuition",
+            "title": "编号和坐标的区别",
+            "text": "把词当编号，就像只知道每个城市的邮编：邮编 100000 和 100001 相邻，不代表两座城市挨着。把词当向量，就像给每个城市一个经纬度：离得近的城市坐标也近，而且“北京到天津的方向”可以拿来和“上海到苏州的方向”比较。word2vec 要做的，就是给每个词找一个有意义的“坐标”。"
+          }
+        },
+        {
+          "p": "让词有坐标的想法早就有了，叫**分布式表示**：一个词由几百个数字共同表示，每个数字又参与表示很多词。2003 年 Bengio 等人的神经网络语言模型，就在学语言模型的同时顺便学出了词向量。问题是太慢：论文说，据作者所知，此前没有哪个结构在超过几亿词的数据上成功训练过，词向量的维度也只有 50 到 100。"
+        },
+        {
+          "p": "所以论文的目标很明确：**在几十亿词、上百万词汇量的数据上，又快又好地学出高质量的词向量**。"
+        }
+      ]
+    },
+    {
+      "h": "为什么旧模型慢：算一算每个训练样本的成本",
+      "blocks": [
+        {
+          "p": "论文先给所有模型定了一个统一的成本标准：训练时总共要访问多少参数。总成本 O ＝ E × T × Q，E 是训练轮数，T 是训练集的词数，Q 是每个训练样本的成本，因模型而异。"
+        },
+        {
+          "p": "**前馈神经网络语言模型（NNLM）**用前面 N 个词猜下一个词。它分四层：把 N 个词各自查出一个 D 维向量（投影层）；送进一个有 H 个单元的非线性隐藏层；最后输出词表里 V 个词各自的概率。每个样本的成本是："
+        },
+        {
+          "formula": {
+            "expr": "Q ＝ N × D ＋ N × D × H ＋ H × V",
+            "parts": [
+              {
+                "sym": "N × D",
+                "desc": "查出 N 个词的向量：很便宜，只是查表"
+              },
+              {
+                "sym": "N × D × H",
+                "desc": "投影层到隐藏层的全连接：投影层是稠密的，这一项很贵"
+              },
+              {
+                "sym": "H × V",
+                "desc": "隐藏层到输出层：要给词表里每个词都算一个分数。V 是一百万量级时，这是最大的一项"
+              }
+            ],
+            "note": "最贵的 H × V 可以用“分层 softmax”降到约 H × log_{2}(V)，下面会讲。降下来之后，瓶颈就变成了中间的 N × D × H，也就是那个非线性隐藏层。"
+          }
+        },
+        {
+          "p": "**循环神经网络语言模型（RNNLM）**不用固定看前 N 个词，隐藏层自己连回自己，相当于有了短期记忆。它的成本是 Q ＝ H × H ＋ H × V，同样在用了分层 softmax 后，瓶颈落在隐藏层的 H × H 上。"
+        },
+        {
+          "callout": {
+            "kind": "intuition",
+            "title": "分层 softmax：用“二十个问题”代替一百万选一",
+            "text": "要从一百万个词里选一个，普通 softmax 得给每个词都打分。分层 softmax 把词表排成一棵二叉树，猜一个词就变成从树根往下走，每一步回答一个“左还是右”的问题。一百万个词只需要约 20 个问题（2 的 20 次方约等于一百万）。论文更进一步，用哈夫曼树：常见词放在离树根近的地方，问的问题更少。论文说，词表为一百万时，这比普通二叉树还能再快约一倍。"
+          }
+        },
+        {
+          "p": "两种旧模型的结论一样：**最贵的是那个非线性隐藏层**。神经网络之所以强大，正是靠它；但如果目标只是学词向量，它也许并不必要。"
+        }
+      ]
+    },
+    {
+      "h": "两个新模型：去掉隐藏层的 CBOW 和 Skip-gram",
+      "blocks": [
+        {
+          "p": "论文的关键决定是：**宁可模型简单一点、表达力弱一点，也要能在多得多的数据上训练**。两个新模型都没有隐藏层，只剩“查词向量”和“输出分类”两步，属于对数线性模型。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "CBOW 和 Skip-gram：一个用上下文猜中间，一个用中间猜上下文",
+            "subtitle": "根据论文第 3 节和图 1 整理",
+            "columns": [
+              "",
+              "CBOW（连续词袋）",
+              "Skip-gram（跳字）"
+            ],
+            "rows": [
+              [
+                "输入",
+                "中间词前后各 4 个词",
+                "中间那一个词"
+              ],
+              [
+                "要猜的",
+                "中间那个词",
+                "前后一定范围内的每个词"
+              ],
+              [
+                "怎么处理多个输入",
+                "把上下文词的向量取平均（不管顺序，所以叫“词袋”）",
+                "一个输入，多次分类"
+              ],
+              [
+                "每个样本的成本 Q",
+                "N × D ＋ D × log_{2}(V)",
+                "C × (D ＋ D × log_{2}(V))"
+              ],
+              [
+                "论文的发现",
+                "更快，语法类题目略好",
+                "更慢，语义类题目好得多"
+              ]
+            ]
+          }
+        },
+        {
+          "p": "**CBOW**（Continuous Bag-of-Words）很像去掉隐藏层的前馈语言模型，但有两点不同：它不只看前文，还看后文；它把上下文词的向量直接加起来求平均，词序被丢掉了。论文发现，用前后各 4 个词猜中间的词效果最好。"
+        },
+        {
+          "p": "**Skip-gram** 反过来：拿中间一个词当输入，去猜它前后一定距离内的每个词。离得越远的词通常越不相关，所以论文让远处的词被选中的机会少一些：设最大距离 C ＝ 10，每次先随机选一个 1 到 C 之间的 R，然后只猜前后各 R 个词。这样近处的词总是被猜到，远处的词只是偶尔。"
+        },
+        {
+          "p": "论文没有写出训练目标的公式。这里补上后续论文（Mikolov 等，NIPS 2013）里的标准写法，帮助理解 Skip-gram 到底在优化什么："
+        },
+        {
+          "formula": {
+            "expr": "p(w_{O} | w_{I}) ＝ exp( v'_{O} · v_{I} ) / Σ_{w=1}^{V} exp( v'_{w} · v_{I} )",
+            "parts": [
+              {
+                "sym": "w_{I}",
+                "desc": "输入词（中间词），v_{I} 是它的“输入向量”，也就是最后要用的词向量"
+              },
+              {
+                "sym": "w_{O}",
+                "desc": "要猜的一个上下文词，v'_{O} 是它的“输出向量”"
+              },
+              {
+                "sym": "v'_{O} · v_{I}",
+                "desc": "两个向量的点积：方向越一致，数值越大，模型就越认为它们会一起出现"
+              },
+              {
+                "sym": "Σ_{w=1}^{V}",
+                "desc": "对词表里所有 V 个词求和，用来把分数变成概率。这一步太贵，所以要用分层 softmax"
+              }
+            ],
+            "note": "训练就是调整所有向量，让真实出现在一起的词对概率尽量高。结果是：出现在相似上下文里的词，会被推到相似的方向上。"
+          }
+        },
+        {
+          "callout": {
+            "kind": "intuition",
+            "title": "为什么“猜邻居”能学出词义",
+            "text": "语言学里有句老话：看一个词和谁在一起，就知道它是什么意思。“猫”和“狗”周围常出现“喂”“宠物”“毛”；为了把这两个词都猜对，模型只好给它们相近的向量。没有人告诉模型猫和狗都是动物，它是从几十亿句话里自己“挤”出了这个结论。"
+          }
+        },
+        {
+          "quiz": {
+            "q": "CBOW 把上下文词的向量“加起来取平均”。这会丢掉什么信息？",
+            "options": [
+              "词的意思",
+              "上下文词的先后顺序",
+              "中间词是什么",
+              "词表的大小"
+            ],
+            "answer": 1,
+            "why": "加法不在乎顺序：“狗咬人”和“人咬狗”的上下文向量平均下来一模一样，所以叫“词袋”。词的意思恰恰保存在向量里；中间词是要猜的目标；词表大小和这个平均操作无关。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "手算：新模型到底便宜多少",
+      "blocks": [
+        {
+          "p": "把论文给的成本公式代入一组典型参数，就能看出差距有多大。下表取 D ＝ H ＝ 500、词表 V 为一百万（log_{2}(V) ≈ 20），都已经用了分层 softmax："
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "去掉隐藏层之后，每个训练样本的成本降了一两个数量级",
+            "subtitle": "示意：由本站按论文公式 2、4、5 代入典型参数计算，不是论文数据。琥珀色是 CBOW",
+            "columns": [
+              "模型",
+              "成本公式（用了分层 softmax）",
+              "代入 N ＝ 10（CBOW 为 8）、D ＝ H ＝ 500、C ＝ 10",
+              "大约是 NNLM 的"
+            ],
+            "rows": [
+              [
+                "NNLM",
+                "N × D ＋ N × D × H ＋ H × log_{2}V",
+                "5,000 ＋ 2,500,000 ＋ 10,000 ≈ 252 万",
+                "1"
+              ],
+              [
+                "CBOW",
+                "N × D ＋ D × log_{2}V",
+                "4,000 ＋ 10,000 ＝ 1.4 万",
+                "约 1/180"
+              ],
+              [
+                "Skip-gram",
+                "C × (D ＋ D × log_{2}V)",
+                "10 × (500 ＋ 10,000) ＝ 10.5 万",
+                "约 1/24"
+              ]
+            ],
+            "highlight": {
+              "row": 1
+            },
+            "note": "NNLM 里 N × D × H 这一项占了 99% 以上。CBOW 和 Skip-gram 正是砍掉了这一项。Skip-gram 要对每个上下文词各做一次分类，所以比 CBOW 贵约 7 倍。"
+          }
+        },
+        {
+          "p": "便宜一两个数量级，意味着同样的算力能在多得多的数据上训练、用高得多的维度。论文后面的实验会证明，这正是质量提升的来源。"
+        },
+        {
+          "quiz": {
+            "q": "按论文的成本公式，NNLM 在用了分层 softmax 之后，主要的计算花在哪里？",
+            "options": [
+              "查词向量 N × D",
+              "投影层到非线性隐藏层 N × D × H",
+              "输出层 H × log_{2}V",
+              "三者差不多"
+            ],
+            "answer": 1,
+            "why": "代入典型数值，N × D × H 是 250 万，另外两项加起来才一万五。论文因此把矛头对准隐藏层：去掉它，成本就降下来了。分层 softmax 已经把输出层从 H × V 降到了 H × log_{2}V。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "怎么考词向量：用加减法做类比题",
+      "blocks": [
+        {
+          "p": "此前评价词向量，常见的做法是列出几个词和它们最相近的词，凭感觉看合不合理。论文设计了一套更严格的考试：**类比题**。比如“big 之于 biggest，正如 small 之于？”"
+        },
+        {
+          "p": "答题方法只用向量加减法：算 X ＝ vector(\"biggest\") − vector(\"big\") ＋ vector(\"small\")，然后在词表里找和 X 夹角最小（余弦相似度最高）的词，题目里出现过的词不算。如果找到的正好是 smallest，就算答对。"
+        },
+        {
+          "callout": {
+            "kind": "intuition",
+            "title": "余弦相似度：只看方向，不看长短",
+            "text": "两个向量的余弦相似度，等于它们夹角的余弦：方向完全一致是 1，互相垂直是 0，完全相反是 −1。用它来比较，是因为词向量的“长短”常常和词出现的频率有关，而“方向”才更接近词义。"
+          }
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "一个三维的玩具例子：国王 − 男人 ＋ 女人，最接近的就是王后",
+            "subtitle": "示意：向量是本站编的，只有 3 维且每一维有含义；真实的词向量有几百维，单独一维通常说不出含义",
+            "columns": [
+              "词",
+              "向量（王室, 男性, 人）",
+              "和 X 的余弦相似度"
+            ],
+            "rows": [
+              [
+                "国王",
+                "(0.9, 0.8, 0.7)",
+                "0.29"
+              ],
+              [
+                "男人",
+                "(0.1, 0.8, 0.9)",
+                "—（题目词，排除）"
+              ],
+              [
+                "女人",
+                "(0.1, −0.8, 0.9)",
+                "0.75"
+              ],
+              [
+                "王后",
+                "(0.9, −0.8, 0.7)",
+                "0.99"
+              ],
+              [
+                "X ＝ 国王 − 男人 ＋ 女人",
+                "(0.9, −0.8, 0.5)",
+                "—"
+              ]
+            ],
+            "highlight": {
+              "row": 3
+            },
+            "note": "“国王 − 男人”去掉了“男性”和一部分“人”的成分，剩下“王室”；再加上“女人”，就补回了“女性”。真正的模型里，这种“性别方向”不是事先规定的哪一维，而是训练中自己出现的一个方向。按规则，题目里的国王、男人、女人都要排除，所以答案是王后。"
+          }
+        },
+        {
+          "p": "论文的测试集有两大类：**语义题** 8869 道，比如首都与国家、货币、城市与所在州、男女对应；**语法题** 10675 道，比如形容词变副词、反义、比较级、最高级、现在分词、过去式、名词复数。每类先人工列出一批词对，再两两组合成题，比如 68 个美国大城市和所在州，组合出约 2500 道题。"
+        },
+        {
+          "p": "评分非常严格：只有找到的词**一字不差**才算对，同义词也算错。论文因此说，100% 的准确率几乎不可能，因为模型完全不知道词的拼写构成（比如 -ly、-est 这样的词尾）。"
+        },
+        {
+          "quiz": {
+            "q": "论文规定，类比题只有答案一字不差才算对。这对评分有什么影响？",
+            "options": [
+              "让分数偏高",
+              "让分数偏低：答出同义词或意思对但形式不同的词也算错",
+              "没有影响",
+              "只影响语义题"
+            ],
+            "answer": 1,
+            "why": "严格匹配是一种保守的评分方式，模型实际“懂”的比分数显示的多。论文在后面也提到，按这个标准，它展示的例子表只能得约 60% 的分，但很多“错”答案其实相当接近。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "结果一：维度和数据要一起涨",
+      "blocks": [
+        {
+          "p": "论文用 Google 新闻语料训练，共约 60 亿个词元，词表限制为最常见的一百万个词。先用 CBOW 在不同的数据量和维度上做了一组小实验（只用含最常见 3 万词的题目）："
+        },
+        {
+          "fig": {
+            "type": "heatmap",
+            "title": "只加维度或只加数据，提升都会变慢；两者一起加，准确率才持续上升",
+            "subtitle": "单位：%，CBOW 在部分类比题上的准确率，来自论文表 2；颜色深浅只是示意，越深准确率越高",
+            "rows": [
+              "50 维",
+              "100 维",
+              "300 维",
+              "600 维"
+            ],
+            "cols": [
+              "2400 万词",
+              "4900 万",
+              "9800 万",
+              "1.96 亿",
+              "3.91 亿",
+              "7.83 亿"
+            ],
+            "values": [
+              [
+                13.4,
+                15.7,
+                18.6,
+                19.1,
+                22.5,
+                23.2
+              ],
+              [
+                19.4,
+                23.1,
+                27.8,
+                28.7,
+                33.4,
+                32.2
+              ],
+              [
+                23.2,
+                29.2,
+                35.3,
+                38.6,
+                43.7,
+                45.9
+              ],
+              [
+                24.0,
+                30.1,
+                36.5,
+                40.8,
+                46.6,
+                50.4
+              ]
+            ],
+            "display": [
+              [
+                "13.4",
+                "15.7",
+                "18.6",
+                "19.1",
+                "22.5",
+                "23.2"
+              ],
+              [
+                "19.4",
+                "23.1",
+                "27.8",
+                "28.7",
+                "33.4",
+                "32.2"
+              ],
+              [
+                "23.2",
+                "29.2",
+                "35.3",
+                "38.6",
+                "43.7",
+                "45.9"
+              ],
+              [
+                "24.0",
+                "30.1",
+                "36.5",
+                "40.8",
+                "46.6",
+                "50.4"
+              ]
+            ],
+            "highlight": {
+              "row": 3
+            },
+            "note": "看 50 维那一行：数据从 2400 万词加到 7.83 亿，准确率只从 13.4 涨到 23.2，维度太低装不下更多信息。看最左一列：维度从 50 加到 600，只从 13.4 涨到 24.0，数据太少学不出更多。两者一起加，才到 50.4。"
+          }
+        },
+        {
+          "p": "这个结论听起来理所当然，但论文特意指出：当时流行在大量数据上训练只有 50 到 100 维的词向量，维度明显不够。按 CBOW 的成本公式，数据翻一倍和维度翻一倍，增加的计算量差不多，所以两者应该同时增加。这和七年后《Scaling Laws》讨论“模型和数据怎么一起涨”是同一类问题。"
+        }
+      ]
+    },
+    {
+      "h": "结果二：Skip-gram 在语义上大幅领先",
+      "blocks": [
+        {
+          "p": "为了公平比较四种结构，论文让它们在同一份数据上（约 3.2 亿词、8.2 万词汇）训练 640 维的向量："
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "同样的数据和维度：Skip-gram 的语义题准确率是其他模型的两倍多",
+            "subtitle": "单位：%，来自论文表 3。蓝色列是语义题",
+            "columns": [
+              "模型",
+              "语义题",
+              "语法题",
+              "微软研究院的语法测试集"
+            ],
+            "rows": [
+              [
+                "RNNLM",
+                "9",
+                "36",
+                "35"
+              ],
+              [
+                "NNLM",
+                "23",
+                "53",
+                "47"
+              ],
+              [
+                "CBOW",
+                "24",
+                "64",
+                "61"
+              ],
+              [
+                "Skip-gram",
+                "55",
+                "59",
+                "56"
+              ]
+            ],
+            "highlight": {
+              "col": 1
+            },
+            "note": "RNNLM 那组向量此前在单个 CPU 上训练了约 8 周。RNNLM 的词向量直接连着非线性隐藏层，论文认为这是它在语义题上差的原因。"
+          }
+        },
+        {
+          "p": "四种结构各有特点：RNN 的向量主要擅长语法题；NNLM 明显好于 RNN；CBOW 在语法题上比 NNLM 好，语义题差不多；**Skip-gram 语法题略逊于 CBOW，语义题却远远领先所有模型**。"
+        },
+        {
+          "p": "再和当时公开的词向量比（论文表 4），差距更明显：此前公开的最好结果总准确率只有 24.6%（Mikolov 自己的 640 维 RNNLM 向量），而在 7.83 亿词上训练的 300 维 Skip-gram 达到 53.3%，CBOW 达到 36.1%。在单个 CPU 上，CBOW 训练了约一天，Skip-gram 约三天。"
+        },
+        {
+          "p": "**一轮比三轮划算**。论文还发现，把数据量翻倍、只训练一轮，效果和在同样数据上训练三轮差不多甚至更好，而且更快。比如 1 轮、16 亿词的 Skip-gram 总准确率 53.8%，略高于 3 轮、7.83 亿词的 53.3%。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "上规模之后：1000 维向量、60 亿词，两天左右训练完",
+            "subtitle": "来自论文表 6，用 DistBelief 分布式框架训练。训练时间是“天数 × CPU 核数”，核数是估计值。琥珀色是 Skip-gram",
+            "columns": [
+              "模型",
+              "维度",
+              "语义题 %",
+              "语法题 %",
+              "总准确率 %",
+              "训练时间"
+            ],
+            "rows": [
+              [
+                "NNLM",
+                "100",
+                "34.2",
+                "64.5",
+                "50.8",
+                "14 天 × 180 核"
+              ],
+              [
+                "CBOW",
+                "1000",
+                "57.3",
+                "68.9",
+                "63.7",
+                "2 天 × 140 核"
+              ],
+              [
+                "Skip-gram",
+                "1000",
+                "66.1",
+                "65.1",
+                "65.6",
+                "2.5 天 × 125 核"
+              ]
+            ],
+            "highlight": {
+              "row": 2
+            },
+            "note": "论文说，1000 维的 NNLM 要训练太久，没有完成。按“天数 × 核数”算，新模型只用了 NNLM 约八分之一到九分之一的计算量，就得到了维度高 10 倍、准确率更高的向量。"
+          }
+        },
+        {
+          "quiz": {
+            "q": "Skip-gram 为什么在语义题上明显好于 CBOW？下面哪个解释最合理？",
+            "options": [
+              "Skip-gram 的向量维度更高",
+              "Skip-gram 对每个上下文词单独做一次预测，每个词得到的训练信号更多、更细，不会被平均抹平",
+              "Skip-gram 用了隐藏层",
+              "Skip-gram 的训练数据更多"
+            ],
+            "answer": 1,
+            "why": "论文本身没有给出原因，这是常见的一种解释：CBOW 把上下文平均成一个向量，再去猜中间词，罕见词的信息容易被平均掉；Skip-gram 让每个词分别去预测它的每个邻居，训练信号更多。对比实验里两者维度和数据都相同，也都没有隐藏层。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "学到了什么：漂亮的规律和明显的错误",
+      "blocks": [
+        {
+          "p": "论文用表 4 里最好的 Skip-gram 向量（300 维、7.83 亿词）展示了一批类比结果。读这张表时，不妨自己挑一挑错："
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "论文展示的类比结果：大多正确，也有不少明显的错",
+            "subtitle": "来自论文表 8，每行用左边那对词的关系去推右边。括号里是本站标出的错误或可疑答案；琥珀色这一行三个例子错了两个",
+            "columns": [
+              "关系",
+              "例 1",
+              "例 2",
+              "例 3"
+            ],
+            "rows": [
+              [
+                "法国 → 巴黎",
+                "意大利：罗马",
+                "日本：东京",
+                "佛罗里达：塔拉哈西"
+              ],
+              [
+                "big → bigger",
+                "small：larger（应为 smaller）",
+                "cold：colder",
+                "quick：quicker"
+              ],
+              [
+                "爱因斯坦 → 科学家",
+                "梅西：中场",
+                "莫扎特：小提琴手（可疑：更贴切的是作曲家）",
+                "毕加索：画家"
+              ],
+              [
+                "copper → Cu",
+                "zinc：Zn",
+                "gold：Au",
+                "uranium：plutonium（应为 U）"
+              ],
+              [
+                "微软 → 鲍尔默",
+                "谷歌：雅虎（应为谷歌的 CEO）",
+                "IBM：麦克尼利（他是 Sun 的 CEO）",
+                "苹果：乔布斯"
+              ],
+              [
+                "日本 → 寿司",
+                "德国：香肠",
+                "法国：tapas（西班牙小吃）",
+                "美国：披萨"
+              ]
+            ],
+            "highlight": {
+              "row": 4
+            },
+            "note": "原表共 10 行，这里选了 6 行。论文自己说，按严格匹配的标准，这张表只能得约 60% 的分。"
+          }
+        },
+        {
+          "p": "这些错误很有启发性。词向量学到的是“谁和谁经常一起出现”，所以 IBM 旁边容易出现 Sun 公司的 CEO，法国和西班牙小吃也在同一类文章里。它学到的是**关联**，不是**事实**。"
+        },
+        {
+          "p": "论文还提到两个用法：用 10 个例子的平均向量代替 1 个例子来表示一种关系，语义语法题的准确率能提高约 10 个百分点；算一组词的平均向量，找离它最远的那个词，就能做“找出不同类的词”这种智力测验题。"
+        },
+        {
+          "p": "在微软的句子补全挑战（1040 个句子，每句缺一个词，五选一）上，Skip-gram 单独只有 48.0%，不如 LSA 的 49%；但和 RNN 语言模型加权组合后达到 58.9%，超过此前最好的 55.4%。词向量和语言模型捕捉的信息是互补的。"
+        }
+      ]
+    },
+    {
+      "h": "局限，以及之后的故事",
+      "blocks": [
+        {
+          "list": [
+            "**一个词只有一个向量**：“苹果”无论指水果还是公司，都是同一个向量；“bank”的河岸和银行两个意思被混在一起。词向量本身不看上下文。",
+            "**不懂词的构成**：模型把 big、bigger、biggest 当作三个毫不相干的词分别学，没有利用词尾的规律。论文也说，加入词的结构信息能进一步提高语法题成绩。",
+            "**词序信息丢失**：CBOW 直接平均上下文，Skip-gram 也只是逐个预测邻居，都不关心句子结构。",
+            "**评测有限**：类比题考的是向量的线性规律，论文也只是“相信”它和实际应用效果正相关，没有在大量下游任务上验证。"
+          ]
+        },
+        {
+          "p": "**文中几处小出入**。摘要说在 16 亿词的数据上学出高质量词向量“用时不到一天”，按论文表 5，这对 CBOW 成立（1 轮 0.6 天），但同样数据上的 Skip-gram 要 2 天。另外，论文提出的两个模型通常被叫作 word2vec，但这个名字在本文正文里并没有出现，它来自作者随后开源的代码。"
+        },
+        {
+          "p": "**之后的故事**。论文最后一节提到，作者随后开源了单机多线程的 C++ 代码，每小时能处理数十亿词，并发布了 140 多万个在 1000 亿词以上训练的命名实体向量。同年的 NIPS 论文（Mikolov 等，2013）又加入了**负采样**（只和少数随机抽取的“反例”比较，代替完整的 softmax）和**高频词降采样**，这才是今天大多数人说的 word2vec。"
+        },
+        {
+          "p": "沿着学习主线往下走，问题会自然出现：如果一个词的意思要看上下文，怎么办？如果要处理的不是单个词，而是一整句话、要把它翻译成另一句话呢？这就是下一篇 Seq2Seq（2014）要解决的问题。再往后，ELMo、BERT、GPT 都会给每个词一个**随上下文变化**的向量，但第一层仍然是一张 word2vec 式的词嵌入表。"
+        }
+      ]
+    },
+    {
+      "h": "检验一下：你吃透了吗",
+      "blocks": [
+        {
+          "quiz": {
+            "q": "用 Skip-gram 训练时设最大距离 C ＝ 10，每次随机取 R（1 到 10）只预测前后各 R 个词。这样做的效果是什么？",
+            "options": [
+              "让训练更随机，防止过拟合",
+              "近处的词几乎每次都被预测，远处的词只是偶尔，相当于给近处的词更大的权重",
+              "让每个样本的计算量固定",
+              "让罕见词出现得更多"
+            ],
+            "answer": 1,
+            "why": "距离 1 的邻居在任何 R 下都会被预测，距离 10 的邻居只有 R 取到 10 时才会，概率是十分之一。论文的理由是远处的词通常和当前词关系更弱，所以要少采样它们。"
+          }
+        },
+        {
+          "quiz": {
+            "q": "“法国 − 巴黎 ＋ 东京”最可能得到哪个词？这道题考的是哪种关系？",
+            "options": [
+              "日本，语义关系",
+              "日本，语法关系",
+              "京都，语义关系",
+              "东京，语法关系"
+            ],
+            "answer": 0,
+            "why": "“法国 − 巴黎”得到“国家减首都”的方向，加上东京就落到日本附近。首都和国家属于论文测试集里的语义类题目；比较级、复数这类才是语法题。东京本身是题目里的词，会被排除。"
+          }
+        },
+        {
+          "p": "读完这篇，你应该能回答下面这些问题："
+        },
+        {
+          "list": [
+            "把词当编号和把词当向量，有什么本质区别？",
+            "旧的神经网络语言模型为什么慢？成本的大头在哪一项？",
+            "分层 softmax 怎样把一百万选一变成二十个是非题？哈夫曼树又快在哪里？",
+            "CBOW 和 Skip-gram 分别用什么猜什么？各自擅长哪类题？",
+            "为什么“猜邻居”能让相近的词得到相近的向量？",
+            "类比题怎么用向量加减法和余弦相似度作答？为什么严格匹配会低估模型？",
+            "为什么维度和数据要一起增加？",
+            "一个词只有一个向量，会带来什么问题？后来的模型怎样解决？"
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Efficient Estimation of Word Representations in Vector Space（arXiv:1301.3781 第 3 版）",
+      "publisher": "Mikolov 等 · Google",
+      "date": "2013-09-07",
+      "url": "https://arxiv.org/abs/1301.3781"
+    },
+    "note": "本文依据论文 arXiv 第 3 版（2013 年 9 月），首版发布于 2013 年 1 月。标注「示意」的表格由本站按论文公式计算或编写；Skip-gram 的 softmax 公式、负采样和高频词降采样来自作者同年的后续论文《Distributed Representations of Words and Phrases and their Compositionality》，不在这篇论文里。"
+  },
+  "claims": [
+    {
+      "text": "arXiv 第 3 版",
+      "value": "1301.3781v3",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "arXiv:1301.3781v3 [cs.CL] 7 Sep 2013",
+      "as_written": "第 3 版"
+    },
+    {
+      "text": "16 亿词、不到一天",
+      "value": "1.6 billion words",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "it takes less than a day to learn high quality word vectors from a 1.6 billion words data set",
+      "as_written": "16 亿"
+    },
+    {
+      "text": "N 元语法可训练几万亿词",
+      "value": "trillions of words",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "it is possible to train N-grams on virtually all available data (trillions of words [3])",
+      "as_written": "几万亿"
+    },
+    {
+      "text": "此前不超过几亿词、维度 50–100",
+      "value": "50 - 100",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "than a few hundred of millions of words, with a modest dimensionality of the word vectors between 50 - 100",
+      "as_written": "50 到 100"
+    },
+    {
+      "text": "语义题 8869、语法题 10675",
+      "value": "8869",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "Overall, there are 8869 semantic and 10675 syntactic questions",
+      "as_written": "8869"
+    },
+    {
+      "text": "语法题 10675",
+      "value": "10675",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "8869 semantic and 10675 syntactic questions",
+      "as_written": "10675"
+    },
+    {
+      "text": "68 个城市、约 2500 道题",
+      "value": "68",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "we made a list of 68 large American cities and the states they belong to, and formed about 2.5K questions",
+      "as_written": "68 个"
+    },
+    {
+      "text": "约 2.5K 道",
+      "value": "2.5K",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "formed about 2.5K questions",
+      "as_written": "2500"
+    },
+    {
+      "text": "100% 不可能",
+      "value": "100%",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "reaching 100% accuracy is likely to be impossible",
+      "as_written": "100%"
+    },
+    {
+      "text": "Google 新闻约 60 亿词元",
+      "value": "6B",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "This corpus contains about 6B tokens",
+      "as_written": "60 亿"
+    },
+    {
+      "text": "词表 100 万",
+      "value": "1 million",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "We have restricted the vocabulary size to 1 million most frequent words",
+      "as_written": "一百万"
+    },
+    {
+      "text": "3 万常用词",
+      "value": "30k",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "with vocabulary restricted to the most frequent 30k words",
+      "as_written": "3 万"
+    },
+    {
+      "text": "表 2：50 维 13.4→23.2",
+      "value": "13.4",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "13.4",
+      "as_written": "13.4"
+    },
+    {
+      "text": "表 2：23.2",
+      "value": "23.2",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "23.2",
+      "as_written": "23.2"
+    },
+    {
+      "text": "表 2：600 维 24.0",
+      "value": "24.0",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "24.0",
+      "as_written": "24.0"
+    },
+    {
+      "text": "表 2：600 维 783M 50.4",
+      "value": "50.4",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "50.4",
+      "as_written": "50.4"
+    },
+    {
+      "text": "C = 10",
+      "value": "C = 10",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "In the following experiments, we use C = 10",
+      "as_written": "10"
+    },
+    {
+      "text": "前后各 4 个词",
+      "value": "four future and four history words",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "a log-linear classifier with four future and four history words at the input",
+      "as_written": "4 个"
+    },
+    {
+      "text": "640 维、3.2 亿词、8.2 万词汇",
+      "value": "320M words",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "(320M words, 82K vocabulary)",
+      "as_written": "3.2 亿"
+    },
+    {
+      "text": "8.2 万词汇",
+      "value": "82K",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "82K vocabulary",
+      "as_written": "8.2 万"
+    },
+    {
+      "text": "RNNLM 训练约 8 周",
+      "value": "8 weeks",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "took about 8 weeks to train on a single CPU",
+      "as_written": "8 周"
+    },
+    {
+      "text": "表 3：Skip-gram 语义 55",
+      "value": "55",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "55",
+      "as_written": "55"
+    },
+    {
+      "text": "表 4：RNNLM 640 维 24.6%",
+      "value": "24.6",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "24.6",
+      "as_written": "24.6%"
+    },
+    {
+      "text": "表 4：Skip-gram 53.3%",
+      "value": "53.3",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "53.3",
+      "as_written": "53.3%"
+    },
+    {
+      "text": "表 4：CBOW 36.1%",
+      "value": "36.1",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "36.1",
+      "as_written": "36.1%"
+    },
+    {
+      "text": "7.83 亿词",
+      "value": "783M",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "783M",
+      "as_written": "7.83 亿"
+    },
+    {
+      "text": "表 5：1 轮 1.6B Skip-gram 53.8%",
+      "value": "53.8",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "53.8",
+      "as_written": "53.8%"
+    },
+    {
+      "text": "表 5：1 轮 CBOW 1.6B 0.6 天",
+      "value": "0.6",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "0.6",
+      "as_written": "0.6 天"
+    },
+    {
+      "text": "CBOW 约一天、Skip-gram 约三天",
+      "value": "about three days",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "training time for the Skip-gram model was about three days",
+      "as_written": "三天"
+    },
+    {
+      "text": "表 6：NNLM 14 x 180",
+      "value": "14 x 180",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "14 x 180",
+      "as_written": "14 天 × 180 核"
+    },
+    {
+      "text": "表 6：CBOW 63.7、2 x 140",
+      "value": "63.7",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "63.7",
+      "as_written": "63.7"
+    },
+    {
+      "text": "表 6：Skip-gram 66.1、65.6、2.5 x 125",
+      "value": "65.6",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "65.6",
+      "as_written": "65.6"
+    },
+    {
+      "text": "表 6：Skip-gram 语义 66.1",
+      "value": "66.1",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "66.1",
+      "as_written": "66.1"
+    },
+    {
+      "text": "表 6：NNLM 50.8",
+      "value": "50.8",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "50.8",
+      "as_written": "50.8"
+    },
+    {
+      "text": "表 6：1000 维",
+      "value": "1000",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "Note that training of NNLM with 1000-dimensional vectors would take too long to complete",
+      "as_written": "1000 维"
+    },
+    {
+      "text": "1040 个句子",
+      "value": "1040",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "This task consists of 1040 sentences",
+      "as_written": "1040 个"
+    },
+    {
+      "text": "Skip-gram 48.0、LSA 49",
+      "value": "48.0",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "48.0",
+      "as_written": "48.0%"
+    },
+    {
+      "text": "LSA 49",
+      "value": "49",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "49",
+      "as_written": "49%"
+    },
+    {
+      "text": "组合 58.9%、此前 55.4%",
+      "value": "58.9%",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "a weighted combination leads to a new state of the art result 58.9% accuracy",
+      "as_written": "58.9%"
+    },
+    {
+      "text": "此前最好 55.4%",
+      "value": "55.4%",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "state of the art performance of 55.4% accuracy",
+      "as_written": "55.4%"
+    },
+    {
+      "text": "表 8 约 60%",
+      "value": "60%",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "the results in Table 8 would score only about 60%",
+      "as_written": "60%"
+    },
+    {
+      "text": "10 个例子提升约 10%",
+      "value": "10%",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "we have observed improvement of accuracy of our best models by about 10% absolutely",
+      "as_written": "10 个百分点"
+    },
+    {
+      "text": "140 多万个向量、1000 亿词",
+      "value": "1.4 million",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "We also published more than 1.4 million vectors that represent named entities, trained on more than 100 billion words",
+      "as_written": "140 多万"
+    },
+    {
+      "text": "1000 亿词",
+      "value": "100 billion words",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "trained on more than 100 billion words",
+      "as_written": "1000 亿"
+    },
+    {
+      "text": "哈夫曼树约快一倍",
+      "value": "two times speedup",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "this results in about two times speedup in evaluation",
+      "as_written": "一倍"
+    },
+    {
+      "text": "Skip-gram 比 CBOW 贵约 7 倍（本站按公式计算）",
+      "value": "C × (D + D × log2 (V))",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "Q = C × (D + D × log2 (V))",
+      "as_written": "7 倍"
+    },
+    {
+      "text": "NNLM 中 NDH 占 99% 以上（本站按公式计算）",
+      "value": "N × D × H",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "Thus, most of the complexity is caused by the term N × D × H",
+      "as_written": "99%"
+    },
+    {
+      "text": "每小时数十亿词",
+      "value": "billions of words per hour",
+      "source_url": "https://arxiv.org/abs/1301.3781",
+      "quote": "it is in the order of billions of words per hour",
+      "as_written": "数十亿"
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "tier": "primary",
+    "writer": "论文精读"
+  }
+}
