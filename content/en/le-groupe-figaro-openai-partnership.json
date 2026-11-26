@@ -1,0 +1,255 @@
+{
+  "slug": "le-groupe-figaro-openai-partnership",
+  "date": "2026-11-18",
+  "category": "product",
+  "publisher": "OpenAI",
+  "topics": [
+    "openai"
+  ],
+  "title": "Le Groupe Figaro and OpenAI partner: ChatGPT gets news summaries, excerpts, and links",
+  "summary": "Ask ChatGPT about French news, business, or culture and you may see summaries and excerpts from Le Figaro, with links back to the original stories. The partnership was announced on November 18, 2026.",
+  "ai_summary": "On November 18, 2026, Le Groupe Figaro and OpenAI announced that ChatGPT will surface reporting from Le Figaro and associated publications as summaries and excerpts with links to the original stories, covering current reporting and archive content across news, business, culture, and lifestyle. Le Figaro notes that it has more than 600 journalists and will retain full editorial independence; it also plans to introduce ChatGPT Enterprise across multiple teams. For readers, this adds another way to discover reliable French journalism in conversation — but the companies haven't yet said when it will go live, which publications come first, or the commercial terms.",
+  "brief": [
+    "The partnership covers Le Figaro's current reporting and archive content, spanning news, business, culture, and lifestyle.",
+    "ChatGPT surfaces summaries and excerpts — not full articles — with links to the original stories.",
+    "Le Figaro retains full editorial independence and plans to introduce ChatGPT Enterprise across multiple teams.",
+    "The companies have not announced a launch date or which publications will be covered first."
+  ],
+  "readMinutes": 5,
+  "sections": [
+    {
+      "h": "What this is: a content partnership, not a new model",
+      "blocks": [
+        {
+          "p": "On November 18, 2026, Le Groupe Figaro and OpenAI announced a strategic partnership. At its core, Le Figaro's journalism will become discoverable in ChatGPT as summaries and excerpts, with links to the original stories."
+        },
+        {
+          "p": "This is not a model update — it doesn't change how ChatGPT answers; it adds a new kind of content source. For readers, it's more like another way to discover Le Figaro's reporting inside a conversation."
+        }
+      ]
+    },
+    {
+      "h": "What changes: another way to discover Le Figaro",
+      "blocks": [
+        {
+          "p": "Before the partnership, readers who wanted Le Figaro's reporting usually had to leave the conversation and search the site themselves. After, ChatGPT can provide Le Figaro summaries, excerpts, and links in answers on relevant topics."
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "Before: you had to search. After: ChatGPT gives summaries and links.",
+            "subtitle": "Illustrative: amber marks what this partnership introduces",
+            "left": {
+              "label": "Before",
+              "sub": "Reader wants Le Figaro reporting",
+              "items": [
+                {
+                  "label": "See Le Figaro summaries in the conversation",
+                  "state": "dim"
+                },
+                {
+                  "label": "Has to leave the conversation to search the website",
+                  "state": "base"
+                }
+              ]
+            },
+            "right": {
+              "label": "After",
+              "sub": "Le Figaro content in ChatGPT",
+              "items": [
+                {
+                  "label": "Summaries and excerpts",
+                  "state": "hi"
+                },
+                {
+                  "label": "Links to original stories",
+                  "state": "hi"
+                },
+                {
+                  "label": "Current reporting and archive content",
+                  "state": "hi"
+                },
+                {
+                  "label": "News, business, culture, lifestyle",
+                  "state": "base"
+                }
+              ]
+            },
+            "footer": "The links take readers back to Le Figaro's site to read the full story",
+            "note": "Triggers and placement haven't been announced; this is an illustrative comparison."
+          }
+        }
+      ]
+    },
+    {
+      "h": "What it looks like in conversation: summaries, excerpts, links",
+      "blocks": [
+        {
+          "p": "The companies haven't released screenshots, but the announcement gives a rough idea: after you ask a question, ChatGPT may give a short summary, quote an excerpt, and include a \"Read the original story\" link. The link goes back to Le Figaro's website, where readers can continue with the full article."
+        },
+        {
+          "fig": {
+            "type": "illustration",
+            "title": "Ask a question, ChatGPT returns a summary, an excerpt, and a link to the original story",
+            "subtitle": "Illustrative: the question and answer are examples; amber marks the summary, excerpt, and link this partnership introduces",
+            "note": "No screenshots were provided; the conversation is illustrative.",
+            "glyph": {
+              "kind": "chat",
+              "turns": [
+                {
+                  "role": "user",
+                  "text": "What's the big news in the French economy lately?"
+                },
+                {
+                  "role": "ai",
+                  "text": "Summary: ... (the gist)",
+                  "tone": "hi"
+                },
+                {
+                  "role": "ai",
+                  "text": "Excerpt: \"...\"",
+                  "tone": "hi"
+                },
+                {
+                  "role": "ai",
+                  "text": "Read the original story →",
+                  "tone": "hi"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "callout": {
+            "kind": "note",
+            "title": "An excerpt is not the full article",
+            "text": "The announcement says summaries and excerpts — a recap and a snippet, not the whole article. To read the full story, click through to the site."
+          }
+        }
+      ]
+    },
+    {
+      "h": "What's covered: current reporting, archive content, and associated publications",
+      "blocks": [
+        {
+          "p": "The announcement frames the scope broadly: not just Le Figaro's reporting from the day, but also archive content and associated publications from Groupe Figaro, spanning news, business, culture, and lifestyle. In practice, readers may encounter breaking news as well as older reporting and coverage across different areas."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "The partnership covers current reporting, archive content, and associated publications",
+            "subtitle": "Per the announcement",
+            "columns": [
+              "Scope",
+              "What the announcement says"
+            ],
+            "rows": [
+              [
+                "Content source",
+                "Le Figaro and associated publications"
+              ],
+              [
+                "Time range",
+                "Current reporting and archive content"
+              ],
+              [
+                "Topic areas",
+                "News, business, culture, lifestyle"
+              ]
+            ],
+            "note": "From the OpenAI announcement"
+          }
+        }
+      ]
+    },
+    {
+      "h": "What it means for Le Figaro: editorial independence and ChatGPT Enterprise internally",
+      "blocks": [
+        {
+          "p": "Le Figaro will retain full editorial independence and control over its journalism. In other words, OpenAI won't decide what it publishes; the newsroom remains in charge."
+        },
+        {
+          "fig": {
+            "type": "quote",
+            "title": "Groupe Figaro CEO: pairing content strength and technological reach to create long-term value",
+            "text": "This partnership reflects Groupe Figaro's ambition to build meaningful relationships with a leader in artificial intelligence research and deployment. Combining Groupe Figaro's editorial heritage and trusted brands supported by a team of more than 600 journalists who provide a reliable source of information with OpenAI's technological expertise and global reach will bring new opportunities for innovation and create long-term value for our readers.",
+            "who": "Marc Feuillée",
+            "role": "CEO, Groupe Figaro",
+            "source_url": "https://openai.com/index/le-groupe-figaro-and-openai-announce-partnership"
+          }
+        },
+        {
+          "p": "Le Figaro also plans to introduce ChatGPT Enterprise — the version of ChatGPT for business teams — across multiple teams to support day-to-day work. It will explore further uses of OpenAI technology in its own workflows and reader services, guided by its AI charter and editorial standards. Varun Shetty, OpenAI's Vice President of Media Partnerships, said Le Figaro's reporting helps readers make sense of issues shaping France and the wider world, and that OpenAI wants AI to help more people discover that work."
+        }
+      ]
+    },
+    {
+      "h": "What the companies haven't said",
+      "blocks": [
+        {
+          "list": [
+            "Launch timing: the announcement says only that the partnership was announced on November 18, not when it will actually appear in ChatGPT.",
+            "Which associated publications come first: the announcement mentions associated publications but doesn't list them.",
+            "Triggers and placement: no word on which questions will trigger it or where it will appear in the interface.",
+            "Commercial and licensing terms: no fees, revenue shares, or content licensing details have been disclosed.",
+            "Languages and regions: no details on whether this is limited to French-language content, France only, or available worldwide.",
+            "ChatGPT Enterprise rollout: the announcement only says Le Figaro plans to introduce it across various teams, with no scale or start date."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Who it's for: readers who follow French news, but don't expect full articles yet",
+      "blocks": [
+        {
+          "p": "For general readers, the biggest value is skipping the step of leaving the conversation to find the news. If you often ask about French business, culture, or lifestyle, you may later see Le Figaro summaries, excerpts, and links in ChatGPT; to read the full story, click through to the site."
+        },
+        {
+          "p": "The caveat: what's shown will be summaries and excerpts, not full articles, and the launch date and trigger conditions haven't been announced. So this is more \"worth watching\" than a feature you can use right now."
+        },
+        {
+          "p": "If you work at Le Figaro, keep an eye on the plan to introduce ChatGPT Enterprise, though the rollout scope and start date are also still open."
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Le Groupe Figaro and OpenAI partner to bring Le Figaro journalism to ChatGPT",
+      "publisher": "OpenAI",
+      "date": "2026-11-18",
+      "url": "https://openai.com/index/le-groupe-figaro-and-openai-announce-partnership"
+    },
+    "more": [],
+    "note": "This article is based solely on the official OpenAI announcement. The conversation mockups are illustrative examples, not official screenshots. The figure of more than 600 journalists comes from the Groupe Figaro CEO's statement in the announcement."
+  },
+  "claims": [
+    {
+      "text": "The partnership was announced on November 18, 2026.",
+      "value": "November 18, 2026",
+      "source_url": "https://openai.com/index/le-groupe-figaro-and-openai-announce-partnership",
+      "as_written": "November 18, 2026",
+      "quote": "OpenAI November 18, 2026"
+    },
+    {
+      "text": "Groupe Figaro has more than 600 journalists on its editorial team.",
+      "value": "more than 600",
+      "source_url": "https://openai.com/index/le-groupe-figaro-and-openai-announce-partnership",
+      "as_written": "More than 600 journalists",
+      "quote": "supported by a team of more than 600 journalists who provide a reliable source of information"
+    }
+  ],
+  "cover": {
+    "headline": "Le Groupe Figaro and OpenAI partner",
+    "highlight": "News appears as summaries, excerpts, and links",
+    "big": {
+      "value": "600",
+      "unit": "journalists",
+      "label": "Le Figaro editorial team"
+    }
+  },
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "6941a42696641d7e"
+}

@@ -1,0 +1,661 @@
+{
+  "slug": "mass-spec-skills-antigravity",
+  "category": "product",
+  "date": "2026-11-25",
+  "publisher": "Google DeepMind",
+  "topics": [
+    "gemini"
+  ],
+  "title": "Google Antigravity launches Mass Spec Skills, lifting molecular identification accuracy from under 4% to about 97%",
+  "summary": "Anyone who works with mass spectra knows the bottleneck: instruments detect abundant molecular signals, but routine spectral library searches annotate only about 5% on average. Google DeepMind has added a set of Mass Spec Skills to Antigravity, letting the AI agent call established chemistry tools and query public databases to turn spectra directly into molecular structures.",
+  "ai_summary": "Google DeepMind has released Mass Spec Skills for Antigravity: the AI agent can now run established mass-spec tools and query public chemical libraries to interpret spectra as molecular structures. Routine library search annotates about 5% of spectra on average, and about 10% for human samples. On a benchmark of 100 compounds with public library references, models without internet or skills scored under 4%; with the skills, all three models identified and verified the correct molecule in about 97% of attempts, with the lightweight model matching the frontier models. The skills also sharply cut generated tokens per attempt: by nearly 4x on the lightweight model, and by half and nearly a fifth on the two frontier models. They are most useful for metabolomics, natural products and drug discovery researchers. Limits: mirror-image molecules, closely related isomers and molecules absent from databases still cannot be confirmed by spectrum alone.",
+  "brief": [
+    "Routine spectral library searches annotate only about 5% of measured spectra on average, and about 10% for human samples; the rest is the \"dark matter\" of mass spectrometry.",
+    "In one end-to-end example, 19 useful peaks were extracted from 1,761 raw peaks; the correct structure was pinned down among 845 PubChem isomers and accounted for 97.7% of fragment intensity.",
+    "On a 100-compound benchmark, accuracy was under 4% without the skills and about 97% with them, with the lightweight model matching frontier models.",
+    "DeepMind is offering 10,000 scientists free access to Antigravity's highest usage tier for 6 months, onboarded on a rolling basis."
+  ],
+  "readMinutes": 7,
+  "sections": [
+    {
+      "h": "What it is: a one-sentence background",
+      "blocks": [
+        {
+          "p": "Mass Spec Skills is a suite of domain skills inside Google Antigravity. Antigravity is Google's AI agent product -- think of it as an assistant that can call tools on its own. The skills are a professional toolkit bolted onto it: they let it run established mass-spec software, query public chemical databases for you, and combine the results into a reviewable conclusion using Gemini's reasoning."
+        },
+        {
+          "p": "In short, what an analytical chemist once did manually step by step can now be described in natural language; the agent chooses the skills, chains the workflow, and produces a report."
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "Four numbers that explain this launch",
+            "subtitle": "Units: percentages and counts; \"under 4%\" is an upper bound, not an exact value",
+            "items": [
+              {
+                "value": 5,
+                "unit": "%",
+                "label": "Average annotation rate",
+                "note": "Routine library search; about 10% for human samples"
+              },
+              {
+                "value": 97,
+                "unit": "%",
+                "label": "Identification accuracy with skills",
+                "note": "About 97%, 100-compound benchmark"
+              },
+              {
+                "value": 4,
+                "unit": "%",
+                "label": "Accuracy ceiling without skills",
+                "note": "Under 4% across all three models"
+              },
+              {
+                "value": 845,
+                "unit": "count",
+                "label": "Candidates screened in one example",
+                "note": "Same-formula isomers in PubChem"
+              }
+            ]
+          }
+        },
+        {
+          "fig": {
+            "type": "illustration",
+            "title": "Antigravity directs; the skills run the tools",
+            "subtitle": "Schematic: amber marks tools called by the new Mass Spec Skills; blue is Antigravity itself",
+            "note": "Tool names are the community tools mentioned in the post",
+            "glyph": {
+              "kind": "hub",
+              "center": {
+                "label": "Antigravity",
+                "tone": "def"
+              },
+              "nodes": [
+                {
+                  "label": "matchms denoising",
+                  "tone": "hi"
+                },
+                {
+                  "label": "GNPS/MoNA spectral lookup",
+                  "tone": "hi"
+                },
+                {
+                  "label": "SIRIUS formula determination",
+                  "tone": "hi"
+                },
+                {
+                  "label": "MAGMa peak matching",
+                  "tone": "hi"
+                },
+                {
+                  "label": "RDKit validation",
+                  "tone": "hi"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "callout": {
+            "kind": "note",
+            "title": "Available now",
+            "text": "Mass Spec Skills is live in Google Antigravity: download the app and install the Mass Spec plugin to start. Enterprise users can sign in with Google Cloud credentials. DeepMind is also offering 10,000 scientists the highest Antigravity usage tier free for 6 months, onboarded on a rolling basis and requiring an application."
+          }
+        }
+      ]
+    },
+    {
+      "h": "Why mass spectra are so hard to identify: libraries cover only 5%",
+      "blocks": [
+        {
+          "p": "Blood, soil and plant tissue are full of small molecules: nutrients, hormones, drugs and their metabolites, pollutants, and bioactive compounds with potential therapeutic value. A modern mass spectrometer can detect tens of thousands of molecular signals from a single drop of sample extract. Tandem mass spectrometry (MS/MS), which first breaks molecules apart and then measures the fragments, can also show what they split into."
+        },
+        {
+          "p": "Detecting a signal is not the same as knowing which molecule made it. The standard approach is to match each spectrum against reference spectra of known molecules. The problem: even after a decade of library expansion, only about 5% of measured spectra are annotated on average, and about 10% for human samples. The rest is known in the field as the \"dark matter\" of mass spectrometry."
+        },
+        {
+          "callout": {
+            "kind": "intuition",
+            "title": "How to think about an MS/MS spectrum",
+            "text": "It is like knowing the parts list of a crashed car -- the mass of each fragment -- without knowing what the original car looked like. Library matching is like checking whether an identical car's parts list exists. When there is no match, you have to reconstruct the original structure from the parts."
+          }
+        },
+        {
+          "p": "Many of the unannotated molecules are already listed in public chemical databases; their spectra have just never been recorded, so there is no reference to match. Identifying them requires inferring the structure directly from the fragment ions. Analytical chemists have a mature workflow: search spectral libraries, determine the molecular formula, pull candidate structures from a database, and test each candidate against the observed fragment peaks. The tools are already available and open source, but every spectrum still takes an expert considerable time -- and a single study can produce large numbers of spectra, which manual analysis simply cannot keep up with."
+        }
+      ]
+    },
+    {
+      "h": "A full example: from 1,761 peaks to one structure",
+      "blocks": [
+        {
+          "p": "DeepMind used a negative-ion spectrum -- traditionally harder to annotate than positive ion -- to demonstrate the end-to-end workflow. The raw spectrum contained 1,761 peaks. First, matchms removed more than 1,700 low-intensity noise spikes, leaving 19 useful fragment peaks."
+        },
+        {
+          "p": "Next, SIRIUS determined the molecular formula C20H21ClN6O with a mass error of -1.5 ppm and a score of 37.86, well ahead of the runner-up at 28.33. Once the formula is fixed, the agent can search a database for candidates with the same formula."
+        },
+        {
+          "p": "The agent retrieved and scored all 845 same-formula isomers from PubChem. Several top candidates each accounted for 14 of the 19 peaks and 97.7% of summed fragment intensity -- by mass match alone, they were nearly indistinguishable."
+        },
+        {
+          "p": "At that point, chemistry reasoning takes over. The observed neutral losses point to a central urea linkage: it loses HCl, then isocyanic acid HNCO, and can also form the same loop in the opposite order. Isomers without a urea linkage were ruled out. The urea bond cleaves into two complementary halves with 45.1% and 6.8% of fragment intensity; their formulas add up exactly to the intact parent."
+        },
+        {
+          "p": "To separate the two most similar candidates, the agent also looked at the bond-breakage penalty: the correct structure's cumulative bond-break score was 26.0 versus 49.0 for the runner-up, with lower meaning less costly. Finally, RDKit verified that the winning structure is chemically valid and matches the exact mass; the agent then drew the 2D structure, marked the key cleavage sites and produced a reviewable report."
+        },
+        {
+          "fig": {
+            "type": "steps",
+            "title": "Identifying one molecule takes six linked steps",
+            "subtitle": "Schematic: the workflow matches the announcement's Figure 1; tools are the community tools named in the post",
+            "steps": [
+              {
+                "name": "Preprocessing",
+                "tool": "matchms",
+                "desc": "Remove noise spikes and find the precursor ion"
+              },
+              {
+                "name": "Search reference libraries",
+                "tool": "GNPS / MoNA",
+                "desc": "Compare against known compounds using cosine similarity"
+              },
+              {
+                "name": "Determine molecular formula",
+                "tool": "SIRIUS",
+                "desc": "Use fragmentation-tree scoring to lock in the elemental composition"
+              },
+              {
+                "name": "Rank candidate structures",
+                "tool": "MAGMa / MetFrag",
+                "desc": "Match database candidates to peaks and compute coverage"
+              },
+              {
+                "name": "Cross-check",
+                "tool": "Neutral-loss analysis",
+                "desc": "Use losses such as HCl and HNCO to filter isomers"
+              },
+              {
+                "name": "Verify and report",
+                "tool": "RDKit",
+                "desc": "Verify the structure is valid and mark cleavage sites"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "How accuracy was measured: 100 compounds",
+      "blocks": [
+        {
+          "p": "To test reliability, DeepMind sampled 100 compounds from the Enamine REAL MS/MS collection in MoNA -- structures also catalogued in PubChem -- after removing records that barely fragmented. Each spectrum was attempted three times, and any attempt exceeding a one-hour budget counted as a failure."
+        },
+        {
+          "p": "Three setups were compared: fully offline with no skills, internet access only, and internet access plus the Mass Spec Skills. With no internet and no skills, all three models scored under 4% -- confirming that they cannot deduce structures from the peak list alone."
+        },
+        {
+          "p": "With internet access only, the models could query online libraries, but their improvised search scripts proved brittle around precursor windows, adducts and noisy peaks: the frontier models missed a quarter to a third of spectra, and the lightweight model missed more than three-quarters."
+        },
+        {
+          "p": "After adding Mass Spec Skills, all three models identified and verified the exact molecule in about 97% of attempts, with the lightweight model catching up to the frontier models."
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "Without skills, models can't deduce structures; with skills, the lightweight model matches frontier models",
+            "subtitle": "Amber shows performance with the skills",
+            "left": {
+              "label": "No internet, no skills",
+              "sub": "Peak list only",
+              "items": [
+                {
+                  "label": "Identification accuracy",
+                  "tag": "Under 4%",
+                  "state": "dim"
+                },
+                {
+                  "label": "Search libraries / databases",
+                  "tag": "Cannot",
+                  "state": "dim"
+                },
+                {
+                  "label": "Generated tokens per attempt",
+                  "tag": "Highest",
+                  "state": "dim"
+                },
+                {
+                  "label": "Evidence report",
+                  "tag": "None",
+                  "state": "dim"
+                }
+              ]
+            },
+            "right": {
+              "label": "Internet + Mass Spec Skills",
+              "sub": "Calls ready-made skills",
+              "items": [
+                {
+                  "label": "Identification accuracy",
+                  "tag": "About 97%",
+                  "state": "hi"
+                },
+                {
+                  "label": "Search libraries / databases",
+                  "tag": "Can",
+                  "state": "hi"
+                },
+                {
+                  "label": "Generated tokens per attempt",
+                  "tag": "Sharply lower",
+                  "state": "hi"
+                },
+                {
+                  "label": "Evidence report",
+                  "tag": "Reviewable",
+                  "state": "hi"
+                }
+              ]
+            },
+            "footer": "For the middle \"internet only\" setup, the announcement gives only missed-spectrum rates, not overall accuracy."
+          }
+        }
+      ]
+    },
+    {
+      "h": "Token cost: how the skills save",
+      "blocks": [
+        {
+          "p": "The skills don't just improve accuracy; they also save money. With no internet or skills, the models burned the most tokens per attempt trying to brute-force structures from raw peak lists. With internet only, they still spent substantial tokens improvising API queries and debugging one-off scripts."
+        },
+        {
+          "p": "With Mass Spec Skills, Antigravity calls validated, ready-made skills, and generated tokens per attempt dropped across every model: by nearly four times on the lightweight Gemini 3.8 Flash, by half on Gemini 4 Argon, and by nearly a fifth on Gemini 4 Carbon."
+        },
+        {
+          "fig": {
+            "type": "bars",
+            "title": "With skills, generated tokens per attempt drop sharply",
+            "subtitle": "Illustrative estimate: the post states only reductions of nearly 4x / half / nearly a fifth; values are scaled relative to a baseline",
+            "legend": [
+              {
+                "tone": "ref",
+                "label": "Argon internet baseline"
+              },
+              {
+                "tone": "hi",
+                "label": "With skills (relative value)"
+              }
+            ],
+            "groups": [
+              {
+                "label": "Generated tokens per attempt",
+                "items": [
+                  {
+                    "label": "Gemini 4 Argon internet",
+                    "sub": "Baseline",
+                    "value": 1,
+                    "display": "1.0×",
+                    "tone": "ref"
+                  },
+                  {
+                    "label": "Gemini 3.8 Flash",
+                    "sub": "Lightweight model",
+                    "value": 0.25,
+                    "display": "≈0.25×",
+                    "tone": "hi",
+                    "calc": "1.0 ÷ 4"
+                  },
+                  {
+                    "label": "Gemini 4 Argon",
+                    "sub": "Frontier model",
+                    "value": 0.5,
+                    "display": "≈0.5×",
+                    "tone": "hi",
+                    "calc": "1.0 ÷ 2"
+                  },
+                  {
+                    "label": "Gemini 4 Carbon",
+                    "sub": "Frontier model",
+                    "value": 0.8,
+                    "display": "≈0.8×",
+                    "tone": "hi",
+                    "calc": "1.0 × (1 − 0.2)"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "What collaborators say",
+      "blocks": [
+        {
+          "p": "Several collaborators shared concrete impressions. Phanankosi Moyo of the University of Pretoria said the skills have the potential to transform natural-product drug discovery, with prediction accuracy above 90% in most of their evaluations, even for highly complex structures."
+        },
+        {
+          "fig": {
+            "type": "quote",
+            "title": "Collaborators: prediction accuracy above 90% for complex structures in most evaluations",
+            "subtitle": "This is the collaborator's own evaluation, not a formal benchmark",
+            "text": "Their remarkable accuracy in predicting even highly complex molecular structures (>90% in most of our evaluations)",
+            "who": "Dr Phanankosi Moyo",
+            "role": "University of Pretoria",
+            "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/"
+          }
+        },
+        {
+          "p": "Scott Jarmusch, assistant professor at the Technical University of Denmark, said work that used to take days or months of analysis and literature review can now be done in hours, letting chemists prioritize features in their data faster. Xi Xing of Princeton University described it as a \"golden triad\": Gemini, the AI agent and the skills together feel like hiring a small team that can compute, look things up and propose ideas."
+        }
+      ]
+    },
+    {
+      "h": "What Google hasn't said",
+      "blocks": [
+        {
+          "list": [
+            "The post doesn't say how many tokens or analyses are included in the free 6 months of the \"highest usage tier.\"",
+            "It doesn't explain how the 10,000 free spots are selected or what the acceptance rate is; it only says onboarding is \"rolling.\"",
+            "Pricing for the Enterprise plan and individual paid tiers has not been announced.",
+            "The post doesn't link to the 100-compound benchmark dataset or say whether it is public and reproducible.",
+            "It doesn't list which mass spectrometer vendors' raw data formats are supported.",
+            "There is no quantified comparison of time or accuracy against using open-source tools such as SIRIUS or GNPS directly."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Who it's for",
+      "blocks": [
+        {
+          "p": "Start with the value: the skills automate the whole grind of searching libraries, determining formulas, screening candidates and validating structures, while keeping the evidence chain reviewable. For omics researchers drowning in unannotated spectra, the time saved is real."
+        },
+        {
+          "p": "The tradeoffs: for now this lives inside Antigravity, so you need to download the app and install the plugin; enterprise users log in with Google Cloud credentials, and pricing outside the free tier is unknown. It cannot distinguish mirror-image molecules (chirality) or some closely related isomers, and it cannot confirm genuinely new molecules that aren't in any database."
+        },
+        {
+          "p": "If you work in metabolomics, environmental samples or natural-product screening and have a pile of unannotated spectra, it's worth applying for the free tier. If you're an analytical chemist or student new to computational tools, it lowers the technical barrier. If you need authoritative, regulated identification or confirmation of a new structure, this gives you a starting point and evidence -- not a final conclusion that replaces orthogonal measurements such as NMR."
+        },
+        {
+          "fig": {
+            "type": "cards",
+            "title": "Three kinds of people should try it first",
+            "subtitle": "Schematic: the groups and labels are generalizations, not direct quotes from the announcement",
+            "items": [
+              {
+                "icon": "search",
+                "title": "Omics researchers",
+                "desc": "Process large batches of unannotated spectra and reclaim time spent on manual interpretation",
+                "tags": [
+                  "Metabolomics",
+                  "Environmental",
+                  "Natural products"
+                ]
+              },
+              {
+                "icon": "user",
+                "title": "Analytical chemists new to these tools",
+                "desc": "Describe the task in natural language; no need to configure each underlying tool",
+                "tags": [
+                  "Low barrier",
+                  "Auditable reports"
+                ]
+              },
+              {
+                "icon": "chart",
+                "title": "Drug discovery teams",
+                "desc": "Prioritize promising bioactive candidates faster",
+                "tags": [
+                  "Natural products",
+                  "Candidate ranking"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "From spectrum to structure: Identifying molecules with Mass Spec Skills for Google Antigravity",
+      "publisher": "Google DeepMind",
+      "date": "2026-11-25",
+      "url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/"
+    },
+    "note": "All figures come from the Google DeepMind blog post. Statements such as \">90%\" are from collaborator quotes and are not formal benchmarks. Bar charts are illustrative estimates, scaled according to the post's stated reductions of nearly 4x / half / nearly a fifth. Diagrams are drawn from the post's descriptions."
+  },
+  "claims": [
+    {
+      "text": "Routine spectral library searches annotate only about 5% of measured spectra on average.",
+      "value": "5%",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "about 5%",
+      "quote": "spectral searches annotate on average only about 5% of measured spectra"
+    },
+    {
+      "text": "Annotation rate for human samples is about 10%.",
+      "value": "10%",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "about 10%",
+      "quote": "and 10% for human samples"
+    },
+    {
+      "text": "A modern mass spectrometer can detect tens of thousands of molecular signals in a single drop of sample extract.",
+      "value": "tens of thousands",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "tens of thousands",
+      "quote": "A modern mass spectrometer can detect tens of thousands of these molecular signals in a single drop of sample extract"
+    },
+    {
+      "text": "The example's raw spectrum contained 1,761 peaks.",
+      "value": "1,761",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "1,761",
+      "quote": "1,761 raw peaks filtered to 19 preprocessed peaks"
+    },
+    {
+      "text": "After cleanup, 19 useful fragment peaks remained.",
+      "value": "19",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "19",
+      "quote": "1,761 raw peaks filtered to 19 preprocessed peaks"
+    },
+    {
+      "text": "More than 1,700 low-intensity noise spikes were removed.",
+      "value": "1,700",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "more than 1,700",
+      "quote": "it strips out over 1,700 low-intensity background noise spikes"
+    },
+    {
+      "text": "SIRIUS reported the molecular formula with a mass error of -1.5 ppm.",
+      "value": "−1.5 ppm",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "−1.5 ppm",
+      "quote": "the agent identifies the chlorinated formula C 20 H 21 ClN 6 O at −1.5 ppm mass error"
+    },
+    {
+      "text": "SIRIUS fragmentation-tree score: 37.86.",
+      "value": "37.86",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "37.86",
+      "quote": "score 37.86, well ahead of the runner-up at 28.33"
+    },
+    {
+      "text": "Runner-up score: 28.33.",
+      "value": "28.33",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "28.33",
+      "quote": "score 37.86, well ahead of the runner-up at 28.33"
+    },
+    {
+      "text": "The agent retrieved and scored 845 same-formula isomers from PubChem.",
+      "value": "845",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "845",
+      "quote": "the agent retrieved and scored all 845 C 20 H 21 ClN 6 O isomers in PubChem"
+    },
+    {
+      "text": "The candidate structure accounts for 14 of the 19 peaks.",
+      "value": "14 of 19",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "14 of 19 peaks",
+      "quote": "mapping predicted fragment substructures onto 14 of the 19 signal peaks"
+    },
+    {
+      "text": "The explained fragment peaks account for 97.7% of summed intensity.",
+      "value": "97.7%",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "97.7%",
+      "quote": "14 of the 19 signal peaks (97.7% of summed fragment intensity)"
+    },
+    {
+      "text": "One complementary half from the central urea cleavage accounts for 45.1% of intensity.",
+      "value": "45.1%",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "45.1%",
+      "quote": "the two complementary halves from central urea cleavage at m/z 162.1037 (45.1%) and m/z 232.0283 (6.8%)"
+    },
+    {
+      "text": "The other complementary half accounts for 6.8%.",
+      "value": "6.8%",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "6.8%",
+      "quote": "the two complementary halves from central urea cleavage at m/z 162.1037 (45.1%) and m/z 232.0283 (6.8%)"
+    },
+    {
+      "text": "The correct structure's cumulative bond-break score: 26.0.",
+      "value": "26.0",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "26.0",
+      "quote": "sum bond-break score 26.0"
+    },
+    {
+      "text": "The runner-up's bond-break score: 49.0; lower is better.",
+      "value": "49.0",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "49.0",
+      "quote": "sum bond-break score 49.0; lower indicates a lower cleavage penalty"
+    },
+    {
+      "text": "The benchmark sampled 100 compounds from the Enamine REAL MS/MS collection in MoNA.",
+      "value": "100",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "100",
+      "quote": "we evaluated it on 100 compounds sampled from the Enamine REAL MS/MS collection in MoNA"
+    },
+    {
+      "text": "Each spectrum was attempted three times.",
+      "value": "three attempts",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "3",
+      "quote": "three attempts per spectrum"
+    },
+    {
+      "text": "Attempts exceeding a one-hour budget were scored as failures.",
+      "value": "one-hour",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "1 hour",
+      "quote": "Attempts exceeding the one-hour wall-clock budget were scored as failures"
+    },
+    {
+      "text": "Without internet or skills, all three models scored under 4% accuracy.",
+      "value": "below 4%",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "under 4%",
+      "quote": "With no internet access or skills, accuracy remained below 4% across all three models"
+    },
+    {
+      "text": "With internet only, frontier models missed a quarter to a third of spectra.",
+      "value": "a quarter to a third",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "a quarter to a third",
+      "quote": "causing the frontier models to miss a quarter to a third of the spectra"
+    },
+    {
+      "text": "The lightweight model missed more than three-quarters of spectra.",
+      "value": "three-quarters",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "more than three-quarters",
+      "quote": "and the lightweight model to miss more than three-quarters"
+    },
+    {
+      "text": "With skills, all three models identified and verified the exact molecule in about 97% of attempts.",
+      "value": "around 97%",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "about 97%",
+      "quote": "all three models identified and verified the exact molecule in around 97% of attempts"
+    },
+    {
+      "text": "With skills, generated tokens per attempt dropped by nearly 4x on Flash.",
+      "value": "nearly four times",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "nearly 4x",
+      "quote": "cutting generated tokens per attempt across every model: by nearly four times on Flash, by half on Argon, and by nearly a fifth on Carbon"
+    },
+    {
+      "text": "Dropped by half on Argon.",
+      "value": "by half",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "half",
+      "quote": "cutting generated tokens per attempt across every model: by nearly four times on Flash, by half on Argon, and by nearly a fifth on Carbon"
+    },
+    {
+      "text": "Dropped by nearly a fifth on Carbon.",
+      "value": "nearly a fifth",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "nearly a fifth",
+      "quote": "cutting generated tokens per attempt across every model: by nearly four times on Flash, by half on Argon, and by nearly a fifth on Carbon"
+    },
+    {
+      "text": "A collaborator says prediction accuracy for complex structures exceeded 90% in most of their evaluations.",
+      "value": ">90%",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "above 90%",
+      "quote": "Their remarkable accuracy in predicting even highly complex molecular structures (>90% in most of our evaluations)"
+    },
+    {
+      "text": "A collaborator says the analysis plus literature review used to take days to months.",
+      "value": "days or months",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "days to months",
+      "quote": "reduces a complicated process - one that previously required days or months of analysis and literature review - to a matter of hours"
+    },
+    {
+      "text": "It can now be done in hours.",
+      "value": "hours",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "hours",
+      "quote": "reduces a complicated process - one that previously required days or months of analysis and literature review - to a matter of hours"
+    },
+    {
+      "text": "DeepMind is offering the highest usage tier to 10,000 scientists.",
+      "value": "10,000",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "10,000",
+      "quote": "we're offering 10,000 scientists the highest usage tier in Google Antigravity free of charge for 6 months"
+    },
+    {
+      "text": "Free period: 6 months.",
+      "value": "6 months",
+      "source_url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "as_written": "6 months",
+      "quote": "we're offering 10,000 scientists the highest usage tier in Google Antigravity free of charge for 6 months"
+    }
+  ],
+  "cover": {
+    "headline": "Antigravity Mass Spec Skills",
+    "highlight": "Accuracy from under 4% to about 97%",
+    "big": {
+      "value": "97",
+      "unit": "%",
+      "label": "Identification accuracy with skills"
+    }
+  },
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "97f373e1562d96ba"
+}
