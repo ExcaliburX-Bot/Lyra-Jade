@@ -1,0 +1,700 @@
+{
+  "slug": "minimax-h3-family",
+  "category": "product",
+  "date": "2026-11-26",
+  "publisher": "MiniMax",
+  "title": "MiniMax H3 turns 100 days open source: 1,472 community models and over 148 million downloads",
+  "summary": "Whether you need a commercial, a product video, or a music video, you can now pick the right tier in MiniMax's H3 family: H3 for quality, H3-Highspeed for volume, H3-Lite for cheap iteration. This piece lays out the pricing, speed, and use cases for the official flagships and the community-built extended models.",
+  "ai_summary": "At 100 days since H3 was open-sourced, MiniMax has bundled this generation of video and image models into the H3 family. In those 100 days, the community turned one H3 into 1,472 derivative models, with more than 148 million total downloads and an average above 17 per second. The family has two layers: official flagships include the quality-first H3 (from $0.08 per second), the speed/cost-balanced H3-Highspeed (from $0.04), the low-cost H3-Lite (from $0.025), and H3-Image ($3.80 per million tokens) plus a 4K high-speed version ($7.60). Community extended models cover music videos, e-commerce ads, short dramas, character swaps, and other niche uses. The blog post doesn't give launch dates for each tier, or say whether the prices include discounts.",
+  "brief": [
+    "100 days open source: the community turned one H3 into 1,472 derivative models, with more than 148 million total downloads.",
+    "Official video starting prices: H3 at $0.08 per second, H3-Highspeed at $0.04, H3-Lite at $0.025.",
+    "H3-Image supports up to 16 reference images; the high-speed version can output a 4K image in under 10 seconds at $7.60 per million tokens.",
+    "Community extended models cover music videos, e-commerce ads, short dramas, and character swaps, all available through the MiniMax Open Platform API."
+  ],
+  "readMinutes": 7,
+  "sections": [
+    {
+      "h": "What is the H3 family?",
+      "blocks": [
+        {
+          "p": "H3 is MiniMax's video generation model. MiniMax open-sourced it 100 days ago; now the company uses this post to turn it from a single model into a family. The family is two groups built on the same H3 base: official flagship models maintained by MiniMax (three video tiers and two image tiers), plus extended models trained on H3 by the community and partners."
+        },
+        {
+          "p": "This release is more of an ecosystem progress report and official pricing announcement than a brand-new model. What actually matters is what each family member does, how much it costs, how fast it is, and which specialized tools the community has already built for you."
+        },
+        {
+          "fig": {
+            "type": "illustration",
+            "title": "H3 is the root, and the family grows from it",
+            "subtitle": "Illustrative: amber is the starting H3; blue is the official flagship tiers.",
+            "glyph": {
+              "kind": "hub",
+              "center": {
+                "label": "MiniMax H3",
+                "tone": "hi"
+              },
+              "nodes": [
+                {
+                  "label": "Official video tiers",
+                  "tone": "def"
+                },
+                {
+                  "label": "Official image tiers",
+                  "tone": "def"
+                },
+                {
+                  "label": "Platform derivatives",
+                  "tone": "base"
+                },
+                {
+                  "label": "Big-tech custom",
+                  "tone": "base"
+                },
+                {
+                  "label": "Research teams",
+                  "tone": "ref"
+                }
+              ]
+            },
+            "legend": [
+              {
+                "tone": "hi",
+                "label": "Starting H3"
+              },
+              {
+                "tone": "def",
+                "label": "Official flagships"
+              },
+              {
+                "tone": "base",
+                "label": "Community / big tech"
+              },
+              {
+                "tone": "ref",
+                "label": "Research teams"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "What has one H3 grown into in 100 days?",
+      "blocks": [
+        {
+          "p": "Why emphasize the 100-day mark? Because the real value of an open-source model is how many people build on it. The announcement gives a set of numbers: one H3 became 1,472 derivative models, with more than 148 million total downloads and an average of over 17 per second—and new models keep appearing."
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "100 days: one H3 became 1,472 derivative models",
+            "subtitle": "Source: MiniMax official blog, Nov. 26, 2026; download counts are “more than” figures.",
+            "items": [
+              {
+                "value": 1472,
+                "unit": "models",
+                "label": "Derivative models",
+                "note": "Per source: 1,472"
+              },
+              {
+                "value": 148,
+                "unit": "million downloads",
+                "label": "Total downloads",
+                "note": "Per source: more than 148 million"
+              },
+              {
+                "value": 17,
+                "unit": "downloads/sec",
+                "label": "Average download speed",
+                "note": "Per source: over 17"
+              },
+              {
+                "value": 10,
+                "unit": "companies",
+                "label": "Licensing partners",
+                "note": "Per source: more than ten"
+              }
+            ]
+          }
+        },
+        {
+          "p": "It isn't only individual developers. The post names NVIDIA, Tencent, and Alibaba as tech companies that trained their own H3 versions; fal, Suno, HeyGen, Pika, and Creatify as application and platform companies that built derivative models; and research teams at MIT, the National University of Singapore, and The Hong Kong Polytechnic University as participants. More than ten companies worldwide have also signed licensing partnerships with MiniMax to use H3 in e-commerce, gaming, film and TV, animation and comics, short dramas, industrial design, and other workflows."
+        },
+        {
+          "callout": {
+            "kind": "note",
+            "title": "A note on the numbers",
+            "text": "These figures are MiniMax's own community-facing numbers, not a third-party audit. What they show is that H3 has changed from a single model into an ecosystem starting point that people now maintain and extend together."
+          }
+        }
+      ]
+    },
+    {
+      "h": "How to pick between the three official video tiers",
+      "blocks": [
+        {
+          "p": "The official flagship video models come in three tiers with a clear logic: choose two of quality, speed, and price."
+        },
+        {
+          "p": "The first tier, MiniMax H3, puts quality first. It outputs up to 2K with a 768P option, starting at $0.08 per second. It's aimed at high-end commercial productions, and its strength is understanding mood: you can give it a still-vague feeling—minimalist refinement in an ad, a sense of mystery and fate in a film, traditional Chinese aesthetics in animation—and it can turn that feeling into an image. It's also good at precise edits: replace a person, change clothing or objects, or adjust the lighting and shadows in only part of a frame while leaving the rest untouched."
+        },
+        {
+          "p": "The second tier, MiniMax H3-Highspeed, is the everyday commercial choice. It outputs 768P or 480P, starting at $0.04 per second—half the price of H3. For speed, a five-second clip takes about 11 seconds to generate on average; for clips up to 15 seconds, it takes no more than 1 minute from prompt to finished video; and it supports clips up to 30 seconds. Think of it as a reliable day-to-day colleague, while H3 is more like an outside expert you bring in for a big production."
+        },
+        {
+          "p": "The third tier, MiniMax H3-Lite, is for experiments. It outputs 768P or 480P, starting at $0.025 per second. On some hardware, it generates a five-second 768P clip in about eight seconds; that clip costs about $0.20, with lower rates for high-volume use. It's suited to testing several directions early in a project, or batch-generating repetitive material like the same product in dozens of different settings."
+        },
+        {
+          "fig": {
+            "type": "columns",
+            "title": "Three video starting prices: a trade-off in quality, speed, and cost",
+            "subtitle": "Units: U.S. dollars per second, starting price; amber is flagship H3, blue is the everyday commercial choice.",
+            "items": [
+              {
+                "label": "H3",
+                "sub": "2K or 768P",
+                "value": 0.08,
+                "display": "$0.08",
+                "tone": "hi"
+              },
+              {
+                "label": "H3-Highspeed",
+                "sub": "768P or 480P",
+                "value": 0.04,
+                "display": "$0.04",
+                "tone": "def"
+              },
+              {
+                "label": "H3-Lite",
+                "sub": "768P or 480P",
+                "value": 0.025,
+                "display": "$0.025",
+                "tone": "base"
+              }
+            ]
+          }
+        },
+        {
+          "callout": {
+            "kind": "note",
+            "title": "Read the qualifiers before the numbers",
+            "text": "All three starting prices are “starting at” prices; your actual bill depends on resolution, clip length, and usage. The eight-second figure for H3-Lite is on “some hardware,” not every environment."
+          }
+        }
+      ]
+    },
+    {
+      "h": "Image models: what's the difference between standard and high-speed?",
+      "blocks": [
+        {
+          "p": "The image side has two tiers, and they're priced per million tokens rather than per second. What a single image costs depends on how many tokens it consumes to generate."
+        },
+        {
+          "p": "The standard H3-Image costs $3.80 per million output tokens. It supports up to 16 reference images, and MiniMax says it follows instructions more closely than other open-source models—that's the vendor's own claim, and it doesn't name the comparison models. MiniMax also claims good value: it generates images at 150% to 200% of the speed of mainstream models, for 50% to 70% of the price. Note that the post doesn't say which models count as “mainstream.”"
+        },
+        {
+          "p": "The high-speed H3-Image Highspeed costs $7.60 per million output tokens, exactly twice the standard model (7.60 ÷ 3.80). In return, you get speed: at its fastest, it can produce a 4K image in under 10 seconds. MiniMax says it runs 3 to 4 times faster than mainstream models in the same tier, making 4K practical for everyday work. The “under 10 seconds” is “at its fastest”—not every image."
+        }
+      ]
+    },
+    {
+      "h": "Community extended models: each one does something different",
+      "blocks": [
+        {
+          "p": "The extended layer is where the “family” idea really shows: different teams have bent H3 toward their own fields. Start with the ones most relevant to work."
+        },
+        {
+          "fig": {
+            "type": "cards",
+            "title": "Community extended models: each trained for a specific niche",
+            "subtitle": "Compiled from the original post; amber is fal's H3 Max (5-second 768P clip in under 3 seconds).",
+            "items": [
+              {
+                "icon": "video",
+                "title": "fal: H3 Max",
+                "desc": "Generates a five-second 768P clip in under three seconds; following prompts was a particular focus during training.",
+                "tags": [
+                  "Under 3 seconds"
+                ],
+                "tone": "hi"
+              },
+              {
+                "icon": "audio",
+                "title": "Suno: H3 Move",
+                "desc": "Makes music videos, matching lip movement to lyrics, with elegant, offbeat, ethereal, or modern styles.",
+                "tags": [
+                  "Music videos"
+                ],
+                "tone": "base"
+              },
+              {
+                "icon": "user",
+                "title": "HeyGen: Video 1",
+                "desc": "Generates a complete video up to 30 seconds long in one pass, including visuals, dialogue, and sound effects; focused mainly on e-commerce avatars.",
+                "tags": [
+                  "Up to 30 seconds"
+                ],
+                "tone": "base"
+              },
+              {
+                "icon": "money",
+                "title": "Creatify: Boreal-H3",
+                "desc": "Trained specifically for e-commerce ads, paying close attention to the product, the use case, and the on-camera model's appearance and accent.",
+                "tags": [
+                  "E-commerce ads"
+                ],
+                "tone": "base"
+              },
+              {
+                "icon": "video",
+                "title": "Pika: H3 Flex",
+                "desc": "Six-step generation with fine control over camera movement, action, and sound effects; suited to ads or short films.",
+                "tags": [
+                  "6 steps"
+                ],
+                "tone": "base"
+              },
+              {
+                "icon": "image",
+                "title": "Akatz Labs: Character Swap V1.5",
+                "desc": "Replaces just one person in a shot, keeping the original motion and expressions while the rest of the scene stays unchanged.",
+                "tags": [
+                  "Character swap"
+                ],
+                "tone": "base"
+              }
+            ]
+          }
+        },
+        {
+          "p": "The rest also have clear positions:"
+        },
+        {
+          "list": [
+            "fal also has H3-Max Turbo: 1x faster than H3 Max, and MiniMax envisions it for real-time interaction, virtual try-on, continuous livestreaming, and deduction games.",
+            "MachGen's MiniMax H3: faster previews, and you can use your own LoRAs to control the visual style.",
+            "Nunchux AI's MiniMax-H3-Fast: generates a 15-second 768P clip in about 6.5 seconds, suited to creative work that needs repeated revision.",
+            "RunningHub's MiniMax H3 RH: strong in continuity, keeping character, setting, and story consistent through long shots; suited to short dramas, animation and comics, and e-commerce.",
+            "Utopai Studios' Utopai X: built for filmmakers on a film set, with lighting and motion that follow physics more closely.",
+            "LightX2V / ModelTC's MiniMax-H3 Turbo: compresses generation to 4 or 8 steps and can run locally, for professional teams with their own deployment environment that want shorter waits."
+          ]
+        },
+        {
+          "p": "All of these third-party models are available through the MiniMax Open Platform API."
+        }
+      ]
+    },
+    {
+      "h": "How pricing works: video by the second, images by the token",
+      "blocks": [
+        {
+          "p": "The H3 family uses two pricing units, so don't mix them: video is charged per second, images per million tokens. Here's a table of official flagship starting prices and key speeds for easy comparison."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Official flagship pricing cheat sheet: video by the second, images by token",
+            "subtitle": "Prices are starting or output prices from the MiniMax official blog.",
+            "columns": [
+              "Model",
+              "Output",
+              "Price",
+              "Key speed or limit"
+            ],
+            "rows": [
+              [
+                "H3",
+                "2K or 768P",
+                "$0.08/sec",
+                "Precise localized edits"
+              ],
+              [
+                "H3-Highspeed",
+                "768P or 480P",
+                "$0.04/sec",
+                "5-sec clip ~11 sec; up to 30 sec"
+              ],
+              [
+                "H3-Lite",
+                "768P or 480P",
+                "$0.025/sec",
+                "5-sec 768P ~8 sec (some hardware)"
+              ],
+              [
+                "H3-Image",
+                "Image",
+                "$3.80/million tokens",
+                "Up to 16 reference images"
+              ],
+              [
+                "H3-Image Highspeed",
+                "4K image",
+                "$7.60/million tokens",
+                "Fastest 4K under 10 sec"
+              ]
+            ],
+            "highlight": {
+              "col": 2
+            }
+          }
+        },
+        {
+          "p": "Among the three video starting prices, the most expensive H3 ($0.08) is about 3.2 times the cheapest H3-Lite ($0.025) (0.08 ÷ 0.025). For images, the high-speed model's $7.60 is exactly twice the standard model's $3.80. Starting prices are only the entry point; actual cost still depends on resolution, clip length, token consumption, and volume discounts."
+        }
+      ]
+    },
+    {
+      "h": "What MiniMax hasn't said",
+      "blocks": [
+        {
+          "p": "This post is an announcement and progress report, not a full technical specification. The details readers care about most aren't in the text."
+        },
+        {
+          "list": [
+            "Launch timing for each tier: the post says “today we're introducing,” but doesn't say whether each model is available now or rolling out in batches.",
+            "Individual pricing for extended models: the post only says they're available through the MiniMax Open Platform API; specific prices are on each provider's page.",
+            "What “mainstream models” means: H3-Image's 150% to 200% speed and 50% to 70% price comparisons don't name the models being compared.",
+            "H3-Lite volume discounts: the post only says lower rates for high-volume use, with no figures.",
+            "Licensing terms: for the more than ten companies involved, amounts, revenue splits, and exclusivity aren't disclosed.",
+            "H3's generation speed at 2K, and the actual token consumption per image, also go unmentioned."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Who it's for",
+      "blocks": [
+        {
+          "p": "The value is straightforward: from the $0.025-per-second experimentation tier to the $0.08-per-second quality tier and a stack of community models, you can almost always find a starting point that matches your budget and use case. Because H3 is open source, the community has already built a good number of specialized versions for you."
+        },
+        {
+          "p": "The trade-offs: video is billed per second and images per token, so you'll need to estimate the real cost; the “mainstream model” comparisons aren't named, so promotional figures are only relative reference points; and the official post doesn't benchmark the quality or stability of third-party extended models."
+        },
+        {
+          "list": [
+            "If you're making e-commerce material in bulk, livestream clips, or everyday ads, start with H3-Highspeed: $0.04 per second, and a five-second clip takes about 11 seconds—a practical rhythm.",
+            "If your budget is tight and you're still exploring directions, use H3-Lite to test: a five-second 768P clip costs about $0.20.",
+            "If you need high-end commercial video and can accept a higher price, use H3 for up to 2K, finer mood understanding, and localized edits.",
+            "If your need is specific—music videos point to Suno's H3 Move, e-commerce ads to Creatify's Boreal-H3, character swaps to Akatz Labs' Character Swap V1.5—go straight to the matching extended model; it beats tuning from scratch.",
+            "If you're a development team with your own deployment environment, look at LightX2V / ModelTC's MiniMax-H3 Turbo (4 or 8 steps, runs locally)."
+          ]
+        },
+        {
+          "fig": {
+            "type": "quote",
+            "title": "The post closes with a nod to the inventor of the web",
+            "text": "What you create is limited only by your imagination.",
+            "who": "Tim Berners-Lee",
+            "role": "World Wide Web inventor; MiniMax quotes his words from the web's 25th anniversary",
+            "source_url": "https://www.minimax.io/blog/minimax-h3-family"
+          }
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "The H3 Family: Models, Community, and What's Next - MiniMax Research | MiniMax",
+      "publisher": "MiniMax",
+      "date": "2026-11-26",
+      "url": "https://www.minimax.io/blog/minimax-h3-family"
+    },
+    "note": "This article has a single source: the MiniMax official blog. Figures and charts are compiled from the original numbers (noted where applicable) and are not official MiniMax graphics; qualifiers such as \"starting at,\" \"fastest,\" and \"some hardware\" are shown with the numbers they qualify."
+  },
+  "claims": [
+    {
+      "text": "MiniMax H3 has been open source for 100 days",
+      "value": "100",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "100 days",
+      "quote": "In the 100 days since we open-sourced MiniMax H3, developers have turned one H3 into 1,472 derivative models for 1,472 distinct needs and uses."
+    },
+    {
+      "text": "The community turned one H3 into 1,472 derivative models",
+      "value": "1,472",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "1,472",
+      "quote": "In the 100 days since we open-sourced MiniMax H3, developers have turned one H3 into 1,472 derivative models for 1,472 distinct needs and uses."
+    },
+    {
+      "text": "Derivative models have been downloaded more than 148 million times in total",
+      "value": "148 million",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "148 million",
+      "quote": "Together, these models have been downloaded more than 148 million times, an average of over 17 downloads a second."
+    },
+    {
+      "text": "Average download speed is more than 17 downloads per second",
+      "value": "17",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "17/sec",
+      "quote": "Together, these models have been downloaded more than 148 million times, an average of over 17 downloads a second."
+    },
+    {
+      "text": "More than 10 companies worldwide have signed licensing partnerships with MiniMax",
+      "value": "more than ten",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "more than 10",
+      "quote": "More than ten leading companies worldwide now have licensing partnerships with MiniMax."
+    },
+    {
+      "text": "H3 outputs 2K or 768P",
+      "value": "2K",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "2K",
+      "quote": "2K or 768P output, starting at $0.08 per second"
+    },
+    {
+      "text": "H3 outputs 2K or 768P",
+      "value": "768P",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "768P",
+      "quote": "2K or 768P output, starting at $0.08 per second"
+    },
+    {
+      "text": "H3 starts at $0.08 per second",
+      "value": "$0.08",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "$0.08",
+      "quote": "2K or 768P output, starting at $0.08 per second"
+    },
+    {
+      "text": "H3-Highspeed outputs 768P or 480P",
+      "value": "768P",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "768P",
+      "quote": "768P or 480P output, starting at $0.04 per second"
+    },
+    {
+      "text": "H3-Highspeed outputs 768P or 480P",
+      "value": "480P",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "480P",
+      "quote": "768P or 480P output, starting at $0.04 per second"
+    },
+    {
+      "text": "H3-Highspeed starts at $0.04 per second",
+      "value": "$0.04",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "$0.04",
+      "quote": "768P or 480P output, starting at $0.04 per second"
+    },
+    {
+      "text": "MiniMax uses a five-second clip as the speed baseline for multiple models",
+      "value": "5",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "5 seconds",
+      "quote": "A five-second clip takes about 11 seconds to generate on average."
+    },
+    {
+      "text": "H3-Highspeed generates a five-second clip in about 11 seconds on average",
+      "value": "11 seconds",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "about 11 seconds",
+      "quote": "A five-second clip takes about 11 seconds to generate on average."
+    },
+    {
+      "text": "For clips up to 15 seconds, H3-Highspeed goes from prompt to finished video in no more than 1 minute",
+      "value": "15 seconds",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "15 seconds",
+      "quote": "For clips up to 15 seconds long, it takes no more than a minute to go from prompt to finished video."
+    },
+    {
+      "text": "For clips up to 15 seconds, H3-Highspeed finishes within 1 minute",
+      "value": "a minute",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "1 minute",
+      "quote": "For clips up to 15 seconds long, it takes no more than a minute to go from prompt to finished video."
+    },
+    {
+      "text": "H3-Highspeed supports clips up to 30 seconds",
+      "value": "30 seconds",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "30 seconds",
+      "quote": "The model supports clips up to 30 seconds long."
+    },
+    {
+      "text": "H3-Lite outputs 768P or 480P",
+      "value": "768P",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "768P",
+      "quote": "768P or 480P output, starting at $0.025 per second"
+    },
+    {
+      "text": "H3-Lite outputs 768P or 480P",
+      "value": "480P",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "480P",
+      "quote": "768P or 480P output, starting at $0.025 per second"
+    },
+    {
+      "text": "H3-Lite starts at $0.025 per second",
+      "value": "$0.025",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "$0.025",
+      "quote": "768P or 480P output, starting at $0.025 per second"
+    },
+    {
+      "text": "On some hardware, H3-Lite generates a five-second 768P clip in about 8 seconds",
+      "value": "eight seconds",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "about 8 seconds",
+      "quote": "On some hardware, H3-Lite generates a five-second 768P clip in about eight seconds."
+    },
+    {
+      "text": "That five-second 768P clip costs about $0.20 with H3-Lite",
+      "value": "$0.20",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "$0.20",
+      "quote": "Video output for that clip costs about $0.20, with lower rates for high-volume use."
+    },
+    {
+      "text": "H3-Image output costs $3.80 per million tokens",
+      "value": "$3.80",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "$3.80",
+      "quote": "Image output costs $3.80 per million tokens"
+    },
+    {
+      "text": "H3-Image supports up to 16 reference images",
+      "value": "16",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "16",
+      "quote": "It follows instructions more closely than any other open-source model and supports up to 16 reference images."
+    },
+    {
+      "text": "H3-Image generates images at 150% to 200% of mainstream model speed",
+      "value": "150% to 200%",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "150% to 200%",
+      "quote": "It also offers good value, generating images at 150% to 200% of the speed of mainstream models for 50% to 70% of the price."
+    },
+    {
+      "text": "H3-Image costs 50% to 70% of mainstream model prices",
+      "value": "50% to 70%",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "50% to 70%",
+      "quote": "It also offers good value, generating images at 150% to 200% of the speed of mainstream models for 50% to 70% of the price."
+    },
+    {
+      "text": "H3-Image Highspeed output costs $7.60 per million tokens",
+      "value": "$7.60",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "$7.60",
+      "quote": "Image output costs $7.60 per million tokens"
+    },
+    {
+      "text": "H3-Image Highspeed can produce a 4K image in under 10 seconds at its fastest",
+      "value": "under 10 seconds",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "under 10 seconds",
+      "quote": "At its fastest, H3-Image in Highspeed mode can generate a 4K image in under 10 seconds."
+    },
+    {
+      "text": "H3-Image Highspeed can generate 4K images",
+      "value": "4K",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "4K",
+      "quote": "At its fastest, H3-Image in Highspeed mode can generate a 4K image in under 10 seconds."
+    },
+    {
+      "text": "H3-Image Highspeed is 3 to 4 times faster than mainstream models in the same tier",
+      "value": "3 to 4 times",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "3 to 4 times",
+      "quote": "It runs 3 to 4 times as fast as mainstream models in the same tier, making 4K practical for everyday work."
+    },
+    {
+      "text": "fal's H3 Max generates a five-second 768P clip in under 3 seconds",
+      "value": "under three seconds",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "under 3 seconds",
+      "quote": "H3 Max generates a five-second 768P clip in under three seconds."
+    },
+    {
+      "text": "fal's H3-Max Turbo generates video 1x faster than H3 Max",
+      "value": "twice as fast",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "1x faster",
+      "quote": "H3-Max Turbo generates video twice as fast as H3 Max."
+    },
+    {
+      "text": "Nunchux AI's MiniMax-H3-Fast generates a 15-second 768P clip in about 6.5 seconds",
+      "value": "6.5 seconds",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "about 6.5 seconds",
+      "quote": "It generates a 15-second 768P clip in about 6.5 seconds, making it well suited to creative work that takes several attempts and revisions."
+    },
+    {
+      "text": "HeyGen's Video 1 generates a complete video up to 30 seconds long in one pass",
+      "value": "30 seconds",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "30 seconds",
+      "quote": "Video 1 can generate a complete video up to 30 seconds long in one pass, including visuals, dialogue, and sound effects."
+    },
+    {
+      "text": "Pika's H3 Flex generates video in 6 steps.",
+      "value": "six steps",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "6 steps",
+      "quote": "Pika H3 Flex generates video in six steps and gives creators fine control over camera movement, action, and sound effects."
+    },
+    {
+      "text": "LightX2V / ModelTC's MiniMax-H3 Turbo reduces video generation to 4 or 8 steps.",
+      "value": "four or eight steps",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "4 or 8 steps",
+      "quote": "MiniMax-H3 Turbo reduces video generation to four or eight steps and can run locally."
+    },
+    {
+      "text": "The World Wide Web's 25th anniversary",
+      "value": "25th anniversary",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "25th anniversary",
+      "quote": "On the 25th anniversary of the World Wide Web"
+    },
+    {
+      "text": "H3 renders at up to 2K",
+      "value": "up to 2K",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "up to 2K",
+      "quote": "It can carry the story forward in a way that fits the characters and render it at up to 2K."
+    }
+  ],
+  "cover": {
+    "headline": "MiniMax launches the H3 family",
+    "highlight": "One model, 1,472 derivatives",
+    "big": {
+      "value": "1,472",
+      "unit": "models",
+      "label": "Derivative models in 100 days"
+    },
+    "glyph": {
+      "kind": "hub",
+      "center": {
+        "label": "H3",
+        "tone": "hi"
+      },
+      "nodes": [
+        {
+          "label": "Video tiers",
+          "tone": "def"
+        },
+        {
+          "label": "Image tiers",
+          "tone": "def"
+        },
+        {
+          "label": "Community models",
+          "tone": "base"
+        }
+      ]
+    }
+  },
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "8d813947cd49fb07"
+}

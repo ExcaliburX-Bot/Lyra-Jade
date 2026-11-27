@@ -3,18 +3,18 @@
   "category": "paper",
   "publisher": "DeepSeek-AI",
   "date": "2025-01-22",
-  "title": "DeepSeek-R1: don't teach it how to think—just reward right answers, and reasoning is trained, not taught",
-  "summary": "DeepSeek skips supervised fine-tuning and runs large-scale reinforcement learning straight on a pretrained model, rewarding only whether the answer is correct. The model learns on its own to think longer, reflect, and check its work. We break down the GRPO algorithm, compute the group advantage by hand, then walk through R1's four-stage pipeline, the comparison with o1, distillation, cost, and the attempts that didn't work.",
-  "ai_summary": "DeepSeek-R1 (DeepSeek-AI, 2025; revised version published in Nature) uses GRPO to run reinforcement learning directly on DeepSeek-V3-Base without supervised fine-tuning, with rewards determined only by rules for the answer and format. The resulting R1-Zero improves pass@1 on AIME 2024 from 15.6% to 77.9%, produces longer responses, and spontaneously develops reflective behavior. The full R1 adds cold-start data, rejection-sampling fine-tuning, and a second round of reinforcement learning, matching OpenAI o1 on math and competitive programming. Small models distilled from its 800,000 examples outperform same-size models trained with their own reinforcement learning. Post-training cost is about $294,000.",
+  "title": "DeepSeek-R1: don’t teach it how to think—just reward it for thinking right",
+  "summary": "DeepSeek skips supervised fine-tuning and runs large-scale reinforcement learning directly on a pretrained model, with rewards based only on whether the answer is correct. The model learns on its own to think longer, reflect, and check itself. We walk through the GRPO algorithm, compute the group advantage by hand, then cover R1’s four-stage pipeline, the comparison with o1, distillation, cost, and the attempts that didn’t work.",
+  "ai_summary": "The DeepSeek-R1 paper (DeepSeek-AI, 2025; revised version published in Nature) applies GRPO directly to DeepSeek-V3-Base with reinforcement learning, skipping supervised fine-tuning; rewards are determined entirely by rules that check the answer and format. The resulting R1-Zero improves pass@1 on AIME 2024 from 15.6% to 77.9%, produces longer responses, and spontaneously exhibits reflective behavior. The final R1 adds cold-start data, rejection-sampling fine-tuning, and a second round of reinforcement learning, matching OpenAI o1 on math and competitive programming. Smaller models distilled from its 800,000 samples outperform same-size models trained with their own reinforcement learning. Post-training cost is about $294,000.",
   "brief": [
-    "Problem: reasoning ability used to be taught with human-written demonstrations; annotation is expensive, and the ceiling is capped by human examples.",
-    "Method: skip supervised fine-tuning and use GRPO for large-scale reinforcement learning, with rewards based only on answer correctness and format; GRPO replaces the value model with the group average.",
-    "Results: R1-Zero's AIME score rises from 15.6% to 77.9%, and it spontaneously learns longer thinking and reflection; R1 matches o1 on math and competitive programming, and distilled small models stand out.",
-    "Limitations: it depends on automatically verifiable tasks and a strong enough base model; tasks like writing still need human data, and reward models are easy to game."
+    "Problem: reasoning used to be taught with human-written demonstrations, which are expensive to label and cap performance at the level of those examples.",
+    "Method: skip supervised fine-tuning, use GRPO for large-scale RL, and reward only answer correctness and format; GRPO replaces the value model with the group average score.",
+    "Result: R1-Zero’s AIME score rises from 15.6% to 77.9% and it spontaneously learns to think longer and reflect; R1 matches o1 on math and competitive programming, and the distilled small models stand out.",
+    "Limitations: it depends on tasks that can be verified automatically and on a strong enough base model; tasks like writing still need human data, and reward models are easy to game."
   ],
   "paper": {
     "title": "DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning",
-    "authors": "DeepSeek-AI (key contributors include Daya Guo, Dejian Yang, Haowei Zhang, Junxiao Song, Peiyi Wang, and others)",
+    "authors": "DeepSeek-AI (core contributors include Daya Guo, Dejian Yang, Haowei Zhang, Junxiao Song, Peiyi Wang, and others)",
     "org": "DeepSeek",
     "venue": "Nature 645 (2025)",
     "year": 2025,
@@ -22,8 +22,8 @@
     "url": "https://arxiv.org/abs/2501.12948"
   },
   "cover": {
-    "headline": "A close read of DeepSeek-R1",
-    "highlight": "Reward correct answers, and reasoning emerges on its own.",
+    "headline": "A close reading of the original DeepSeek-R1 paper",
+    "highlight": "Reward only correct answers, and reasoning grows on its own",
     "glyph": {
       "kind": "flow",
       "nodes": [
@@ -45,107 +45,112 @@
       "h": "The bottom line: what this paper actually did",
       "blocks": [
         {
-          "p": "In January 2025, the Chinese company DeepSeek released the reasoning model DeepSeek-R1 and this paper. In September of that year, a revised version of the paper was published in Nature after peer review. This article is based on the second arXiv version, updated in January 2026, which includes the main text and dozens of pages of supplementary material."
+          "p": "In January 2025, the Chinese company DeepSeek released the reasoning model DeepSeek-R1 and this paper. In September of that year, a revised version of the paper appeared in Nature after peer review. This article is based on the second arXiv version, updated in January 2026, which includes the main text and dozens of pages of supplementary material."
         },
         {
-          "p": "The question it answers is: **can a language model's reasoning ability be trained through reinforcement learning rather than taught by hand?** Before this, the mainstream ways to make models reason were either to include demonstrations in prompts (chain-of-thought prompting) or to have the model imitate human-written, step-by-step solutions. The paper argues that these depend heavily on human annotation, and the model's ceiling is capped by the examples humans write."
+          "p": "The question it asks is: **can a language model’s reasoning ability be trained through reinforcement learning, rather than being taught step by step by people?** Before this, the standard approaches were either to include demonstrations in the prompt (chain-of-thought prompting) or to have the model imitate human-written, step-by-step solutions. The paper argues that both depend on heavy human annotation and that the model’s ceiling is capped by the human demonstrations it learns from."
         },
         {
-          "p": "DeepSeek's approach is surprisingly simple: take a pretrained large model (DeepSeek-V3-Base), **skip supervised fine-tuning**, and go straight to reinforcement learning. The tasks are math, coding, science, and logic problems, and the reward looks at only two things: whether the final answer is correct and whether the format is correct. The reasoning process itself gets no constraints."
+          "p": "DeepSeek’s approach is strikingly simple: take a pretrained model (DeepSeek-V3-Base), **skip supervised fine-tuning**, and go straight to reinforcement learning. The problems are math, coding, science, and logic questions, and the reward looks at only two things: whether the final answer is correct and whether the format is correct. No constraints are placed on the reasoning process itself."
         },
         {
-          "p": "The result, a model called **DeepSeek-R1-Zero**, learned on its own to \"think longer\": its responses kept getting longer, and it began to check repeatedly, go back and recalculate, try different approaches, and even write midway, \"Wait, wait. Wait. That's an aha moment I can flag here.\" Its accuracy on the 2024 American Invitational Mathematics Examination (AIME) rose from 15.6% to 77.9%."
+          "p": "The result was a model called **DeepSeek-R1-Zero** that learned on its own to “think longer”: its responses grew longer, and it began to check its work, redo earlier steps, try different approaches, and even write mid-solution notes like “wait, this is a moment I can flag as an aha moment.” On the 2024 American Invitational Mathematics Examination (AIME), its accuracy rose from 15.6% to 77.9%."
         },
         {
-          "p": "R1-Zero was hard to read and mixed Chinese and English. So the paper designed a four-stage pipeline to produce the full **DeepSeek-R1**, which matches OpenAI's o1 on math and competitive programming while also handling writing and question answering. Finally, the paper distilled smaller models from data generated by R1; the 1.5-billion-parameter model already beats GPT-4o on competition math problems."
+          "p": "R1-Zero was hard to read and mixed Chinese with English. So the paper designed a four-stage pipeline that produced the final **DeepSeek-R1**: it matches OpenAI’s o1 on math and competitive programming while also handling writing and question answering. Finally, the paper used R1’s outputs to “distill” smaller models, and a 1.5-billion-parameter model beat GPT-4o on math competition problems."
         },
         {
           "callout": {
             "kind": "takeaway",
-            "title": "In one sentence",
-            "text": "R1 = a strong enough pretrained model + a batch of hard problems whose answers can be checked automatically + large-scale reinforcement learning (the GRPO algorithm). You don't teach it how to think; you only reward it for thinking correctly. Long chain-of-thought, self-checking, and similar reasoning behaviors emerge on their own."
+            "title": "One-sentence version",
+            "text": "R1 = a strong enough pretrained model + a set of hard problems that can be checked automatically + large-scale reinforcement learning (the GRPO algorithm). You don’t teach it how to think; you just reward it for thinking correctly. Long chain-of-thought, self-checking, and similar behaviors grow on their own."
           }
         },
         {
           "callout": {
             "kind": "prereq",
-            "title": "Four quick concepts you need for this paper",
-            "text": "You don't need to understand them deeply; these four are enough:",
+            "title": "Four concepts you need for this paper",
+            "text": "It’s fine if you don’t know them; these four are enough:",
             "list": [
-              "**Chain of thought (CoT)**: the model writes out its intermediate reasoning steps before giving the final answer.",
-              "**Reinforcement learning and PPO**: the model generates its own responses and adjusts itself according to the score; PPO is the most common algorithm in RLHF. See the InstructGPT close read.",
-              "**KL penalty and reference model**: keep the model from drifting too far from its original behavior during training. See the DPO close read.",
-              "**pass@1**: for each problem, the model answers once, and this is the share it gets right. The paper estimates it by sampling several answers per problem and taking the average accuracy."
+              "**Chain of thought (CoT):** having the model write out the intermediate reasoning steps before giving the answer.",
+              "**Reinforcement learning and PPO:** the model generates its own responses and adjusts based on scores; PPO is the most common algorithm in RLHF. See the InstructGPT close read for details.",
+              "**KL penalty and reference model:** keeping the model from drifting too far from its original behavior during training. See the DPO close read for details.",
+              "**pass@1:** the share of problems the model answers correctly when it gets one attempt per problem. The paper samples each problem multiple times and uses the average correctness as the pass@1 estimate."
             ]
           }
         }
       ]
     },
     {
-      "h": "From DPO to R1: why return to reinforcement learning",
+      "h": "From DPO to R1: why go back to reinforcement learning",
       "blocks": [
         {
-          "p": "The DPO article told us that if the goal is to align with human preferences, you can skip reinforcement learning and simply classify a batch of ready-made \"good answer / bad answer\" data. But reasoning is different, for three reasons."
+          "p": "The previous paper on DPO showed that if the goal is to align with human preferences, you don’t need reinforcement learning; a batch of ready-made “good answer / bad answer” data is enough for a classification task. Reasoning is different, for three reasons."
         },
         {
           "list": [
-            "**There are no ready-made good answers**: the long reasoning traces we want are not something humans already write, or what they do write is not necessarily the best thing for a model to learn. The paper argues that human-written solutions often omit reflection and verification.",
-            "**Correctness can be checked automatically**: math problems have reference answers, and code can be run against tests. The reward doesn't have to come from human preferences, and there's no need to train a reward model to imitate humans.",
-            "**It needs trial and error**: during training, the model must keep generating new solution attempts and learn from its own successes and failures. Offline-data methods such as DPO cannot do this."
+            "**There are no ready-made good answers.** Long reasoning processes are not something people naturally write out, and the ones people do write are not necessarily the best ones for the model to learn from. The paper argues that human-written solutions often omit steps of reflection and verification.",
+            "**Correctness can be checked automatically.** Math problems have standard answers, and coding problems can be tested. The reward doesn’t have to come from human preferences, and there’s no need to train a reward model to imitate people.",
+            "**It requires repeated attempts.** The model must keep generating new solutions during training and learn from its own successes and failures. Methods that rely only on offline data, such as DPO, cannot do this."
           ]
         },
         {
-          "p": "The paper's conclusion is that the key to unlocking reasoning is not large-scale human annotation but three things: **hard enough problems, reliable verifiers, and enough reinforcement-learning compute**."
+          "p": "The paper’s judgment: the key to unlocking reasoning is not massive human annotation but three things—**hard enough problems, reliable verifiers, and enough compute for reinforcement learning.**"
         }
       ]
     },
     {
-      "h": "GRPO: removing the value model from PPO",
+      "h": "GRPO: removing the “value model” from PPO",
       "blocks": [
         {
-          "p": "The RL algorithm R1 uses is GRPO (Group Relative Policy Optimization), introduced by the DeepSeek team in the 2024 DeepSeekMath paper to simplify PPO and save resources."
+          "p": "The RL algorithm used for R1 is called GRPO (Group Relative Policy Optimization), introduced by the DeepSeek team in the 2024 DeepSeekMath paper to simplify PPO and cut resource use."
         },
         {
-          "p": "First recall one pain point with PPO. RL needs to ask, \"How much better than usual is this response?\" That \"how much better\" is called the **advantage**. To estimate advantage, PPO trains an extra **value model** that predicts \"how much future reward I can get from the current position.\" This value model is typically as large as the policy model, consuming substantial GPU memory and compute."
+          "p": "First, recall one pain point in PPO. Reinforcement learning needs to answer “how much better is this response than usual,” and that “how much better” is called the **advantage**. To estimate the advantage, PPO trains an extra **value model** to predict “how much reward can be expected from the current point onward.” That value model is usually as large as the policy model, consuming a large amount of memory and compute."
         },
         {
-          "p": "The paper also identifies a deeper issue: when the only reward is whether the final answer is correct, the value model is hard to learn. This is especially true in long chain-of-thought, where the model may later refute what it wrote earlier; from a half-written response alone, it is nearly impossible to predict whether the final answer will be correct."
+          "p": "The paper also points to a deeper issue: when the only reward is whether the final answer is correct, the value model is hard to train. This is especially true in long chain-of-thought, because earlier parts of a response may be overturned later; looking at a half-written answer tells you almost nothing about whether it will eventually be right."
         },
         {
-          "p": "GRPO's solution: **for the same question, have the model answer a group of times (say 16) and use the group's mean score as the baseline**. Responses better than average get a positive advantage; responses worse than average get a negative one:"
+          "p": "GRPO’s solution: **for the same question, have the model generate a group of responses (say 16), and use the group’s average score as the baseline.** Responses above the average get a positive advantage; responses below it get a negative one:"
         },
         {
           "formula": {
-            "expr": "A_{i} = ( r_{i} − mean(r_{1}, …, r_{G}) ) / std(r_{1}, …, r_{G})",
+            "expr": "A_{i} = ( r_{i} - mean(r_{1}, …, r_{G}) ) / std(r_{1}, …, r_{G})",
             "parts": [
               {
                 "sym": "r_{i}",
-                "desc": "The reward of the i-th response. In R1-Zero, this is the score for \"correct answer + correct format.\""
+                "desc": "The reward for the i-th response; in R1-Zero this is the score for “correct answer + correct format”."
               },
               {
                 "sym": "G",
-                "desc": "How many responses are sampled per question. R1-Zero uses 16."
+                "desc": "How many responses are sampled per question; R1-Zero uses 16."
               },
               {
                 "sym": "mean, std",
-                "desc": "The mean and standard deviation of the group's rewards. Subtracting the mean compares each response against its peers; dividing by the standard deviation puts everything on the same scale."
+                "desc": "The mean and standard deviation of the rewards in the group. Subtracting the mean compares a response against its peers; dividing by the standard deviation normalizes the scale."
               }
             ],
-            "note": "No value model is needed, and no human-written reference answer is needed as a baseline: the peers on the same question are the baseline. That's also what \"group relative\" means in the name."
+            "note": "No value model is needed, and no human-written reference answer is needed as a baseline: responses to the same question serve as each other’s baseline. This is also the meaning of “group relative” in the name."
+          },
+          "plain": {
+            "title": "No coach, just compare within the group",
+            "pic": "r1-group",
+            "text": "Ask the model to answer the same question 8 times, and those 8 answers form a group. Correct answers get 1 point, wrong answers get 0, and each is compared with the group average: above-average responses are encouraged (green), below-average ones are suppressed (red). PPO needs a value model to estimate “what score should this question get”; GRPO uses the group average instead, eliminating an entire model."
           }
         },
         {
           "fig": {
             "type": "table",
-            "title": "Hand-computing GRPO's advantage: a rare right answer on a hard problem is rewarded most; a rare wrong answer on an easy problem is punished most",
-            "subtitle": "Illustrative: each question is sampled G = 8 times, correct answers get reward 1 and wrong answers get 0; the standard deviation is the population standard deviation. Numbers computed by this site from the paper's formula.",
+            "title": "Hand-computing GRPO advantages: a rare correct answer gets the most reward; a rare wrong answer gets the harshest penalty",
+            "subtitle": "Illustrative: each question is sampled G = 8 times, with reward 1 for correct and 0 for incorrect; standard deviation is the population standard deviation. Numbers calculated by this site using the paper’s formula.",
             "columns": [
-              "Case",
+              "Scenario",
               "Correct out of 8",
               "Mean reward",
-              "Std dev",
+              "Standard deviation",
               "Advantage for a correct answer",
-              "Advantage for a wrong answer"
+              "Advantage for an incorrect answer"
             ],
             "rows": [
               [
@@ -184,15 +189,15 @@
             "highlight": {
               "row": 0
             },
-            "note": "A rare correct answer on a hard problem gets strongly reinforced; a rare wrong answer on an easy problem gets strongly suppressed. When all answers are correct or all are wrong, there's no difference within the group, so the problem provides no learning signal. That's why training problems need the right difficulty."
+            "note": "On a hard problem, the single answer that happens to be correct gets strongly reinforced; on an easy problem, the single answer that happens to be wrong gets strongly suppressed. When every answer is correct or every answer is wrong, there is no difference within the group, so the question provides no learning signal. That’s why training questions need the right level of difficulty."
           }
         },
         {
-          "p": "With the advantage in hand, GRPO's objective is much like PPO's:"
+          "p": "Once we have the advantage, GRPO’s objective looks much like PPO’s:"
         },
         {
           "formula": {
-            "expr": "J(θ) = E [ (1 / G) Σ_{i} ( min( ρ_{i} A_{i}, clip(ρ_{i}, 1 − ε, 1 + ε) A_{i} ) − β · D_{KL}(π_{θ} ‖ π_{ref}) ) ]\nρ_{i} = π_{θ}(o_{i} | q) / π_{θ_{old}}(o_{i} | q)",
+            "expr": "J(θ) = E [ (1 / G) Σ_{i} ( min( ρ_{i} A_{i}, clip(ρ_{i}, 1 - ε, 1 + ε) A_{i} ) - β · D_{KL}(π_{θ} ‖ π_{ref}) ) ]\nρ_{i} = π_{θ}(o_{i} | q) / π_{θ_{old}}(o_{i} | q)",
             "parts": [
               {
                 "sym": "q, o_{i}",
@@ -200,17 +205,21 @@
               },
               {
                 "sym": "ρ_{i}",
-                "desc": "The ratio of the probability the new model assigns to this response over the probability the old model assigned when sampling it."
+                "desc": "The ratio between the probability the new model gives this response and the probability the old model gave it at sampling time."
               },
               {
-                "sym": "clip(…, 1 − ε, 1 + ε)",
-                "desc": "Clamps the probability ratio into a range so a single update can't move too far. This is PPO's \"clipping\" trick."
+                "sym": "clip(…, 1 - ε, 1 + ε)",
+                "desc": "Clamps the probability ratio to a range so a single update doesn’t move too far. This is PPO’s “clipping” trick."
               },
               {
                 "sym": "β · D_{KL}",
-                "desc": "The KL penalty keeps the model from drifting too far from the reference model. In R1, β is only 0.001, so the leash is very loose."
+                "desc": "The KL penalty tethers the model so it doesn’t drift too far from the reference model. In R1, β is only 0.001, so the tether is loose."
               }
             ]
+          },
+          "plain": {
+            "title": "Don’t change too much at once, and don’t drift too far from the teacher",
+            "text": "Each update has two safeguards. The clip limits how much the policy can change per step: even if an answer has a large advantage, the model only moves a little in that direction. The KL term keeps the model near the reference model, preventing it from producing strange outputs just to score points."
           }
         },
         {
@@ -218,27 +227,27 @@
         },
         {
           "formula": {
-            "expr": "D_{KL}(π_{θ} ‖ π_{ref}) = π_{ref}(o | q) / π_{θ}(o | q) − log( π_{ref}(o | q) / π_{θ}(o | q) ) − 1",
+            "expr": "D_{KL}(π_{θ} ‖ π_{ref}) = π_{ref}(o | q) / π_{θ}(o | q) - log( π_{ref}(o | q) / π_{θ}(o | q) ) - 1",
             "parts": [
               {
-                "sym": "The ratio x = π_{ref} / π_{θ}",
-                "desc": "The ratio between the reference model's and the current model's probabilities for this response."
+                "sym": "Ratio x = π_{ref} / π_{θ}",
+                "desc": "The ratio between the probability the reference model gives this response and the probability the current model gives it."
               },
               {
                 "sym": "x − log x − 1",
-                "desc": "This expression is never below 0; it is 0 when x = 1 (the two models are identical), about 0.19 when x = 0.5, and about 0.31 when x = 2."
+                "desc": "This expression is never negative; it is 0 when x = 1 (the two models are identical), about 0.19 when x = 0.5, and about 0.31 when x = 2."
               }
             ]
           }
         },
         {
-          "p": "The paper explains why this choice matters for long reasoning: PPO breaks the KL penalty into per-token pieces and treats it as part of the reward. Because RL maximizes cumulative reward, longer responses accumulate more KL penalty, **which silently punishes long responses** and stops the model from \"thinking longer.\" GRPO puts KL in the loss instead, so this problem disappears. In addition, because training runs for thousands of steps and the model can drift far from the initial model, R1 replaces the reference model with the latest model every 400 steps."
+          "p": "The paper explains why this choice matters for long reasoning: PPO spreads the KL penalty across every token and treats it as part of the reward. Because RL maximizes cumulative reward, longer responses accumulate more KL penalty, which **amounts to silently punishing long responses** and discouraging the model from “thinking longer.” GRPO places KL in the loss instead, avoiding this problem. Also, because training runs for thousands of steps and the model drifts far from its initial version, R1 replaces the reference model with the latest model every 400 steps."
         },
         {
           "fig": {
             "type": "table",
             "title": "How PPO and GRPO differ",
-            "subtitle": "Based on Supplementary A.3 of the paper.",
+            "subtitle": "Based on Section A.3 of the paper’s supplementary material",
             "columns": [
               "",
               "PPO",
@@ -248,109 +257,109 @@
               [
                 "How advantage is computed",
                 "Estimated with a value model + GAE",
-                "Take a group of rewards for the same question, subtract the mean, divide by the standard deviation."
+                "For a group of responses to the same question, subtract the mean and divide by the standard deviation"
               ],
               [
                 "Needs a value model?",
-                "Yes, usually as large as the policy model.",
+                "Yes, usually as large as the policy model",
                 "No"
               ],
               [
-                "Where the KL penalty lives",
-                "Broken into per-token terms as part of the reward.",
-                "Added directly to the loss."
+                "Where the KL penalty goes",
+                "Split across each token and added as part of the reward",
+                "Added directly to the loss"
               ],
               [
                 "Effect on long responses",
-                "Accumulated KL quietly penalizes long responses.",
-                "No such effect."
+                "Cumulative KL silently penalizes long responses",
+                "No such effect"
               ],
               [
                 "Hyperparameter tuning",
-                "Sensitive to GAE's λ.",
-                "Fewer hyperparameters."
+                "Sensitive to GAE’s λ",
+                "Fewer hyperparameters"
               ]
             ]
           }
         },
         {
-          "p": "To be fair, PPO is not incapable. The paper compares the two on a 16-billion-parameter mixture-of-experts model: with the default λ = 0.95 commonly used in open-source PPO implementations, PPO is clearly behind GRPO; after carefully tuning λ to 1.0, it gets close to GRPO. The paper's conclusion is that GRPO is not the only workable algorithm, but it saves resources and requires less tuning."
+          "p": "To be fair, PPO can work. The paper compared the two on a 16-billion-parameter mixture-of-experts model: with the default λ = 0.95 common in open-source implementations, PPO was clearly worse than GRPO; after carefully tuning λ = 1.0, it came close to GRPO. The paper’s conclusion is that GRPO isn’t the only viable algorithm, but it saves resources and requires less tuning."
         },
         {
           "quiz": {
-            "q": "How does GRPO eliminate PPO's value model?",
+            "q": "How does GRPO eliminate PPO’s value model?",
             "options": [
-              "Replace the value model with a reward model.",
-              "Sample a group of responses for the same question and use the group's reward mean and standard deviation to compute each response's advantage.",
-              "Train only on offline data.",
-              "Set every response's reward to 1."
+              "Replace the value model with a reward model",
+              "Sample a group of responses for the same question and use the mean and standard deviation of their rewards to compute each response’s advantage",
+              "Train using only offline data",
+              "Set every response’s reward to 1"
             ],
             "answer": 1,
-            "why": "The value model's job is to provide a baseline for the score you'd usually get. GRPO makes a group of responses to the same question serve as each other's baseline: subtract the group mean and divide by the standard deviation to get the advantage. No value model as large as the policy model is needed."
+            "why": "The value model’s job is to provide a baseline of “what score is typical.” GRPO lets a group of responses to the same question serve as each other’s baseline: subtract the group mean and divide by the standard deviation, and you get the advantage. That removes the need for a value model as large as the policy model."
           }
         }
       ]
     },
     {
-      "h": "R1-Zero: don't teach it how to think—just reward right answers",
+      "h": "R1-Zero: don’t teach it how to think, only reward thinking right",
       "blocks": [
         {
-          "p": "R1-Zero's setup is extremely simple. The prompt template imposes only one requirement: first put the reasoning process between <think> and </think>, then put the answer between <answer> and </answer>. The paper deliberately constrains only the format and says nothing like \"you should reflect\" or \"you should go step by step,\" so it can observe what the model develops on its own."
+          "p": "R1-Zero’s setup is extremely simple. The prompt template asks for only one thing: write the reasoning process between <think> and </think>, then write the answer between <answer> and </answer>. The paper deliberately constrains only the format and makes no demands such as “you should reflect” or “you should proceed step by step,” so the team can observe what the model develops on its own."
         },
         {
-          "p": "**All rewards come from rules**, in two types with equal weight:"
+          "p": "**Rewards are entirely rule-based** and come in two types with equal weight:"
         },
         {
           "list": [
-            "**Accuracy reward**: for math problems, the final answer must be written in a specified format (such as boxed), and a program compares it with the reference answer automatically; a correct answer gets 1 and an incorrect one gets 0. For coding problems, a compiler and prepared test cases determine the score.",
-            "**Format reward**: whether the reasoning process is placed inside the <think> tags."
+            "**Accuracy reward:** for math problems, the final answer must be given in a specified format (such as in a box), and a program compares it with the reference answer: 1 point if correct, 0 if wrong. For coding problems, a compiler and a set of prepared test cases judge correctness.",
+            "**Format reward:** whether the reasoning process is placed inside the <think> tags."
           ]
         },
         {
-          "p": "The paper **deliberately avoids neural reward models**, whether outcome-based ones or step-by-step process reward models. The reason: in large-scale RL, neural reward models are easily gamed (reward hacking), and retraining them costs extra compute and makes the pipeline more complex."
+          "p": "The paper **deliberately avoids neural reward models**, whether outcome-based or step-scoring (process reward models). The reason is that, in large-scale reinforcement learning, neural reward models are easy to game (reward hacking), and retraining one would also require extra compute and make the pipeline more complex."
         },
         {
           "fig": {
             "type": "table",
-            "title": "Problems used for reinforcement learning",
-            "subtitle": "From Supplementary Table 4 and Section B.3.1 of the paper. All problems are in Chinese or English.",
+            "title": "The problems used for reinforcement learning",
+            "subtitle": "From Table 4 and Section B.3.1 of the supplementary material. All problems are in Chinese or English.",
             "columns": [
-              "Type and count",
+              "Type and number of problems",
               "Problem format",
-              "How correctness is judged"
+              "How correctness is checked"
             ],
             "rows": [
               [
-                "Math · 26k problems",
-                "Computation problems from regional contests to the International Mathematical Olympiad; no proof problems.",
-                "Compared with the reference answer (numbers, expressions, equations)."
+                "Math · 26,000 problems",
+                "Calculation problems ranging from regional competitions to international olympiads; no proof problems.",
+                "Compare with reference answers (numbers, expressions, equations)."
               ],
               [
-                "Coding · 17k algorithm problems + 8k bug-fix tasks",
-                "Codeforces- and LeetCode-style tasks; real issues from GitHub.",
-                "Run against hidden test cases."
+                "Coding · 17,000 algorithm problems + 8,000 bug-fixing problems",
+                "Problems similar to Codeforces and LeetCode; real issues from GitHub.",
+                "Run hidden test cases"
               ],
               [
-                "Science · 22k problems",
-                "Multiple-choice questions in physics, chemistry, and biology.",
-                "Whether the chosen option is correct."
+                "Science · 22,000 problems",
+                "Multiple-choice questions in physics, chemistry, and biology",
+                "Whether the chosen option is correct"
               ],
               [
-                "Logic · 15k problems",
-                "Brain teasers, logic puzzles, 24 Game, and reasoning problems adapted from coding problems.",
-                "Automatically judged."
+                "Logic · 15,000 problems",
+                "Brain teasers, logic puzzles, 24-point games, and reasoning problems adapted from coding problems.",
+                "Automatic judgment"
               ],
               [
-                "General · 66k problems",
-                "Writing, editing, question answering, role-playing, etc. (used only in R1).",
+                "General · 66,000 problems",
+                "Writing, editing, question answering, role play, and more (used only in R1).",
                 "Reward model"
               ]
             ],
-            "note": "Proof problems are excluded because it is hard to automatically judge whether a proof is correct. This also shows the limits of the method: it depends on problems that can be automatically verified."
+            "note": "Proof problems are excluded because it’s hard to automatically judge whether a proof is correct. This also marks the boundary of the approach: it depends on problems that can be verified automatically."
           }
         },
         {
-          "p": "Training details (Section 2.1): learning rate 3 × 10^{−6}, KL coefficient 0.001, sampling temperature 1. Each step uses 32 questions with 16 responses per question, for 512 responses per step. The maximum response length is 32,768 tokens, relaxed to 65,536 tokens after step 8,200; both performance and response length jump noticeably at that point. Training runs for 10,400 steps in total, equivalent to 1.6 passes over the problem set."
+          "p": "Training details (Section 2.1): learning rate 3 × 10^{-6}, KL coefficient 0.001, sampling temperature 1. Each step has 32 questions with 16 responses each, so a step contains 512 responses. Responses are capped at 32,768 tokens; after step 8,200 the cap is relaxed to 65,536, and the model’s performance and response length both jump noticeably at that point. Training runs for 10,400 steps in total, equivalent to 1.6 passes over the problem set."
         }
       ]
     },
@@ -358,45 +367,45 @@
       "h": "What it learned on its own",
       "blocks": [
         {
-          "p": "**First, performance jumped sharply.** On AIME 2024, R1-Zero's average pass@1 rose from 15.6% at the start of training to 77.9%. With multiple samples per question and majority voting (self-consistency decoding), it reaches 86.7%, clearly above the average performance of human competitors in that contest. Broken down by difficulty, the hardest tier of MATH problems went from about 0.55 to about 0.90."
+          "p": "**First, scores improved dramatically.** On AIME 2024, R1-Zero’s average pass@1 rose from 15.6% at the start of training to 77.9%; with multiple samples per question and majority voting (self-consistency decoding), it reaches 86.7%, clearly above the average for human competitors. Broken down by difficulty, accuracy on the hardest tier of MATH problems rose from about 0.55 to about 0.90."
         },
         {
-          "p": "**Second, it learned on its own to \"think longer.\"** During training, average response length increased steadily: in the paper's Figure 1(b), responses start at only one or two thousand tokens and exceed ten thousand later. No one told it to write more; this is entirely a result of reinforcement learning. Thinking a little longer makes it more likely to get the answer right, and getting it right brings reward."
+          "p": "**Second, it learned on its own to “think longer.”** During training, the average response length increased steadily: in Figure 1(b), responses start at only one or two thousand tokens and exceed 10,000 later. Nobody told it to write longer; this is entirely a product of reinforcement learning—thinking a little longer makes correct answers more likely, and correct answers bring reward."
         },
         {
-          "p": "**Third, reflection and checking emerged.** The paper asked three experts to list a set of reflection-related words: wait, mistake, however, verify, check, and others. During training, these words became 5 to 7 times more frequent than at the start. The word \"wait\" is especially telling: it is nearly absent early in training, appears occasionally between steps 4,000 and 7,000, then becomes frequent after step 8,000."
+          "p": "**Third, reflection and verification emerged.** The paper asked three experts to list words associated with reflection: wait, mistake, however, verify, check, and others. During training, the frequency of these words increased to 5 to 7 times their initial level. The word “wait” is especially representative: it’s almost absent early in training, appears occasionally between steps 4,000 and 7,000, and then appears in large numbers after step 8,000."
         },
         {
-          "p": "The paper shows an intermediate checkpoint solving a radical equation. Halfway through, it stops: \"Wait, wait. Wait. That's an aha moment I can flag here. Let's reevaluate this step-by-step...\" Then it starts over and recalculates another way. The paper says this was also an \"aha moment\" for the research team."
+          "p": "The paper shows an intermediate model solving a radical equation, stopping halfway: “Wait, wait. That’s an aha moment I can flag here. Let’s reevaluate this step by step…” It then starts over and redoes the calculation differently. The paper says this was also an “aha moment” for the research team."
         },
         {
           "callout": {
             "kind": "myth",
-            "title": "The model saying \"wait\" suggests it is thinking like a human",
-            "text": "The paper itself is careful about this. When describing R1's cold-start data, it explicitly writes that users may find first-person, colloquial reasoning more relatable, but this could create undue trust; these vivid reasoning patterns **mainly reflect heuristic methods designed by DeepSeek**, not evidence that the model has acquired human-like intelligence. The meaning of the aha moment is that reflection as a **behavior** was selected by reward, not taught by humans."
+            "title": "“That the model says ‘wait’ shows it’s thinking like a human”",
+            "text": "The paper itself is cautious here. In the section on R1’s cold-start data, it writes that users may find first-person, conversational reasoning more approachable, but this can invite unwarranted trust; these vivid reasoning patterns **mainly reflect DeepSeek’s designed heuristics**, not evidence of human-like intelligence. The significance of the aha moment is that reflective **behavior** was selected by reward, not taught by people."
           }
         },
         {
           "callout": {
             "kind": "intuition",
-            "title": "Why rewarding only the answer can produce a good process",
-            "text": "Imagine a student who gets only right/wrong feedback on each problem, with no explanation. Over time they discover that writing too fast leads to mistakes, checking the work catches errors, and trying a different approach often unlocks a problem they were stuck on. No one taught them to “check your work,” but the habit sticks because it raises their score. Reinforcement learning does exactly this, just at a scale of 512 responses per step and over ten thousand steps. The premise is that the student already has some foundation: if they can't even read the problem, no amount of right/wrong feedback will help."
+            "title": "Why rewarding only the outcome produces good reasoning",
+            "text": "Imagine a student who sees only whether each answer is right or wrong, with no explanations. They will gradually discover that writing too fast leads to mistakes, double-checking catches errors, and when stuck, trying a different approach often works. No one teaches them to check their work, but the habit sticks because it improves their score. RL does exactly this—just at a scale of 512 responses per step and tens of thousands of steps. The catch is that the student must start with some foundation: if they can’t read the problem at all, no amount of right-or-wrong feedback helps."
           }
         },
         {
-          "p": "That foundation matters a lot. The paper admits in the supplementary materials that it first tried pure reinforcement learning with a 7-billion-parameter dense model and a 16-billion-parameter mixture-of-experts model, and on AIME there was **no clear improvement**—responses became repetitive as they grew longer. Only after switching to 32-billion, 230-billion, and 671-billion-parameter models did pure RL show results. The paper also notes that DeepSeek-V3-Base's pretraining data contains a large amount of math and code, so the model had already “seen” many reasoning traces; reinforcement learning selects and amplifies the good candidates among those it can already generate."
+          "p": "This foundation matters. The paper admits in the supplementary material: when they first ran pure RL with a 7-billion-parameter dense model and a 16-billion-parameter mixture-of-experts model, AIME performance **showed no clear improvement**—responses simply started repeating once they grew long. Only after switching to 32-billion, 230-billion, and 671-billion-parameter models did they see pure RL work. The paper also notes that DeepSeek-V3-Base’s pretraining data contains a large amount of math and code, so the model had already “seen” many reasoning processes; RL was selecting and amplifying the good candidates among those it could already generate."
         },
         {
           "quiz": {
-            "q": "Does R1-Zero's reward include any scoring of the reasoning process itself?",
+            "q": "Does R1-Zero’s reward include a score for the reasoning process itself?",
             "options": [
-              "Yes, a process reward model scores each step.",
-              "No, it only looks at whether the final answer is correct and whether the format is correct.",
+              "Yes—a process reward model scores each step.",
+              "No, it only checks whether the final answer is correct and whether the format is correct.",
               "Yes, human annotators score the reasoning process.",
-              "Yes, longer responses get a higher reward."
+              "Yes, longer answers are rewarded more."
             ],
             "answer": 1,
-            "why": "The paper deliberately uses only rule-based rewards: whether the answer is correct and whether the format is correct. The longer responses and the reflection behaviors were not directly required by the reward; they are by-products of “improving the chance of a correct answer.” The paper also avoids process reward models because they are easy to game, as discussed later in the “failed attempts” section."
+            "why": "The paper deliberately uses only rule-based rewards: whether the answer is right and whether the format is right. Longer responses and self-reflection were not directly required by the reward; they emerged as byproducts of “improving the chance of answering correctly.” The paper also avoids process reward models because they are easy to game—more on that in the “attempts that didn’t work” section later."
           }
         }
       ]
@@ -405,33 +414,33 @@
       "h": "From R1-Zero to R1: four stages",
       "blocks": [
         {
-          "p": "R1-Zero reasons well, but it has several problems: it is hard to read, it mixes Chinese and English because the base model was trained mainly on Chinese and English, and because it was trained only on reasoning tasks, its writing, open-ended question answering, and similar abilities are limited. The full R1 uses a multi-stage pipeline to address these issues:"
+          "p": "R1-Zero reasons well, but it has several problems: its output is hard to read, mixes Chinese and English (the base model was trained mainly on Chinese and English), and because it was trained only on reasoning tasks, its writing and open-ended QA are limited. The final R1 uses a multi-stage pipeline to fix this:"
         },
         {
           "fig": {
             "type": "steps",
-            "title": "DeepSeek-R1's training pipeline",
-            "subtitle": "Illustrative: compiled from Figure 2, Section 3, and Supplementary B.3 of the paper. Dev1 to Dev3 are intermediate versions.",
+            "title": "DeepSeek-R1’s training pipeline",
+            "subtitle": "Illustrative: based on Figure 2, Section 3, and Supplementary B.3 of the paper. Dev1 through Dev3 are intermediate checkpoints.",
             "steps": [
               {
                 "name": "Cold-start fine-tuning → Dev1",
-                "tool": "A few thousand long chain-of-thought traces",
-                "desc": "Take reasoning traces generated by R1-Zero, keep only those with correct answers and good formatting, then have humans and DeepSeek-V3 rewrite them into a first-person, conversational, language-consistent style and use the result to fine-tune the base model."
+                "tool": "Thousands of long CoT samples",
+                "desc": "Use R1-Zero to generate solutions, keep only those with correct answers and proper format; then have humans and DeepSeek-V3 rewrite them into a first-person, conversational, language-consistent style, and use them to fine-tune the base model."
               },
               {
-                "name": "First round of reinforcement learning → Dev2",
-                "tool": "Rule reward + language consistency reward",
-                "desc": "Trains on reasoning tasks as R1-Zero does, and additionally rewards the proportion of target-language words in the chain of thought to prevent Chinese-English mixing."
+                "name": "First RL round → Dev2",
+                "tool": "Rule-based reward + language-consistency reward",
+                "desc": "Run the same reasoning-task RL as R1-Zero, plus a reward for the proportion of target-language words in the chain of thought to prevent Chinese-English mixing."
               },
               {
-                "name": "Rejection sampling + further fine-tuning → Dev3",
-                "tool": "About 800,000 examples",
-                "desc": "Sample heavily from the previous model and keep only correct outputs, yielding about 600,000 reasoning examples; then add about 200,000 non-reasoning examples covering writing, question answering, translation, and similar tasks, and fine-tune again from the base model."
+                "name": "Rejection sampling + fine-tuning again → Dev3",
+                "tool": "About 800,000 samples",
+                "desc": "Sample heavily from the previous model, keep only correct outputs, and obtain about 600,000 reasoning samples; add about 200,000 non-reasoning samples covering writing, QA, translation, and more, then fine-tune the base model again."
               },
               {
-                "name": "Second round of reinforcement learning → R1",
-                "tool": "Rule reward + preference reward",
-                "desc": "Reasoning tasks use rule rewards; general tasks use two reward models for helpfulness and safety. The stage runs 1,700 steps in total, and preference rewards are added only in the last 400 steps."
+                "name": "Second RL round → R1",
+                "tool": "Rule-based reward + preference reward",
+                "desc": "Reasoning tasks use rule-based rewards; general tasks use two reward models for helpfulness and harmlessness. There are 1,700 steps in total, and preference rewards are added only in the final 400 steps."
               }
             ]
           }
@@ -441,17 +450,17 @@
         },
         {
           "list": [
-            "**Cold start is motivated by product experience**: the paper is blunt—users find a first-person reasoning process more intuitive and more approachable. R1-Zero often uses “we” or no first person; R1 more often uses “I.”",
-            "**The language consistency reward has a cost**: ablation experiments show that adding it leaves math performance essentially unchanged but slightly lowers coding performance. The paper chose readability.",
-            "**Preference reward is added only in the last 400 steps**: the paper found that training too long with a reward model causes reward hacking—helpfulness reward scores keep rising while real reasoning performance declines.",
-            "**The helpfulness reward model looks only at the final summary**, not the reasoning process, to avoid interfering with reasoning; **the safety reward model looks at the entire response**, including the reasoning process. The former uses 66,000 preference pairs, and the latter uses 106,000 responses labeled “safe / unsafe.”",
-            "**The second RL stage lowers the sampling temperature to 0.7**; the paper found that at this stage too high a temperature produces incoherent content."
+            "**Cold start is motivated by product experience**: the paper is blunt—users find first-person thinking more intuitive and approachable. R1-Zero tends to say “we” or omit pronouns; R1 more often says “I.”",
+            "**The language-consistency reward has a cost**: ablation shows math scores barely change with it, while coding scores drop slightly. The paper chose readability.",
+            "**Preference rewards are only added in the final 400 steps**: the paper found that training with reward models for too long leads to reward hacking—helpfulness reward scores keep rising while actual reasoning performance declines.",
+            "**The helpfulness reward model only looks at the final summary**, not the thinking process, to avoid interfering with reasoning; **the harmlessness reward model looks at everything**, including the thinking process. The former uses 66,000 preference pairs, and the latter uses 106,000 responses labeled safe/unsafe.",
+            "**The second RL round lowers sampling temperature to 0.7**; the paper found that too high a temperature at this stage produces incoherent output."
           ]
         },
         {
           "fig": {
             "type": "table",
-            "title": "What each stage contributes",
+            "title": "What each stage adds",
             "subtitle": "From Table 3 of the paper. The blue column is the final R1.",
             "columns": [
               "Metric",
@@ -479,7 +488,7 @@
                 "2029"
               ],
               [
-                "IF-Eval (format compliance)",
+                "IF-Eval (following format instructions)",
                 "46.6",
                 "71.7",
                 "72.0",
@@ -487,7 +496,7 @@
                 "83.3"
               ],
               [
-                "AlpacaEval 2.0 (writing, open-ended questions)",
+                "AlpacaEval 2.0 (writing, open-ended QA)",
                 "24.7",
                 "50.1",
                 "55.8",
@@ -495,7 +504,7 @@
                 "87.6"
               ],
               [
-                "ArenaHard (difficult conversations)",
+                "ArenaHard (hard chat questions)",
                 "53.6",
                 "77.0",
                 "73.2",
@@ -506,19 +515,19 @@
             "highlight": {
               "col": 5
             },
-            "note": "After cold start, Dev1 follows instructions much better, but its AIME score drops to 59.0, which the paper attributes to having too little cold-start data. The first RL stage, Dev2, brings reasoning back. Mixing in non-reasoning data at Dev3 restores writing ability. The final RL stage mainly improves general conversation."
+            "note": "After cold start (Dev1), instruction following jumps, but AIME falls to 59.0—the paper attributes this to too little cold-start data. The first RL round (Dev2) restores reasoning; mixing in non-reasoning data (Dev3) adds writing ability; the final RL round mainly improves general conversation."
           }
         }
       ]
     },
     {
-      "h": "Results: matching o1, and how long it “thinks”",
+      "h": "Results: matching o1, and how long it thinks",
       "blocks": [
         {
           "fig": {
             "type": "table",
-            "title": "R1 and the representative models of the time",
-            "subtitle": "From Table 8 of the paper (selected metrics). o1-1217 scores are taken from OpenAI's official report. The blue column is R1.",
+            "title": "R1 and the representative models of its time",
+            "subtitle": "From Table 8 of the paper (selected metrics). o1-1217 scores are from OpenAI’s official report. The blue column is R1.",
             "columns": [
               "Metric",
               "GPT-4o",
@@ -557,7 +566,7 @@
                 "2029"
               ],
               [
-                "GPQA Diamond (doctoral-level science questions)",
+                "GPQA Diamond (PhD-level science questions)",
                 "49.9",
                 "65.0",
                 "59.1",
@@ -578,17 +587,17 @@
             "highlight": {
               "col": 6
             },
-            "note": "On math and competitive programming, R1 essentially matches o1 and far surpasses non-reasoning models; on more knowledge-intensive science questions like GPQA Diamond, R1 still trails o1. R1 and V3 share the same base model, so the gap comes almost entirely from post-training."
+            "note": "On math and competitive programming, R1 is roughly level with o1 and far ahead of non-reasoning models; on more knowledge-heavy science tasks like GPQA, R1 still trails o1. R1 and V3 share the same base model, so almost all of the gap comes from post-training."
           }
         },
         {
-          "p": "To rule out the possibility that the model had seen the problems during training, the paper also tests on AIME 2025, which was released after training: R1's pass@1 is 75% and o1's is 80%. The paper also acknowledges that its 10-gram decontamination method cannot detect paraphrased problems, so test sets released before 2024 may be contaminated."
+          "p": "To rule out the possibility that the model saw the questions during training, the paper also tests on AIME 2025, which was released after training: R1 gets 75% pass@1 and o1 gets 80%. The paper also acknowledges that its 10-gram decontamination method cannot catch rewritten problems, so test sets released before 2024 may be contaminated."
         },
         {
-          "p": "**Reasoning models allocate “thinking time” by difficulty.** The paper tests on 366 competition problems from 2024: R1 solves 61.8%, using an average of 8,793 thinking tokens per problem; simple problems use fewer than 7,000, and the hardest use more than 18,000. By comparison, GPT-4o solves only 24.7% of the same problems, outputting an average of only 711 tokens."
+          "p": "**Reasoning models allocate “thinking time” according to difficulty.** The paper tested 366 competition problems from 2024: R1 solved 61.8%, using an average of 8,793 thinking tokens per problem; easy problems took under 7,000, and the hardest took over 18,000. By comparison, GPT-4o solved only 24.7% of the same set and averaged just 711 tokens."
         },
         {
-          "p": "Can an ordinary model close the gap by answering multiple times and voting? The paper says no: on AIME 2024, sampling GPT-4o 64 times and voting raises it only from 9.3% to 13.4%. The reason is that these responses are independent of one another; none can go back, check, and correct itself. A reasoning model's advantage is that it can reflect and backtrack **within a single response**."
+          "p": "Can a regular model close the gap by answering many times and voting? The paper says no: on AIME 2024, sampling GPT-4o 64 times and voting only lifts it from 9.3% to 13.4%. The reason is that these answers are independent—none can look back and correct itself. The advantage of reasoning models is that they can reflect and backtrack **within a single answer.**"
         }
       ]
     },
@@ -596,12 +605,17 @@
       "h": "Distillation: the large model figures it out, the small model learns it",
       "blocks": [
         {
-          "p": "The paper takes the roughly 800,000 examples generated by R1—the same batch from the third stage—and applies only supervised fine-tuning, no reinforcement learning, to the open-source Qwen and Llama models, producing six “distilled” models."
+          "p": "The paper takes the roughly 800,000 samples generated by R1 (the same batch from stage three) and does supervised fine-tuning only—no RL—on open-source Qwen and Llama models, producing six “distilled” models.",
+          "plain": {
+            "title": "The big model writes the solution, the small model learns from it",
+            "pic": "r1-distill",
+            "text": "Have R1, a large model that already reasons well, write out full thinking processes for hundreds of thousands of problems; then the small model simply does ordinary supervised learning on these “reference answers plus process,” without RL of its own, and picks up solid reasoning ability. That is far cheaper than letting small models grope from scratch."
+          }
         },
         {
           "fig": {
             "type": "table",
-            "title": "Small models after distillation",
+            "title": "The distilled small models",
             "subtitle": "From Table 15 of the paper (selected). AIME 2024 and MATH-500 are pass@1.",
             "columns": [
               "Model",
@@ -657,23 +671,23 @@
             "highlight": {
               "row": 2
             },
-            "note": "The distilled 1.5-billion-parameter model already beats GPT-4o and Claude 3.5 Sonnet on competition math. The larger the student model, the better the results."
+            "note": "The 1.5-billion-parameter distilled model already beats GPT-4o and Claude 3.5 Sonnet on math competition problems. Larger student models do better."
           }
         },
         {
-          "p": "So can a small model just do its own reinforcement learning? The paper ran large-scale RL for over ten thousand steps on the Qwen2.5-32B base model, and the resulting model scored 47.0 on AIME 2024, comparable to QwQ-32B-Preview at the time (50.0); the distilled model of the same size scored 72.6."
+          "p": "Can small models just do RL themselves? The paper ran large-scale RL for over ten thousand steps on a Qwen2.5-32B base model; the resulting model scored 47.0 on AIME 2024, comparable to QwQ-32B-Preview at the time (50.0). The distilled model of the same size scored 72.6."
         },
         {
           "list": [
-            "**Conclusion one**: distilling a strong model into a small model is cheap and effective; training a small model with this paper's RL method takes enormous compute and may still be worse than distillation.",
-            "**Conclusion two**: distillation is economical, but pushing beyond the frontier of human intelligence may still require stronger base models and larger-scale reinforcement learning."
+            "**Lesson one**: distilling a strong model into a small one is both cheap and effective; using this paper’s RL method to train a small model costs enormous compute and may still be worse than distillation.",
+            "**Lesson two**: distillation is economical, but pushing the frontier of intelligence likely still requires stronger base models and larger-scale RL."
           ]
         },
         {
           "callout": {
             "kind": "note",
-            "title": "Distillation is inheritance, not discovery",
-            "text": "Distillation lets a small model learn the reasoning patterns a large model already has, but new reasoning patterns are discovered in the large model's reinforcement learning. This matches the earlier finding about needing enough foundation: reinforcement learning amplifies abilities the model already has, and the larger the model, the more there is to amplify."
+            "title": "Distillation is “inheritance,” not “discovery.”",
+            "text": "Distillation lets a small model learn reasoning patterns the large model already has, but new reasoning patterns are discovered in the large model’s RL training. This aligns with the earlier finding that a model needs enough of a foundation: RL amplifies abilities the model already has, and the larger the model, the more there is to amplify."
           }
         }
       ]
@@ -685,7 +699,7 @@
           "fig": {
             "type": "table",
             "title": "Compute cost of R1 post-training",
-            "subtitle": "From Supplementary Table 7 of the paper, estimated at a rental price of $2 per H800 GPU hour.",
+            "subtitle": "From Table 7 of the supplementary material, estimated at a rental price of $2 per H800 GPU hour.",
             "columns": [
               "Stage",
               "H800 GPU hours",
@@ -693,12 +707,12 @@
             ],
             "rows": [
               [
-                "R1-Zero reinforcement learning",
+                "R1-Zero RL",
                 "101,000",
                 "$202,000"
               ],
               [
-                "Creating fine-tuning data",
+                "Making fine-tuning data",
                 "5000",
                 "10,000"
               ],
@@ -716,28 +730,28 @@
             "highlight": {
               "row": 3
             },
-            "note": "R1-Zero used 512 H800 GPUs for about 198 hours, and R1 used the same GPUs for about 80 hours. This is only the cost of post-training on top of DeepSeek-V3-Base; it does not include training the base model itself."
+            "note": "R1-Zero was trained on 512 H800s for about 198 hours; R1 used the same cards for roughly 80 hours. This is only the cost of post-training on top of DeepSeek-V3-Base and does not include training the base model itself."
           }
         },
         {
-          "p": "This figure is often compared with large-model training runs that routinely cost hundreds of millions of dollars, but it should be read carefully: it is only the cost of adding the reasoning layer on top. The paper is not saying “you can build R1 for a few hundred thousand dollars”; it is saying that on top of a strong enough base model, using reinforcement learning to spark reasoning ability does not require an astronomical sum."
+          "p": "This figure is often compared with the hundreds of millions of dollars spent training large models, but read it carefully: it is only the cost of that final layer of processing. The paper is not saying you can build R1 for a few hundred thousand dollars; it is saying that once you have a strong enough base model, RL can unlock reasoning without a sky-high budget."
         }
       ]
     },
     {
-      "h": "Attempts that didn't work",
+      "h": "Attempts that didn’t work",
       "blocks": [
         {
-          "p": "The paper includes a section on “unsuccessful attempts” and stresses that this does not mean those methods cannot work. That section is very helpful for understanding why R1 ended up shaped the way it did."
+          "p": "The paper devotes a section to “unsuccessful attempts” and stresses that these methods are not necessarily dead ends. That section helps a lot in understanding why R1 ended up the way it did."
         },
         {
           "list": [
-            "**Process reward model (PRM)**: scoring each reasoning step sounds more sensible than scoring only the final result. But in practice there are three difficulties: in general reasoning it is hard to define what a “step” is; judging whether an intermediate step is correct is itself hard, with model labeling unreliable and human labeling impossible at scale; and once model scoring is introduced, reward hacking appears. The paper argues that PRMs are suitable for reranking candidate answers, but in large-scale reinforcement learning they are not worth the cost.",
-            "**Monte Carlo Tree Search (MCTS)**: inspired by AlphaGo, it breaks answers into small steps and systematically searches the solution space. The difficulties: the search space of a board game is relatively well-defined, but the search space for text generation is exponential; limiting how many nodes can be expanded tends to cause local optima; and the value model that guides search is hard to train well, so the model cannot keep improving through self-play the way AlphaGo does."
+            "**Process reward models (PRMs)**: scoring every step of reasoning sounds more sensible than only checking the result, but in practice there are three problems. First, for general reasoning it is hard to define what counts as a “step.” Second, judging whether an intermediate step is correct is itself hard: model labeling works poorly, and human labeling cannot scale. Third, once a model does the scoring, reward hacking appears. The paper thinks PRMs are useful for reranking multiple candidates but not worth the cost in large-scale RL.",
+            "**Monte Carlo tree search (MCTS)**: inspired by AlphaGo, it breaks answers into small steps and systematically searches the solution space. The trouble: board games have a relatively clear search space, while text generation’s search space is exponential; limiting how many branches each node can expand often leads to local optima; and the value model that would guide the search is hard to train, so the model cannot keep improving through self-play the way AlphaGo does."
           ]
         },
         {
-          "p": "Both failures point to the same conclusion: **intermediate steps are hard to score reliably**. R1 succeeds precisely by avoiding this problem—scoring only the final result and leaving “how to get there” entirely to the model's own exploration."
+          "p": "Both failures point to the same conclusion: **intermediate steps are hard to score reliably.** R1 succeeds precisely by sidestepping this problem—it scores only the final result and leaves “how to get there” entirely to the model’s own exploration."
         }
       ]
     },
@@ -746,42 +760,42 @@
       "blocks": [
         {
           "list": [
-            "**The “25% improvement” is actually percentage points**: the main text says the final stage improved AlpacaEval 2.0 by 25% and ArenaHard by 17%. Checking Table 3, the former went from 62.1 to 87.6 and the latter from 75.6 to 92.3—absolute score differences, measured in percentage points. As relative improvements, they are about 41% and 22%.",
-            "**“4 days, about 80 hours”**: the supplementary material says R1 training took “about 4 days, about 80 hours.” Four days is 96 hours; according to Table 7, 41,000 GPU hours divided by 512 GPUs is about 80 hours, so 80 hours is the number that checks out.",
-            "**The IF-Eval claim needs a discount**: the main text calls R1's IF-Eval performance “impressive,” but in Table 8 R1 scores 83.3, below DeepSeek-V3's 86.1 and Claude 3.5 Sonnet's 86.5. Compared with R1-Zero's 46.6, it is indeed a big improvement.",
-            "**The clipping range is unusually large**: in the first RL stage, the GRPO clipping parameter ε is set to 10, far larger than common PPO settings. The paper says too small a clip truncates gradients for many tokens and hurts performance, while too large becomes unstable. The author contributions also note that the “large clipping” strategy was specifically proposed by the team.",
-            "**The base model is not completely “clean”**: the paper admits that V3-Base's pretraining web data contains many answers generated by OpenAI models, so the base model may have indirectly learned from other strong models; however, the team did not intentionally add OpenAI-generated synthetic data in the final pretraining stage."
+            "**“Improved 25%” actually means percentage points**: the main text says the final stage improved AlpacaEval 2.0 by 25% and ArenaHard by 17%. Checking Table 3, AlpacaEval goes from 62.1 to 87.6 and ArenaHard from 75.6 to 92.3—those are absolute differences in percentage points. As relative gains, they are about 41% and 22%.",
+            "**“4 days, about 80 hours”**: the supplementary material says R1 training took “about 4 days, about 80 hours.” Four days is 96 hours; Table 7’s 41,000 GPU hours divided by 512 cards is about 80 hours, so 80 is the number that checks out.",
+            "**Take the IF-Eval claim with a grain of salt**: the main text calls R1’s IF-Eval performance “impressive,” but in Table 8 R1 scores 83.3, below DeepSeek-V3’s 86.1 and Claude 3.5 Sonnet’s 86.5. It is still a large jump from R1-Zero’s 46.6.",
+            "**The clipping range is set very wide**: in the first RL round, GRPO’s clipping parameter ε is set to 10, far larger than common PPO settings. The paper says too small a clip truncates gradients for many tokens and hurts performance, while too large a clip becomes unstable. The author contributions note adds that the “large clipping” strategy was specifically proposed by the team.",
+            "**The base model is not entirely “clean”**: the paper admits the web data used to pretrain V3-Base contains many answers generated by OpenAI models, so the base model may have indirectly learned from other strong models. But the team did not intentionally add OpenAI-generated synthetic data in the final pretraining stage."
           ]
         }
       ]
     },
     {
-      "h": "Limitations, and the end of Main Line 1",
+      "h": "Limitations, and the end of track one",
       "blocks": [
         {
-          "p": "The limitations listed in the paper:"
+          "p": "The paper lists the following limitations:"
         },
         {
           "list": [
-            "**Structured output and tool use**: it cannot yet call tools such as search engines and calculators.",
-            "**Token efficiency**: it may “think too much” on simple problems.",
-            "**Language mixing**: it is optimized only for Chinese and English; problems in other languages may be thought about and answered in English.",
+            "**Structured output and tool use**: it cannot yet call search engines, calculators, or similar tools.",
+            "**Token efficiency**: it may “think too much” even on easy problems.",
+            "**Language mixing**: it is optimized only for Chinese and English; questions in other languages may be thought through and answered in English.",
             "**Prompt sensitivity**: few-shot prompts make it perform worse; the paper recommends describing the problem directly and using it zero-shot.",
-            "**Software engineering**: evaluation is too slow to run reinforcement learning at scale, so the gain over V3 is limited.",
-            "**Reward hacking**: pure reinforcement learning depends on reliable rewards. For tasks like writing that cannot be judged by rules, the reward has to come from a model, and the longer training runs, the easier it is to game. These tasks still rely on human-annotated supervised data, with reinforcement learning used for only a few hundred steps."
+            "**Software engineering**: evaluation is too slow to run large-scale RL, so the improvement over V3 is limited.",
+            "**Reward hacking**: pure RL depends on reliable rewards. For tasks like writing that cannot be judged by rules, the reward can only come from a model, and the longer training runs, the easier it is to game. These tasks still rely on human-labeled supervised data, with RL run for only a few hundred steps."
           ]
         },
         {
-          "p": "The paper's outlook is bold: for any task that can be effectively judged by a verifier—no matter how hard it is for humans—machines trained this way can be expected to surpass humans. The real difficulty lies in tasks where reliable rewards are hard to construct."
+          "p": "The paper’s outlook is bold: for any task that a verifier can judge effectively, no matter how hard for humans, machines trained this way may eventually surpass humans; the real bottleneck lies in tasks where reliable rewards are hard to construct."
         },
         {
-          "p": "**The story after**. Once R1 was open-sourced, GRPO and “RL with verifiable rewards” quickly became one of the standard approaches for training reasoning models, and the community produced many reproductions and improvements. In September 2025, the paper was published in Nature, one of the earlier large-language-model papers to go through peer review."
+          "p": "**What happened next.** After R1 was open-sourced, GRPO and “RL with verifiable rewards” quickly became a standard approach for training reasoning models, and the community produced many replications and improvements. In September 2025, the paper was published in Nature, making it one of the earlier peer-reviewed large language model papers."
         },
         {
           "fig": {
             "type": "table",
-            "title": "Main Line 1 in review: 13 papers, one through-line",
-            "subtitle": "All papers in this site's “language models” learning path, in chronological order.",
+            "title": "Track one recap: 13 papers, one main thread",
+            "subtitle": "All papers in this site’s “language models” learning track, in chronological order.",
             "columns": [
               "Year",
               "Paper",
@@ -791,32 +805,32 @@
               [
                 "2013",
                 "word2vec",
-                "Turns words into vectors; words with similar meanings have similar vectors."
+                "Turn words into vectors so that words with similar meanings have similar vectors."
               ],
               [
                 "2014",
                 "Seq2Seq",
-                "Uses one network to read and one to write, turning translation into sequence-to-sequence learning."
+                "Use one network to read and another to write, turning translation into sequence-to-sequence learning."
               ],
               [
                 "2014",
                 "Bahdanau attention",
-                "Looks back at the source text when translating each word, solving the problem that a single vector can't hold a whole sentence."
+                "Look back at the source sentence when translating each word, solving the problem that “one vector cannot hold an entire sentence.”"
               ],
               [
                 "2017",
                 "Transformer",
-                "Uses attention alone, removes recurrence, and can train in parallel."
+                "Use only attention, drop recurrence, and make training parallelizable."
               ],
               [
                 "2018",
                 "GPT-1",
-                "First predicts the next word on a large corpus, then fine-tunes on specific tasks."
+                "First predict the next word on large amounts of text, then fine-tune for specific tasks."
               ],
               [
                 "2018",
                 "BERT",
-                "Pretrains by reading context in both directions, improving understanding tasks."
+                "Pretrain by reading context in both directions, raising the bar on language-understanding tasks."
               ],
               [
                 "2019",
@@ -826,97 +840,97 @@
               [
                 "2020",
                 "GPT-3",
-                "Make the model bigger and give it a few examples, and it learns new tasks."
+                "When models get large, a few examples are enough for them to do new tasks."
               ],
               [
                 "2020",
                 "Scaling Laws",
-                "Loss falls with scale according to a power law, making it predictable."
+                "Loss decreases with scale following a power law, making performance predictable."
               ],
               [
                 "2022",
                 "Chinchilla",
-                "At the same compute budget, data and parameters should be scaled together."
+                "Under a fixed compute budget, data and parameters must be scaled together."
               ],
               [
                 "2022",
                 "InstructGPT",
-                "Uses reinforcement learning from human feedback to make the model follow instructions."
+                "Use reinforcement learning from human feedback to make models follow instructions."
               ],
               [
                 "2023",
                 "DPO",
-                "No reinforcement learning; a classification loss aligns preferences."
+                "Align with human preferences without RL, using a single classification loss."
               ],
               [
                 "2025",
                 "DeepSeek-R1",
-                "Reward only correct answers, and reinforcement learning trains reasoning."
+                "Reward only correct answers, and RL trains reasoning ability."
               ]
             ],
             "highlight": {
               "row": 12
             },
-            "note": "How words become vectors, how attention appears, how models scale up, how they learn to follow instructions, and finally how they learn to reason."
+            "note": "How words become vectors, how attention emerges, how models scale up, how they learn to follow instructions, and finally how they learn to reason."
           }
         }
       ]
     },
     {
-      "h": "Check yourself: did you actually get it?",
+      "h": "Test yourself: did you really get it?",
       "blocks": [
         {
           "quiz": {
-            "q": "When training with GRPO, if a problem's 16 responses are all correct, what contribution does this problem make to updating the model?",
+            "q": "During GRPO training, if all 16 attempts at a question are correct, what does that question contribute to the model update?",
             "options": [
               "The largest contribution, because the reward is highest.",
-              "Almost none: all rewards in the group are identical, so after subtracting the mean the advantage is 0.",
+              "Almost nothing: the rewards within the group are identical, so after subtracting the mean the advantage is 0.",
               "It makes the model worse.",
-              "It is automatically replaced with a harder problem."
+              "It gets automatically replaced with a harder question."
             ],
             "answer": 1,
-            "why": "Advantage measures “how much better than the group average.” When all answers are correct, every response is at the average and none is better, so the problem provides no learning signal. All wrong is the same. That's why training problems need the right difficulty: the model has to sometimes get them right and sometimes wrong before it can learn."
+            "why": "Advantage measures how much better a response is than the group average. When every answer is correct, every answer is exactly average—no one is better—so the question provides no learning signal. The same is true when every answer is wrong. That is why training problems need the right difficulty: the model must sometimes be right and sometimes wrong to learn anything."
           }
         },
         {
           "quiz": {
-            "q": "Why does R1's second RL stage add preference rewards only in the last 400 steps?",
+            "q": "Why does R1’s second RL round add preference rewards only in the final 400 steps?",
             "options": [
               "To save compute.",
-              "The paper found that training too long with a reward model causes reward hacking: reward scores rise while real reasoning performance falls.",
-              "Because there are only 400 preference examples.",
-              "Because earlier steps are used for distillation."
+              "The paper found that training with reward models for too long leads to reward hacking: reward scores rise, but real reasoning performance falls.",
+              "Because there are only 400 preference samples.",
+              "Because the earlier steps are used for distillation."
             ],
             "answer": 1,
-            "why": "A reward model is only an approximation of human preference; the longer the model trains, the more likely it is to find shortcuts that fool the score. Rule rewards, such as whether an answer is correct, can't be gamed, so reasoning can train for a long time. The part scored by a model can only be trained for a little."
+            "why": "A reward model is only an approximation of human preferences. The longer the model trains, the more likely it is to find a shortcut that tricks the score. Rule-based rewards (whether the answer is right) cannot be tricked, so reasoning can be trained for a long time; model-scored parts can only be trained briefly."
           }
         },
         {
           "quiz": {
-            "q": "What do the paper's experiments on distillation and reinforcement learning show?",
+            "q": "What do the paper’s experiments show about distillation versus reinforcement learning?",
             "options": [
-              "RL on a small model is always better than distillation.",
-              "For a 32-billion-parameter model, distilling from R1 is clearly better than doing large-scale RL on its own.",
-              "All distilled models also did reinforcement learning.",
-              "Distillation only works for Llama."
+              "Small models doing RL are always better than distillation.",
+              "For a 32-billion-parameter model, distilling from R1 works clearly better than doing large-scale RL on its own.",
+              "The distilled models all underwent reinforcement learning.",
+              "Distillation works only for Llama."
             ],
             "answer": 1,
-            "why": "Qwen2.5-32B doing over 10,000 RL steps on its own scores only 47.0 on AIME; a distilled model of the same size from R1 scores 72.6. Discovering new reasoning patterns through reinforcement learning requires a strong base model, so small models are better off inheriting directly."
+            "why": "Qwen2.5-32B trained with RL on its own for over ten thousand steps scores only 47.0 on AIME; the same-size model distilled from R1 scores 72.6. Discovering new reasoning patterns through RL requires a strong base model; small models are better off inheriting."
           }
         },
         {
-          "p": "After reading this, you should be able to answer these questions:"
+          "p": "After reading this, you should be able to answer the following questions:"
         },
         {
           "list": [
-            "Why is reasoning suitable for reinforcement learning, while preference alignment can use DPO?",
-            "How does GRPO compute advantage? Why doesn't it need a value model?",
-            "What is the difference between GRPO and PPO in the KL penalty? Why does this matter for long chain-of-thought?",
-            "What does R1-Zero's reward consist of? Why not use a neural reward model?",
-            "What does the “aha moment” show, and what doesn't it show?",
+            "Why is reasoning well suited to reinforcement learning, while preference alignment can use DPO?",
+            "How does GRPO compute the advantage? Why doesn't it need a value model?",
+            "How do GRPO and PPO differ in their KL penalty, and why does that matter for long chain-of-thought?",
+            "What makes up R1-Zero's reward? Why not use a neural reward model?",
+            "What does the \"aha moment\" show, and what does it not show?",
             "What problem does each of R1's four stages solve?",
-            "Why is base model scale so critical for pure reinforcement learning?",
-            "Why didn't process reward models and Monte Carlo Tree Search succeed?"
+            "Why is the scale of the base model critical for pure reinforcement learning?",
+            "Why didn't process reward models and Monte Carlo tree search work?"
           ]
         }
       ]
@@ -924,23 +938,23 @@
   ],
   "sources": {
     "main": {
-      "title": "DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning (arXiv:2501.12948, v2)",
+      "title": "DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning (arXiv:2501.12948, version 2)",
       "publisher": "DeepSeek-AI",
       "date": "2026-01-04",
       "url": "https://arxiv.org/abs/2501.12948"
     },
-    "note": "This article is based on the paper's second arXiv version (January 2026). The first version was released in January 2025, and the revised version was published in Nature in September 2025. Tables marked “Illustrative” were computed by this site from the paper's formulas. The relative improvements “41%” and “22%” were calculated by this site from Table 3. The paper's publication in Nature, GRPO's later widespread adoption, and similar details come from public reports and are not in the paper itself."
+    "note": "This article is based on arXiv version 2 of the paper (January 2026). The first version was released in January 2025, and the revised version was published in Nature in September 2025. Tables marked \"Illustrative\" were calculated by this site using the paper's formulas. The relative gains of 41% and 22% were computed by this site from Table 3. The paper's publication in Nature and the later widespread adoption of GRPO come from public reporting, not from the paper's main text."
   },
   "claims": [
     {
-      "text": "arXiv v2, January 2026",
+      "text": "arXiv version 2, January 2026",
       "value": "2501.12948v2",
       "source_url": "https://arxiv.org/abs/2501.12948",
       "quote": "arXiv:2501.12948v2 [cs.CL] 4 Jan 2026",
-      "as_written": "v2"
+      "as_written": "Version 2"
     },
     {
-      "text": "AIME from 15.6% to 77.9%",
+      "text": "AIME went from 15.6% to 77.9%",
       "value": "15.6%",
       "source_url": "https://arxiv.org/abs/2501.12948",
       "quote": "jumping from an initial 15.6% to 77.9%",
@@ -961,81 +975,81 @@
       "as_written": "86.7%"
     },
     {
-      "text": "Reflection words increase 5 to 7×",
+      "text": "Reflection words increased 5 to 7 times",
       "value": "5- to 7-fold",
       "source_url": "https://arxiv.org/abs/2501.12948",
       "quote": "the reflective words rises 5- to 7-fold",
-      "as_written": "5 to 7×"
+      "as_written": "5 to 7 times"
     },
     {
-      "text": "Math: 26k",
+      "text": "Math: 26,000",
       "value": "26k",
       "source_url": "https://arxiv.org/abs/2501.12948",
       "quote": "Mathematics dataset consists of 26k quantitative reasoning questions",
-      "as_written": "26k"
+      "as_written": "26,000"
     },
     {
-      "text": "Coding: 17k",
+      "text": "Coding: 17,000",
       "value": "17k",
       "source_url": "https://arxiv.org/abs/2501.12948",
       "quote": "17k algorithm competition questions, along with 8k bug fixing",
-      "as_written": "17k"
+      "as_written": "17,000"
     },
     {
-      "text": "Science: 22k",
+      "text": "Science: 22,000",
       "value": "22k",
       "source_url": "https://arxiv.org/abs/2501.12948",
       "quote": "22k choice questions",
-      "as_written": "22k"
+      "as_written": "22,000"
     },
     {
-      "text": "Logic: 15k",
+      "text": "Logic: 15,000",
       "value": "15k",
       "source_url": "https://arxiv.org/abs/2501.12948",
       "quote": "Logic dataset contains 15k questions",
-      "as_written": "15k"
+      "as_written": "15,000"
     },
     {
-      "text": "General: 66k",
+      "text": "General: 66,000",
       "value": "66k",
       "source_url": "https://arxiv.org/abs/2501.12948",
       "quote": "General dataset consists of 66k questions",
-      "as_written": "66k"
+      "as_written": "66,000"
     },
     {
-      "text": "Helpfulness RM: 66k pairs",
+      "text": "Helpfulness reward model: 66,000 pairs",
       "value": "66,000",
       "source_url": "https://arxiv.org/abs/2501.12948",
       "quote": "we curated 66,000 data pairs",
-      "as_written": "66k pairs"
+      "as_written": "66,000 pairs"
     },
     {
-      "text": "Safety RM: 106k",
+      "text": "Safety reward model: 106,000 responses",
       "value": "106,000",
       "source_url": "https://arxiv.org/abs/2501.12948",
       "quote": "a dataset of 106,000",
-      "as_written": "106k"
+      "as_written": "106,000"
     },
     {
-      "text": "About 800k examples",
+      "text": "About 800,000 samples",
       "value": "800,000",
       "source_url": "https://arxiv.org/abs/2501.12948",
       "quote": "approximately 800,000 supervised samples",
-      "as_written": "800k"
+      "as_written": "800,000"
     },
     {
-      "text": "About 600k reasoning examples",
+      "text": "About 600,000 reasoning samples",
       "value": "600k",
       "source_url": "https://arxiv.org/abs/2501.12948",
       "quote": "we collect about 600k reasoning-related",
-      "as_written": "600k"
+      "as_written": "600,000"
     },
     {
-      "text": "About 200k non-reasoning examples",
+      "text": "About 200,000 non-reasoning samples",
       "value": "200k",
       "source_url": "https://arxiv.org/abs/2501.12948",
       "quote": "approximately 200k training",
-      "as_written": "200k"
+      "as_written": "200,000"
     },
     {
       "text": "1.6 passes",
@@ -1045,39 +1059,39 @@
       "as_written": "1.6 passes"
     },
     {
-      "text": "671B / 37B",
+      "text": "671 billion / 37 billion",
       "value": "671 billion",
       "source_url": "https://arxiv.org/abs/2501.12948",
       "quote": "DeepSeek V3 has 671 billion total parameters, with 37 billion activated per token",
-      "as_written": "671B"
+      "as_written": "671 billion"
     },
     {
       "text": "7B dense and 16B MoE failed",
       "value": "7B",
       "source_url": "https://arxiv.org/abs/2501.12948",
       "quote": "a 7B dense model and a 16B",
-      "as_written": "7B"
+      "as_written": "7 billion"
     },
     {
-      "text": "16B",
+      "text": "16 billion",
       "value": "16B",
       "source_url": "https://arxiv.org/abs/2501.12948",
       "quote": "a 7B dense model and a 16B",
-      "as_written": "16B"
+      "as_written": "16 billion"
     },
     {
-      "text": "32B, 230B",
+      "text": "32 billion, 230 billion",
       "value": "32B",
       "source_url": "https://arxiv.org/abs/2501.12948",
       "quote": "a 32B dense",
-      "as_written": "32B"
+      "as_written": "32 billion"
     },
     {
-      "text": "230B",
+      "text": "230 billion",
       "value": "230B",
       "source_url": "https://arxiv.org/abs/2501.12948",
       "quote": "a 230B MoE model",
-      "as_written": "230B"
+      "as_written": "230 billion"
     },
     {
       "text": "AIME 2025 R1 75%",
@@ -1094,7 +1108,7 @@
       "as_written": "80%"
     },
     {
-      "text": "2024 contest problems: 61.8%",
+      "text": "2024 competition problems: 61.8%",
       "value": "61.8%",
       "source_url": "https://arxiv.org/abs/2501.12948",
       "quote": "61.8% solve rate (Pass@1)",
@@ -1115,7 +1129,7 @@
       "as_written": "24.7%"
     },
     {
-      "text": "Voting: 9.3% to 13.4%",
+      "text": "Voting: 9.3% → 13.4%",
       "value": "9.3%",
       "source_url": "https://arxiv.org/abs/2501.12948",
       "quote": "from 9.3% to 13.4%",
@@ -1143,14 +1157,14 @@
       "as_written": "17%"
     },
     {
-      "text": "About 41% relative (this site's Table 3 calculation: 87.6 / 62.1 - 1)",
+      "text": "Relative gain about 41% (calculated by this site from Table 3: 87.6 / 62.1 − 1)",
       "value": "87.6",
       "source_url": "https://arxiv.org/abs/2501.12948",
       "quote": "87.6",
       "as_written": "41%"
     },
     {
-      "text": "About 22% relative (this site's Table 3 calculation: 92.3 / 75.6 - 1)",
+      "text": "Relative gain about 22% (calculated by this site from Table 3: 92.3 / 75.6 − 1)",
       "value": "92.3",
       "source_url": "https://arxiv.org/abs/2501.12948",
       "quote": "92.3",
@@ -1168,14 +1182,14 @@
       "value": "$202K",
       "source_url": "https://arxiv.org/abs/2501.12948",
       "quote": "$202K",
-      "as_written": "202,000"
+      "as_written": "$202,000"
     },
     {
       "text": "$10,000",
       "value": "$10K",
       "source_url": "https://arxiv.org/abs/2501.12948",
       "quote": "$10K",
-      "as_written": "10,000"
+      "as_written": "$10,000"
     },
     {
       "text": "R1: 41,000 GPU hours",
@@ -1189,7 +1203,7 @@
       "value": "$82K",
       "source_url": "https://arxiv.org/abs/2501.12948",
       "quote": "$82K",
-      "as_written": "82,000"
+      "as_written": "$82,000"
     },
     {
       "text": "Total: 147,000",
@@ -1203,7 +1217,7 @@
       "value": "$294K",
       "source_url": "https://arxiv.org/abs/2501.12948",
       "quote": "$294K",
-      "as_written": "294,000"
+      "as_written": "$294,000"
     },
     {
       "text": "$2 per hour",
@@ -1220,21 +1234,21 @@
       "as_written": "198 hours"
     },
     {
-      "text": "4 days, about 80 hours",
+      "text": "About 4 days, about 80 hours",
       "value": "80 hours",
       "source_url": "https://arxiv.org/abs/2501.12948",
       "quote": "completing the process in about 4 days, or roughly 80 hours",
       "as_written": "80 hours"
     },
     {
-      "text": "512 H800 GPUs",
+      "text": "512 H800s",
       "value": "64*8",
       "source_url": "https://arxiv.org/abs/2501.12948",
       "quote": "we employed 64*8 H800 GPUs",
       "as_written": "512"
     },
     {
-      "text": "Learning rate 3e-6, KL 0.001",
+      "text": "Learning rate 3e-6, KL coefficient 0.001",
       "value": "3e-6",
       "source_url": "https://arxiv.org/abs/2501.12948",
       "quote": "we set the learning rate to 3e-6, the KL coefficient to 0.001",
@@ -1248,7 +1262,7 @@
       "as_written": "ε set to 10"
     },
     {
-      "text": "Second-stage temperature: 0.7",
+      "text": "Second-round temperature: 0.7",
       "value": "0.7",
       "source_url": "https://arxiv.org/abs/2501.12948",
       "quote": "a reduced temperature of 0.7",
@@ -1276,7 +1290,7 @@
       "as_written": "400 steps"
     },
     {
-      "text": "Hardest tier: 0.55 to 0.90",
+      "text": "Hardest tier: 0.55 → 0.90",
       "value": "0.55",
       "source_url": "https://arxiv.org/abs/2501.12948",
       "quote": "from near 0.55 to",
@@ -1287,7 +1301,7 @@
       "value": "366",
       "source_url": "https://arxiv.org/abs/2501.12948",
       "quote": "comprised 366 problems",
-      "as_written": "366"
+      "as_written": "366 problems"
     },
     {
       "text": "Qwen2.5-32B-Zero 47.0",
@@ -1304,32 +1318,32 @@
       "as_written": "50.0"
     },
     {
-      "text": "Distillation: 72.6",
+      "text": "Distilled: 72.6",
       "value": "72.6",
       "source_url": "https://arxiv.org/abs/2501.12948",
       "quote": "72.6",
       "as_written": "72.6"
     },
     {
-      "text": "1.5B",
+      "text": "1.5 billion",
       "value": "1.5B",
       "source_url": "https://arxiv.org/abs/2501.12948",
       "quote": "DeepSeek-R1-Distill-Qwen-1.5B",
-      "as_written": "1.5B"
+      "as_written": "1.5 billion"
     },
     {
-      "text": "7B",
+      "text": "7 billion",
       "value": "7B",
       "source_url": "https://arxiv.org/abs/2501.12948",
       "quote": "DeepSeek-R1-Distill-Qwen-7B",
-      "as_written": "7B"
+      "as_written": "7 billion"
     },
     {
-      "text": "70B",
+      "text": "70 billion",
       "value": "70B",
       "source_url": "https://arxiv.org/abs/2501.12948",
       "quote": "DeepSeek-R1-Distill-Llama-70B",
-      "as_written": "70B"
+      "as_written": "70 billion"
     },
     {
       "text": "IF-Eval: R1 83.3, V3 86.1, Claude 86.5",
@@ -1349,5 +1363,5 @@
   "status": "published",
   "verified": false,
   "lang": "en",
-  "translated_from": "addf7d5cb759acd5"
+  "translated_from": "75be38ced14f7dd5"
 }
