@@ -1,0 +1,1622 @@
+{
+  "slug": "deepseek-v3-technical-report",
+  "category": "paper",
+  "publisher": "DeepSeek-AI",
+  "date": "2024-12-27",
+  "title": "Inside the DeepSeek-V3 Technical Report: A New Machine Built From Old Parts — What Makes It Cheap, What Makes It Strong",
+  "summary": "DeepSeek-V3 has 671B total parameters but activates only 37B at a time, and full training took about 2.788M GPU hours. We take apart MLA, fine-grained MoE, 'price-tag' load balancing, multi-token prediction, FP8 training, and DualPipe to show exactly what $5.576M buys — and where the report's numbers don't line up.",
+  "ai_summary": "The DeepSeek-V3 Technical Report (DeepSeek-AI, 2024) introduces a mixture-of-experts model with 671B total parameters and 37B activated per token. It keeps multi-head latent attention (MLA) for KV cache compression and DeepSeekMoE's fine-grained and shared experts, and adds two new ideas: bias-adjusted routing for auxiliary-loss-free load balancing and a multi-token prediction objective. For training, it uses group-scaled FP8 mixed precision, the DualPipe pipeline, and cross-node communication optimizations, and trains stably on 14.8T tokens. Post-training distills reasoning ability from DeepSeek-R1. The report calls it the strongest open-source model at the time, comparable to GPT-4o and Claude-3.5-Sonnet.",
+  "brief": [
+    "Problem: training and inference for frontier large models are both expensive; MoE load balancing can hurt performance; cross-machine communication slows training; low-precision training is hard to keep stable at scale.",
+    "Method: MLA compresses the KV cache; fine-grained plus shared experts; bias-adjusted routing replaces the auxiliary loss; predict one extra token; group-scaled FP8; DualPipe hides communication behind computation.",
+    "Result: 671B total parameters, 37B activated, about 2.788M GPU hours of training; the strongest open-source base model, with math and competitive coding above GPT-4o and Claude-3.5-Sonnet.",
+    "Limitations: cost covers only the official training run; deployment units are large; English factual QA and engineering code still lag; evaluations were done by DeepSeek itself."
+  ],
+  "paper": {
+    "title": "DeepSeek-V3 Technical Report",
+    "authors": "DeepSeek-AI",
+    "org": "DeepSeek",
+    "venue": "arXiv 2024",
+    "year": 2024,
+    "arxiv": "2412.19437",
+    "url": "https://arxiv.org/abs/2412.19437"
+  },
+  "cover": {
+    "headline": "DeepSeek-V3 Report Deep Dive",
+    "highlight": "A new machine built from old parts",
+    "glyph": {
+      "kind": "flow",
+      "nodes": [
+        {
+          "label": "671B parameters"
+        },
+        {
+          "label": "Only 37B active per token",
+          "tone": "hi"
+        },
+        {
+          "label": "FP8 + communication overlap"
+        }
+      ]
+    }
+  },
+  "sections": [
+    {
+      "h": "The bottom line: what this paper actually did",
+      "blocks": [
+        {
+          "p": "In late December 2024, DeepSeek released DeepSeek-V3 and this technical report. It isn't a paper about a single idea — it's a full machine manual: model architecture, training framework, low-precision computation, communication kernels, data, hyperparameters, post-training, and evaluation. Nearly every link in the chain of building a frontier model is laid out."
+        },
+        {
+          "p": "The report is best known for two numbers: the model has **671B parameters** in total, but each token uses only **37B** of them; full training took only **2.788M H800 GPU hours**, or about **$5.576M** at $2 per GPU hour. And on benchmarks, it was the strongest open-source base model at the time, with its chat version trading wins with GPT-4o and Claude-3.5-Sonnet."
+        },
+        {
+          "p": "The low cost and strong performance don't come from a single trick but from a stack of changes. Almost every component covered earlier in this series shows up here: **Mixture-of-Experts** (MoE, Switch Transformer), **attention that compresses the KV cache** (GQA's idea pushed one step further), **RoPE positional encoding**, **AdamW**, **byte-level BPE**, **IO-aware engineering** (the spirit of FlashAttention). On top of these, V3 adds four things:"
+        },
+        {
+          "list": [
+            "**Auxiliary-loss-free load balancing**: instead of relying on a penalty-style loss to force experts to share work evenly, each expert gets an adjustable bias that steers routing like a price tag.",
+            "**Multi-token prediction** (MTP): during training, each position predicts one extra token beyond the next, so the model 'looks one step ahead'; at inference time it can also speed up generation.",
+            "**FP8 training**: most matrix multiplications run in 8-bit floating point, and for the first time this is validated on a model this large.",
+            "**DualPipe and communication optimization**: almost all cross-machine communication is hidden behind computation, so training doesn't need expensive tensor parallelism."
+          ]
+        },
+        {
+          "callout": {
+            "kind": "takeaway",
+            "title": "In one sentence",
+            "text": "DeepSeek-V3 is a mixture-of-experts model with 671B parameters and only 37B active per token. It uses compressed attention to save inference memory, 'price-tag' load balancing and multi-token prediction to improve performance, FP8 and a carefully designed communication pipeline to cut training cost to a fraction of comparable models, and then distills math and coding ability from the reasoning model R1."
+          }
+        },
+        {
+          "callout": {
+            "kind": "prereq",
+            "title": "Four small concepts you need to read this piece",
+            "text": "If you're not familiar with these, that's fine — these four are enough:",
+            "list": [
+              "**Mixture-of-Experts (MoE)**: the feed-forward layer is split into many 'experts', and each token is handled by only a few of them, so there are many parameters but not much computation. See the MoE and Switch Transformer deep reads.",
+              "**KV cache**: when generating text, the keys and values of every previous token are stored and read again for each new token. The longer the context, the more memory it uses. See the GQA deep read.",
+              "**Floating-point bits**: how many binary bits are used to store a number. Fewer bits means faster calculation and less space, but worse range and precision.",
+              "**Pipeline parallelism**: when a model is too large for one GPU, different layers are placed on different GPUs, and data moves down the line like a pipeline."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "The full picture: V3's shape in one configuration table",
+      "blocks": [
+        {
+          "p": "V3 is still a Transformer at its core: 61 layers, each with one attention module and one feed-forward module, with RMSNorm before and after. The difference is that attention is replaced by MLA, and the feed-forward layers (except the first 3) are replaced by DeepSeekMoE."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "DeepSeek-V3 main configuration",
+            "subtitle": "From Section 4.2 of the paper",
+            "columns": [
+              "Item",
+              "Value",
+              "Notes"
+            ],
+            "rows": [
+              [
+                "Layers",
+                "61",
+                "The first 3 layers are ordinary dense feed-forward layers; the remaining 58 are MoE layers"
+              ],
+              [
+                "Hidden dimension",
+                "7168",
+                "Vector length per token"
+              ],
+              [
+                "Attention heads × head dimension",
+                "128 × 128",
+                ""
+              ],
+              [
+                "KV compression dimension",
+                "512",
+                "The actual 'compressed packet' cached per token in MLA"
+              ],
+              [
+                "Key / query with positional information, per-head dimension",
+                "64",
+                "The small segment that carries RoPE alone"
+              ],
+              [
+                "Experts per MoE layer",
+                "1 shared + 256 routed",
+                "Intermediate dimension per expert: 2,048"
+              ],
+              [
+                "Routed experts activated per token",
+                "8",
+                "Spread across at most 4 nodes"
+              ],
+              [
+                "Multi-token prediction depth",
+                "1",
+                "Predict 1 extra token per position"
+              ],
+              [
+                "Vocabulary",
+                "128K",
+                "Byte-level BPE"
+              ],
+              [
+                "Total parameters / activated parameters",
+                "671B / 37B",
+                ""
+              ]
+            ],
+            "highlight": {
+              "row": 9
+            }
+          },
+          "plain": {
+            "title": "A big warehouse, with only a few rooms lit at a time",
+            "text": "671B parameters are like a huge warehouse with 257 rooms (one warehouse in every layer). Each token that enters is shown to 1 resident room and 8 specialist rooms; the lights stay off everywhere else. So the on-paper parameter count is huge, but only about 5.5% actually do work.",
+            "pic": "ds-sparse"
+          }
+        },
+        {
+          "p": "That last row is the point of MoE: the model can 'know' a lot (stored in 671B parameters), but it 'uses' only 37B at any step, so the computation is similar to a dense 37B-parameter model. The Llama-3.1 405B model the paper compares against is dense; every token uses all 405B parameters, making its activated parameters roughly 11× those of V3."
+        }
+      ]
+    },
+    {
+      "h": "MLA: shrinking the KV cache into a small packet",
+      "blocks": [
+        {
+          "p": "Start with attention. During text generation, the biggest memory consumer is often not the model itself but the KV cache. In standard multi-head attention (MHA), each token and each layer stores one key and one value for all 128 heads. GQA's approach is to have several heads share one copy, saving memory but losing some quality."
+        },
+        {
+          "p": "DeepSeek introduced **multi-head latent attention** (MLA) in V2, and V3 keeps it. It takes a different approach: instead of reducing the number of heads, it compresses keys and values together into one short vector, caches only that short vector, and 'decompresses' it back into keys and values for 128 heads when needed:"
+        },
+        {
+          "formula": {
+            "expr": "c_{t}^{KV} = W^{DKV} · h_{t}\nk_{t}^{C} = W^{UK} · c_{t}^{KV}, v_{t}^{C} = W^{UV} · c_{t}^{KV}\nk_{t}^{R} = RoPE( W^{KR} · h_{t} )\nk_{t,i} = [ k_{t,i}^{C} ; k_{t}^{R} ]",
+            "parts": [
+              {
+                "sym": "h_{t}",
+                "desc": "The vector for token t entering the attention layer (7168 dimensions)"
+              },
+              {
+                "sym": "c_{t}^{KV}",
+                "desc": "The compressed 'latent vector', only 512 dimensions. Both keys and values are decompressed from it"
+              },
+              {
+                "sym": "W^{DKV}",
+                "desc": "Down-projection matrix: compresses 7168 dimensions to 512"
+              },
+              {
+                "sym": "W^{UK}, W^{UV}",
+                "desc": "Up-projection matrices: decompress 512 dimensions into keys and values for 128 heads"
+              },
+              {
+                "sym": "k_{t}^{R}",
+                "desc": "A small key segment computed separately (64 dimensions), carrying RoPE positional information and shared by all heads"
+              },
+              {
+                "sym": "[ · ; · ]",
+                "desc": "Concatenate the two parts: each head's key = decompressed content part + shared positional part"
+              }
+            ],
+            "note": "At inference time only c_{t}^{KV} and k_{t}^{R} need to be cached (the blue boxes in Figure 2 of the paper), for 512 + 64 = 576 numbers."
+          },
+          "plain": {
+            "title": "Store the compressed packet, not the original",
+            "text": "Standard attention (MHA) stores 32,768 numbers per token per layer; GQA with 8 groups stores 2,048; MLA stores a 512-dimensional compressed packet plus a 64-dimensional position tag, 576 in total. The bar lengths show the ratio among the three (the MHA bar doesn't fit).",
+            "pic": "ds-mla"
+          }
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "How many numbers are cached per token, per layer",
+            "subtitle": "Calculated by this site from the paper's head counts and dimensions; GQA assumes 8 groups, and V3 itself does not use GQA",
+            "columns": [
+              "Attention method",
+              "Numbers cached per token per layer",
+              "Relative to MHA"
+            ],
+            "rows": [
+              [
+                "Standard multi-head (MHA)",
+                "2 × 128 × 128 = 32,768",
+                "1"
+              ],
+              [
+                "Grouped-query attention (GQA, 8 groups)",
+                "2 × 8 × 128 = 2,048",
+                "1/16"
+              ],
+              [
+                "Multi-query (MQA, 1 group)",
+                "2 × 1 × 128 = 256",
+                "1/128"
+              ],
+              [
+                "MLA (V3)",
+                "512 + 64 = 576",
+                "about 1/57"
+              ]
+            ],
+            "highlight": {
+              "row": 3
+            },
+            "note": "MLA's cache is even smaller than GQA-8, sitting between GQA-8 and MQA and closer to MQA. The paper says it sharply reduces the KV cache while achieving performance comparable to standard multi-head attention."
+          }
+        },
+        {
+          "p": "**Why keep positional information separate?** RoPE rotates keys and queries by position. If RoPE were applied directly to the decompressed keys, the rotation matrix would vary with position and sit between the query and W^{UK}, so at inference time W^{UK} could not be 'absorbed' into the query projection ahead of time; every step would have to decompress the keys of all previous tokens again. MLA therefore splits positional information into a separate small segment (64 dimensions) and applies RoPE only to that segment, while the content part stays in an absorbable form. The motivation is derived in detail in the DeepSeek-V2 paper; the V3 report only states the result."
+        },
+        {
+          "p": "Queries are also low-rank compressed in a similar way (down to 1536 dimensions), but for a different reason: queries are not cached, so compressing them reduces activation memory during training."
+        }
+      ]
+    },
+    {
+      "h": "DeepSeekMoE: finer-grained experts plus a shared one",
+      "blocks": [
+        {
+          "p": "Now the feed-forward layers. In Switch Transformer, each token goes to 1 expert; in GShard, to 2, and each expert is large. DeepSeekMoE makes two changes: **splits the experts finer** (256 small experts, with 8 selected per token), and **keeps a resident shared expert** (every token passes through it)."
+        },
+        {
+          "formula": {
+            "expr": "h′_{t} = u_{t} + Σ_{i=1..N_s} FFN_{i}^{(s)}(u_{t}) + Σ_{i=1..N_r} g_{i,t} · FFN_{i}^{(r)}(u_{t})\ns_{i,t} = Sigmoid( u_{t}^{T} · e_{i} )\ng_{i,t} = normalized value of s_{i,t} (normalized only among the selected K_r); 0 if not selected",
+            "parts": [
+              {
+                "sym": "u_{t}",
+                "desc": "The token vector entering the feed-forward layer; the first term u_{t} is the residual connection"
+              },
+              {
+                "sym": "FFN^{(s)}",
+                "desc": "Shared experts; in V3, N_s = 1, and every token passes through"
+              },
+              {
+                "sym": "FFN^{(r)}",
+                "desc": "Routed experts; in V3, N_r = 256, and each token passes through only K_r = 8 of them"
+              },
+              {
+                "sym": "e_{i}",
+                "desc": "The 'center vector' of expert i; its dot product with the token vector measures how well they match"
+              },
+              {
+                "sym": "s_{i,t}",
+                "desc": "Affinity. V3 uses Sigmoid (V2 used Softmax), then picks the top 8"
+              },
+              {
+                "sym": "g_{i,t}",
+                "desc": "Gating weight: the outputs of the selected 8 experts are weighted by this and summed"
+              }
+            ]
+          },
+          "plain": {
+            "title": "One general practitioner, plus 256 specialists",
+            "text": "Every patient (token) first sees a general practitioner (the shared expert), who handles the common knowledge everyone needs; then, based on the condition, the 8 best-matched specialists are chosen from 256. The finer the specialists are split, the more specialized each one can become, and the more flexible the combinations.",
+            "pic": "ds-moe"
+          }
+        },
+        {
+          "p": "**Why split them smaller?** For the same compute, selecting 8 small experts allows far more combinations than selecting 2 large experts, and each expert can more easily specialize in one type of knowledge. **Why have a shared expert?** Knowledge every token needs — grammar, common words — would waste parameters if every routed expert had to learn it; hand it to one resident expert and the routed experts can divide their work more cleanly. These are the claims of the DeepSeekMoE paper (2024), and both V2 and V3 follow them."
+        },
+        {
+          "p": "**Node-constrained routing.** Experts live on different machines, and the more machines a token visits, the more cross-machine communication occurs. V3 caps each token at 4 nodes: first, sum the affinity scores of the best-matching experts on each node and choose the top 4 nodes, then pick 8 experts within those 4 nodes. Because load balancing works well, V3 does not drop any tokens in training or inference (Switch Transformer can drop tokens when experts are 'full')."
+        }
+      ]
+    },
+    {
+      "h": "Auxiliary-loss-free load balancing: price tags instead of fines",
+      "blocks": [
+        {
+          "p": "MoE has an old problem: the router plays favorites and keeps sending tokens to a few experts. This leaves other experts with nothing to learn (routing collapse) and overloads the GPUs holding the popular experts while others sit idle. Switch Transformer's solution is an **auxiliary loss**: the more unevenly experts are used, the larger the loss. But this loss conflicts with the model's main objective: it pushes the router to send tokens to less suitable experts, and if its weight is set too large, it hurts performance."
+        },
+        {
+          "p": "V3's approach: give each expert i a bias b_{i}, added to the affinity **only when selecting experts**; the gating weight actually multiplied into the expert output still uses the original affinity:"
+        },
+        {
+          "formula": {
+            "expr": "Selected ⇔ s_{i,t} + b_{i} ranks in the top K_r among all experts\nGating weight is still computed from s_{i,t} (without b_{i})\nAt the end of each step: expert i overloaded → b_{i} ← b_{i} − γ; idle → b_{i} ← b_{i} + γ",
+            "parts": [
+              {
+                "sym": "b_{i}",
+                "desc": "The bias for expert i; it is not updated by gradient descent but adjusted by hand according to load"
+              },
+              {
+                "sym": "γ",
+                "desc": "Bias update rate. V3 sets it to 0.001 for the first 14.3T tokens and 0 for the final 500B tokens"
+              },
+              {
+                "sym": "Overloaded / idle",
+                "desc": "Whether this expert received more or fewer tokens than average, counted over the whole batch"
+              }
+            ],
+            "note": "The key point: the bias only changes which expert the token goes to, not how much weight each expert's opinion carries, and it produces no gradient that conflicts with the main objective."
+          }
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Worked example: how the bias pulls a token away from an overloaded expert",
+            "subtitle": "Illustrative: 4 experts, each token selects 2; numbers are invented by this site",
+            "columns": [
+              "Expert",
+              "Original affinity s",
+              "Bias b",
+              "s + b (used only for selection)",
+              "Selected?",
+              "Gating weight (normalized from original s)"
+            ],
+            "rows": [
+              [
+                "A",
+                "0.90",
+                "0",
+                "0.90",
+                "Yes",
+                "0.90 ÷ 1.55 ≈ 0.58"
+              ],
+              [
+                "B",
+                "0.70",
+                "−0.1 (overloaded)",
+                "0.60",
+                "No",
+                "—"
+              ],
+              [
+                "C",
+                "0.40",
+                "0",
+                "0.40",
+                "No",
+                "—"
+              ],
+              [
+                "D",
+                "0.65",
+                "+0.1 (idle)",
+                "0.75",
+                "Yes",
+                "0.65 ÷ 1.55 ≈ 0.42"
+              ]
+            ],
+            "highlight": {
+              "row": 3
+            },
+            "note": "Without the bias, A and B would be selected. B has been busy lately, so its bias is lowered; D is idle, so its bias is raised, and this token goes to D instead. But D's weight is still computed from its original affinity 0.65; the model's 'judgment' has not been tampered with."
+          },
+          "plain": {
+            "title": "Don't fine the customers, just adjust the price tags",
+            "text": "Auxiliary loss is like a fine: diners lose points for going to a popular restaurant, so their taste (the model) is forcibly bent. Biases are like price tags: the popular restaurant quietly raises prices a little, the unpopular one offers a small discount, and hesitant diners naturally spread out; but how much they like the food after eating is still scored by their true taste.",
+            "pic": "ds-bias"
+          }
+        },
+        {
+          "p": "The paper runs ablations at two scales: it takes the baseline that relied purely on the auxiliary loss, swaps in the auxiliary-loss-free approach, and changes nothing else."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Most metrics improve after dropping the auxiliary loss and switching to biases",
+            "subtitle": "From Table 5 of the paper (excerpt). Large model: 228.7B total parameters, trained on 578B tokens. Pile is bits per byte (lower is better); all other metrics are higher-is-better.",
+            "columns": [
+              "Metric",
+              "Small model: auxiliary loss",
+              "Small model: auxiliary-loss-free",
+              "Large model: auxiliary loss",
+              "Large model: auxiliary-loss-free"
+            ],
+            "rows": [
+              [
+                "Pile (BPB)",
+                "0.727",
+                "0.724",
+                "0.656",
+                "0.652"
+              ],
+              [
+                "BBH",
+                "37.3",
+                "39.3",
+                "66.7",
+                "67.9"
+              ],
+              [
+                "MMLU",
+                "51.0",
+                "51.8",
+                "68.3",
+                "67.2"
+              ],
+              [
+                "HumanEval",
+                "22.0",
+                "22.6",
+                "40.2",
+                "46.3"
+              ],
+              [
+                "GSM8K",
+                "27.1",
+                "29.6",
+                "70.7",
+                "74.5"
+              ],
+              [
+                "MATH",
+                "10.9",
+                "11.1",
+                "37.2",
+                "39.6"
+              ]
+            ],
+            "highlight": {
+              "col": 4
+            },
+            "note": "Note that for the large model MMLU actually drops by 1.1 points, and the small model's MBPP also drops (not shown in the table). The paper's wording is that it is better on \"most\" benchmarks, not all of them."
+          }
+        },
+        {
+          "p": "**Where does the benefit actually come from?** The paper's explanation is the \"scope of balancing.\" The old auxiliary loss requires balance **per sequence**, so even a block of pure code has to spread its tokens evenly across all experts. The bias method is measured **per batch**, so a code sequence can concentrate on a few \"code experts\" as long as the whole batch averages out. The paper plots expert loads across three domains from the Pile test set: in the auxiliary-loss-free model, experts are clearly more \"specialized.\""
+        },
+        {
+          "p": "To confirm this, the authors also built a \"batch-wise auxiliary loss.\" It performed almost as well as the bias method: on a 1B-parameter MoE, validation losses were 2.258 (sequence-wise auxiliary loss), 2.253 (bias method), and 2.253 (batch-wise auxiliary loss); on a 3B-parameter model, 2.085, 2.080, and 2.080. So what actually matters is mostly relaxing the balancing requirement from per-sequence to per-batch."
+        },
+        {
+          "callout": {
+            "kind": "myth",
+            "title": "Does \"auxiliary-loss-free\" mean there is no auxiliary loss at all?",
+            "text": "No. V3 still keeps a sequence-wise balance loss, but with an extremely small weight (α = 0.0001) to prevent extreme imbalance within a single sequence. The bias method does the main work; this loss is only a backstop. Batch-wise balancing also has costs: small batches, or a shift in the data distribution at inference, can both cause imbalance. The former is solved by using a large enough batch during training, and the latter by \"redundant experts\" at deployment (keeping extra copies of the popular experts)."
+          }
+        }
+      ]
+    },
+    {
+      "h": "Multi-token prediction: one extra token per position",
+      "blocks": [
+        {
+          "p": "A standard language model is trained to predict the **next** token at each position. V3 adds another objective: at each position, it must also predict the token **after next**. The idea comes from a 2024 Meta paper (Gloeckle et al.), which uses several parallel output heads to predict several future tokens at once. V3 does it differently: it predicts **one after another**, keeping the full causal chain intact."
+        },
+        {
+          "formula": {
+            "expr": "h′_{i}^{k} = M_{k} · [ RMSNorm(h_{i}^{k−1}) ; RMSNorm(Emb(t_{i+k})) ]\nh^{k} = TRM_{k}( h′^{k} )\nP_{i+k+1}^{k} = OutHead( h_{i}^{k} )\nL_MTP = (λ / D) · Σ_{k=1..D} L_MTP^{k}",
+            "parts": [
+              {
+                "sym": "h_{i}^{k−1}",
+                "desc": "The representation for position i at the previous depth; when k = 1, this is the main model's output."
+              },
+              {
+                "sym": "Emb(t_{i+k})",
+                "desc": "The embedding of the true token at position i+k. When predicting t_{i+2}, the model is first given the true t_{i+1}."
+              },
+              {
+                "sym": "M_{k}, TRM_{k}",
+                "desc": "A projection matrix plus a Transformer block forms the k-th MTP module."
+              },
+              {
+                "sym": "OutHead, Emb",
+                "desc": "The output head and embedding layer, shared with the main model (the same parameters)."
+              },
+              {
+                "sym": "λ",
+                "desc": "MTP loss weight: 0.3 for the first 10T tokens, 0.1 for the following 4.8T tokens."
+              },
+              {
+                "sym": "D",
+                "desc": "Prediction depth; V3 sets it to 1, meaning each position predicts 2 tokens in total."
+              }
+            ],
+            "note": "The main model's loss stays unchanged; the MTP loss is multiplied by λ and added in, and they are trained together."
+          },
+          "plain": {
+            "title": "Thinking one move ahead in chess",
+            "text": "The main model (blue) predicts the next token at each position; the MTP module (green) takes the main model's representation and \"what the next token actually is,\" then predicts one token further ahead. For the green row to guess well, the main model's representation has to plan ahead for what comes later.",
+            "pic": "ds-mtp"
+          }
+        },
+        {
+          "p": "The paper gives two reasons: first, the training signal is **denser**—the same data gives each position one extra objective to learn; second, the model may learn to **plan ahead** in its representations for later tokens."
+        },
+        {
+          "p": "At inference there are two ways to use it: simply **throw away** the MTP modules, and the main model works as usual with exactly the same inference cost as without MTP; or use them for **speculative decoding**—first have the MTP module draft the next token, then have the main model verify it at once. The paper measured the acceptance rate of the second token at between 85% and 90%, which raises generation speed (tokens per second) to 1.8×."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Most metrics improve with MTP added",
+            "subtitle": "From Table 4 of the paper (excerpt). The two settings have exactly the same inference cost because the MTP modules are discarded at evaluation time.",
+            "columns": [
+              "Metric",
+              "Small model: baseline",
+              "Small model: +MTP",
+              "Large model: baseline",
+              "Large model: +MTP"
+            ],
+            "rows": [
+              [
+                "BBH",
+                "39.0",
+                "41.4",
+                "70.0",
+                "70.7"
+              ],
+              [
+                "MMLU",
+                "50.0",
+                "53.3",
+                "67.5",
+                "66.6"
+              ],
+              [
+                "HumanEval",
+                "20.7",
+                "26.8",
+                "44.5",
+                "53.7"
+              ],
+              [
+                "GSM8K",
+                "25.4",
+                "31.4",
+                "72.3",
+                "74.0"
+              ],
+              [
+                "MATH",
+                "10.7",
+                "12.6",
+                "38.6",
+                "39.8"
+              ]
+            ],
+            "highlight": {
+              "col": 4
+            },
+            "note": "Small model: 15.7B total parameters, 1.33T tokens. Large model: 228.7B total parameters, 540B tokens. The clearest gain is in code (HumanEval); on the large model MMLU actually drops by 0.9 points."
+          }
+        }
+      ]
+    },
+    {
+      "h": "FP8 training: how to compute with 8-bit numbers without doing it wrong",
+      "blocks": [
+        {
+          "p": "This is the most technical and hardest-to-follow part of the report. First, some background: when training large models, numbers are usually computed in BF16 (16 bits), with FP32 (32 bits) in critical places. If matrix multiplications could be brought down to FP8 (8 bits), compute speed could in theory double, and storage and communication could be halved. The catch is that 8 bits is very little:"
+        },
+        {
+          "list": [
+            "V3 uses an FP8 format called **E4M3**: 1 sign bit, 4 exponent bits, 3 mantissa bits. The exponent decides how large or small a number can be (range); the mantissa decides how finely numbers of the same magnitude can be divided (precision).",
+            "Narrow range: models always have a few \"outlier\" values that are much larger than the rest. The usual approach is to set the scale from the maximum value in the whole tensor, so one outlier squeezes all other numbers onto tiny ticks and their precision is lost.",
+            "Low precision: 3 mantissa bits means only 8 steps within each magnitude."
+          ]
+        },
+        {
+          "p": "V3's answer can be summarized in four points:"
+        },
+        {
+          "list": [
+            "**Set the scale per group**: activations are grouped in 1×128 blocks (per token, per 128 channels), and weights in 128×128 blocks; each group is scaled by its own maximum. An outlier affects only its own group.",
+            "**Compute maxima online**: the maximum for each group is calculated on the spot, rather than using historical maxima from previous steps as in earlier \"delayed quantization.\"",
+            "**Use E4M3 everywhere**: earlier practice was E4M3 in the forward pass and E5M2 with a wider range for backward gradients. Because group scaling already solves the range problem, V3 uses the higher-precision E4M3 throughout.",
+            "**Periodically move accumulation to higher precision**: see the next paragraph."
+          ],
+          "plain": {
+            "title": "A separate ruler for each group",
+            "text": "If a whole row of numbers has to share one ruler (A), the ruler must reach the largest outlier, so the ticks are coarse and small values all measure as 0. Give every 128 numbers their own ruler (B), and small values use fine ticks while the outlier group uses coarse ticks—everyone measures accurately.",
+            "pic": "ds-fp8"
+          }
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Worked example: how one outlier turns the small values in its group into 0",
+            "subtitle": "Illustrative: a toy format that can only store the 16 integers from 0 to 15; numbers are invented by this site. Real FP8 is floating-point and has a wider range, but the principle is the same.",
+            "columns": [
+              "Original value",
+              "Whole tensor shares one scale (12 / 15 = 0.8)",
+              "Each group scaled separately"
+            ],
+            "rows": [
+              [
+                "0.1",
+                "0.1 / 0.8 ≈ 0.13 → stored as 0 → restores 0",
+                "Group 1 scale 0.3 / 15 = 0.02: stored as 5 → restores 0.1"
+              ],
+              [
+                "0.2",
+                "0.25 → stored as 0 → restores 0",
+                "stored as 10 → restores 0.2"
+              ],
+              [
+                "0.3",
+                "0.375 → stored as 0 → restores 0",
+                "stored as 15 → restores 0.3"
+              ],
+              [
+                "12 (outlier)",
+                "15 → restores 12",
+                "Group 2 scale 0.8: stored as 15 → restores 12"
+              ]
+            ],
+            "highlight": {
+              "col": 2
+            },
+            "note": "With one shared scale, all three small values are flattened to 0; with per-group scaling, each value is restored exactly. This is the problem that \"fine-grained quantization\" is meant to solve."
+          }
+        },
+        {
+          "p": "**The accumulation precision trap.** Matrix multiplication is essentially a large sum of products. The paper found that on the H800, FP8 matrix multiplication accumulation only retains about 14 bits of precision, far lower than FP32. Once many numbers are added, error accumulates: in a test with two random matrices and an inner-product dimension of 4096, the maximum relative error reached nearly 2%. V3's solution is to move the partial sum to FP32 registers on the CUDA cores every time the tensor core accumulates 128 elements (N_C = 128), add it to the total in full precision, and multiply in the group scaling factor along the way. On the H800, two such operations can alternate—one block is being moved while the other keeps multiplying—so there is almost no speed loss.",
+          "plain": {
+            "title": "Bank the change jar before it overflows",
+            "text": "The tensor core is like a small change jar: it fills quickly but imprecisely, and once there are too many coins it starts counting wrong. V3 dumps the jar into a bank account (FP32 registers) every 128 coins; the bank's accounting is exact. Because the jar holds only a little at a time, error never builds up.",
+            "pic": "ds-acc"
+          }
+        },
+        {
+          "p": "**What stays at higher precision.** Not every operation suits FP8. V3 keeps the following in BF16 or FP32: the embedding layer, output head, MoE gating, normalization, and attention operations; master weights, weight gradients, and optimizer states are also stored in higher precision. AdamW's first and second moments are stored in BF16, while master weights and gradients remain in FP32. Activations cached for backpropagation are mostly stored in FP8, with a few sensitive ones (the input to the linear layer after attention) using a custom E5M6 format. Cross-machine token dispatch uses FP8, and result combining uses BF16."
+        },
+        {
+          "p": "**Results.** The authors compared FP8 and BF16 training on two MoE models with about 16B and about 230B total parameters. The relative loss error stayed below 0.25%, within the range of random training fluctuations. The appendix also records a failed attempt: when activation gradients were also quantized in 128×128 blocks, the 16B-parameter model diverged after about 300B tokens. The authors suspect this is because activation gradients are extremely uneven across tokens, so block-wise grouping cannot contain the problem."
+        }
+      ]
+    },
+    {
+      "h": "Engineering: hiding communication behind computation",
+      "blocks": [
+        {
+          "p": "V3 was trained on 2,048 H800 GPUs. Each machine has 8 GPUs, connected internally by NVLink and between machines by InfiniBand (IB). Training used 16-way pipeline parallelism, 64-way expert parallelism across 8 nodes, and ZeRO-1 data parallelism, **without tensor parallelism** (tensor parallelism requires frequent communication within every layer, which is expensive)."
+        },
+        {
+          "p": "The trouble with MoE is cross-machine communication: at every layer, tokens must be sent to the GPUs holding each expert (dispatch), then collected back after computation (combine). The paper estimates that cross-node expert parallelism causes a compute-to-communication time ratio of roughly 1:1—if the two were serialized, GPUs would spend half their time waiting for data."
+        },
+        {
+          "p": "**DualPipe.** The core idea: take a pair of forward and backward blocks and split them into smaller parts—attention, dispatch, MLP, combine—then interleave them so that while one block communicates, another is computing. On top of that, manually tune the share of SMs (streaming multiprocessors) on each GPU used for communication versus computation. This completely hides both the expert-parallel communication and the pipeline communication. In the overall schedule, DualPipe feeds micro-batches from **both ends** of the pipeline at once, further shrinking idle \"bubbles.\"",
+          "plain": {
+            "title": "Serving one dish while cooking the next",
+            "text": "A serial kitchen (A) finishes one dish, waits for the waiter to take it away, then starts the next; the stove sits idle half the time. An overlapped kitchen (B) starts the next dish while the current one is being served. The communication time (serving) is completely covered by computation (cooking), so the stove is always busy.",
+            "pic": "ds-overlap"
+          }
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Bubbles and memory for three pipeline schedules",
+            "subtitle": "From Table 2 of the paper. PP is the number of pipeline stages; F and B are the time for a forward and a full backward block; W is the time for the \"backward for weights\"; F&B is the time for an overlapped forward-backward pair.",
+            "columns": [
+              "Method",
+              "Bubble (idle time)",
+              "Parameter memory",
+              "Activation memory"
+            ],
+            "rows": [
+              [
+                "1F1B",
+                "(PP − 1)(F + B)",
+                "1×",
+                "PP"
+              ],
+              [
+                "ZB1P",
+                "(PP − 1)(F + B − 2W)",
+                "1×",
+                "PP"
+              ],
+              [
+                "DualPipe",
+                "(PP / 2 − 1)(F&B + B − 3W)",
+                "2×",
+                "PP + 1"
+              ]
+            ],
+            "highlight": {
+              "row": 2
+            },
+            "note": "With DualPipe, the coefficient in front of the bubble drops from PP − 1 to roughly half, and the term in parentheses uses the \"overlapped\" time. The cost is storing two copies of parameters, but V3's expert parallelism is so large that each GPU already holds few parameters, so one extra copy matters little."
+          }
+        },
+        {
+          "p": "**Cross-node communication kernels.** NVLink bandwidth inside a machine is about 160 GB/s, about 3.2× the IB bandwidth between machines (50 GB/s). So V3 limits each token to at most 4 nodes and moves it in two hops: first over IB to the same-numbered GPU on the target node, then via NVLink to the GPU that actually holds the target expert. This lets IB and NVLink transfers run concurrently; on average, each node can accept 3.2 experts without increasing NVLink load. From this the paper estimates that, at the same communication cost, the number of activated experts could scale to 13 (4 nodes × 3.2). The whole communication setup uses only 20 SMs out of the H800's 132.",
+          "plain": {
+            "title": "Long-haul trucks plus local couriers",
+            "text": "Across cities (between nodes), goods take slow long-haul trucks (IB); within a city (inside a node), they take fast electric bikes (NVLink). Goods first go by truck to the \"same-numbered warehouse\" in the target city, then by electric bike to the specific store. Capping each shipment at no more than 4 cities means fewer truck trips.",
+            "pic": "ds-route"
+          }
+        },
+        {
+          "p": "**Three memory-saving tricks**: during backpropagation, recompute RMSNorm and MLA's up-projection instead of storing their outputs; keep the exponential moving average of parameters (used to estimate the effect of learning-rate decay ahead of time) in CPU memory with asynchronous updates; and put the shallowest layers (including the embedding layer) and deepest layers (including the output head) in the same pipeline stage, so the MTP module and main model can physically share the same embedding and output head. These optimizations are what allow V3 to fit without tensor parallelism."
+        }
+      ]
+    },
+    {
+      "h": "Training process: 14.8T tokens, no rollbacks at all",
+      "blocks": [
+        {
+          "p": "**Data.** The pre-training corpus contains 14.8T tokens in total. Compared with V2, it increases the proportion of math and code, expands multilingual coverage beyond English and Chinese, and reduces duplication. V3 also keeps the Fill-in-the-Middle (FIM) approach from DeepSeekCoder-V2: with a probability of 0.1, a document is split into prefix, suffix, and middle, then arranged in the order \"prefix, suffix, middle\" so the model learns to fill in the middle from the surrounding context."
+        },
+        {
+          "p": "**Tokenizer.** Byte-level BPE with a 128K vocabulary (for BPE, see the BPE deep read). The new pre-tokenizer introduces tokens that combine punctuation with newline, but this can create boundary bias when a multi-line prompt does not end with a newline, so during training some of these tokens are randomly split apart."
+        },
+        {
+          "p": "**Hyperparameters.** AdamW with β₁ = 0.9, β₂ = 0.95, weight decay 0.1, and maximum sequence length 4K. The learning rate first rises from 0 to 2.2 × 10⁻⁴ over 2000 steps, stays there until 10T tokens, then follows a cosine schedule down to 2.2 × 10⁻⁵ over the next 4.3T tokens. In the final 500B tokens, it trains 333B tokens at 2.2 × 10⁻⁵, then 167B tokens at 7.3 × 10⁻⁶. The batch size gradually increases from 3072 to 15,360 over the first 469B tokens and stays fixed after that."
+        },
+        {
+          "p": "**Stability.** The paper stresses that throughout training there were no irrecoverable loss spikes and not a single rollback. For training at this scale, that alone is an achievement: many large-model training reports mention having to roll back from checkpoints or skip some data."
+        },
+        {
+          "p": "**Long context.** After pre-training, V3 uses YaRN (applied only to the 64-dimensional RoPE key segment) for a two-stage extension, with 1000 steps in each stage: first from 4K to 32K (batch size 1920), then to 128K (batch size 480). In the \"needle in a haystack\" test, it performs well across lengths and depths up to 128K."
+        }
+      ]
+    },
+    {
+      "h": "Cost: what the $5.576M actually covers",
+      "blocks": [
+        {
+          "fig": {
+            "type": "table",
+            "title": "DeepSeek-V3 training cost",
+            "subtitle": "From Table 1 of the paper, assuming an H800 rental price of $2 per GPU hour.",
+            "columns": [
+              "Stage",
+              "H800 GPU hours",
+              "USD"
+            ],
+            "rows": [
+              [
+                "Pre-training",
+                "2.664M",
+                "$5.328M"
+              ],
+              [
+                "Context extension",
+                "119K",
+                "$0.238M"
+              ],
+              [
+                "Post-training",
+                "5K",
+                "$0.01M"
+              ],
+              [
+                "Total",
+                "2.788M",
+                "$5.576M"
+              ]
+            ],
+            "highlight": {
+              "row": 3
+            },
+            "note": "Sanity check: every trillion tokens needs 180K H800 GPU hours, and 14.8 × 180K = 2.664M, which matches. 2.664M GPU hours ÷ 2048 GPUs ≈ 1,301 hours ≈ 54 days, consistent with the paper's \"less than two months.\""
+          },
+          "plain": {
+            "title": "The banquet bill, not the whole wedding",
+            "text": "The $5.576M is like the cost of the wedding banquet on the day: it only counts how many GPUs the final official training run used, priced at rental rates. The earlier courtship (repeated research and ablation experiments), buying the house (the company's own GPU cluster), hiring people (team salaries), and preparing the data are not on this bill."
+          }
+        },
+        {
+          "callout": {
+            "kind": "myth",
+            "title": "\"DeepSeek built a GPT-4-class model for only $5.6 million\"",
+            "text": "The paper is explicit: this cost includes only DeepSeek-V3's official training and **excludes** prior research and ablation experiments on architecture, algorithms, and data. It is also converted at a rental price of $2 per GPU hour, not DeepSeek's actual spend. What this number really shows is how cheap the compute for one full training run is when the training framework and hardware are pushed to their limits. It is a different thing from \"how much did it cost to build this model in total.\""
+          }
+        },
+        {
+          "p": "Even so, the number is striking. The paper says it takes 180K GPU hours per trillion tokens, far cheaper than training a dense model with 72B or 405B parameters. The reasons are exactly the ones covered above: MoE activates only 37B parameters, FP8 speeds up matrix multiplication, DualPipe hides communication, and there is no tensor parallelism."
+        }
+      ]
+    },
+    {
+      "h": "Post-training: learning to reason from R1 without inheriting its long-windedness",
+      "blocks": [
+        {
+          "p": "Pre-training yields the base model DeepSeek-V3-Base. Post-training has two stages: supervised fine-tuning (SFT) and reinforcement learning (RL)."
+        },
+        {
+          "p": "**Supervised fine-tuning.** There are 1.5M instruction examples in two categories. For non-reasoning tasks (writing, role-play, simple QA), DeepSeek-V2.5 generated the responses, which were then checked by humans. For reasoning tasks (math, competitive programming, logic puzzles), DeepSeek used its internal DeepSeek-R1 model to generate responses (for R1's method, see the DeepSeek-R1 deep read). R1's answers are accurate but have three flaws: they overthink, format badly, and run long."
+        },
+        {
+          "p": "To take R1's strengths while avoiding its weaknesses, the authors took an indirect route. First, they trained an \"expert model\" for each domain (code, math, general reasoning) to serve as a data generator. The expert model's training examples came in two forms: \"question, original answer\" and \"system prompt, question, R1's answer,\" where the system prompt asked the answer to include reflection and verification. Then they applied reinforcement learning to the expert model with a high sampling temperature, so it learned to blend the two styles even without the system prompt. After a few hundred RL steps, they used rejection sampling to select high-quality answers from the expert model as the final SFT data. The base model trained on this data for 2 epochs, with the learning rate annealing from 5 × 10⁻⁶ to 1 × 10⁻⁶ on a cosine schedule."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Distilling from R1: scores up, responses longer",
+            "subtitle": "From Table 9 of the paper, a comparison experiment on DeepSeek-V2.5.",
+            "columns": [
+              "Model",
+              "LiveCodeBench pass rate",
+              "Average length",
+              "MATH-500 pass rate",
+              "Average length"
+            ],
+            "rows": [
+              [
+                "V2.5 baseline (short chain-of-thought data)",
+                "31.1",
+                "718",
+                "74.6",
+                "769"
+              ],
+              [
+                "V2.5 + R1 distillation",
+                "37.4",
+                "783",
+                "83.2",
+                "1510"
+              ]
+            ],
+            "highlight": {
+              "row": 1
+            },
+            "note": "On MATH-500, answer length nearly doubles. The paper calls this a trade-off: distillation brings better scores but longer outputs, so it chose a compromise setting for V3."
+          }
+        },
+        {
+          "p": "**Reinforcement-learning rewards** come in two kinds. Where rules can verify, use rules: math problems require the final answer in a specified format (for example, in a box), and coding problems have test cases run by a compiler. The paper stresses that rule-based rewards are more reliable because the model cannot easily game them. Where rules cannot verify, a reward model trained from V3's SFT checkpoint does the scoring; its training data includes not only the final preferences but also the chain of thought that produced them, to reduce \"reward hacking.\""
+        },
+        {
+          "formula": {
+            "expr": "A_{i} = ( r_{i} - mean({r_{1}, ..., r_{G}}) ) / std({r_{1}, ..., r_{G}})",
+            "parts": [
+              {
+                "sym": "G",
+                "desc": "The number of sampled answers for the same question."
+              },
+              {
+                "sym": "r_{i}",
+                "desc": "The reward obtained by the i-th answer."
+              },
+              {
+                "sym": "A_{i}",
+                "desc": "Advantage: how much better this answer is than the group average, normalized by the standard deviation."
+              }
+            ],
+            "note": "The algorithm is GRPO (also used by V2 and R1). Instead of training a value model as large as the policy model to estimate the baseline, it uses the average score of the same group of answers as the baseline, saving substantial memory and computation. See the DeepSeek-R1 deep read for details."
+          },
+          "plain": {
+            "title": "Same exam paper, graded against your seatmates.",
+            "text": "Ask the model the same question 4 times; only one answer is correct (reward 1), and the rest are 0. The group mean is 0.25 and the standard deviation is about 0.43. The correct answer's advantage is (1 - 0.25) / 0.43 ≈ 1.73, which is strongly encouraged; each of the three wrong answers gets (0 - 0.25) / 0.43 ≈ -0.58, which is gently pushed down. No second model is needed to say what the average score should be.",
+            "pic": "ds-grpo"
+          }
+        },
+        {
+          "p": "**Self-rewarding.** For questions without a ground-truth answer, such as writing, V3 borrows from Constitutional AI, using the results of its own vote as feedback. The paper tested V3 as a judge on RewardBench: a single judgment scored 87.0, and majority voting over 6 judgments scored 89.6, above Claude-3.5-Sonnet-1022's 88.7."
+        }
+      ]
+    },
+    {
+      "h": "Results: the strongest open-source base, and a chat model that matches closed-source models",
+      "blocks": [
+        {
+          "p": "**Base model.** Using its own evaluation framework, the paper compares the base versions of V3-Base, V2-Base, Qwen2.5 72B, and Llama-3.1 405B under the same settings. V3-Base is best on most benchmarks, with the biggest leads in code and math:"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Base model comparison: the clearest leads are in code and math",
+            "subtitle": "From Table 3 of the paper (excerpt)",
+            "columns": [
+              "Metric",
+              "Qwen2.5 72B",
+              "LLaMA-3.1 405B",
+              "DeepSeek-V3"
+            ],
+            "rows": [
+              [
+                "Activated parameters",
+                "72B",
+                "405B",
+                "37B"
+              ],
+              [
+                "MMLU",
+                "85.0",
+                "84.4",
+                "87.1"
+              ],
+              [
+                "MMLU-Pro",
+                "58.3",
+                "52.8",
+                "64.4"
+              ],
+              [
+                "HumanEval",
+                "53.0",
+                "54.9",
+                "65.2"
+              ],
+              [
+                "MATH",
+                "54.4",
+                "49.0",
+                "61.6"
+              ],
+              [
+                "C-Eval",
+                "89.2",
+                "72.5",
+                "90.1"
+              ],
+              [
+                "RACE-Middle (reading comprehension)",
+                "68.1",
+                "74.2",
+                "67.1"
+              ],
+              [
+                "Pile (BPB, lower is better)",
+                "0.638",
+                "0.542",
+                "0.548"
+              ]
+            ],
+            "highlight": {
+              "col": 3
+            },
+            "note": "The last two rows show where V3 does not win: Llama-3.1 405B is better on RACE reading comprehension, HellaSwag, PIQA, and a few others; Qwen2.5 is slightly higher on the Chinese CMMLU benchmark."
+          }
+        },
+        {
+          "p": "**Chat model.** The comparison with closed-source models is what people care about most. The paper limits all models' output length to 8K tokens; for benchmarks with fewer than 1,000 samples, it tests several times with different temperatures and takes the result:"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Chat model comparison: big leads in math and competitive coding, behind in English factual QA and engineering code",
+            "subtitle": "From Table 6 of the paper (excerpt)",
+            "columns": [
+              "Metric",
+              "Claude-3.5-Sonnet-1022",
+              "GPT-4o-0513",
+              "DeepSeek-V3"
+            ],
+            "rows": [
+              [
+                "MMLU-Pro",
+                "78.0",
+                "72.6",
+                "75.9"
+              ],
+              [
+                "GPQA-Diamond",
+                "65.0",
+                "49.9",
+                "59.1"
+              ],
+              [
+                "SimpleQA (English factual knowledge)",
+                "28.4",
+                "38.2",
+                "24.9"
+              ],
+              [
+                "C-SimpleQA (Chinese factual knowledge)",
+                "51.3",
+                "59.3",
+                "64.8"
+              ],
+              [
+                "SWE-bench Verified",
+                "50.8",
+                "38.8",
+                "42.0"
+              ],
+              [
+                "Codeforces (percentile)",
+                "20.3",
+                "23.6",
+                "51.6"
+              ],
+              [
+                "AIME 2024",
+                "16.0",
+                "9.3",
+                "39.2"
+              ],
+              [
+                "MATH-500",
+                "78.3",
+                "74.6",
+                "90.2"
+              ]
+            ],
+            "highlight": {
+              "col": 3
+            },
+            "note": "The large leads in math and competitive programming are credited by the paper to distillation from R1. The lag in English factual QA is explained as more training tokens being allocated to Chinese knowledge."
+          }
+        },
+        {
+          "p": "For open-ended dialogue, using GPT-4 Turbo as the judge, V3 scores 85.5 on Arena-Hard, slightly above Claude-3.5-Sonnet-1022's 85.2, and the paper calls it the first open-source model to exceed 85. On AlpacaEval 2.0 (length-controlled win rate), it scores 70.0, clearly above all other models."
+        },
+        {
+          "callout": {
+            "kind": "note",
+            "title": "Three things to keep in mind when reading these tables",
+            "list": [
+              "All base models were tested in DeepSeek's own evaluation framework, and the chat models were tested by DeepSeek calling APIs itself. Unified settings are good, but this is not third-party independent evaluation.",
+              "The GPT-4o used for comparison is the May 2024 version, not the latest at the time of release; \"long chain-of-thought\" reasoning models such as o1 are not included in the comparison.",
+              "Output length is uniformly capped at 8K tokens, which affects problems that require long reasoning."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "Limitations, and a few details worth noticing",
+      "blocks": [
+        {
+          "p": "The limitations the paper acknowledges are concentrated in deployment:"
+        },
+        {
+          "list": [
+            "**Large deployment units.** The minimum deployment unit in the prefilling stage is 4 nodes and 32 GPUs; in the decoding stage it is 40 nodes and 320 GPUs, with each GPU holding one expert, plus another 64 GPUs for redundant experts and the shared expert. Small teams will find this hard to replicate.",
+            "**Speed has room to improve.** End-to-end generation speed is more than twice V2's, but the paper thinks it can be faster still.",
+            "**Evaluation may be misled by \"teaching to the test.\"** The conclusion specifically mentions the need to explore more comprehensive evaluation and to avoid optimizing around a fixed set of benchmarks during research."
+          ]
+        },
+        {
+          "p": "A few things we noticed while reading the original:"
+        },
+        {
+          "list": [
+            "**Two Arena-Hard numbers.** Table 7 says 85.5, but the main text says the win rate against the GPT-4-0314 baseline is \"above 86%.\" The two do not line up; they may come from different evaluation runs, and the paper doesn't say.",
+            "**\"About 10 points\" understates the lead.** The main text says V3 beats the second-place Qwen2.5 72B by about 10 points on AIME, MATH-500, and CNMO 2024. By Table 6, MATH-500 is 10.2 points higher, but AIME is 15.9 points higher and CNMO is 27.3 points higher.",
+            "**AlpacaEval's \"20%.\"** The main text says V3 beats V2.5 by 20%. The table shows 70.0 versus 50.5, a difference of 19.5 percentage points; as a relative ratio, the gain is about 39%. The \"20%\" refers to the score difference, not the ratio.",
+            "**How much data the FP8 validation used.** The main text says both validation models trained on about 1T tokens, while the appendix writes 1.33T for the small model and about 0.9T for the large one.",
+            "**Two Figure 10s.** Appendix B's FP8 loss curve and Appendix C's expert load figure are both labeled \"Figure 10,\" and Section 4.5.3 says the all-layer results are in Appendix C; don't go looking for the wrong figure when reading.",
+            "**A stray annotation.** In the arXiv v2 PDF we read, near Figure 6 on page 15 there is a bit of text that looks like an internal author note (\"or Input->Activation_L\"); it doesn't affect the content and seems to be an editing leftover.",
+            "**Ablations are not uniform improvements.** In both the MTP and auxiliary-loss-free ablations, MMLU for the large model drops by about 1 point. The paper's wording is \"most benchmarks.\""
+          ]
+        }
+      ]
+    },
+    {
+      "h": "After this: the end of thread two, and a turning point",
+      "blocks": [
+        {
+          "list": [
+            "**R1 is built on V3.** DeepSeek-R1, released in January 2025, was obtained by running reinforcement learning starting from V3-Base. In V3's report, R1 is the \"teacher\"; in R1's paper, V3 is the base of the \"student.\" The two papers can be read side by side.",
+            "**Suggestions for hardware vendors.** Section 3.5 of the report makes a list of requests to chip vendors: have tensor cores natively support group scaling, improve FP8 accumulation precision, and unify IB and NVLink into one communication interface. The paper notes that Nvidia's next-generation Blackwell architecture has already announced support for a finer-grained \"micro scaling\" format, in line with the group quantization approach in V3.",
+            "**Later versions.** Since then, DeepSeek has released several updated versions based on V3's architecture.",
+            "**\"Cheap\" changed the conversation.** V3 and R1 made the industry re-estimate the compute required to train frontier models, and made MoE, MLA, and FP8 training common options for open-source models."
+          ]
+        },
+        {
+          "p": "Here ends thread two, \"the key components of training and architecture.\" From foundational parts like Adam, LayerNorm, BPE, and ResNet, to T5's unified framework, the sparsity of MoE and Switch, RoPE's positional encoding, FlashAttention's IO awareness, GQA's cache compression, and Mamba's alternative path, these parts were finally assembled into a complete machine in DeepSeek-V3."
+        }
+      ]
+    },
+    {
+      "h": "Check yourself: have you got it?",
+      "blocks": [
+        {
+          "quiz": {
+            "q": "What does MLA cache per token, per layer at inference?",
+            "options": [
+              "The full keys and values for each of the 128 heads",
+              "A 512-dimensional compressed latent vector plus a 64-dimensional shared RoPE key segment",
+              "Only the queries",
+              "Nothing"
+            ],
+            "answer": 1,
+            "why": "Keys and values are both decompressed from c^{KV}, so only it and the separate positional key k^{R} are cached, 576 numbers in total."
+          }
+        },
+        {
+          "quiz": {
+            "q": "In V3's auxiliary-loss-free load balancing, what does the bias b_{i} do?",
+            "options": [
+              "It affects both which expert is selected and the gating weight",
+              "It only affects which expert is selected; the gating weight is still computed from the original affinity",
+              "It is learned by gradient descent",
+              "It is used to drop tokens from overloaded experts"
+            ],
+            "answer": 1,
+            "why": "The bias is used only for top-K routing and is manually adjusted according to load; the weight multiplied into the expert output excludes the bias, so it does not distort the model's judgment or produce conflicting gradients."
+          }
+        },
+        {
+          "quiz": {
+            "q": "In FP8 training, why does V3 scale in small 1×128 or 128×128 groups?",
+            "options": [
+              "To make the model smaller",
+              "Because an outlier can make a shared tensor-wide scale so coarse that other small values quantize to 0; after grouping, an outlier affects only its own group",
+              "Because GPUs only support 128 dimensions",
+              "To eliminate backpropagation"
+            ],
+            "answer": 1,
+            "why": "FP8 has limited range and precision; when scaling by the maximum of the whole tensor, a single outlier can destroy the precision of all the small values."
+          }
+        },
+        {
+          "quiz": {
+            "q": "What does the $5.576M training cost in the paper include?",
+            "options": [
+              "All research, experiments, staff, and hardware",
+              "Only the GPU hours used for V3's official training, converted at a rental price of $2 per GPU hour",
+              "R1's training",
+              "It is a quote provided by Nvidia"
+            ],
+            "answer": 1,
+            "why": "The paper explicitly says it excludes prior research and ablation experiments on architecture, algorithms, and data."
+          }
+        },
+        {
+          "p": "After reading this, you should be able to answer these questions:"
+        },
+        {
+          "list": [
+            "MLA and GQA both save KV cache; how do their approaches differ? Why does RoPE need to be split into a separate segment?",
+            "What problems do DeepSeekMoE's \"fine-grained experts\" and \"shared expert\" each solve?",
+            "Compared with the auxiliary loss, what makes the bias method better? Where does most of its benefit come from?",
+            "What is multi-token prediction for at training time and at inference time?",
+            "What two precision problems arise in FP8 training, and how does V3 solve each?",
+            "What problem is DualPipe meant to solve? Why does V3 avoid tensor parallelism?",
+            "What does the $5.576M figure tell us, and what doesn't it tell us?"
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "DeepSeek-V3 Technical Report (arXiv:2412.19437, v2)",
+      "publisher": "DeepSeek-AI",
+      "date": "2025-02-18",
+      "url": "https://arxiv.org/abs/2412.19437"
+    },
+    "note": "This article is based on version 2 of the report on arXiv; the first version was released in December 2024. Tables marked \"Illustrative\" use numbers set by this site and calculated according to the paper's rules; the KV cache size comparison is derived by this site from the paper's head counts and dimensions. The motivation for splitting positional information out in MLA comes from the DeepSeek-V2 paper. R1's release date and later versions come from public sources and are not in this report."
+  },
+  "claims": [
+    {
+      "text": "arXiv version 2",
+      "value": "2412.19437v2",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "arXiv:2412.19437v2",
+      "as_written": "arXiv"
+    },
+    {
+      "text": "Total parameters 671B",
+      "value": "671B",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "671B total parameters",
+      "as_written": "671B"
+    },
+    {
+      "text": "Activated 37B",
+      "value": "37B",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "37B activated for each token",
+      "as_written": "37B"
+    },
+    {
+      "text": "2.788M GPU hours",
+      "value": "2.788M",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "2.788M H800 GPU hours",
+      "as_written": "2.788M"
+    },
+    {
+      "text": "$5.576M",
+      "value": "$5.576M",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "$5.576M",
+      "as_written": "$5.576M"
+    },
+    {
+      "text": "$5.328M",
+      "value": "$5.328M",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "$5.328M",
+      "as_written": "$5.328M"
+    },
+    {
+      "text": "$0.238M",
+      "value": "$0.238M",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "$0.238M",
+      "as_written": "$0.238M"
+    },
+    {
+      "text": "$10K",
+      "value": "$0.01M",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "$0.01M",
+      "as_written": "$10K"
+    },
+    {
+      "text": "2.664M GPU hours",
+      "value": "2664K",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "2664K",
+      "as_written": "2.664M"
+    },
+    {
+      "text": "119K",
+      "value": "119K",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "119K",
+      "as_written": "119K"
+    },
+    {
+      "text": "5K",
+      "value": "5K",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "5K",
+      "as_written": "5K"
+    },
+    {
+      "text": "180K GPU hours per trillion tokens",
+      "value": "180K",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "180K H800 GPU hours",
+      "as_written": "180K"
+    },
+    {
+      "text": "405B",
+      "value": "405B",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "405B",
+      "as_written": "405B"
+    },
+    {
+      "text": "72B",
+      "value": "72B",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "72B",
+      "as_written": "72B"
+    },
+    {
+      "text": "11× activated parameters",
+      "value": "11 times",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "11 times the activated parameters",
+      "as_written": "11×"
+    },
+    {
+      "text": "14.8T token",
+      "value": "14.8T",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "14.8T",
+      "as_written": "14.8T"
+    },
+    {
+      "text": "228.7B",
+      "value": "228.7B",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "228.7B",
+      "as_written": "228.7B"
+    },
+    {
+      "text": "15.7B",
+      "value": "15.7B",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "15.7B",
+      "as_written": "15.7B"
+    },
+    {
+      "text": "about 16B",
+      "value": "16B",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "approximately 16B total parameters",
+      "as_written": "16B"
+    },
+    {
+      "text": "about 230B",
+      "value": "230B",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "approximately 230B total parameters",
+      "as_written": "230B"
+    },
+    {
+      "text": "1B MoE",
+      "value": "1B MoE",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "1B MoE models",
+      "as_written": "1B"
+    },
+    {
+      "text": "3B MoE",
+      "value": "3B MoE",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "3B MoE models",
+      "as_written": "3B"
+    },
+    {
+      "text": "1.5M examples",
+      "value": "1.5M",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "1.5M instances",
+      "as_written": "1.5M"
+    },
+    {
+      "text": "85% to 90% acceptance rate",
+      "value": "85% and 90%",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "ranges between 85% and 90%",
+      "as_written": "85% to 90%"
+    },
+    {
+      "text": "1.8× TPS",
+      "value": "1.8 times",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "1.8 times TPS",
+      "as_written": "1.8×"
+    },
+    {
+      "text": "Relative loss error 0.25%",
+      "value": "0.25%",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "consistently below 0.25%",
+      "as_written": "0.25%"
+    },
+    {
+      "text": "about 2% error",
+      "value": "2%",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "nearly 2%",
+      "as_written": "2%"
+    },
+    {
+      "text": "NVLink 160 GB/s",
+      "value": "160 GB/s",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "160 GB/s",
+      "as_written": "160 GB/s"
+    },
+    {
+      "text": "IB 50 GB/s",
+      "value": "50 GB/s",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "(50 GB/s)",
+      "as_written": "50 GB/s"
+    },
+    {
+      "text": "3.2×",
+      "value": "3.2 times",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "roughly 3.2 times that of IB",
+      "as_written": "3.2×"
+    },
+    {
+      "text": "20 SMs",
+      "value": "20 SMs",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "only 20 SMs",
+      "as_written": "20"
+    },
+    {
+      "text": "132 SMs",
+      "value": "132 SMs",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "20 out of the 132 SMs",
+      "as_written": "132"
+    },
+    {
+      "text": "Arena-Hard win rate above 86%",
+      "value": "86%",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "over 86%",
+      "as_written": "86%"
+    },
+    {
+      "text": "AlpacaEval higher by 20%",
+      "value": "20%",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "a significant margin of 20%",
+      "as_written": "20%"
+    },
+    {
+      "text": "about 10 points",
+      "value": "10%",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "approximately 10% in absolute scores",
+      "as_written": "10 points"
+    },
+    {
+      "text": "C-SimpleQA higher by 16.4",
+      "value": "16.4 points",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "16.4 points",
+      "as_written": "16.4"
+    },
+    {
+      "text": "Table 1 cost",
+      "value": "2788K",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "2788K",
+      "as_written": "2788K"
+    },
+    {
+      "text": "Table 3 HumanEval",
+      "value": "65.2",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "65.2",
+      "as_written": "65.2"
+    },
+    {
+      "text": "MATH 61.6",
+      "value": "61.6",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "61.6",
+      "as_written": "61.6"
+    },
+    {
+      "text": "RACE 74.2",
+      "value": "74.2",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "74.2",
+      "as_written": "74.2"
+    },
+    {
+      "text": "Table 4 HumanEval",
+      "value": "53.7",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "53.7",
+      "as_written": "53.7"
+    },
+    {
+      "text": "Table 4 MMLU",
+      "value": "66.6",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "66.6",
+      "as_written": "66.6"
+    },
+    {
+      "text": "Table 5 HumanEval",
+      "value": "46.3",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "46.3",
+      "as_written": "46.3"
+    },
+    {
+      "text": "Table 5 GSM8K",
+      "value": "74.5",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "74.5",
+      "as_written": "74.5"
+    },
+    {
+      "text": "validation loss 2.258",
+      "value": "2.258",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "2.258",
+      "as_written": "2.258"
+    },
+    {
+      "text": "2.253",
+      "value": "2.253",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "2.253",
+      "as_written": "2.253"
+    },
+    {
+      "text": "2.085",
+      "value": "2.085",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "2.085",
+      "as_written": "2.085"
+    },
+    {
+      "text": "2.080",
+      "value": "2.080",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "2.080",
+      "as_written": "2.080"
+    },
+    {
+      "text": "Table 6 AIME",
+      "value": "39.2",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "39.2",
+      "as_written": "39.2"
+    },
+    {
+      "text": "MATH-500",
+      "value": "90.2",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "90.2",
+      "as_written": "90.2"
+    },
+    {
+      "text": "Codeforces",
+      "value": "51.6",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "51.6",
+      "as_written": "51.6"
+    },
+    {
+      "text": "SimpleQA",
+      "value": "24.9",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "24.9",
+      "as_written": "24.9"
+    },
+    {
+      "text": "Arena-Hard 85.5",
+      "value": "85.5",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "85.5",
+      "as_written": "85.5"
+    },
+    {
+      "text": "AlpacaEval 70.0",
+      "value": "70.0",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "70.0",
+      "as_written": "70.0"
+    },
+    {
+      "text": "50.5",
+      "value": "50.5",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "50.5",
+      "as_written": "50.5"
+    },
+    {
+      "text": "RewardBench 89.6",
+      "value": "89.6",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "89.6",
+      "as_written": "89.6"
+    },
+    {
+      "text": "88.7",
+      "value": "88.7",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "88.7",
+      "as_written": "88.7"
+    },
+    {
+      "text": "Table 9 MATH-500 length",
+      "value": "1510",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "1510",
+      "as_written": "1510"
+    },
+    {
+      "text": "Activated parameters about 5.5% (this site's calculation: 37B ÷ 671B)",
+      "value": "671B",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "671B",
+      "as_written": "5.5%"
+    },
+    {
+      "text": "$2 per GPU hour",
+      "value": "$2",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "$2 per GPU hour",
+      "as_written": "$2"
+    },
+    {
+      "text": "This site's calculation: relative ratio about 39% (70.0 ÷ 50.5)",
+      "value": "50.5",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "50.5",
+      "as_written": "39%"
+    },
+    {
+      "text": "1,000 steps per stage",
+      "value": "1000 steps",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "each comprising 1000 steps",
+      "as_written": "1,000 steps"
+    },
+    {
+      "text": "BF16 baseline (FP8 can double it)",
+      "value": "doubles",
+      "source_url": "https://arxiv.org/abs/2412.19437",
+      "quote": "theoretically doubles the computational speed",
+      "as_written": "double"
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "1134b40a1d78f906"
+}
