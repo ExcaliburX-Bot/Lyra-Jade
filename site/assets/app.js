@@ -194,6 +194,7 @@ function filtered(){
 function renderStatic(){
   document.documentElement.lang={zh:"zh-CN",en:"en",ja:"ja"}[S.lang];
   $$("[data-t]").forEach(el=>el.textContent=t(el.dataset.t));
+  if(SECTION==="paper"){const c=$(".crumb b");if(c)c.textContent=t("nPapers")}   /* 论文精读页和论文文章页：顶栏写“论文精读”，不写“AI 解读” */
   $$("[data-ph]").forEach(el=>el.placeholder=t(el.dataset.ph));
   if(LIST)$("#q").placeholder=t("qPh");
   $$(".lang button").forEach(b=>b.classList.toggle("on",b.dataset.lang===S.lang));

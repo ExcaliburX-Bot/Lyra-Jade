@@ -231,7 +231,7 @@ function buildLang(L) {
       fs.writeFileSync(path.join(DIST, "og/_src", `${name}.html`), ogCardHtml(a, { lang: L.lang }));
       ogImage = `${SITE_URL}/og/${name}.png`;
     }
-    render(L, { page: `a/${a.slug}.html`, depth: 1, title: `${esc(a.title)} · ${L.titleTail}`, desc: esc(a.summary), bodyClass: "reading", ogType: "article", main, data, ogImage });
+    render(L, { page: `a/${a.slug}.html`, depth: 1, title: `${esc(a.title)} · ${L.titleTail}`, desc: esc(a.summary), bodyClass: "reading", ogType: "article", main, data: a.category === "paper" ? { ...data, section: "paper" } : data, ogImage });  /* 论文文章页：侧栏高亮“论文精读”，顶栏也写“论文精读” */
   }
 
   /* RSS */
