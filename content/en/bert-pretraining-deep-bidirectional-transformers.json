@@ -3,14 +3,14 @@
   "category": "paper",
   "publisher": "Devlin et al. · Google",
   "date": "2019-05-24",
-  "title": "Google’s BERT: how fill-in-the-blank training teaches language understanding",
-  "summary": "BERT trains a Transformer encoder on cloze tasks over 3.3 billion words, then adds one output layer to handle classification, question answering and tagging — breaking 11 records at once. We unpack its two pre-training tasks, input format and fine-tuning recipe, using worked examples and ablation results to show why it works and what problems remain.",
-  "ai_summary": "BERT (Google AI Language, 2018) pre-trains a bidirectional Transformer encoder: it randomly masks 15% of word pieces for the model to predict (80% replaced with [MASK], 10% with random words, 10% unchanged) and has it decide whether two sentences are consecutive. Pre-training uses BooksCorpus plus English Wikipedia, 3.3 billion words total; BASE (110M parameters) and LARGE (340M parameters) each train for 4 days. Fine-tuning adds only an output layer and sets new records on 11 tasks: GLUE 80.5 (up 7.7), SQuAD v1.1 test F1 93.2, v2.0 83.1. Ablations show the gain comes mainly from bidirectionality; limitations include [MASK] appearing only in pre-training, predicting only 15% of tokens per batch, a 512-token input limit, and not suited to generation.",
+  "title": "A close reading of BERT: how fill-in-the-blank training teaches language understanding",
+  "summary": "BERT has a Transformer encoder fill in blanks over 3.3 billion words of text, then attaches a single output layer that handles classification, QA, and tagging—setting records on 11 tasks at once. We unpack its two pretraining tasks, input format, and fine-tuning recipe, using worked examples and ablation results to show why it works and what it leaves unsolved.",
+  "ai_summary": "BERT (Google AI Language, 2018) pretrains a Transformer encoder bidirectionally: it masks 15% of tokens at random and asks the model to predict them (80% [MASK], 10% random tokens, 10% unchanged), while also predicting whether two sentences are consecutive. Pretraining uses BooksCorpus plus English Wikipedia, 3.3 billion words total; BASE (110M parameters) and LARGE (340M parameters) each train for 4 days. At fine-tuning time, a single output layer is added and the model sets records on 11 tasks: GLUE 80.5 (up 7.7 points), SQuAD v1.1 test F1 93.2, SQuAD v2.0 83.1. Ablations show most of the gain comes from bidirectionality; limits include [MASK] appearing only during pretraining, only 15% of tokens predicted per batch, a 512-token maximum input length, and weak generation.",
   "brief": [
-    "Problem: earlier pre-trained models (GPT, ELMo) were unidirectional, so each word’s representation lacks context from the other side — a serious disadvantage for tasks like question answering.",
-    "Method: mask 15% of words and have the model predict them from both directions, plus a next-sentence prediction task; inputs are packed into a single sequence with [CLS] and [SEP].",
-    "Result: with only one added layer at fine-tuning, it set records on 11 tasks, raised GLUE by 7.7 points and SQuAD v2.0 by 5.1 points.",
-    "Lesson: at the same size, bidirectional beats unidirectional; bigger models help even on tasks with only a few thousand examples."
+    "Problem: earlier pretrained models (GPT, ELMo) are all unidirectional, so each token's representation lacks context from the other side—especially costly for tasks like question answering.",
+    "Method: mask 15% of tokens and have the model predict them bidirectionally; add a next-sentence prediction task; pack every input into one sequence with [CLS] and [SEP].",
+    "Result: with only one layer added at fine-tuning, it sets records on 11 tasks—GLUE up 7.7 points, SQuAD v2.0 up 5.1 points.",
+    "Takeaway: at equal size, bidirectional beats unidirectional; larger models help even small tasks with only a few thousand examples."
   ],
   "paper": {
     "title": "BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding",
@@ -22,19 +22,19 @@
     "url": "https://arxiv.org/abs/1810.04805"
   },
   "cover": {
-    "headline": "Inside the BERT paper",
-    "highlight": "Cloze tasks teach machines to understand language",
+    "headline": "A close reading of the BERT paper",
+    "highlight": "Fill-in-the-blank teaches machines to read language",
     "glyph": {
       "kind": "flow",
       "nodes": [
         {
-          "label": "Masked word prediction"
+          "label": "Masked-word prediction"
         },
         {
           "label": "Next-sentence prediction"
         },
         {
-          "label": "Fine-tune with one added layer",
+          "label": "One-layer fine-tuning",
           "tone": "hi"
         }
       ]
@@ -42,34 +42,34 @@
   },
   "sections": [
     {
-      "h": "The bottom line: what the paper actually did",
+      "h": "The short version: what this paper actually did",
       "blocks": [
         {
-          "p": "In October 2018, four researchers at Google AI Language introduced **BERT** (Bidirectional Encoder Representations from Transformers). The recipe has two steps: first, a Transformer encoder repeatedly does fill-in-the-blank exercises over 3.3 billion words of books and Wikipedia text to learn language itself; then a small output layer is attached and tuned with a modest amount of labeled data for each specific task."
+          "p": "In October 2018, four Google AI Language researchers released **BERT** (Bidirectional Encoder Representations from Transformers). Its recipe has two steps: first, a Transformer encoder repeatedly does fill-in-the-blank over 3.3 billion words of books and Wikipedia text to learn language itself; then a small output layer is attached and lightly trained on a modest amount of task-specific labeled data."
         },
         {
-          "p": "That simple recipe set records on 11 natural language processing tasks: the GLUE score climbed to 80.5, a jump of 7.7 points; SQuAD v1.1 test F1 reached 93.2 and v2.0 reached 83.1, the latter 5.1 points above the previous best system. More importantly, where each task used to need its own purpose-built architecture, BERT showed for the first time that **one pre-trained model plus one output layer can handle them all**."
+          "p": "That simple recipe set records on 11 natural language processing tasks: it pushed the GLUE score to 80.5, an immediate jump of 7.7 points; on reading comprehension, SQuAD v1.1 test F1 reached 93.2 and v2.0 reached 83.1, 5.1 points ahead of the previous best system. More importantly, where earlier tasks each required a purpose-built architecture, BERT was the first to show that **a single pretrained model plus one layer can handle them all**."
         },
         {
-          "p": "If the Transformer from our previous close reading is the engine of large models, BERT is the paper that first proved the recipe “pre-train on huge unlabeled text, then fine-tune for a task” can work across the board. Today nearly all large models follow this pre-training → fine-tuning pipeline, even though the mainstream later shifted to GPT’s decoder-only line."
+          "p": "If the Transformer we read last time is the \"engine\" of large models, BERT is the paper that first proved the full recipe—pretrain on massive unlabeled text, then fine-tune for the task—actually works end to end. Today nearly every large model follows the same two-stage pretrain-then-fine-tune pattern; the mainstream later just switched to the decoder-only GPT line."
         },
         {
           "callout": {
             "kind": "takeaway",
-            "title": "The one-sentence version",
-            "text": "BERT = a Transformer encoder (each word sees both left and right) + two pre-training tasks (predict 15% of masked words, decide whether two sentences are consecutive) + one unified recipe (the same model, with a different input format and one output layer, handles classification, QA and tagging)."
+            "title": "One-sentence version",
+            "text": "BERT = the Transformer encoder (every token attends to both left and right) + two pretraining tasks (mask 15% of tokens and predict them; decide whether two sentences are consecutive) + one uniform way to use it (one model, with a different input format and one output layer, can do classification, QA, and tagging)."
           }
         },
         {
           "callout": {
             "kind": "prereq",
-            "title": "Four concepts to know before reading",
-            "text": "Don’t worry if they’re new; these four are enough:",
+            "title": "Four concepts for reading this paper",
+            "text": "If these are new to you, these four will do:",
             "list": [
-              "**Transformer encoder**: the half of the architecture where self-attention lets each word see the whole sentence. See our previous close reading of “Attention Is All You Need.”",
-              "**Language model**: a model that predicts the next word from the preceding words. GPT is trained this way.",
-              "**Pre-training and fine-tuning**: first learn general language knowledge from huge amounts of unlabeled text (like reading widely), then practice on a small amount of labeled data for a specific task (like cramming with past exams).",
-              "**Labeled data**: examples with human-provided answers, such as “is this review positive or negative?” It is expensive and scarce; unlabeled text is almost limitless."
+              "**Transformer encoder**: the part of the architecture that uses self-attention to let each token see the whole sentence. See our previous close reading of \"Attention Is All You Need.\"",
+              "**Language model**: a model that predicts the next word from the words before it. GPT is trained this way.",
+              "**Pretraining and fine-tuning**: first learn general language knowledge from vast unlabeled text (like reading widely), then tune on a small amount of task-specific labeled data (like cramming before a test).",
+              "**Labeled data**: data with human-provided answers, such as \"Is this movie review positive or negative?\" It is expensive and scarce, while unlabeled text is almost unlimited."
             ]
           }
         }
@@ -79,41 +79,41 @@
       "h": "Before BERT: two approaches, one shared weakness",
       "blocks": [
         {
-          "p": "By 2018 there were two main ways to use pre-trained models for downstream tasks, and the paper opens by laying them out:"
+          "p": "By 2018, there were already two main ways to apply pretrained models to downstream tasks, and the paper sets them out at the start:"
         },
         {
           "list": [
-            "**Feature-based**, exemplified by ELMo: pre-train a language model, then feed its word vectors into each task’s purpose-built model as extra features. The pre-trained model itself stays frozen.",
-            "**Fine-tuning**, exemplified by OpenAI’s GPT: pre-train a Transformer language model, add only a few new parameters for the downstream task, then retrain the whole model together with those new parameters."
+            "**Feature-based**, represented by ELMo: pretrain a language model, then feed its word vectors into each task's purpose-built model as additional features. The pretrained model itself stays fixed.",
+            "**Fine-tuning-based**, represented by OpenAI's GPT: pretrain a Transformer language model, add only a small number of new parameters for each downstream task, and then retrain the entire model together with those new parameters."
           ]
         },
         {
-          "p": "The paper argues these two routes share the same weakness: **they both pre-train with unidirectional language models**. GPT reads left to right, so each word can see only the words to its left in self-attention. ELMo trains a left-to-right and a right-to-left model, but they are trained independently and simply concatenated; inside the model, left and right context are never truly fused."
+          "p": "The paper argues both share one weakness: **pretraining uses a unidirectional language model**. GPT reads left to right, so in self-attention each token sees only the words to its left. ELMo trains one left-to-right and one right-to-left model, but they are trained independently and simply concatenated at the end; inside the model, left and right context never really fuses."
         },
         {
           "callout": {
             "kind": "intuition",
-            "title": "Why unidirectional hurts: an example",
-            "text": "Consider “my newly bought apple is delicious” and “my newly bought apple is really useful.” By the time the model reaches the word “apple,” the clue that decides whether it means the fruit or an Apple product comes later (delicious vs. useful). A left-to-right model cannot see those later words at that position and has to wait; yet many language-understanding tasks, such as finding where an answer lies in question answering, require every position to know both sides at once."
+            "title": "Why one direction hurts: an example",
+            "text": "Take \"My new apple is delicious\" and \"My new apple is easy to use.\" By the time the model reaches \"apple,\" the clue that tells it whether this is the fruit or an Apple phone lies to the **right** (\"delicious\" vs. \"easy to use\"). A left-to-right model at that position cannot see the following words at all; it can only wait. But many language-understanding tasks—such as finding where an answer starts in QA—require every position to know both sides at once."
           }
         },
         {
           "fig": {
             "type": "table",
-            "title": "Three pre-trained models compared: only BERT attends to both left and right in every layer",
-            "subtitle": "Based on Section 2 and Appendix A.4 of the paper. The amber row is BERT.",
+            "title": "Three pretraining approaches compared: only BERT attends to both sides at every layer",
+            "subtitle": "Based on paper section 2 and appendix A.4. The amber row is BERT.",
             "columns": [
               "Model",
               "Underlying architecture",
-              "Direction of attention",
-              "How it’s used downstream"
+              "Direction it sees",
+              "Downstream use"
             ],
             "rows": [
               [
                 "ELMo",
-                "Two LSTMs, one in each direction",
-                "Independently trained, concatenated at the end",
-                "Feature-based: freeze the model, extract features"
+                "Two LSTMs (one left, one right)",
+                "Left and right trained separately, then concatenated",
+                "Feature-based: model fixed, extract features"
               ],
               [
                 "OpenAI GPT",
@@ -124,7 +124,7 @@
               [
                 "BERT",
                 "Transformer encoder",
-                "Every layer attends to both sides",
+                "Both sides at every layer",
                 "Fine-tuning: retrain the whole model"
               ]
             ],
@@ -135,61 +135,61 @@
         },
         {
           "quiz": {
-            "q": "In “my newly bought apple is really useful,” what information can a left-to-right language model use when it processes the word “apple”?",
+            "q": "In the sentence \"My new apple is easy to use,\" what information is available to a left-to-right language model when it processes the word \"apple\"?",
             "options": [
-              "Every word in the sentence",
-              "Only “my,” “newly,” “bought” and “apple” itself",
-              "Only “really useful”",
-              "Only “apple” itself"
+              "The whole sentence",
+              "Only \"my,\" \"new,\" and \"apple\" itself",
+              "Only \"easy to use\"",
+              "Only \"apple\" itself"
             ],
             "answer": 1,
-            "why": "At each position, a left-to-right model can see only itself and the words to its left. “Really useful” is to the right, so it isn’t visible when the model processes “apple,” and the model can’t tell at that point that apple means the device. This is why the paper says unidirectional models are at a disadvantage on tasks that need context from both sides."
+            "why": "A left-to-right model can see only itself and the words to its left at each position. \"Easy to use\" is on the right, so it is not visible when processing \"apple\"; the model cannot decide at that point that this is an Apple phone. This is exactly why the paper says unidirectional models are weaker for tasks that need both sides of context."
           }
         }
       ]
     },
     {
-      "h": "Why not just go bidirectional? The model would “see itself.”",
+      "h": "Why not just go bidirectional: the model would \"see itself\"",
       "blocks": [
         {
-          "p": "If bidirectional is better, why didn’t anyone simply train a bidirectional language model? The paper gives a key explanation: standard language models can only be trained unidirectionally because with bidirectional attention **each word indirectly “sees itself”**, and the model could trivially guess the target word."
+          "p": "If bidirectional is better, why not simply train a bidirectional language model? The paper gives a key explanation: standard language models can only be trained unidirectionally, because with bidirectional conditioning **every word indirectly \"sees itself,\"** and the model could predict the target word trivially."
         },
         {
-          "p": "How exactly? Suppose the model has to predict the 5th word. In layer 1, positions 4 and 6 both attended to position 5 through self-attention. In layer 2, when position 5 attends to positions 4 and 6, it essentially gets its own answer back secondhand. With more layers, the answer leaks back from all directions, and the model learns to copy rather than understand language."
+          "p": "How exactly? Suppose the model must predict the 5th token. In layer 1, positions 4 and 6 both attend to token 5 via self-attention; in layer 2, when position 5 attends to positions 4 and 6, it is effectively receiving its own answer back. With enough layers, the answer leaks back from every direction, and the model learns only to copy answers rather than understand language."
         },
         {
           "callout": {
             "kind": "intuition",
-            "title": "It’s like having the answer printed next to the exam question.",
-            "text": "A left-to-right language model is safe because when predicting the 5th word, no position can see the 5th word or anything after it. Remove that restriction without any fix, and the answer is mixed into the question."
+            "title": "It is as if the answer were printed next to the exam question.",
+            "text": "A left-to-right language model is safe because, when predicting token 5, no position can see token 5 or anything after it. Once you allow bidirectionality without making any other change, the answer gets mixed into the question."
           }
         },
         {
-          "p": "BERT’s solution is simple: **if the target word would leak, mask it first**. That is the first pre-training task."
+          "p": "BERT's solution is simple: **if the word to be predicted will leak, mask it first.** That is the first pretraining task."
         }
       ]
     },
     {
-      "h": "Task one: mask a word and predict it — the cloze task",
+      "h": "Task 1: mask words and predict them—fill in the blanks",
       "blocks": [
         {
-          "p": "The paper calls this **Masked LM** (MLM) and notes it’s usually called a cloze task in the literature (proposed back in 1953 to measure reading difficulty). The procedure: randomly choose 15% of the word pieces in a sentence, mask them, and ask the model to predict each original word from all the remaining context, left and right. The final-layer output at each masked position goes through a softmax over the whole vocabulary to score the correct word."
+          "p": "The paper calls this **Masked LM** (MLM) and notes that in the literature it is usually called a cloze task (proposed as early as 1953 to measure reading difficulty). The approach: randomly pick 15% of the tokens in a sequence, mask them, and have the model predict each original word from all remaining words—both left and right. The final-layer output at each masked position goes through a softmax over the whole vocabulary to score how likely the correct word is."
         },
         {
           "callout": {
             "kind": "note",
-            "title": "What are word pieces?",
-            "text": "BERT doesn’t treat English words as whole units. It uses WordPiece to split words into smaller pieces with a vocabulary of 30,000. Common words stay intact; rare ones get split — in the paper’s figure, “playing” becomes “play” and “##ing” (where ## means the piece continues after the previous one). Masking is done on word pieces, not whole words."
+            "title": "What are \"word pieces\"?",
+            "text": "BERT does not process English as whole words; it uses WordPiece to split words into smaller pieces, with a 30,000-token vocabulary. Common words stay whole, while rare words are split—for example, the paper's diagram splits playing into play and ##ing (## means \"attached to the previous piece\"). Masking is done at the token level and does not try to respect whole words."
           }
         },
         {
-          "p": "But this creates a mismatch: [MASK] never appears during fine-tuning, so pre-training and fine-tuning don’t line up. The paper’s fix is not to replace all 15% of chosen positions with [MASK], but to handle them in three ways: 80%, 10%, 10%. The paper’s example is “my dog is hairy,” with “hairy” chosen:"
+          "p": "But this creates a new problem: during fine-tuning, [MASK] never appears in the input, so pretraining and fine-tuning don't match. The paper's fix is not to replace the selected 15% of positions all with [MASK]; instead it splits them 80/10/10 into three treatments. Its example is \"my dog is hairy,\" and suppose hairy is selected:"
         },
         {
           "fig": {
             "type": "table",
-            "title": "For each chosen word: 80% masked, 10% random, 10% unchanged",
-            "subtitle": "Example from Appendix A.1; no matter the treatment, the model must predict “hairy” at that position. The blue column is what the model actually sees.",
+            "title": "For each selected word: masked 80%, random 10%, unchanged 10%",
+            "subtitle": "Example from paper Appendix A.1; regardless of treatment, the model must predict the original word hairy at that position. The blue column shows what the model actually sees.",
             "columns": [
               "Treatment",
               "Probability",
@@ -201,38 +201,43 @@
                 "Replace with [MASK]",
                 "80%",
                 "my dog is [MASK]",
-                "The main case: force the model to use context"
+                "Main case: force the model to predict from context"
               ],
               [
                 "Replace with a random word",
                 "10%",
                 "my dog is apple",
-                "Stop it from trusting the visible word"
+                "Prevents the model from trusting the visible word"
               ],
               [
-                "Leave unchanged",
+                "Keep unchanged",
                 "10%",
                 "my dog is hairy",
-                "Keep representations close to real observed words"
+                "Leans representations toward real words"
               ]
             ],
             "highlight": {
               "col": 2
             }
+          },
+          "plain": {
+            "title": "One blank, three ways of testing it",
+            "pic": "bert-mask",
+            "text": "The word chosen for prediction (here hairy) is usually replaced by [MASK]; sometimes by a random word (apple); and sometimes left exactly as is. The model never knows whether the word in front of it has been tampered with, so it must do real context-aware understanding at every position."
           }
         },
         {
-          "p": "The clever part: the model never knows which positions will be tested or which words were replaced with random ones, so it has to keep a strong context-aware representation at every position instead of only trying when it sees [MASK]. Random replacements affect only 1.5% of all word pieces (10% × 15%), which the paper argues doesn’t hurt language understanding."
+          "p": "The elegance of this design is that the model never knows which positions will be tested or which words have been swapped, so it must **keep a good context-aware representation at every position**, not only when it sees [MASK]. Random replacements account for just 1.5% of all tokens (10% × 15%), which the paper argues does not hurt language understanding."
         },
         {
           "fig": {
             "type": "table",
-            "title": "Masking alternatives: fine-tuning is forgiving, but [MASK]-only clearly hurts feature-based use",
-            "subtitle": "From Table 8, dev-set results. The first row is BERT’s scheme; the amber row is “[MASK]-only.”",
+            "title": "Masking variants: fine-tuning tolerates them, but [MASK]-only clearly hurts feature-based use",
+            "subtitle": "From paper Table 8, dev set results. The first row is the scheme BERT uses; the amber row is \"[MASK]-only.\"",
             "columns": [
-              "[MASK] / original / random",
-              "MNLI fine-tuned",
-              "NER fine-tuned",
+              "[MASK] / unchanged / random",
+              "MNLI fine-tuning",
+              "NER fine-tuning",
               "NER feature-based"
             ],
             "rows": [
@@ -276,54 +281,54 @@
             "highlight": {
               "row": 1
             },
-            "note": "MNLI is sentence-pair inference (accuracy); NER is named entity recognition (F1). In feature-based mode the model’s parameters stay frozen and only features are extracted, so any pre-training/fine-tuning mismatch can’t be corrected by fine-tuning; that’s why “[MASK]-only” hurts more there."
+            "note": "MNLI is sentence-relationship prediction (accuracy); NER is named entity recognition (F1). In the feature-based setting, model parameters are frozen and only features are extracted, so the pretrain–fine-tune mismatch cannot be repaired by fine-tuning—which is why the [MASK]-only problem is amplified."
           }
         },
         {
-          "p": "There’s another cost: a normal language model practices prediction at every position, while MLM predicts only 15% of words per batch, so it learns a bit more slowly. The appendix compares this directly: MLM converges slightly more slowly than a left-to-right model, but its accuracy surpasses the left-to-right model almost from the start."
+          "p": "There is another cost: a normal language model practices prediction at every position, while MLM predicts only 15% of tokens in each batch, so it learns somewhat slowly. The appendix compares this directly: MLM converges slightly slower than a left-to-right model, but its accuracy is higher almost from the beginning."
         },
         {
           "quiz": {
-            "q": "In a 512-word-piece training sequence, about how many positions are selected for prediction under BERT’s rules, and about how many of them become random words?",
+            "q": "In a training input of 512 tokens, roughly how many positions are selected for prediction under BERT's rules, and about how many of them are replaced with random words?",
             "options": [
-              "512 positions predicted, 51 random words",
-              "About 77 predicted positions, about 8 of them random",
-              "About 77 predicted positions, about 61 random",
-              "About 15 predicted positions, about 1 random"
+              "512 predicted positions, 51 random words",
+              "About 77 predicted positions, about 8 random ones",
+              "About 77 predicted positions, about 61 random ones",
+              "About 15 predicted positions, about 1 random one"
             ],
             "answer": 1,
-            "why": "512 × 15% ≈ 77 positions are selected for prediction. Of those, 10% are replaced with random words: 77 × 10% ≈ 8, about 1.5% of all word pieces. Another 61 or so (80%) become [MASK], and about 8 stay unchanged."
+            "why": "512 × 15% ≈ 77 positions are selected for prediction. Of those, 10% become random words—77 × 10% ≈ 8, or about 1.5% of all tokens. The rest divide into roughly 61 [MASK] replacements (80%) and about 8 unchanged."
           }
         },
         {
           "quiz": {
-            "q": "Why not replace all selected 15% with [MASK]?",
+            "q": "Why not replace all 15% selected positions with [MASK]?",
             "options": [
-              "It would be too expensive",
-              "[MASK] never appears during fine-tuning, so mask-only would create a pre-training/fine-tuning mismatch; mixed treatment also forces the model to build good representations for every word",
+              "It would be too expensive computationally",
+              "Fine-tuning inputs contain no [MASK], so replacing all selected positions with [MASK] would create a mismatch; the mixed treatment also forces the model to represent every word properly",
               "[MASK] would let the model see itself",
               "The paper limits each sentence to one [MASK]"
             ],
             "answer": 1,
-            "why": "The paper says it’s explicitly to reduce the pre-training/fine-tuning mismatch. The appendix goes further: because the model doesn’t know which words will be tested or replaced, it must keep good contextual representations everywhere. Table 8 also shows “[MASK]-only” hurts most in feature-based use."
+            "why": "The paper says explicitly that this is to reduce the pretrain–fine-tune mismatch. The appendix goes further: because the model doesn't know which words will be tested or which have been swapped, it must keep a good contextual representation at every position. Table 8 also shows that [MASK]-only drops the most in the feature-based setting."
           }
         }
       ]
     },
     {
-      "h": "Task two: next-sentence prediction",
+      "h": "Task 2: next-sentence prediction",
       "blocks": [
         {
-          "p": "Many important tasks — question answering (how question and passage relate), natural language inference (whether the second sentence follows from the first) — need understanding of **relationships between two sentences**, while masked word prediction only exercises within-sentence structure. So the paper adds a second pre-training task: **Next Sentence Prediction** (NSP)."
+          "p": "Many important tasks—question answering (the relationship between question and passage) and natural language inference (whether sentence B follows from sentence A)—require understanding **relationships between two sentences**, while masked-word prediction only exercises within-sentence structure. So the paper adds a second pretraining task: **Next Sentence Prediction** (NSP)."
         },
         {
-          "p": "It’s just as simple and can be created for free from any text: each training sample pairs sentence A with sentence B. In 50% of cases, B is the actual next sentence after A (labeled IsNext); in the other 50%, B is a random sentence from the corpus (labeled NotNext). Two examples from the appendix:"
+          "p": "The method is just as simple and can be generated for free from any corpus: each training example is built from sentence A and sentence B; 50% of the time B is the actual next sentence after A (labeled IsNext), and 50% of the time B is a random sentence from the corpus (labeled NotNext). Two examples from the appendix:"
         },
         {
           "fig": {
             "type": "table",
-            "title": "Next-sentence prediction: one is the true continuation, one is random",
-            "subtitle": "From Appendix A.1 (masking is also applied in both sentences)",
+            "title": "Next-sentence prediction: one true continuation, one random sentence",
+            "subtitle": "From paper Appendix A.1; both examples also include masking.",
             "columns": [
               "Sentence A",
               "Sentence B",
@@ -341,47 +346,51 @@
                 "NotNext"
               ]
             ]
+          },
+          "plain": {
+            "title": "Are these two sentences consecutive?",
+            "text": "Half the time the model sees a real adjacency, half the time the second sentence is drawn randomly from elsewhere, and the model must decide whether it is the actual next sentence. The goal is to teach BERT to look at relationships between sentences—though later work found this exercise matters less than originally thought."
           }
         },
         {
-          "p": "The paper reports the final model reaches 97%–98% accuracy on NSP. Ablations (discussed later) show that removing NSP hurts QA and sentence-inference tasks significantly."
+          "p": "The paper reports that the final model reaches 97%–98% accuracy on NSP. Ablations (detailed later) show that removing NSP clearly hurts question answering and sentence-inference tasks."
         },
         {
           "quiz": {
-            "q": "In NSP training data, true continuations and random sentences are evenly split. If a model learns nothing and always answers IsNext, what accuracy does it get? What does that suggest about the 97%–98% figure?",
+            "q": "In NSP training data, true continuations and random sentences are each 50%. If a model learns nothing and always answers IsNext, what accuracy would it get? What does that suggest about the 97%–98% figure?",
             "options": [
-              "0%, so 97% is remarkable",
-              "50%; and because random sentences often have completely different topics, the task may be easier than it looks",
+              "0%, so 97% is extremely hard",
+              "50%; since random sentences often come from completely different topics, the task may be easier than it looks",
               "100%, because most sentences are true continuations",
-              "Can’t be determined"
+              "Impossible to compute"
             ],
             "answer": 1,
-            "why": "Always guessing IsNext gets exactly half right. More importantly: NotNext sentences are randomly drawn and often discuss completely different topics (store vs. penguin), so a model can get most of them right simply by detecting topic coherence, without genuinely understanding sentence logic. This is exactly the avenue later research used to question NSP."
+            "why": "Always guessing IsNext would be exactly 50% correct. More important: NotNext sentences are drawn at random and often discuss a completely different topic from A—say a store and penguins—so a model can answer most cases by checking whether topics are coherent, without truly understanding inter-sentence logic. Later work attacked NSP precisely from this angle."
           }
         },
         {
           "callout": {
             "kind": "note",
-            "title": "What happened to NSP later",
-            "text": "The paper’s ablations support NSP. But later work (for example RoBERTa in 2019) found that with larger-scale training, dropping NSP doesn’t hurt — one likely reason being exactly what the question above suggests: random sentences are too easy to tell apart. When reading papers, remember that an ablation conclusion holds only under that paper’s own setup."
+            "title": "The later fate of NSP",
+            "text": "The paper's ablations support NSP. But later work—for example RoBERTa in 2019—found that with larger-scale training, dropping NSP does no harm; one likely reason is the issue above: randomly drawn sentences are too easy to distinguish. When reading papers, remember that an ablation conclusion holds under that paper's own settings."
           }
         }
       ]
     },
     {
-      "h": "How inputs are assembled: one sequence holds one or two sentences",
+      "h": "How inputs are assembled: one sequence for one or two sentences",
       "blocks": [
         {
-          "p": "To let one model handle many tasks, BERT packs every input into a single sequence: a special **[CLS]** token at the start, with **[SEP]** separators between sentences and at the end. Here a “sentence” isn’t necessarily a grammatical sentence; it can be any span of continuous text, up to 512 word pieces."
+          "p": "To let one model handle many tasks, BERT packs all input into a single sequence: a special **[CLS]** token at the start, and **[SEP]** separators between two sentences and at the end. Here a \"sentence\" need not be a grammatical sentence; it can be any contiguous span of text. The whole sequence is at most 512 tokens."
         },
         {
-          "p": "At each position, the input vector is the **sum** of three vectors: the token embedding for the word itself, a segment embedding indicating sentence A or B, and a position embedding for its position. Unlike the original Transformer, which uses sinusoidal functions for positions, BERT learns its position and segment embeddings."
+          "p": "The input vector at each position is the **sum** of three vectors: the token embedding, a \"segment embedding\" indicating whether the token belongs to sentence A or B, and a position embedding indicating its position. Unlike the original Transformer, which uses sinusoidal position encodings, BERT learns both its position embeddings and segment embeddings."
         },
         {
           "fig": {
             "type": "table",
             "title": "Input vector = token embedding + segment embedding + position embedding",
-            "subtitle": "Redrawn from Figure 2 (first 7 positions). E is a learnable vector; the subscript indicates what it corresponds to.",
+            "subtitle": "Redrawn from Figure 2 of the paper (first 7 positions shown). E is a learned vector; the subscript indicates what it corresponds to.",
             "columns": [
               "Input",
               "[CLS]",
@@ -394,7 +403,7 @@
             ],
             "rows": [
               [
-                "Token embeddings",
+                "Token embedding",
                 "E_{[CLS]}",
                 "E_{my}",
                 "E_{dog}",
@@ -404,7 +413,7 @@
                 "E_{he}"
               ],
               [
-                "Segment embeddings",
+                "Segment embedding",
                 "E_{A}",
                 "E_{A}",
                 "E_{A}",
@@ -414,7 +423,7 @@
                 "E_{B}"
               ],
               [
-                "Position embeddings",
+                "Position embedding",
                 "E_{0}",
                 "E_{1}",
                 "E_{2}",
@@ -424,17 +433,22 @@
                 "E_{6}"
               ]
             ],
-            "note": "The full example is [CLS] my dog is cute [SEP] he likes play ##ing [SEP], 11 positions total; all segment embeddings in the second half are E_{B}."
+            "note": "The full example is [CLS] my dog is cute [SEP] he likes play ##ing [SEP] — 11 positions in total. All segment embeddings in the second sentence are E_{B}."
+          },
+          "plain": {
+            "title": "Three transparent sheets stacked together",
+            "pic": "bert-embed",
+            "text": "Each position's input is built by stacking three sheets: the first says which word it is, the second says whether it belongs to sentence A or sentence B, and the third says which position it occupies. Add the three together, and one vector carries all three kinds of information."
           }
         },
         {
-          "p": "The final-layer output for [CLS] (denoted C in the paper) serves as a summary of the whole sequence and is used for classification and NSP. The output Tᵢ at every other position corresponds to that word and is used for token-level tasks such as QA and tagging."
+          "p": "The final-layer output for [CLS] (denoted C in the paper) serves as the summary of the whole sequence and is used for classification tasks and NSP; every other position's output Tᵢ corresponds to its token and is used for token-level tasks like QA and tagging."
         },
         {
           "callout": {
             "kind": "myth",
-            "title": "The [CLS] vector isn't a ready-made sentence representation",
-            "text": "Many people take a pre-trained BERT and use the [CLS] output directly as a sentence embedding to compute similarity. A footnote in the paper explicitly warns that, before fine-tuning, C is not a meaningful sentence representation, because during pre-training it was only used for NSP. To use it, you need to fine-tune it on a specific task first."
+            "title": "The [CLS] vector isn't directly usable as sentence meaning",
+            "text": "Many people take a pretrained BERT and directly use the [CLS] output as the sentence's semantic vector for similarity. A paper footnote cautions: before fine-tuning, vector C is not a meaningful sentence representation, because during pretraining it was only used for NSP. To use it, first fine-tune on a specific task."
           }
         }
       ]
@@ -443,18 +457,18 @@
       "h": "Model size: BASE and LARGE",
       "blocks": [
         {
-          "p": "BERT's architecture is the original Transformer encoder; the paper says its implementation is \"almost identical to the original,\" so it doesn't describe the model again in detail. It uses L for the number of layers, H for the hidden size, and A for the number of attention heads, with the feed-forward width set to 4H throughout. It mainly reports two sizes:"
+          "p": "BERT's architecture is the original Transformer encoder; the paper says the implementation is \"almost identical to the original,\" so it doesn't describe it exhaustively. The paper uses L for layers, H for hidden size, and A for attention heads; feed-forward width is always 4H. It reports two sizes:"
         },
         {
           "fig": {
             "type": "table",
-            "title": "BERT's two sizes, compared with other contemporary large models mentioned in the paper",
-            "subtitle": "From Sections 3 and 5.2 of the paper. The amber rows are BERT.",
+            "title": "BERT's two sizes, compared with the other large models the paper mentions",
+            "subtitle": "From paper section 3 and section 5.2. The two amber rows are BERT.",
             "columns": [
               "Model",
               "Layers L",
               "Hidden size H",
-              "Attention heads A",
+              "Heads A",
               "Parameters"
             ],
             "rows": [
@@ -473,14 +487,14 @@
                 "340M"
               ],
               [
-                "Largest in the original Transformer (encoder part)",
+                "Largest original Transformer (encoder part)",
                 "6",
                 "1024",
                 "16",
                 "100M"
               ],
               [
-                "Largest Transformer mentioned in the paper's related work",
+                "Largest Transformer in the literature cited by the paper",
                 "64",
                 "512",
                 "2",
@@ -494,84 +508,84 @@
           }
         },
         {
-          "p": "BERT-BASE was deliberately sized to match OpenAI GPT for a fair comparison. The paper stresses that the two are almost identical architecturally; the only critical difference is that BERT uses bidirectional self-attention, while GPT uses constrained self-attention where each token can attend only to its left. A footnote also explains the naming convention that later became standard: the bidirectional version is usually called a \"Transformer encoder,\" and the left-only version a \"Transformer decoder,\" because it can be used to generate text."
+          "p": "BERT-BASE's size was **deliberately** chosen to match OpenAI GPT for a fair comparison. The paper stresses the two are nearly identical structurally; the key difference is one: BERT uses bidirectional self-attention, while GPT uses constrained self-attention where each token can see only its left context. The paper's footnote also explains a naming convention that later became standard: the bidirectional version is usually called a \"Transformer encoder,\" and the left-only version a \"Transformer decoder\" because it can generate text."
         }
       ]
     },
     {
-      "h": "Pre-training: 3.3 billion words, 4 days",
+      "h": "How pretraining works: 3.3 billion words, 4 days",
       "blocks": [
         {
           "list": [
-            "**Data**: BooksCorpus (800M words) plus English Wikipedia (2.5B words). For Wikipedia, only text passages are used; lists, tables, and headers are discarded. The paper stresses that a document-level corpus is essential, not a shuffled sentence-level corpus, because you need to draw long contiguous sequences from it, and next-sentence prediction requires real context.",
-            "**Scale**: 256 sequences × 512 word pieces per batch = 128,000 word pieces per batch, for 1,000,000 steps. That amounts to roughly 40 passes over the 3.3-billion-word corpus.",
-            "**Optimization**: Adam with learning rate 1e-4, a 10,000-step warm-up followed by linear decay; dropout 0.1 in all layers; GELU activation instead of ReLU (same as OpenAI GPT). The loss is the sum of the masked-word prediction and next-sentence prediction losses.",
-            "**Compute**: BASE uses 16 TPU chips and LARGE uses 64, with training taking 4 days in each case."
+            "**Data**: BooksCorpus (800M words) plus English Wikipedia (2.5B words). For Wikipedia, only text passages are used; lists, tables, and headers are ignored. The paper stresses using a document-level corpus rather than a shuffled sentence-level corpus, because it needs long contiguous sequences and next-sentence prediction requires real context.",
+            "**Scale**: 256 sequences per batch × 512 tokens = 128,000 tokens per batch, trained for 1,000,000 steps — about 40 passes over the 3.3-billion-word corpus.",
+            "**Optimization**: Adam, learning rate 1e-4, 10,000 warmup steps then linear decay; dropout 0.1 in all layers; GELU activation rather than ReLU (same as OpenAI GPT). The loss is the sum of the masked-LM loss and the next-sentence-prediction loss.",
+            "**Compute**: BASE uses 16 TPU chips and LARGE uses 64; each trains for 4 days."
           ]
         },
         {
-          "p": "One detail directly echoes our previous close reading: the paper says long sequences are disproportionately expensive because attention computation grows quadratically with sequence length. So it used sequences of length 128 for the first 90% of training steps and switched to length 512 for the final 10%, mainly so the model would learn the position embeddings for those later positions. The n² problem from the Transformer paper is already shaping engineering choices here."
+          "p": "There is also a detail that directly echoes our previous close reading: long sequences cost disproportionately more because attention computation grows quadratically with sequence length. So the authors use length-128 sequences for the first 90% of training steps and switch to length-512 only for the final 10%, mainly so the model learns the position embeddings for later positions. The n² problem from the Transformer paper is already shaping engineering decisions here."
         },
         {
           "quiz": {
-            "q": "If attention cost scales quadratically, about how many times more attention computation does a length-512 sequence require compared with a length-128 sequence?",
+            "q": "If compute scales quadratically, roughly how much more attention computation does a length-512 sequence require than a length-128 sequence?",
             "options": [
-              "4 times",
-              "16 times",
-              "128 times",
+              "4×",
+              "16×",
+              "128×",
               "The same"
             ],
             "answer": 1,
-            "why": "The length quadruples (512 / 128 = 4), and the number of pairwise attention comparisons grows to 4² = 16 times as many. This is why the paper trains with short sequences for most steps. Keep in mind this applies only to the attention part; feed-forward computation grows only linearly with sequence length."
+            "why": "The length increases 4× (512 ÷ 128), so the number of pairwise attention comparisons grows 4² = 16×. That is why the paper trains most steps on shorter sequences. Note this is only the attention part; feed-forward computation grows only linearly with length."
           }
         }
       ]
     },
     {
-      "h": "Fine-tuning: add one layer and handle every task",
+      "h": "Fine-tuning: add one layer and handle any task",
       "blocks": [
         {
-          "p": "Once pre-training is done, adapting BERT to a specific task is straightforward: pack the task's input into BERT in the format described above, attach a layer to the appropriate output, and retrain **all parameters** together on that task's labeled data. Different tasks start from the same pre-trained parameters and each ends up with its own fine-tuned model."
+          "p": "After pretraining, using BERT on a task is straightforward: feed the task's input into BERT in the format above, attach a layer to the appropriate output, and retrain **all parameters** together on that task's labeled data. Each task starts from the same pretrained parameters and ends with its own fine-tuned model."
         },
         {
           "fig": {
             "type": "table",
-            "title": "Four task types, one BERT: the only differences are how inputs are assembled and which output is used",
-            "subtitle": "Based on Section 3.2 and Appendix Figure 4.",
+            "title": "Four task types, one BERT: inputs and outputs are all that change",
+            "subtitle": "Based on paper section 3.2 and appendix Figure 4.",
             "columns": [
               "Task type",
               "Example",
               "Input",
               "Output used",
-              "New parameters"
+              "New parameters added"
             ],
             "rows": [
               [
                 "Sentence-pair classification",
-                "MNLI: whether the second sentence follows from the first",
+                "MNLI: infer whether the second sentence follows from the first",
                 "[CLS] sentence A [SEP] sentence B [SEP]",
                 "[CLS] output C",
                 "One classification matrix W"
               ],
               [
                 "Single-sentence classification",
-                "SST-2: whether a review is positive or negative",
+                "SST-2: positive or negative movie review",
                 "[CLS] sentence [SEP]",
                 "[CLS] output C",
                 "One classification matrix W"
               ],
               [
-                "Extractive question answering",
-                "SQuAD: find the answer in a passage",
+                "Extractive QA",
+                "SQuAD: find the answer in the passage",
                 "[CLS] question [SEP] passage [SEP]",
-                "Each passage token's output Tᵢ",
-                "Start vector S, end vector E"
+                "Output Tᵢ for every passage token",
+                "Start vector S and end vector E"
               ],
               [
                 "Token-level tagging",
-                "NER: label names of people and places",
+                "NER: identify person and place names",
                 "[CLS] sentence [SEP]",
-                "Each token's output Tᵢ",
+                "Output Tᵢ for every token",
                 "One classification layer"
               ]
             ]
@@ -586,49 +600,54 @@
             "parts": [
               {
                 "sym": "C",
-                "desc": "The final-layer output for [CLS], a length-H vector that represents the entire input."
+                "desc": "The final-layer output for [CLS], a vector of length H, representing the whole input"
               },
               {
                 "sym": "W",
-                "desc": "The only new parameter is a matrix of shape K × H, where K is the number of classes (an inference task has three, for example: entailment, contradiction, neutral)."
+                "desc": "The only new parameter, shape K × H, where K is the number of classes (for example, an inference task has three: entailment, contradiction, neutral)"
               },
               {
                 "sym": "softmax",
-                "desc": "It turns K scores into K probabilities; during training, you maximize the log-probability of the correct class."
+                "desc": "Turns K scores into K probabilities; training maximizes the log probability of the correct class"
               }
             ]
           }
         },
         {
-          "p": "Question answering is a little more involved but just as elegant. Fine-tuning adds only two vectors: a start vector S and an end vector E. The dot product of each passage token's output Tᵢ with S gives the score that \"the answer starts here\":"
+          "p": "QA is slightly more complex, but the idea is just as elegant. Only two new vectors are added during fine-tuning: start vector S and end vector E. The dot product of each passage token's output Tᵢ with S is the score for \"answer starts here\":"
         },
         {
           "formula": {
-            "expr": "P_{start}(i) = e^{S·T_{i}} / Σ_{j} e^{S·T_{j}}\nCandidate answer (i, j) score = S·T_{i} + E·T_{j}, with j ≥ i",
+            "expr": "P_{start}(i) = e^{S·T_i} / Σⱼ e^{S·T_j}   Candidate answer (i, j) score = S·T_i + E·T_j, with j ≥ i",
             "parts": [
               {
                 "sym": "Tᵢ",
-                "desc": "The final-layer output of the i-th token in the passage."
+                "desc": "The final-layer output at the i-th passage token"
               },
               {
                 "sym": "S, E",
-                "desc": "The two vectors learned during fine-tuning; they rate how start-like or end-like a position is."
+                "desc": "Two vectors learned during fine-tuning, scoring how much each position looks like a start or an end"
               },
               {
                 "sym": "j ≥ i",
-                "desc": "The end cannot come before the start; the span with the highest score is chosen as the answer."
+                "desc": "The end position cannot come before the start; take the highest-scoring span as the answer"
               }
             ],
-            "note": "The training objective maximizes the sum of the log-probabilities of the correct start and correct end."
+            "note": "The training objective maximizes the sum of the log probabilities of the correct start and end positions."
+          },
+          "plain": {
+            "title": "One pen for the start, one for the end",
+            "pic": "bert-span",
+            "text": "In QA, the answer is a contiguous span somewhere in the passage. BERT uses two vectors S and E to give every word two scores: how likely it is the start, and how likely it is the end. Pick the span with the highest \"start + end\" score whose end isn't before its start; that span is the answer (here, \"soft mat\")."
           }
         },
         {
           "fig": {
             "type": "table",
-            "title": "Worked example: find the answer to \"Where is the cat sitting?\" in a passage",
-            "subtitle": "Illustrative: the scores are invented, not from the paper. The passage tokens are \"cat sits soft cushion on sleeping.\"",
+            "title": "A worked example: finding the answer to \"Where is the cat sitting?\" in a passage",
+            "subtitle": "Illustrative: scores are invented, not paper data. Passage tokens: \"cat / sits on / soft / mat / on / sleeping.\"",
             "columns": [
-              "Word in passage",
+              "Passage token",
               "Start score S·Tᵢ",
               "End score E·Tᵢ"
             ],
@@ -639,7 +658,7 @@
                 "0.2"
               ],
               [
-                "sits",
+                "sits on",
                 "0.3",
                 "0.1"
               ],
@@ -649,7 +668,7 @@
                 "0.4"
               ],
               [
-                "cushion",
+                "mat",
                 "1.2",
                 "2.9"
               ],
@@ -667,49 +686,49 @@
             "highlight": {
               "row": 2
             },
-            "note": "The best-scoring span starts at \"soft\" and ends at \"cushion\": 3.1 + 2.9 = 6.0, so the answer is \"soft cushion.\" An end position before \"soft\" would violate j ≥ i."
+            "note": "The highest-scoring combination starts at \"soft\" and ends at \"mat\": 3.1 + 2.9 = 6.0, so the answer is \"soft mat.\" Choosing an end before \"soft\" violates j ≥ i."
           }
         },
         {
-          "p": "SQuAD 2.0 adds cases where the passage contains no answer. BERT's handling is just as simple: it treats \"no answer\" as a special answer where both the start and end fall on [CLS], with score S·C + E·C. It outputs a real answer only when the best real answer's score exceeds that no-answer score by a threshold τ, which is tuned on the dev set to maximize F1."
+          "p": "SQuAD 2.0 adds cases where the passage has no answer at all. BERT handles this just as simply: treat \"no answer\" as a special answer whose start and end both fall on [CLS], with score S·C + E·C. It outputs an answer only when the best real answer beats that score by a threshold τ, chosen on the dev set to maximize F1."
         },
         {
-          "p": "Compared with pre-training, fine-tuning is negligible. The paper says every result starts from the same pre-trained model and can be replicated in at most 1 hour on a single Cloud TPU, or a few hours on a GPU; for example, the SQuAD model reaches 91.0 F1 on the dev set in about 30 minutes. All GLUE tasks use batch size 32 and 3 epochs. BERT-LARGE can, however, be unstable when fine-tuned on small datasets, so the authors retry with several random initializations and pick the best dev-set run."
+          "p": "Fine-tuning cost is negligible compared with pretraining. The paper says all results start from the same pretrained model and can be replicated in at most 1 hour on one Cloud TPU, or a few hours on a GPU. For example, the SQuAD model reaches 91.0 dev F1 in about 30 minutes. All GLUE tasks use batch size 32 and 3 epochs. However, BERT-LARGE is occasionally unstable when fine-tuning on small datasets; the authors' approach is to run several random restarts and pick the best on the dev set."
         },
         {
           "quiz": {
-            "q": "When fine-tuning BERT-LARGE on SQuAD v1.1, how many new parameters are added beyond BERT’s own parameters?",
+            "q": "When fine-tuning BERT-LARGE on SQuAD v1.1, how many new parameters are added beyond BERT's own parameters?",
             "options": [
               "About 340M",
-              "2 × 1024 = 2,048 (start vector S and end vector E)",
-              "30,000, one for each vocabulary token",
+              "2 × 1024 = 2048 (start vector S and end vector E)",
+              "30,000, one for each word in the vocabulary",
               "0"
             ],
             "answer": 1,
-            "why": "The paper says explicitly that QA fine-tuning introduces only a start vector S and an end vector E, each of length H. For LARGE, H = 1024, so that’s 2,048 new parameters in total; the other 340M parameters come from pre-training and are also updated during fine-tuning. That’s what “add one layer” really means."
+            "why": "The paper explicitly says SQuAD fine-tuning only introduces a start vector S and an end vector E, both of length equal to hidden size H. LARGE has H = 1024, so 2048 new parameters total; the other 340M parameters come from pretraining and are also updated during fine-tuning. This is what \"one extra layer is all it takes\" means."
           }
         }
       ]
     },
     {
-      "h": "The scorecard: new records on all 11 tasks",
+      "h": "Report card: new records across 11 tasks",
       "blocks": [
         {
           "callout": {
             "kind": "prereq",
-            "title": "What are GLUE and SQuAD?",
+            "title": "What GLUE and SQuAD are",
             "list": [
-              "**GLUE**: a collection of nine language-understanding tasks, including sentence relationships, sentiment, grammatical acceptability, and whether two sentences mean the same thing. The paper excludes WNLI, which has issues, and reports the other eight.",
-              "**SQuAD**: Stanford's reading comprehension dataset: given a Wikipedia passage and a question, the model must select the answer span in the passage. v1.1 contains about 100,000 question–answer pairs; v2.0 adds questions where the passage has no answer.",
-              "**F1**: measures how much the predicted answer overlaps with the gold answer, scored out of 100; **EM** is the exact-match rate."
+              "**GLUE**: a suite of nine language-understanding tasks, including sentence-relationship inference, sentiment, grammatical acceptability, and whether two sentences have the same meaning. The paper drops the problematic WNLI and reports the other eight.",
+              "**SQuAD**: Stanford's reading-comprehension dataset: given a Wikipedia passage and a question, mark the answer span in the passage. v1.1 has about 100,000 QA pairs; v2.0 adds questions with no answer in the passage.",
+              "**F1**: measures overlap between the predicted answer and the ground-truth answer, max 100; **EM** is exact match."
             ]
           }
         },
         {
           "fig": {
             "type": "columns",
-            "title": "GLUE eight-task average: BERT-BASE already beats GPT by 4.5 points",
-            "subtitle": "Units: points, GLUE test set, excluding WNLI. Amber bars are BERT; BERT-BASE has nearly the same architecture and size as GPT.",
+            "title": "Average GLUE score across eight tasks: BERT-BASE already beats GPT by 4.5 points",
+            "subtitle": "Units: points, GLUE test set, excluding WNLI. Amber is BERT; BERT-BASE and GPT have nearly identical architecture and the same size.",
             "items": [
               {
                 "label": "BiLSTM + ELMo + Attn",
@@ -734,32 +753,32 @@
                 "tone": "hi"
               }
             ],
-            "note": "From Table 1 of the paper. This average uses a slightly different method from the official GLUE score; on the official leaderboard, BERT-LARGE is 80.5 and GPT is 72.8."
+            "note": "From paper Table 1. The average here is computed differently from the official GLUE total score; on the official leaderboard, BERT-LARGE is 80.5 and GPT is 72.8."
           }
         },
         {
           "fig": {
             "type": "table",
-            "title": "The less data a task has, the more BERT improves",
-            "subtitle": "From Table 1 (GLUE test set). Parentheses show training examples; blue columns are BERT-LARGE.",
+            "title": "The less training data a task has, the bigger BERT's gain",
+            "subtitle": "From paper Table 1 (GLUE test set). Parentheses show number of training examples; blue bars are BERT-LARGE.",
             "columns": [
               "Task",
-              "Description",
+              "What it measures",
               "OpenAI GPT",
               "BERT-LARGE",
-              "Improvement"
+              "Gain"
             ],
             "rows": [
               [
-                "MNLI (392K)",
+                "MNLI (392k)",
                 "Sentence inference",
                 "82.1",
                 "86.7",
                 "+4.6"
               ],
               [
-                "SST-2 (67K)",
-                "Review sentiment",
+                "SST-2 (67k)",
+                "Movie-review sentiment",
                 "91.3",
                 "94.9",
                 "+3.6"
@@ -782,17 +801,17 @@
             "highlight": {
               "col": 3
             },
-            "note": "For MNLI, only the matched set is shown. The improvement column is computed by subtracting the numbers in the paper's table."
+            "note": "For MNLI only the matched evaluation is listed. \"Gain\" is our subtraction from the paper's table."
           }
         },
         {
-          "p": "On reading comprehension, the BERT-LARGE ensemble (fine-tuned first on TriviaQA, then on SQuAD) scored 93.2 F1 on the SQuAD v1.1 test set, 1.5 points above the best ensemble on the leaderboard at the time; a single model already beat the best ensemble. The paper also says that without TriviaQA it loses only 0.1–0.4 F1. On SQuAD v2.0, a single BERT-LARGE reached 83.1 F1, 5.1 points above the previous best system."
+          "p": "On reading comprehension, the BERT-LARGE ensemble (fine-tuned first on TriviaQA, then on SQuAD) reaches 93.2 F1 on the SQuAD v1.1 test set, 1.5 points above the previous top ensemble system; a single model already beats the best ensemble. The paper adds that skipping TriviaQA costs only 0.1–0.4 F1. On SQuAD v2.0, a single BERT-LARGE reaches 83.1 F1, 5.1 points above the previous best system."
         },
         {
           "fig": {
             "type": "table",
-            "title": "Three reading and commonsense tasks: versus previous best and humans",
-            "subtitle": "Test sets, from Tables 2–4 of the paper; human scores are from each leaderboard or dataset paper. Blue columns are BERT.",
+            "title": "Three reading and commonsense tasks: previous best and humans compared",
+            "subtitle": "Test sets, from paper Tables 2–4; human scores from leaderboards or dataset papers. Blue bars are BERT.",
             "columns": [
               "Task",
               "Previous best",
@@ -827,28 +846,28 @@
         {
           "callout": {
             "kind": "myth",
-            "title": "\"Beating humans\" depends on exactly what you compare",
-            "text": "On SQuAD v1.1, BERT's F1 beats the human score shown in the table, but that \"human score\" is a crowd-sourced baseline from the leaderboard, and every answer in v1.1 is guaranteed to be in the passage. On v2.0, which adds unanswerable questions, BERT's 83.1 is clearly below the human 89.5. A single number above a human baseline does not mean the model has surpassed humans at reading comprehension."
+            "title": "“Beating humans” depends on what exactly is being compared",
+            "text": "On SQuAD v1.1, BERT’s F1 is higher than the human score in the table, but that “human score” is a leaderboard baseline computed from crowdsourced annotations, and in v1.1 the answer always appears in the passage. Switch to v2.0, which adds “no answer” questions, and BERT’s 83.1 is clearly below the human 89.5. One number beating a human baseline does not mean the model has surpassed human reading comprehension."
           }
         },
         {
-          "p": "On SWAG — given a sentence, choose the most plausible continuation from four candidates — BERT-LARGE beats the dataset authors' baseline by 27.1 points and GPT by 8.3 points."
+          "p": "On SWAG — given a sentence, choose the most plausible continuation from four candidates — BERT-LARGE scores 27.1 points above the dataset authors’ baseline and 8.3 points above GPT."
         }
       ]
     },
     {
-      "h": "Ablations: what actually accounts for the gains",
+      "h": "Ablations: where does the gain really come from?",
       "blocks": [
         {
-          "p": "Apart from bidirectionality, BERT and GPT differ in more ways: BERT uses more data (GPT used only BooksCorpus), larger batches, and learns [SEP], [CLS], and segment embeddings during pre-training. The appendix frankly lists these differences and uses ablations to answer where the improvements mainly come from."
+          "p": "Besides bidirectionality, BERT and GPT differ in several ways: BERT uses more data (GPT used only BooksCorpus), larger batches, and learns [SEP], [CLS], and segment embeddings during pretraining. The appendix candidly lists these differences and uses ablations to answer: where does the improvement really come from?"
         },
         {
           "fig": {
             "type": "table",
-            "title": "Remove next-sentence prediction, then go unidirectional: QA drops hardest",
-            "subtitle": "From Table 5, dev set; all use the BERT-BASE architecture and the same data. Blue columns are SQuAD.",
+            "title": "Remove NSP, then make it unidirectional: QA drops hardest",
+            "subtitle": "From paper Table 5, dev set, all using BERT-BASE architecture and the same data. Blue bars are SQuAD.",
             "columns": [
-              "Pre-training setup",
+              "Pretraining method",
               "MNLI",
               "QNLI",
               "MRPC",
@@ -857,7 +876,7 @@
             ],
             "rows": [
               [
-                "BERT-BASE (masked words + next sentence)",
+                "BERT-BASE (masked LM + next sentence)",
                 "84.4",
                 "88.4",
                 "86.7",
@@ -865,7 +884,7 @@
                 "88.5"
               ],
               [
-                "No next sentence",
+                "Remove NSP",
                 "83.9",
                 "84.9",
                 "86.5",
@@ -873,7 +892,7 @@
                 "87.9"
               ],
               [
-                "Then left-to-right (≈ GPT's approach)",
+                "Then switch to left-to-right (≈ GPT’s approach)",
                 "82.1",
                 "84.3",
                 "77.5",
@@ -895,16 +914,16 @@
           }
         },
         {
-          "p": "Three things stand out. First, removing NSP clearly hurts QNLI, MNLI, and SQuAD. Second, switching from bidirectional to left-to-right (row 3 — with the same data and fine-tuning, roughly GPT's recipe) makes every task worse; MRPC and SQuAD drop the most, with SQuAD falling from 87.9 to 77.8. The paper's explanation is intuitive: a left-to-right model has no right-side context in each word's representation, and locating the answer is exactly the kind of task that needs it. Third, stacking a bidirectional LSTM on top of the unidirectional model brings SQuAD back up to 84.9, but it's still far behind true bidirectional pre-training and actually worse on GLUE tasks."
+          "p": "Three things stand out. First, removing NSP clearly hurts QNLI, MNLI, and SQuAD. Second, switching from bidirectional to unidirectional (row 3, with the same data and fine-tuning setup, roughly GPT’s approach) hurts every task, with MRPC and SQuAD suffering most: SQuAD falls from 87.9 to 77.8. The paper’s explanation is intuitive: in a left-to-right model, every token’s representation lacks right-side information, and locating an answer’s position is exactly what needs the right side. Third, adding a bidirectional LSTM on top of the unidirectional model lifts SQuAD back to 84.9, still far below true bidirectional pretraining, and actually worsens GLUE tasks."
         },
         {
-          "p": "The paper also addresses whether you could train two unidirectional models and combine them, as ELMo does. It costs twice as much as one bidirectional model; it's unnatural for QA because a right-to-left model cannot understand the answer conditioned on the question; and it's strictly less powerful, since a deep bidirectional model can use both left and right context at every layer."
+          "p": "The paper also responds to the idea of training two unidirectional models and concatenating them, as ELMo does: it costs twice as much as one bidirectional model. It is unnatural for QA because a right-to-left model cannot condition its reading of the answer on the question, and it is strictly less powerful, because a deep bidirectional model can use both sides at **every layer**."
         },
         {
           "fig": {
             "type": "columns",
-            "title": "Bigger is better—even on tasks with only 3,600 training examples",
-            "subtitle": "Unit: MNLI dev-set accuracy (average of 5 fine-tuning runs). From Table 6; amber bars are BERT-BASE and BERT-LARGE.",
+            "title": "Bigger is better, even for a task with only 3,600 training examples",
+            "subtitle": "Units: MNLI dev accuracy (average of 5 fine-tuning runs). From paper Table 6; amber rows are BERT-BASE and BERT-LARGE.",
             "items": [
               {
                 "label": "3 layers",
@@ -939,72 +958,72 @@
                 "tone": "hi"
               }
             ],
-            "note": "In the same table, MRPC — with only 3,600 training examples — also climbs from 79.8 to 87.8."
+            "note": "The same table shows MRPC (only 3,600 training examples) climbing from 79.8 to 87.8."
           }
         },
         {
-          "p": "The paper argues this is the first convincing demonstration that **scaling models up yields large gains even on small tasks**, provided the model has been sufficiently pre-trained. Earlier feature-based work had mixed results on whether larger models help; the authors' guess is that when you fine-tune directly and add only a few parameters, the downstream task can fully benefit from the larger, more expressive pre-trained representation, even with little task data. The appendix adds that pre-training for 1 million steps instead of 500,000 improves MNLI by nearly 1 percentage point."
+          "p": "The paper argues this is the first work to convincingly demonstrate that **scaling to very large models also yields large improvements on very small tasks**, provided the model is sufficiently pretrained. Earlier feature-based work was mixed on whether bigger models helped; the authors’ guess is that direct fine-tuning with very few new parameters lets downstream tasks fully benefit from larger, more expressive pretrained representations even when task data is scarce. The appendix adds that 1M pretraining steps beats 500k by almost 1 point on MNLI."
         },
         {
           "callout": {
             "kind": "takeaway",
-            "title": "Fine-tuning isn't the only way to use BERT",
-            "text": "Section 5.3 also tries the feature-based route: freeze BERT's parameters, treat intermediate-layer outputs as features, and feed them into a small model for named entity recognition. Concatenating the last four layers (96.1 dev F1) is only 0.3 points below fine-tuning the whole model (96.4). This route is cheaper when you need to run many experiments, or when a task doesn't fit neatly into a Transformer."
+            "title": "Fine-tuning is not the only way to use it",
+            "text": "Paper section 5.3 also tests feature-based use: freeze BERT’s parameters, extract intermediate outputs as features, and feed them into a small model for named entity recognition. Concatenating the last four layers reaches dev F1 96.1, only 0.3 below fine-tuning the whole model (96.4). This is more compute-efficient when you need many experiments or when a task doesn’t fit neatly into a Transformer."
           }
         },
         {
           "quiz": {
-            "q": "In Table 5, which change causes the largest drop in SQuAD performance, and what does that tell you?",
+            "q": "In Table 5, which change causes the largest drop in SQuAD? What does that show?",
             "options": [
-              "Removing next-sentence prediction — meaning NSP is BERT's most important part",
-              "Switching from bidirectional to left-to-right — meaning token-level tasks especially depend on right-side context",
-              "Adding a bidirectional LSTM — meaning LSTM hurts",
-              "All three changes have equal impact"
+              "Removing NSP, showing NSP is the most important part of BERT",
+              "Switching from bidirectional to left-to-right, showing token-level tasks especially need right-side context",
+              "Adding a bidirectional LSTM, showing LSTMs are harmful",
+              "All three changes have the same effect"
             ],
             "answer": 1,
-            "why": "Removing NSP takes SQuAD from 88.5 to 87.9. On top of that, switching to left-to-right sends it from 87.9 to 77.8 — the biggest drop in the table. Question answering requires judging whether each position is an answer start or end, so each word needs to know what is to its right. That is exactly the value of bidirectionality."
+            "why": "Removing NSP drops SQuAD from 88.5 to 87.9; changing from bidirectional to left-to-right on top of that drops it from 87.9 to 77.8, the largest drop in the table. QA needs to judge whether each position is the start or end of the answer, so every token needs to know what is on its right — exactly the value of bidirectionality."
           }
         }
       ]
     },
     {
-      "h": "What BERT didn't solve, and what came next",
+      "h": "What it didn’t solve, and what came next",
       "blocks": [
         {
           "list": [
-            "**Pre-training/fine-tuning mismatch**: [MASK] appears only during pre-training; the 80/10/10 split is a mitigation, not a cure. Also, only 15% of words are predicted per batch, so training is less efficient.",
-            "**Dubious value of next-sentence prediction**: as noted earlier, later work at larger scale found that dropping NSP doesn't hurt.",
-            "**Length limit**: inputs are capped at 512 word pieces, still because of the quadratic cost of attention.",
-            "**Not built for generation**: BERT is an encoder, good at \"reading\" but with no natural token-by-token way to generate text. The paper itself notes in a footnote that the left-only \"decoder\" is the one suited to text generation.",
-            "**Unstable fine-tuning on small datasets**: BERT-LARGE needs several random restarts on small datasets to pick a good result."
+            "**Pretrain–fine-tune mismatch**: [MASK] appears only during pretraining; 80/10/10 is a mitigation, not a cure. It also predicts only 15% of tokens per batch, so training is less efficient.",
+            "**The value of next-sentence prediction is questionable**: as noted earlier, later work at larger scale found that dropping NSP does no harm.",
+            "**Length limit**: inputs are capped at 512 tokens, still driven by the quadratic cost of attention.",
+            "**Weak at generation**: BERT is an encoder—great at “reading” but with no natural word-by-word generation method. The paper’s own footnote notes that the left-only “decoder” is the one suited to generating text.",
+            "**Unstable fine-tuning on small datasets**: BERT-LARGE needs multiple random restarts to pick a good result on small datasets."
           ]
         },
         {
-          "p": "After BERT, \"pre-training + fine-tuning\" quickly became the standard NLP recipe, and improved variants proliferated. But the main line leading to today's chat models took a different path: the GPT family stuck with the left-to-right language model and kept scaling both model and data. By GPT-3 (2020), many tasks no longer needed fine-tuning at all — a few examples in the prompt were enough. Those papers are on our reading list, and we'll cover them one by one."
+          "p": "After BERT, “pretrain + fine-tune” quickly became standard practice in NLP, and improved variants proliferated. But the line leading to today’s large chat models went another way: the GPT lineage kept the left-to-right language model and kept scaling up model and data, so that by GPT-3 (2020) many tasks no longer needed fine-tuning at all—a few examples in the prompt sufficed. Those papers are all in our reading list, and we’ll cover them one by one."
         },
         {
           "callout": {
             "kind": "note",
             "title": "What to read next",
-            "text": "GPT-3's \"Language Models are Few-Shot Learners\" covers doing tasks without fine-tuning; \"Scaling Laws\" covers just how regular the bigger-is-better trend is. Both are on the paper reading list."
+            "text": "GPT-3’s “Language Models are Few-Shot Learners” covers doing tasks without fine-tuning; “Scaling Laws” covers how far the bigger-is-better pattern goes. Both are in the reading list."
           }
         }
       ]
     },
     {
-      "h": "Test yourself: do you really understand it?",
+      "h": "Test yourself: have you really understood it?",
       "blocks": [
         {
           "quiz": {
-            "q": "What is the most critical architectural difference between BERT and GPT?",
+            "q": "What is the most important architectural difference between BERT and GPT?",
             "options": [
-              "BERT uses an LSTM, GPT uses a Transformer.",
-              "BERT’s self-attention attends to both left and right; GPT’s tokens can attend only to the left.",
-              "BERT has 10 times as many parameters as GPT.",
-              "BERT doesn’t need pre-training."
+              "BERT uses LSTM; GPT uses Transformer",
+              "BERT’s self-attention can see both left and right; in GPT each token can see only the left",
+              "BERT has 10× more parameters than GPT",
+              "BERT does not need pretraining"
             ],
             "answer": 1,
-            "why": "The paper deliberately made BERT-BASE the same size as GPT and stressed that the two architectures are nearly identical; the difference is in attention masking: BERT is bidirectional, GPT is left-only. That difference is also what forced BERT to switch to masked word prediction."
+            "why": "The paper deliberately makes BERT-BASE the same size as GPT and stresses that the two architectures are nearly identical; the only difference is how attention is masked: BERT is bidirectional, GPT is left-only. That difference is also what forces BERT to use masked-word prediction."
           }
         },
         {
@@ -1012,11 +1031,11 @@
             "kind": "takeaway",
             "title": "After reading, you should be able to answer these five questions in your own words.",
             "list": [
-              "Where do unidirectional language models fall short on understanding tasks? Give an example.",
-              "Why can’t you simply make a language model bidirectional? How does masked word prediction get around this?",
-              "Why are chosen words handled in three ways: 80%, 10%, and 10%?",
-              "How can the same BERT be used for three different kinds of tasks: classification, question answering, and token-level tagging?",
-              "What do the ablations show about where BERT’s gains come from?"
+              "Where do unidirectional language models fall short on language-understanding tasks? Give an example.",
+              "Why can’t a language model simply be made bidirectional? How does masked-word prediction get around this?",
+              "Why are the selected words treated three ways: 80%, 10%, 10%?",
+              "How is the same BERT used for three different tasks—classification, QA, and token-level tagging?",
+              "What do the ablations show about where BERT’s gains mainly come from?"
             ]
           }
         }
@@ -1032,89 +1051,89 @@
     },
     "more": [
       {
-        "label": "Official code and pre-trained models",
+        "label": "Official code and pretrained models",
         "url": "https://github.com/google-research/bert"
       }
     ],
-    "note": "This article is based on arXiv v2 of the paper (May 2019). Figures are redrawn by us from the paper’s data; examples and numbers marked “Illustrative” are for explanation and not from the paper. The “Improvement” column is computed by us by subtracting numbers in the paper’s tables."
+    "note": "This article is based on v2 of the arXiv paper (May 2019). Charts are redrawn by this site from the paper’s data; examples and numbers marked “Illustrative” are for explanation and are not from the paper. The “Gain” column is computed by this site by subtracting values in the paper’s tables."
   },
   "claims": [
     {
-      "text": "GLUE score pushed to 80.5.",
+      "text": "GLUE score pushed to 80.5",
       "value": "80.5",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "pushing the GLUE score to 80.5%",
       "as_written": "80.5"
     },
     {
-      "text": "GLUE score up 7.7 points.",
+      "text": "GLUE up 7.7 points",
       "value": "7.7",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "(7.7% point absolute improvement)",
       "as_written": "7.7 points"
     },
     {
-      "text": "MNLI accuracy 86.7, up 4.6.",
+      "text": "MNLI accuracy 86.7, up 4.6",
       "value": "86.7",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "MultiNLI accuracy to 86.7%",
       "as_written": "86.7"
     },
     {
-      "text": "SQuAD v1.1 test F1 93.2, up 1.5.",
+      "text": "SQuAD v1.1 test F1 93.2, up 1.5",
       "value": "93.2",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "SQuAD v1.1 question answering Test F1 to 93.2",
       "as_written": "93.2"
     },
     {
-      "text": "SQuAD v2.0 test F1 83.1, up 5.1.",
+      "text": "SQuAD v2.0 test F1 83.1, up 5.1",
       "value": "83.1",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "SQuAD v2.0 Test F1 to 83.1",
       "as_written": "83.1"
     },
     {
-      "text": "Sets new records on 11 tasks.",
+      "text": "Sets new records on 11 tasks",
       "value": "eleven",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "new state-of-the-art results on eleven natural language processing",
       "as_written": "11 tasks"
     },
     {
-      "text": "Randomly masks 15% of word pieces.",
+      "text": "Masks 15% of tokens at random",
       "value": "15%",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "we mask 15% of all WordPiece tokens",
       "as_written": "15%"
     },
     {
-      "text": "80% replaced with [MASK], 10% with random words, 10% unchanged.",
+      "text": "80% replaced with [MASK], 10% random tokens, 10% unchanged",
       "value": "80%",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "the [MASK] token 80% of the time",
       "as_written": "80%"
     },
     {
-      "text": "10% replaced with random words, 10% left unchanged.",
+      "text": "10% replaced with random tokens, 10% kept unchanged",
       "value": "10%",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "a random token 10% of the time",
       "as_written": "10%"
     },
     {
-      "text": "SQuAD v1.1 has about 100,000 question–answer pairs.",
+      "text": "SQuAD v1.1 has about 100,000 QA pairs",
       "value": "100k",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "a collection of 100k crowdsourced",
       "as_written": "100,000"
     },
     {
-      "text": "Pre-training: 1,000,000 steps",
+      "text": "Pretraining runs for 1,000,000 steps",
       "value": "1M steps",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "trained on 1M steps",
-      "as_written": "1 million"
+      "as_written": "1,000,000"
     },
     {
       "text": "Compared with 500,000 steps",
@@ -1124,280 +1143,280 @@
       "as_written": "500,000"
     },
     {
-      "text": "Random replacements account for only 1.5%.",
+      "text": "Random replacements account for only 1.5%",
       "value": "1.5%",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "random replacement only occurs for 1.5% of all tokens",
       "as_written": "1.5%"
     },
     {
-      "text": "WordPiece vocabulary: 30,000 tokens",
+      "text": "WordPiece vocabulary 30,000",
       "value": "30,000",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "with a 30,000 token vocabulary",
       "as_written": "30,000"
     },
     {
-      "text": "In NSP, 50% are true continuations.",
+      "text": "NSP: 50% are true continuations",
       "value": "50%",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "50% of the time B is the actual next sentence",
       "as_written": "50%"
     },
     {
-      "text": "NSP accuracy 97%–98%.",
+      "text": "NSP accuracy 97%–98%",
       "value": "97%-98%",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "The final model achieves 97%-98% accuracy on NSP",
       "as_written": "97%–98%"
     },
     {
-      "text": "BERT-BASE: 12 layers, hidden size 768, 12 heads, 110M parameters.",
+      "text": "BERT-BASE: 12 layers, 768 hidden size, 12 heads, 110M parameters",
       "value": "110M",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "BERTBASE (L=12, H=768, A=12, Total Parameters=110M)",
-      "as_written": "110 million"
+      "as_written": "110M"
     },
     {
-      "text": "BERT-LARGE: 24 layers, hidden size 1024, 16 heads, 340M parameters.",
+      "text": "BERT-LARGE: 24 layers, 1024 hidden size, 16 heads, 340M parameters",
       "value": "340M",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "BERTLARGE (L=24, H=1024, A=16, Total Parameters=340M)",
-      "as_written": "340 million"
+      "as_written": "340M"
     },
     {
-      "text": "Feed-forward layers 3072 / 4096.",
+      "text": "Feed-forward size 3072 / 4096",
       "value": "3072",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "i.e., 3072 for the H = 768 and 4096 for the H = 1024",
       "as_written": "3072"
     },
     {
-      "text": "Largest encoder in the original Transformer: 100M parameters.",
+      "text": "Largest encoder in the original Transformer: 100M parameters",
       "value": "100M",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "with 100M parameters for the encoder",
-      "as_written": "100 million"
+      "as_written": "100M"
     },
     {
-      "text": "Largest Transformer in the literature: 235M parameters.",
+      "text": "Largest Transformer in the cited literature: 235M parameters",
       "value": "235M",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "(L=64, H=512, A=2) with 235M parameters",
-      "as_written": "235 million"
+      "as_written": "235M"
     },
     {
-      "text": "BooksCorpus: 800 million words.",
+      "text": "BooksCorpus 800M words",
       "value": "800M words",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "BooksCorpus (800M words)",
-      "as_written": "800 million words"
+      "as_written": "800M words"
     },
     {
-      "text": "English Wikipedia: 2.5 billion words.",
+      "text": "English Wikipedia 2.5B words",
       "value": "2,500M words",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "English Wikipedia (2,500M words)",
-      "as_written": "2.5 billion words"
+      "as_written": "2.5B words"
     },
     {
-      "text": "128,000 word pieces per batch.",
+      "text": "128,000 tokens per batch",
       "value": "128,000",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "256 sequences * 512 tokens = 128,000 tokens/batch",
       "as_written": "128,000"
     },
     {
-      "text": "Training for 1,000,000 steps, about 40 passes over the corpus.",
+      "text": "1,000,000 training steps, about 40 passes over the corpus",
       "value": "1,000,000 steps",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "for 1,000,000 steps, which is approximately 40",
       "as_written": "1,000,000 steps"
     },
     {
-      "text": "Total corpus: 3.3 billion words.",
+      "text": "Corpus total 3.3B words",
       "value": "3.3 billion",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "over the 3.3 billion word corpus",
-      "as_written": "3.3 billion words"
+      "as_written": "3.3B words"
     },
     {
-      "text": "Learning rate 1e-4, warm-up 10,000 steps.",
+      "text": "Learning rate 1e-4, 10,000 warmup steps",
       "value": "10,000 steps",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "warmup over the first 10,000 steps",
       "as_written": "10,000 steps"
     },
     {
-      "text": "BASE uses 16 TPU chips.",
+      "text": "BASE uses 16 TPU chips",
       "value": "16 TPU chips",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "(16 TPU chips total)",
       "as_written": "16 chips"
     },
     {
-      "text": "LARGE uses 64 TPU chips.",
+      "text": "LARGE uses 64 TPU chips",
       "value": "64 TPU chips",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "16 Cloud TPUs (64 TPU chips total)",
       "as_written": "64 chips"
     },
     {
-      "text": "Each pre-training run: 4 days.",
+      "text": "Each pretraining run takes 4 days",
       "value": "4 days",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "Each pretraining took 4 days to complete",
       "as_written": "4 days"
     },
     {
-      "text": "90% of steps use sequence length 128.",
+      "text": "90% of steps use length 128",
       "value": "90%",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "sequence length of 128 for 90% of the steps",
       "as_written": "90%"
     },
     {
-      "text": "Fine-tuning: at most 1 hour.",
+      "text": "Fine-tuning takes at most 1 hour",
       "value": "1 hour",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "at most 1 hour on a single Cloud TPU",
       "as_written": "1 hour"
     },
     {
-      "text": "SQuAD reaches dev F1 91.0 in about 30 minutes.",
+      "text": "SQuAD reaches dev F1 91.0 in about 30 minutes",
       "value": "91.0",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "Dev F1 score of 91.0%",
       "as_written": "91.0"
     },
     {
-      "text": "GLUE uses batch size 32 and 3 epochs.",
+      "text": "GLUE: batch size 32, 3 epochs",
       "value": "batch size of 32",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "We use a batch size of 32 and fine-tune for 3 epochs",
       "as_written": "32"
     },
     {
-      "text": "GLUE average scores: BASE 79.6, LARGE 82.1, GPT 75.1.",
+      "text": "GLUE average: BASE 79.6, LARGE 82.1, GPT 75.1",
       "value": "79.6",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "79.6",
       "as_written": "79.6"
     },
     {
-      "text": "GLUE average score: LARGE 82.1.",
+      "text": "GLUE average LARGE 82.1",
       "value": "82.1",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "82.1",
       "as_written": "82.1"
     },
     {
-      "text": "GLUE average score: GPT 75.1.",
+      "text": "GLUE average GPT 75.1",
       "value": "75.1",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "75.1",
       "as_written": "75.1"
     },
     {
-      "text": "BASE and LARGE improve by 4.5 and 7.0 points on average.",
+      "text": "Average gain of 4.5 for BASE and 7.0 for LARGE",
       "value": "4.5%",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "obtaining 4.5% and 7.0% respective average accuracy improvement",
       "as_written": "4.5"
     },
     {
-      "text": "Official leaderboard: GPT 72.8.",
+      "text": "Official leaderboard GPT 72.8",
       "value": "72.8",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "OpenAI GPT, which obtains 72.8",
       "as_written": "72.8"
     },
     {
-      "text": "CoLA: GPT 45.4, BERT-LARGE 60.5.",
+      "text": "CoLA: GPT 45.4, BERT-LARGE 60.5",
       "value": "60.5",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "60.5",
       "as_written": "60.5"
     },
     {
-      "text": "RTE: GPT 56.0, BERT-LARGE 70.1.",
+      "text": "RTE: GPT 56.0, BERT-LARGE 70.1",
       "value": "70.1",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "70.1",
       "as_written": "70.1"
     },
     {
-      "text": "SQuAD v1.1: single model beats the best ensemble; omitting TriviaQA costs only 0.1–0.4 F1.",
+      "text": "SQuAD 1.1 single model beats the best ensemble; skipping TriviaQA costs only 0.1–0.4 F1",
       "value": "0.1-0.4",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "we only lose 0.1-0.4 F1",
       "as_written": "0.1–0.4"
     },
     {
-      "text": "SQuAD v1.1 human F1 91.2.",
+      "text": "SQuAD 1.1 human F1 91.2",
       "value": "91.2",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "82.3 91.2",
       "as_written": "91.2"
     },
     {
-      "text": "SQuAD v2.0 human F1 89.5.",
+      "text": "SQuAD 2.0 human F1 89.5",
       "value": "89.5",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "86.3 89.0 86.9 89.5",
       "as_written": "89.5"
     },
     {
-      "text": "SWAG: BERT-LARGE 86.3, GPT 78.0.",
+      "text": "SWAG: BERT-LARGE 86.3, GPT 78.0",
       "value": "86.3",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "86.6 86.3",
       "as_written": "86.3"
     },
     {
-      "text": "SWAG: 27.1 above the baseline, 8.3 above GPT.",
+      "text": "SWAG is 27.1 points above the baseline and 8.3 points above GPT",
       "value": "27.1%",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "+27.1% and OpenAI GPT by 8.3%",
       "as_written": "27.1"
     },
     {
-      "text": "Table 5: LTR & No NSP SQuAD 77.8.",
+      "text": "Table 5: LTR & No NSP SQuAD 77.8",
       "value": "77.8",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "77.8",
       "as_written": "77.8"
     },
     {
-      "text": "Table 6: LARGE MNLI 86.6.",
+      "text": "Table 6: LARGE MNLI 86.6",
       "value": "86.6",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "86.6",
       "as_written": "86.6"
     },
     {
-      "text": "MRPC has only 3,600 training examples.",
+      "text": "MRPC has only 3,600 training examples",
       "value": "3,600",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "which only has 3,600 labeled training examples",
       "as_written": "3,600"
     },
     {
-      "text": "Concatenating the last four layers scores only 0.3 F1 below fine-tuning.",
+      "text": "Concatenating the last four layers scores only 0.3 F1 below fine-tuning",
       "value": "0.3",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "which is only 0.3 F1 behind fine-tuning the entire model",
       "as_written": "0.3"
     },
     {
-      "text": "1 million steps beats 500,000 steps by nearly 1.0%.",
+      "text": "1M steps beats 500k steps by nearly 1 percentage point",
       "value": "1.0%",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "almost 1.0% additional accuracy on MNLI",
       "as_written": "1 percentage point"
     },
     {
-      "text": "Table 8: [MASK]-only feature-based NER 94.0.",
+      "text": "Table 8: [MASK]-only feature-based NER 94.0",
       "value": "94.0",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "94.0",
@@ -1407,5 +1426,5 @@
   "status": "published",
   "verified": false,
   "lang": "en",
-  "translated_from": "0f829b4910a239d4"
+  "translated_from": "37a16a60b2c9c5c6"
 }

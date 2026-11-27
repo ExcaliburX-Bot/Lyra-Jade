@@ -1,0 +1,717 @@
+{
+  "slug": "deep-rl-from-human-preferences",
+  "category": "paper",
+  "publisher": "OpenAI · DeepMind",
+  "date": "2017-06-12",
+  "title": "Deep Reinforcement Learning from Human Preferences: no reward function, just ask which clip is better — RLHF starts here.",
+  "summary": "If you can't write a reward function, have a person watch two 1–2 second clips and pick the better one. We unpack the paper that started RLHF: how Bradley–Terry and Elo turn comparisons into rewards, why the 10% random-choice correction matters, how 700 comparisons match true rewards, and the Atari label count that was copy-pasted wrong in the main text.",
+  "ai_summary": "Deep Reinforcement Learning from Human Preferences (Christiano, Leike, Amodei, et al., OpenAI and DeepMind, 2017) proposes training a reward model from human preferences between pairs of short clips, then using reinforcement learning to maximize the predicted reward; the three processes run asynchronously and feedback is collected online. The reward model uses the Bradley-Terry model with a cross-entropy loss, plus ensembling, regularization, and a 10% random-error assumption for robustness. On MuJoCo and Atari, with less than 1% of interactions requiring human feedback, it comes close to training on the true reward and teaches behaviors such as backflips that have no writable reward function. It later became the foundation of RLHF.",
+  "brief": [
+    "Problem: many tasks have goals people can recognize but can't write as a reward function and can't demonstrate; having people score every step is too expensive.",
+    "Method: a human compares two 1–2 second clips, a Bradley-Terry model trains the reward model, and the agent maximizes the predicted reward; all three run asynchronously and online.",
+    "Results: robots roughly match true reward with 700 comparisons and Atari with 5,500; a backflip is taught in under one hour; less than 1% of interactions require human feedback.",
+    "Limitations: humans make mistakes and are inconsistent; the query selection method is crude; offline feedback gets exploited; the Atari label counts in the main text don't match the figure legend."
+  ],
+  "paper": {
+    "title": "Deep Reinforcement Learning from Human Preferences",
+    "authors": "Paul F. Christiano, Jan Leike, Tom B. Brown, Miljan Martic, Shane Legg, Dario Amodei",
+    "org": "OpenAI, DeepMind",
+    "venue": "NeurIPS 2017",
+    "year": 2017,
+    "arxiv": "1706.03741",
+    "url": "https://arxiv.org/abs/1706.03741"
+  },
+  "cover": {
+    "headline": "A close read of the paper that started RLHF",
+    "highlight": "Just ask which clip is better",
+    "glyph": {
+      "kind": "flow",
+      "nodes": [
+        {
+          "label": "Humans compare two clips"
+        },
+        {
+          "label": "Learn a reward model",
+          "tone": "hi"
+        },
+        {
+          "label": "RL optimizes it"
+        }
+      ]
+    }
+  },
+  "sections": [
+    {
+      "h": "Bottom line: what this paper actually did",
+      "blocks": [
+        {
+          "p": "In June 2017, six collaborators including Paul Christiano and Dario Amodei at OpenAI and Jan Leike and Shane Legg at DeepMind published this paper. The core recipe behind what people now call **RLHF** (reinforcement learning from human feedback) comes from here: **don't write a reward function. Instead, have a person watch two clips, pick the better one, train a \"reward model\" on those choices, and have the agent maximize the score that model gives.**"
+        },
+        {
+          "p": "The problem the paper tackles is simple: for many tasks, people can instantly tell whether something is done well but can't write a scoring formula. Examples include getting a robot to clean a table, scramble an egg, or do a backflip. Having a person score every step is unrealistic: RL often needs hundreds or thousands of hours of experience, and no one can supervise all of it."
+        },
+        {
+          "list": [
+            "**Result one**: across 8 MuJoCo robot tasks and 7 Atari games, the agent never sees the true score and learns most tasks from human comparisons of short clips alone. Less than 1% of interactions require human feedback.",
+            "**Result two**: with 700 comparisons, the robot roughly matches training directly on the true reward; Atari needs 5,500.",
+            "**Result three**: some genuinely reward-function-less behaviors, like a one-legged hopper doing consecutive backflips, are taught with 900 comparisons and less than one hour of human time.",
+            "**Result four**: feedback must be collected continuously during training. If it's collected only once at the start, the agent exploits loopholes in the reward model and learns strange behaviors."
+          ]
+        },
+        {
+          "callout": {
+            "kind": "takeaway",
+            "title": "The one-sentence version",
+            "text": "Human \"watch two, choose one\" comparisons can be turned into a reward model with the Bradley-Terry model (the same idea as chess Elo ratings); the agent maximizes that reward model while people keep comparing new behaviors and correcting it. That way, complex behaviors can be taught to a deep RL agent with as little as an hour or two — sometimes just tens of minutes — of human time. Five years later, InstructGPT and ChatGPT used the same recipe."
+          }
+        },
+        {
+          "callout": {
+            "kind": "prereq",
+            "title": "Three small concepts you need for this paper",
+            "text": "Don't worry if they're new; these three are enough.",
+            "list": [
+              "**Reward function**: in RL, the score the environment gives the agent at each step. The agent's goal is to make the sum of those scores as high as possible.",
+              "**Reward model**: a neural network that takes in \"what the agent saw and did\" and outputs an estimated reward. In this paper it is learned from human comparisons and stands in for the reward function no one can write.",
+              "**Policy gradient / TRPO / A2C**: common RL algorithms that move the agent in the direction of higher scores. This paper uses TRPO for robot tasks and A2C for Atari (PPO appeared a month after this paper; see the PPO close read)."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "The problem: you can judge it, but not write it or do it",
+      "blocks": [
+        {
+          "p": "The paper opens by laying out what's wrong with existing approaches. The first is **handwritten reward functions**: for example, \"the closer the robot gets to the cup on the table, the higher the score.\" But simple reward functions are often gamed by the agent: it pushes the score very high while doing something you didn't want. The paper argues this is one root of the worry that AI systems' objectives are \"misaligned\" with human values."
+        },
+        {
+          "p": "The second is **demonstrations**: a person does the task first and the machine imitates it (imitation learning), or the reward function is inferred from the demonstrations (inverse reinforcement learning). But many tasks are impossible for humans to demonstrate, such as controlling a robot with many joints and a body nothing like a human's."
+        },
+        {
+          "p": "The third is **using direct human feedback as the reward**. It's workable in principle but far too expensive: deep RL needs hundreds or thousands of hours of experience, and no one can watch and score every step. To be practical, the amount of feedback needed must shrink by several orders of magnitude. The paper sets four goals: solve tasks people can recognize but not do; be teachable by ordinary people (not experts); scale to large problems; and be economical with feedback.",
+          "plain": {
+            "title": "A food critic doesn't have to know how to cook.",
+            "text": "Ask a critic to write a scoring formula for good food and they can't do it; ask them to cook a demonstration and they can't do that either. But put two dishes in front of them and they'll immediately say which is better. This paper uses only that single signal — \"which is better\" — to teach a robot to cook.",
+            "pic": "hp-critic"
+          }
+        }
+      ]
+    },
+    {
+      "h": "The method: three things at once",
+      "blocks": [
+        {
+          "p": "The method always maintains two neural networks: a **policy** π that sees an observation o and chooses an action a, and a **reward estimate** r̂ that scores each observation-action pair. They are updated by three processes running at the same time:"
+        },
+        {
+          "list": [
+            "**Act**: the policy runs in the environment and produces a batch of trajectories; an ordinary RL algorithm updates the policy to maximize the sum of predicted rewards r̂(o_{t}, a_{t}).",
+            "**Ask**: select pairs of segments from those trajectories and ask a person which segment is better.",
+            "**Learn**: update r̂ with supervised learning so it fits all human comparisons collected so far as well as possible."
+          ],
+          "plain": {
+            "title": "Three conveyor belts",
+            "text": "The agent works while producing video (the first belt); the video is cut into short clips and sent to humans for comparison (the second); the human choices update the \"scorer\" (the third), and the new scorer is immediately used by the agent again. The three belts keep turning and none waits for the others.",
+            "pic": "hp-loop"
+          }
+        },
+        {
+          "p": "The three processes run **asynchronously**: trajectories flow from the first to the second, human comparisons flow from the second to the third, and reward-model parameters flow back from the third to the first. That creates a complication: the agent's reward function keeps changing. So the authors use policy-gradient methods, which are fairly robust to changing rewards, and normalize r̂'s output to zero mean and fixed standard deviation."
+        },
+        {
+          "p": "Why normalize? Because human comparisons only tell you \"which segment is better than which\"; they don't pin down the absolute scale of the reward. Adding 100 to every reward leaves every comparison unchanged. The paper says this offset is \"underdetermined,\" so it simply fixes it."
+        }
+      ]
+    },
+    {
+      "h": "Why ask people to compare, not score",
+      "blocks": [
+        {
+          "p": "The human sees two **short clips**, each 1 to 2 seconds long. They can choose: left is better, right is better, equally good, or can't tell. The response is recorded as a triple (σ¹, σ², μ): two segments and a distribution μ representing the preference. If they pick one side, μ puts all its mass there; if equally good, μ is split 50/50; if can't tell, the comparison is discarded."
+        },
+        {
+          "p": "The paper's rationale: in some domains, comparisons are **much easier and much more consistent** for people than absolute scores, especially in robot control and the later \"new behavior\" tasks; and comparisons are just as useful for learning human preferences. Comparing short clips is almost as fast as comparing single frames, but far more informative.",
+          "plain": {
+            "title": "Wine tasting: naming the better glass is easier than scoring it",
+            "text": "Ask someone to score a glass of wine from 1 to 10 and they may say 7 today and 6 tomorrow, while different people use different scales. But put two glasses side by side and ask which is better, and most people answer consistently. Stable comparison results are what you need to train a model."
+          }
+        },
+        {
+          "p": "Clip length matters too. In ablations, the paper found that longer clips are **more helpful per clip** but **less helpful per frame**. If clips are too short, people need time just to figure out what's happening; beyond a certain length, judgment time grows roughly linearly with length. The authors chose the shortest length at which judgment time starts growing linearly: 1.5 seconds for robot tasks (15 to 60 steps, depending on the task) and 25 steps for Atari (about 1.7 seconds)."
+        }
+      ]
+    },
+    {
+      "h": "Turning comparisons into rewards: the same idea as Elo ratings",
+      "blocks": [
+        {
+          "p": "The key step: how do you get from choices like \"A is better than B\" to a reward function that scores every step? The paper assumes the probability that a person prefers a clip grows **exponentially** with the sum of rewards inside that clip:"
+        },
+        {
+          "formula": {
+            "expr": "P̂[ σ¹ ≻ σ² ] = exp( Σ_{t} r̂(o_{t}^{1}, a_{t}^{1}) ) / ( exp( Σ_{t} r̂(o_{t}^{1}, a_{t}^{1}) ) + exp( Σ_{t} r̂(o_{t}^{2}, a_{t}^{2}) ) )\nloss(r̂) = − Σ_{(σ¹, σ², μ) ∈ D} [ μ(1) · log P̂[ σ¹ ≻ σ² ] + μ(2) · log P̂[ σ² ≻ σ¹ ] ]",
+            "parts": [
+              {
+                "sym": "σ¹ ≻ σ²",
+                "desc": "The human thinks clip 1 is better than clip 2"
+              },
+              {
+                "sym": "Σ_{t} r̂( … )",
+                "desc": "The reward model's score for each step in the clip, summed. The clip's \"total score\""
+              },
+              {
+                "sym": "P̂",
+                "desc": "The model's predicted probability that the human will pick clip 1. The bigger the total-score gap between the clips, the closer this gets to 0 or 1"
+              },
+              {
+                "sym": "μ(1), μ(2)",
+                "desc": "The human's actual choice. If they chose clip 1, this is 1 and 0; if equally good, 0.5 and 0.5"
+              },
+              {
+                "sym": "D",
+                "desc": "All comparisons collected so far"
+              }
+            ],
+            "note": "The second line is the cross-entropy loss: the closer the model's predicted probability is to the human's actual choice, the lower the loss. If you divide numerator and denominator by the second term, the first line becomes 1 / (1 + exp(−(total₁ − total₂))), depending only on the difference between the two clip totals."
+          },
+          "plain": {
+            "title": "Chess Elo ratings",
+            "text": "The Elo difference between two chess players determines the probability that each wins: a zero difference is even odds, and the larger the gap, the more certain the higher-rated player. Here each clip is treated as a \"player,\" its summed reward is its \"rating,\" and each human choice is a game result. The model's job is to assign ratings to all clips that best explain the human choices.",
+            "pic": "hp-elo"
+          }
+        },
+        {
+          "p": "The paper notes that this is the **Bradley-Terry model**, introduced in statistics in 1952, for estimating each option's \"score\" from pairwise comparisons — the same idea behind Elo ratings. Later InstructGPT and DPO would both use it."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Worked example: how the total-score gap between two clips becomes the probability a human picks one",
+            "subtitle": "Illustrative: computed from Eq. (1) plus the \"human picks randomly 10% of the time\" correction; loss is natural log",
+            "columns": [
+              "Total-score gap (clip 1 − clip 2)",
+              "Raw prediction: probability of choosing clip 1",
+              "Probability after adding 10% random choice",
+              "Loss if human chose clip 1",
+              "Loss if human chose clip 2"
+            ],
+            "rows": [
+              [
+                "0",
+                "0.500",
+                "0.500",
+                "0.693",
+                "0.693"
+              ],
+              [
+                "1",
+                "0.731",
+                "0.708",
+                "0.345",
+                "1.231"
+              ],
+              [
+                "2",
+                "0.881",
+                "0.843",
+                "0.171",
+                "1.850"
+              ],
+              [
+                "5",
+                "0.993",
+                "0.944",
+                "0.058",
+                "2.882"
+              ],
+              [
+                "10",
+                "≈ 1.000",
+                "0.950",
+                "0.051",
+                "2.995"
+              ]
+            ],
+            "highlight": {
+              "col": 2
+            },
+            "note": "The probability after adding random choice = 0.9 × raw probability + 0.1 × 0.5, so it always falls between 0.05 and 0.95. Look at the last row: if the model is already convinced clip 1 is far better than clip 2, but the human chose clip 2, the loss without this correction is about 10 — a violent yank on the model — while with the correction it's only about 3. An occasional misclick won't pull the reward model off course."
+          }
+        },
+        {
+          "p": "This \"10% random choice\" correction is one of the paper's modifications to the basic method. The authors' explanation: humans always have some chance of making a mistake, and that chance doesn't fall to zero just because two clips are very different."
+        }
+      ]
+    },
+    {
+      "h": "The tricks that keep the reward model reliable",
+      "blocks": [
+        {
+          "p": "Beyond that correction, the paper lists several engineering details in Sections 2.2.3 and 2.2.4 and Appendix A, all found useful in early experiments:"
+        },
+        {
+          "list": [
+            "**Ensembling**: train 3 reward predictors at once, each on data sampled with replacement; the final r̂ is the average of the three after normalizing each one.",
+            "**Preventing overfitting**: each predictor holds out 1/e of the data as a validation set, uses L2 regularization, and automatically adjusts the regularization coefficient to keep validation loss between 1.1 and 1.5 times the training loss; some tasks also add Dropout.",
+            "**Feedback from the start**: at the very beginning of training, collect a batch of comparisons on clips from the randomly initialized policy (25% of all comparisons for robot tasks; 500 comparisons for Atari). For Atari, the reward model is also pretrained for 200 epochs before RL begins, so the agent isn't led irreversibly astray by an untrained reward model.",
+            "**Feedback gets sparser**: after that, the rate of queries is inversely proportional to the number of training steps; when training steps double, the number of questions per unit time roughly halves. The authors call this \"label annealing.\"",
+            "**Blocking cheat channels**: many environments end an episode when a robot falls or a game character dies, which leaks \"what's bad.\" The authors remove those termination conditions entirely; robot tasks replace them with learned penalties. In Atari games, the score area on screen is blacked out, BeamRider's enemy count is covered, and Enduro's speedometer is hidden."
+          ]
+        },
+        {
+          "p": "**Which questions do you ask the human?** The paper's approach: sample many random pairs of clips (ten times as many candidates as final questions), have the 3 reward predictors each predict which clip the human will choose, and ask about the pairs with the most disagreement. The intuition: if everyone agrees, the answer teaches nothing new. But the authors admit this is only a crude approximation of \"uncertainty,\" and ablations show it actually hurts on some tasks.",
+          "plain": {
+            "title": "Ask only when the three judges disagree",
+            "text": "The three judges (reward predictors) each guess which clip a person would prefer. If all three guess left, don't bother the human; only when they argue is the pair sent to a person. That way every human judgment is spent where the model is least sure.",
+            "pic": "hp-ensemble"
+          }
+        }
+      ]
+    },
+    {
+      "h": "Experiment 1: learning the original tasks without seeing the score",
+      "blocks": [
+        {
+          "p": "The first set of experiments \"pretends the score is invisible\" on standard tasks: the agent can learn the goal only by asking humans, but evaluation still uses the task's original true reward. Human feedback comes from hired labelers, who are given only a sentence or two of instructions per task and then compare hundreds to thousands of clip pairs. Each comparison averages 3 to 5 seconds, so each experiment requires 30 minutes to 5 hours of human time."
+        },
+        {
+          "p": "As a control, the authors also use **synthetic feedback**: comparisons are answered automatically with the true reward, always picking the clip with the higher true reward. This represents the ceiling a \"perfect human\" could reach. Another control is RL directly on the true reward. The paper stresses that the goal is not to beat RL; it's to do about as well when no reward is available and far less feedback is provided."
+        },
+        {
+          "p": "**Robots (8 MuJoCo tasks)**. Seven hundred real human comparisons are compared against 350, 700, and 1,400 synthetic comparisons, plus RL directly on the true reward. The conclusion: 700 comparisons roughly match RL on almost all tasks, though learning curves are less stable and have higher variance. More surprisingly, 1,400 synthetic comparisons slightly beat direct true-reward training; the authors speculate the learned reward has a better \"shape,\" giving positive scores to behaviors that usually come just before high reward."
+        },
+        {
+          "p": "Real human feedback is usually only a little worse than synthetic feedback: depending on the task, its efficiency ranges from half of synthetic feedback to on par. On the Ant (quadruped) task, human feedback is clearly better, because the authors told labelers to prefer clips where the robot \"stands upright,\" which becomes a useful guide."
+        },
+        {
+          "p": "**Atari (7 games)**. They use 5,500 human comparisons against 3,300, 5,500, and 10,000 synthetic comparisons (see the note below on the main-text numbers). These games are much harder:"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "How well Atari is learned from human comparisons",
+            "subtitle": "Compiled from Section 3.1.2 and Figure 3 of the paper; evaluated by the games' true scores",
+            "columns": [
+              "Game",
+              "Synthetic feedback (vs. direct RL)",
+              "Human feedback"
+            ],
+            "rows": [
+              [
+                "BeamRider, Pong",
+                "Matches or approaches with only 3,300 examples",
+                "The paper doesn't comment on this one"
+              ],
+              [
+                "Seaquest, Qbert",
+                "Eventually close, but learns more slowly",
+                "On Qbert it never makes it past the first level: short clips are hard for humans to read."
+              ],
+              [
+                "Space Invaders, Breakout",
+                "Never catches up, but clearly improves: Space Invaders often passes the first level, and Breakout can score 20 points — 50 with enough labels.",
+                "The paper doesn't comment on this one."
+              ],
+              [
+                "Enduro (racing)",
+                "Random exploration rarely overtakes another car, and synthetic feedback also struggles.",
+                "Beats direct RL: people reward any progress that looks like an overtake."
+              ]
+            ],
+            "note": "Overall, in most games human feedback is close to or slightly worse than the same amount of synthetic feedback — roughly equivalent to synthetic feedback with 40% fewer labels. The authors suggest the reasons may be human mistakes, different labelers using different standards, and uneven labeling that concentrates the data in a small part of state space."
+          }
+        },
+        {
+          "p": "Enduro is an intriguing case: the true reward pays out only when the agent overtakes a car, which random driving rarely stumbles into. But people prefer clips where the agent is gaining ground, effectively doing automatic **reward shaping**. This shows human feedback is not just a substitute for the true reward — sometimes it is easier to learn from."
+        }
+      ]
+    },
+    {
+      "h": "Experiment 2: teaching behaviors with no writable reward function",
+      "blocks": [
+        {
+          "p": "The paper's real goal is tasks with no reward function at all. Using the same settings as before, the authors demonstrate three \"novel behaviors\":"
+        },
+        {
+          "list": [
+            "**Backflip**: a one-legged hopper robot (Hopper) learns consecutive backflips, landing cleanly each time before flipping again. This took 900 comparisons and under an hour.",
+            "**One-legged forward motion**: the HalfCheetah robot stands on one leg and moves forward. 800 comparisons, under an hour.",
+            "**Driving alongside traffic**: in Enduro, the agent doesn't overtake, but drives side by side with a nearby car. About 1,300 comparisons and 4 million frames of interaction; for long stretches the agent stays almost level with another car, but it gets confused when the background changes."
+          ],
+          "plain": {
+            "title": "A backflip can't be written as a formula, but you know it when you see it.",
+            "text": "To write a reward function for a \"clean backflip,\" you would have to specify every joint angle and velocity at every moment — nearly impossible. But show a person two 1.5-second clips and ask \"which looks more like a backflip?\", and they can judge instantly. 900 such judgments are enough to teach the robot."
+          }
+        },
+        {
+          "p": "One caveat: feedback for these three novel behaviors came from the **paper's authors themselves**, not hired labelers, and the results are only qualitative demonstrations (videos) with no quantitative metrics, because there is no true reward to measure against."
+        }
+      ]
+    },
+    {
+      "h": "Ablations: which design choices actually matter",
+      "blocks": [
+        {
+          "p": "The authors remove one part of the method at a time and see what changes: selecting queries randomly (rather than by high disagreement); using a single predictor (no ensemble); collecting feedback only at the start of training (offline); removing L2 regularization and keeping only dropout; using length-1 segments in robot tasks (comparing single frames only); and, instead of comparing, training the predictor to directly fit each segment's true total reward."
+        },
+        {
+          "p": "The most striking result is **offline feedback**: when comparisons are collected only at the beginning, the reward model learns only part of the true reward, and the agent maximizes that \"partial reward,\" producing behavior that looks awful under the true reward. The paper's example is Pong: an offline-trained agent sometimes learns **not to lose points, but also not to score**, producing a rally that never ends and repeats the same exchange forever. The authors' conclusion: human feedback must be interleaved with RL, not given once as a static batch.",
+          "plain": {
+            "title": "Learning only \"don't lose\"",
+            "text": "If the scorer has seen only a few games before the match, he may learn only that \"losing the ball is bad.\" The player discovers that by keeping the ball in play forever and never attacking, he never loses it — and the scorer keeps giving high marks. So one rally goes on forever. The only way to close this loophole is for the scorer to keep watching new games and correcting the score as he goes.",
+            "pic": "hp-pong"
+          }
+        },
+        {
+          "p": "Other findings: in robot tasks, **predicting comparisons** is far more effective than **directly regressing scores**, because reward scale varies widely between states, making regression hard while predicting only \"which is better\" is much smoother. (In Atari, where rewards are clipped to [-1, 1], the two approaches are mixed.) Comparing only **single frames** is much worse: achieving the same result requires far more comparisons. And on some tasks, random query selection beats selecting by disagreement."
+        },
+        {
+          "callout": {
+            "kind": "note",
+            "title": "This is what later came to be called \"reward hacking.\"",
+            "list": [
+              "The agent optimizes the **learned** reward, not what the person actually wants. Whenever the reward model has a loophole, RL — an optimization machine — will find and exploit it.",
+              "The paper's solution is to collect feedback online, so the reward model keeps seeing the agent's new behaviors and correcting itself.",
+              "Five years later, InstructGPT used another trick: subtract a KL penalty between the policy and the supervised fine-tuning model from the reward, keeping the model from drifting too far from \"normal language\" (see the InstructGPT and PPO close reads). This remains one of the core difficulties of RLHF."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "Cost: compute now rivals human time",
+      "blocks": [
+        {
+          "p": "One interesting observation in the paper's conclusion: by learning a separate reward model, the number of interactions requiring human input drops by about 3 orders of magnitude. At that point diminishing returns have set in, because **compute already costs about the same as human feedback**. A footnote lays out the numbers:"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "The two costs of a single Atari experiment",
+            "subtitle": "From the paper's footnote 6",
+            "columns": [
+              "Item",
+              "Paper's figure",
+              "Check"
+            ],
+            "rows": [
+              [
+                "Compute",
+                "A cloud VM with 16 CPU cores + one K80 GPU, about $700/month; training runs about one day, totaling about $25.",
+                "700 ÷ 30 ≈ 23, checks out."
+              ],
+              [
+                "Human labor",
+                "5,000 labels work out to about 5 hours of human time; at the U.S. minimum wage, about $36.",
+                "3–5 seconds per label; 5,000 labels comes to about 4–7 hours, checks out."
+              ]
+            ],
+            "note": "In other words, even cutting the number of labels by a lot would not reduce total cost much, because running the experiment itself already costs this much."
+          }
+        }
+      ]
+    },
+    {
+      "h": "From here to ChatGPT",
+      "blocks": [
+        {
+          "p": "The paper's experiments are on robots and games, but the recipe it established was later ported to language models almost unchanged:"
+        },
+        {
+          "list": [
+            "**2019**: OpenAI's Ziegler et al. used the same idea to fine-tune GPT-2 on human preferences, producing more positive continuations and better summaries.",
+            "**2020**: Learning to Summarize from Human Feedback scaled it up; models trained on human preferences beat models trained with supervised learning alone (the next piece in track three covers it).",
+            "**2022**: InstructGPT used the same Bradley-Terry loss to train a reward model — labelers ranked 4 to 9 answers at a time, which were then broken into pairwise comparisons — and optimized it with PPO, creating the predecessor to ChatGPT (see the InstructGPT close read).",
+            "**2023**: DPO showed that the optimization problem underneath the Bradley-Terry preference model can bypass the reward model and RL entirely, training a language model directly on preference data (see the DPO close read)."
+          ]
+        },
+        {
+          "p": "Compared with this paper, RLHF for language models differs in a few ways: the objects being compared went from 1–2 second clips to entire responses; the RL algorithm changed from TRPO and A2C to PPO; and the defense against \"reward hacking\" shifted from continuous online feedback to mostly batch-collected data plus a KL penalty. But the skeleton — compare → reward model → RL — remains unchanged."
+        },
+        {
+          "p": "The authors later became central figures in AI alignment: Dario Amodei went on to co-found Anthropic, Jan Leike later led OpenAI's alignment team, and Paul Christiano founded ARC, a nonprofit focused on alignment research."
+        }
+      ]
+    },
+    {
+      "h": "Limitations, and a few details worth noting",
+      "blocks": [
+        {
+          "list": [
+            "**People make mistakes and are inconsistent**: on Atari, human feedback is only equivalent to synthetic feedback with 40% fewer labels; Qbert's short clips are hard for humans to read, and human feedback never made it past the first level.",
+            "**Query selection is crude**: selecting queries by ensemble disagreement is sometimes worse than random selection, as the authors themselves admit.",
+            "**Human experiments ran only once**: the human-feedback curves in Figures 2 and 3 are single runs, while synthetic feedback and RL are averages of 5 or 3 runs. In the robot tasks, Reacher and Cheetah were labeled by the authors themselves because of time constraints.",
+            "**The tasks are still fairly simple**: for these robot tasks, the true reward is a quadratic function of the input features (footnote 7), so it could have been learned with simpler methods. The authors use neural networks so the approach can generalize to tasks like backflips, where the reward is less simple."
+          ]
+        },
+        {
+          "p": "A few things we noticed when reading the original:"
+        },
+        {
+          "list": [
+            "**Inconsistent human-time estimates**: the introduction after the abstract says human feedback requires \"15 minutes to 5 hours,\" while Section 3.1 says \"30 minutes to 5 hours.\"",
+            "**The Atari label counts are wrong**: Section 3.1.2 says the 5,500 human comparisons are compared with \"350, 700, or 1,400 synthetic comparisons\" — a sentence copied word for word from the robot section. But the same paragraph then says \"only 3,300 examples,\" and Figure 3's legend says 3.3k, 5.5k, and 10k synthetic labels. The number in the main text appears to have been pasted from the previous section.",
+            "**A2C or A3C**: the methods section says Atari uses A2C (the synchronous version of A3C), but the Enduro discussion says \"A3C struggles to learn,\" probably referring to the same algorithm.",
+            "**\"Losing a life ends the episode\"**: Appendix A.2's standard environment settings include ending the episode when a life is lost, but the start of Appendix A says the agent is not given that signal, to avoid leaking task information. Read together, the environment resets as usual but the agent itself never receives the signal.",
+            "**We read version 4**: this PDF is arXiv version 4, updated in February 2023. The paper was first posted in June 2017 and appeared at NeurIPS later that year."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Test yourself: did you really get it?",
+      "blocks": [
+        {
+          "quiz": {
+            "q": "What kind of feedback does this paper ask humans to provide?",
+            "options": [
+              "Score every action from 1 to 10.",
+              "Watch two 1–2 second clips and pick the better one (or equally good, or can't tell).",
+              "Operate the robot yourself as a demonstration.",
+              "Write a reward function."
+            ],
+            "answer": 1,
+            "why": "Comparisons are easier and more consistent than scores, and they don't require the person to demonstrate the task."
+          }
+        },
+        {
+          "quiz": {
+            "q": "How does the reward model learn from \"clip 1 is better than clip 2\"?",
+            "options": [
+              "Use the human's choice directly as the reward.",
+              "Assume the probability of choosing a clip is determined by the difference between the two clips' summed rewards (the Bradley-Terry model, like Elo), and fit the human choices with a cross-entropy loss.",
+              "Train the reward model with reinforcement learning.",
+              "Just memorize the clips people chose."
+            ],
+            "answer": 1,
+            "why": "Equation (1) is equivalent to 1 / (1 + exp(-total-score gap)); the larger the gap, the more certain the human will choose the clip with the higher total."
+          }
+        },
+        {
+          "quiz": {
+            "q": "Why assume there is a \"10% chance the human picks randomly\"?",
+            "options": [
+              "To speed up training.",
+              "People do occasionally make mistakes; with this assumption, predicted probabilities are bounded between 0.05 and 0.95, so a single misclick doesn't make the loss too large or knock the model off course.",
+              "To reduce the number of labels.",
+              "To make the agent explore more."
+            ],
+            "answer": 1,
+            "why": "In the worked example, when the score gap is 10, the loss for choosing the wrong clip falls from about 10 to about 3."
+          }
+        },
+        {
+          "quiz": {
+            "q": "What goes wrong if feedback is collected only at the start of training (offline)?",
+            "options": [
+              "Nothing; it has no effect.",
+              "The reward model learns only part of the true objective, and the agent exploits the gaps — for example, in Pong it learns to avoid losing points but not to score, so rallies never end.",
+              "Training is faster and better.",
+              "The human workload increases."
+            ],
+            "answer": 1,
+            "why": "This is an early example of what later came to be called \"reward hacking\" in RLHF."
+          }
+        },
+        {
+          "p": "After reading this, you should be able to answer these questions:"
+        },
+        {
+          "list": [
+            "Why are handwritten reward functions and demonstrations not enough?",
+            "What are the three processes each doing, and why run them asynchronously?",
+            "Why does the reward model's output need to be normalized?",
+            "What is the relationship between the Bradley-Terry model and Elo ratings?",
+            "What are ensembling, label annealing, and disagreement-based query selection each for?",
+            "Why is collecting feedback online important?",
+            "From this paper to InstructGPT, what stayed the same and what changed?"
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Deep Reinforcement Learning from Human Preferences (arXiv:1706.03741, version 4)",
+      "publisher": "OpenAI, DeepMind",
+      "date": "2023-02-17",
+      "url": "https://arxiv.org/abs/1706.03741"
+    },
+    "note": "This article is based on arXiv version 4 of the paper, first posted in June 2017. Tables marked \"Illustrative\" were computed by this site from the paper's formulas; the Atari table is compiled from the paper's text and Figure 3, with Figure 3's legend read from the PDF page image. The 2019 Ziegler et al. work, InstructGPT, DPO, and the authors' later affiliations come from public sources and are not in this paper."
+  },
+  "claims": [
+    {
+      "text": "arXiv version 4",
+      "value": "1706.03741v4",
+      "source_url": "https://arxiv.org/abs/1706.03741",
+      "quote": "arXiv:1706.03741v4",
+      "as_written": "arXiv"
+    },
+    {
+      "text": "Less than 1% feedback",
+      "value": "1%",
+      "source_url": "https://arxiv.org/abs/1706.03741",
+      "quote": "less than 1% of our agent's interactions",
+      "as_written": "1%"
+    },
+    {
+      "text": "10% random choice",
+      "value": "10%",
+      "source_url": "https://arxiv.org/abs/1706.03741",
+      "quote": "assume there is a 10% chance",
+      "as_written": "10%"
+    },
+    {
+      "text": "40% fewer labels",
+      "value": "40%",
+      "source_url": "https://arxiv.org/abs/1706.03741",
+      "quote": "synthetic feedback that has 40% fewer labels",
+      "as_written": "40%"
+    },
+    {
+      "text": "25% of comparisons from the random policy",
+      "value": "25%",
+      "source_url": "https://arxiv.org/abs/1706.03741",
+      "quote": "We collect 25% of our comparisons",
+      "as_written": "25%"
+    },
+    {
+      "text": "1.1 to 1.5×",
+      "value": "between 1.1 and 1.5 times",
+      "source_url": "https://arxiv.org/abs/1706.03741",
+      "quote": "between 1.1 and 1.5 times the training loss",
+      "as_written": "1.5×"
+    },
+    {
+      "text": "4 million frames",
+      "value": "4 million frames",
+      "source_url": "https://arxiv.org/abs/1706.03741",
+      "quote": "4 million frames of interaction",
+      "as_written": "4 million"
+    },
+    {
+      "text": "$700",
+      "value": "$700/month",
+      "source_url": "https://arxiv.org/abs/1706.03741",
+      "quote": "costs ~$700/month on GCE",
+      "as_written": "$700"
+    },
+    {
+      "text": "$25",
+      "value": "~$25",
+      "source_url": "https://arxiv.org/abs/1706.03741",
+      "quote": "the compute cost is ~$25",
+      "as_written": "$25"
+    },
+    {
+      "text": "$36",
+      "value": "~$36",
+      "source_url": "https://arxiv.org/abs/1706.03741",
+      "quote": "this totals ~$36",
+      "as_written": "$36"
+    },
+    {
+      "text": "700 comparisons",
+      "value": "700 queries",
+      "source_url": "https://arxiv.org/abs/1706.03741",
+      "quote": "700 queries to a human rater",
+      "as_written": "700"
+    },
+    {
+      "text": "5,500 comparisons",
+      "value": "5,500 queries",
+      "source_url": "https://arxiv.org/abs/1706.03741",
+      "quote": "5,500 queries to a human rater",
+      "as_written": "5500"
+    },
+    {
+      "text": "3,300 labels",
+      "value": "3,300",
+      "source_url": "https://arxiv.org/abs/1706.03741",
+      "quote": "3,300 such labels",
+      "as_written": "3300"
+    },
+    {
+      "text": "900 comparisons",
+      "value": "900 queries",
+      "source_url": "https://arxiv.org/abs/1706.03741",
+      "quote": "900 queries in less than an hour",
+      "as_written": "900"
+    },
+    {
+      "text": "800 comparisons",
+      "value": "800 queries",
+      "source_url": "https://arxiv.org/abs/1706.03741",
+      "quote": "800 queries in under an hour",
+      "as_written": "800"
+    },
+    {
+      "text": "About 1,300 comparisons",
+      "value": "1,300 queries",
+      "source_url": "https://arxiv.org/abs/1706.03741",
+      "quote": "roughly 1,300 queries",
+      "as_written": "1300"
+    },
+    {
+      "text": "3 to 5 seconds",
+      "value": "3-5 seconds",
+      "source_url": "https://arxiv.org/abs/1706.03741",
+      "quote": "3-5 seconds",
+      "as_written": "3 to 5 seconds"
+    },
+    {
+      "text": "500 labels for Atari",
+      "value": "500 comparisons",
+      "source_url": "https://arxiv.org/abs/1706.03741",
+      "quote": "We collect 500 comparisons",
+      "as_written": "500"
+    },
+    {
+      "text": "200 epochs of pretraining",
+      "value": "200 epochs",
+      "source_url": "https://arxiv.org/abs/1706.03741",
+      "quote": "for 200 epochs",
+      "as_written": "200"
+    },
+    {
+      "text": "About 3 orders of magnitude",
+      "value": "3 orders of magnitude",
+      "source_url": "https://arxiv.org/abs/1706.03741",
+      "quote": "roughly 3 orders of magnitude",
+      "as_written": "3 orders of magnitude"
+    },
+    {
+      "text": "Breakout 20 / 50 points",
+      "value": "score of 20 on Breakout, or 50",
+      "source_url": "https://arxiv.org/abs/1706.03741",
+      "quote": "a score of 20 on Breakout, or 50 with enough labels",
+      "as_written": "50"
+    },
+    {
+      "text": "Atari clips: 25 steps",
+      "value": "25 timesteps",
+      "source_url": "https://arxiv.org/abs/1706.03741",
+      "quote": "trajectory segments of 25 timesteps",
+      "as_written": "25 steps"
+    },
+    {
+      "text": "1.5 seconds",
+      "value": "1.5 seconds",
+      "source_url": "https://arxiv.org/abs/1706.03741",
+      "quote": "trajectory segments that last 1.5 seconds",
+      "as_written": "1.5 seconds"
+    },
+    {
+      "text": "ARC, Anthropic, and other authors' later moves (public sources)",
+      "value": "Dario Amodei",
+      "source_url": "https://arxiv.org/abs/1706.03741",
+      "quote": "Dario Amodei",
+      "as_written": "Anthropic"
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "95fe1d2d8001c9fe"
+}

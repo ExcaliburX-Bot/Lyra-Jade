@@ -1,0 +1,754 @@
+{
+  "slug": "in-context-learning-and-induction-heads",
+  "category": "paper",
+  "publisher": "Anthropic",
+  "date": "2022-03-08",
+  "title": "In-context Learning and Induction Heads: “Saw A B, now A, complete B” may be where large models learn in context",
+  "summary": "Anthropic’s interpretability paper argues that an attention circuit called the “induction head” may be the main mechanism behind in-context learning. We work through, by hand, how an induction head completes “Mr Dursley,” unpack the six lines of evidence and their relative strength, and point out several inconsistencies in the original, including a reversed sign in the in-context learning score.",
+  "ai_summary": "In-context Learning and Induction Heads (Olsson et al., Anthropic, 2022) studies the mechanism behind in-context learning in Transformers. An induction head is a circuit made of two attention heads — a previous-token head and the induction head itself — that implements [A][B]…[A]→[B] pattern completion. The authors analyze the training process of 34 models and find an early-training phase change: induction heads form, the in-context learning score jumps from under 0.15 to about 0.4 nats, and the loss curve develops a bump. Six lines of evidence — including smeared-key experiments, ablations, and induction heads in large models that translate and match patterns — suggest induction heads may be the mechanism behind most in-context learning; the evidence is strong in small models and mainly correlational in large models.",
+  "brief": [
+    "Question: Why can large models learn from context without changing their parameters? What is the internal mechanism?",
+    "Method: Define induction heads (prefix matching + copying), analyze the training process of 34 models, run more than 50,000 ablations, and present six lines of evidence.",
+    "Results: An early-training phase change occurs; induction heads and in-context learning appear together; knocking out induction heads in small models nearly eliminates in-context learning; in large models, induction heads also handle translation and abstract pattern matching.",
+    "Limitations: Evidence in large models is mostly correlational; each model is trained only once; the original paper has several inconsistencies, including the sign of the score and the layer of one head."
+  ],
+  "paper": {
+    "title": "In-context Learning and Induction Heads",
+    "authors": "Catherine Olsson, Nelson Elhage, Neel Nanda, Nicholas Joseph, Nova DasSarma, Tom Henighan, Ben Mann, et al. (corresponding author: Chris Olah)",
+    "org": "Anthropic",
+    "venue": "Transformer Circuits Thread 2022",
+    "year": 2022,
+    "arxiv": "2209.11895",
+    "url": "https://transformer-circuits.pub/2022/in-context-learning-and-induction-heads/index.html"
+  },
+  "cover": {
+    "headline": "Induction Heads: A Close Read",
+    "highlight": "See A B, complete B",
+    "glyph": {
+      "kind": "flow",
+      "nodes": [
+        {
+          "label": "Previous token head"
+        },
+        {
+          "label": "Induction head",
+          "tone": "hi"
+        },
+        {
+          "label": "In-context learning"
+        }
+      ]
+    }
+  },
+  "sections": [
+    {
+      "h": "First, the bottom line: what this paper actually does",
+      "blocks": [
+        {
+          "p": "In March 2022, more than 20 researchers at Anthropic — including Catherine Olsson, Nelson Elhage, Neel Nanda, and Chris Olah — published this long article in their web journal Transformer Circuits Thread (it also went up on arXiv that September). It falls under mechanistic interpretability: not just asking what a model can do, but reverse-engineering it like a program to understand how it does it internally."
+        },
+        {
+          "p": "The paper focuses on one of the most striking abilities of large models: in-context learning. Without changing any parameters, give a few examples in the prompt and the model can pick up a new task (see the GPT-3 close read). The authors make a bold hypothesis:"
+        },
+        {
+          "list": [
+            "Transformers contain a simple attention circuit called an induction head. Its job: when it sees the current token A, look back for the previous occurrence of A, see what followed it (B), then predict that A is followed by B again. That is, [A][B] … [A] → [B].",
+            "The hypothesis: in large models, induction heads (and their “fuzzy matching” upgrades) may be the mechanism behind most in-context learning."
+          ]
+        },
+        {
+          "p": "To support this, the authors analyzed changes in 34 models over training, ran more than 50,000 attention-head ablations, and offer six complementary lines of evidence. The most striking finding: nearly every model goes through a phase change early in training. In a narrow time window, induction heads suddenly form, in-context learning ability suddenly jumps, and a small, visible bump appears in the training loss curve."
+        },
+        {
+          "callout": {
+            "kind": "takeaway",
+            "title": "One-sentence version",
+            "text": "When a Transformer learns induction heads — “previously saw A B, now see A, so complete B” — in-context learning ability suddenly appears at the same time. In small attention-only models, knocking out induction heads almost completely removes in-context learning; that is strong causal evidence. In large models with MLPs, the evidence is mainly correlational. The authors carefully call it “preliminary, indirect evidence.”"
+          }
+        },
+        {
+          "callout": {
+            "kind": "prereq",
+            "title": "Four small concepts you need for this close read",
+            "text": "Don’t worry if they’re unfamiliar — these four are enough:",
+            "list": [
+              "**Attention head**: Each Transformer layer has several attention heads; each head decides which earlier positions the current position should attend to and what information to pull from them (see the Attention Is All You Need close read).",
+              "**Residual stream**: Each layer adds what it computes to an information channel that runs through the whole model, so later layers can read what earlier layers wrote. This lets attention heads in different layers work together in sequence.",
+              "**Loss (nats)**: How “surprised” the model is when it predicts the next token, measured in natural-log units. Lower is better.",
+              "**Ablation**: Remove an attention head from the model and see how much performance changes, to understand what that head contributes."
+            ]
+          }
+        },
+        {
+          "callout": {
+            "kind": "note",
+            "title": "A note about this article’s authors",
+            "list": [
+              "The paper is from Anthropic, and this close read was written with Anthropic’s Claude. We try to stick closely to the original, and we list both the limitations the paper acknowledges and the inconsistencies we noticed."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "First, a definition: what counts as “in-context learning”",
+      "blocks": [
+        {
+          "p": "The paper notes that “in-context learning” has two common meanings. One is GPT-3-style few-shot learning: give the model a few examples of a specific task in the prompt, such as addition or English-to-French translation, and see whether it can do the task. The other comes from the scaling laws paper: the further into a passage, the better the model predicts the next token, because it can use earlier content. The first is a micro view, focused on specific tasks; the second is a macro view, looking at overall loss."
+        },
+        {
+          "p": "This paper uses the latter, because it is more general and does not depend on which tasks are chosen. The specific metric is simple:"
+        },
+        {
+          "formula": {
+            "expr": "In-context learning score = average loss at token 50 − average loss at token 500",
+            "parts": [
+              {
+                "sym": "Token 50",
+                "desc": "Far enough from the start that language and document type are already clear, but still near the beginning"
+              },
+              {
+                "sym": "Token 500",
+                "desc": "Near the end of a 512-token context"
+              },
+              {
+                "sym": "Difference",
+                "desc": "How much easier the later token is to predict than the earlier one. Larger values mean the model uses context better."
+              }
+            ],
+            "note": "50 and 500 were chosen “somewhat arbitrarily” by the authors; the paper later verifies that using other positions doesn’t change the conclusions. Note: the original defines this score inconsistently in different places; see the details at the end."
+          },
+          "plain": {
+            "title": "The more it reads, the better it predicts",
+            "text": "When you read an unfamiliar essay, the first few sentences force you to guess what it’s about; by the fifth paragraph, the people, terms, and style are familiar, so it’s easier to guess what comes next. Models are the same: how much better they predict token 500 than token 50 is their ability to “use context.”",
+            "pic": "ih-score"
+          }
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "By hand: what 0.4 nats of in-context learning means",
+            "subtitle": "Illustrative: the two loss values are ours; perplexity = e^{loss}, roughly the number of options the model is hesitating among",
+            "columns": [
+              "Position",
+              "Loss (nats)",
+              "Perplexity e^{loss}"
+            ],
+            "rows": [
+              [
+                "Token 50",
+                "3.4",
+                "about 30"
+              ],
+              [
+                "Token 500",
+                "3.0",
+                "about 20"
+              ],
+              [
+                "Difference (in-context learning score)",
+                "0.4",
+                "e^{0.4} ≈ 1.49: the range of uncertainty shrinks by about a third"
+              ]
+            ],
+            "highlight": {
+              "row": 2
+            },
+            "note": "The numbers the paper reports: before the phase change, the in-context learning score is under 0.15 nats; after it, about 0.4 nats; and after that it barely changes, with models of all sizes looking similar."
+          }
+        }
+      ]
+    },
+    {
+      "h": "What is an induction head?",
+      "blocks": [
+        {
+          "p": "The authors found induction heads in their previous paper, “A Mathematical Framework for Transformer Circuits,” in small two-layer attention-only models. It is implemented by two attention heads in different layers working together:"
+        },
+        {
+          "list": [
+            "**Previous token head** (earlier layer): copies “what the previous token is” onto each position. Every position now carries a label: “the token before me is X.”",
+            "**Induction head** (later layer): takes the current token A and compares it with each previous position’s label, finds the position whose label is “the token before me is A” — that is, the position containing the token B that immediately followed the previous A — attends there, and copies B out, raising the probability that the next token is B."
+          ]
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "By hand: how an induction head predicts “Mr Dursley”",
+            "subtitle": "Illustrative: a simplified passage, numbered by token",
+            "columns": [
+              "Position",
+              "Token",
+              "Label written by the previous token head",
+              "What the induction head does here"
+            ],
+            "rows": [
+              [
+                "1",
+                "Mr",
+                "(start)",
+                ""
+              ],
+              [
+                "2",
+                "Dursley",
+                "previous token is Mr",
+                ""
+              ],
+              [
+                "3",
+                "was",
+                "previous token is Dursley",
+                ""
+              ],
+              [
+                "4",
+                "proud",
+                "previous token is was",
+                ""
+              ],
+              [
+                "5",
+                "Mr",
+                "previous token is proud",
+                "Current token is Mr → find the label “previous token is Mr” → found at position 2 → copy Dursley"
+              ],
+              [
+                "6",
+                "?",
+                "",
+                "Prediction: Dursley"
+              ]
+            ],
+            "highlight": {
+              "row": 4
+            },
+            "note": "The key point: an induction head’s “key” (the thing to be matched) is not the token at that position but its previous token. That’s why an earlier head must first move “previous token” information into place — and why a one-layer model can’t make an induction head."
+          },
+          "plain": {
+            "title": "The card-chain game",
+            "text": "Two people play a chain game: the first person writes on the back of each card “what token is on the previous card”; the second person sees the current token “Mr,” searches for the card whose back says “previous token is Mr,” finds that its front says “Dursley,” and calls out “next is Dursley!” Without the first person’s labels, the second person has nowhere to look.",
+            "pic": "ih-mech"
+          }
+        },
+        {
+          "p": "To identify induction heads in large models too, the paper gives a purely behavioral definition: on a sequence of repeated random tokens (the second pass), an attention head counts as an induction head if it satisfies two properties:"
+        },
+        {
+          "list": [
+            "**Prefix matching**: The head attends to the position whose previous token (or recent tokens) matches the current token — that is, the token that induction would predict comes next.",
+            "**Copying**: The head’s output raises the probability of the token it attends to."
+          ]
+        },
+        {
+          "p": "Using random tokens rules out “memorizing common collocations”: random tokens have no statistical regularities, only the cue “this appeared earlier.” So an induction head implements an algorithm, not a memorized phrase table; the rule works for any A and B, meaning it can in some sense handle content not seen during training."
+        },
+        {
+          "p": "The paper’s more ambitious idea is a “fuzzy” version: [A*][B*] … [A] → [B], where A* and A are similar in some abstract representation, not necessarily the same token, and likewise for B* and B. For example, A* is an English word and A is the same word in French; then the induction head can “find something like A, look at what follows it, and output something like that following token,” translating word by word. If induction heads can do this fuzzy, nearest-neighbor-style pattern completion, they could explain most in-context learning.",
+          "plain": {
+            "title": "Completing by analogy",
+            "text": "The first sentence is “I love cats,” and the second sentence starts with “J’aime.” A fuzzy-matching induction head would think: J’aime is similar to the earlier “love”; “love” is followed by “cats”; so it should complete with something like “cats” — “les chats.” It isn’t copying the original token; it’s completing by analogy.",
+            "pic": "ih-fuzzy"
+          }
+        }
+      ]
+    },
+    {
+      "h": "Evidence 1: an early-training phase change",
+      "blocks": [
+        {
+          "p": "The first line of evidence comes from watching dozens of models train. The authors found that in-context learning doesn’t improve gradually; instead, it forms suddenly in a narrow window early in training (about 2.5 billion to 5 billion tokens): before, the score is less than 0.15 nats; after, about 0.4 nats; and it stays basically unchanged through the rest of training, for models of all sizes. The exception is one-layer models, which never develop much in-context learning."
+        },
+        {
+          "p": "In that same window, three other things happen at once:",
+          "plain": {
+            "title": "A bump in the loss curve",
+            "text": "Training loss is usually a steadily flattening downward curve. But in this window, the curve suddenly drops a bit more, forming a small bump. The paper says this is the only place in training where the loss curve is “not getting flatter.” Loss is an average over millions of tokens, so a visible change at this scale means the model’s behavior changed in a broad way.",
+            "pic": "ih-bump"
+          }
+        },
+        {
+          "list": [
+            "**Induction heads form**: Score every attention head for prefix matching; induction heads appear suddenly in this window. One-layer models never develop induction heads.",
+            "**Loss curve develops a bump**: This is the only place where the loss curve is not becoming flatter, and the first place where the small models’ loss curves diverge from one-layer models.",
+            "**Training trajectory turns**: Collapse each model snapshot’s losses on a fixed set of 10,000 tokens into a vector and run PCA; all multi-layer models’ training trajectories turn sharply in this window."
+          ]
+        },
+        {
+          "p": "The authors rule out some simple explanations: the window, they say, does not line up with scheduled changes to learning rate, warmup, or weight decay (the appendix differs slightly; see the end). Training a small model on a different dataset still produces the same phase change. They also do an intuitive check with the opening paragraph of Harry Potter: after the phase change, the model predicts repeated sequences — such as the final token of the recurring “The Dursleys” — much better, while the first occurrence of “Mrs Potter” actually gets worse, because the previous two “Mrs” instances were both followed by “Dursley,” so the induction head misleads it."
+        },
+        {
+          "p": "**The authors’ own caveats**: This is only correlational. Large models were saved as only 15 snapshots during training, so time resolution is low. It could be that the phase change is when the model learns the more general trick of letting attention heads in different layers work together, and induction heads and other in-context learning mechanisms are both downstream of that. And the score staying fixed at 0.4 after the phase change does not mean the underlying mechanism is unchanged, because the loss at token 50 itself keeps falling; making the same further reduction from a lower starting point might require different mechanisms."
+        }
+      ]
+    },
+    {
+      "h": "Evidence 2: change the architecture, and the phase change moves",
+      "blocks": [
+        {
+          "p": "Observational evidence is less compelling than intervention experiments. The second line of evidence: change the model architecture to make induction heads easier to form, and see whether in-context learning changes along with them."
+        },
+        {
+          "p": "The logic is this: a standard Transformer needs two layers to form an induction head, because an induction head’s “key” must contain information about the previous token, and that has to come from an earlier layer’s head. What if the architecture directly mixes each position’s key with the previous token’s key? The authors designed a “smeared key” structure:"
+        },
+        {
+          "formula": {
+            "expr": "k_{j}^{h} = σ(α_{h}) · k_{j}^{h} + (1 − σ(α_{h})) · k_{j−1}^{h}",
+            "parts": [
+              {
+                "sym": "k_{j}^{h}",
+                "desc": "The key of attention head h at position j (the first term on the right is the original key)"
+              },
+              {
+                "sym": "k_{j−1}^{h}",
+                "desc": "The previous position’s key"
+              },
+              {
+                "sym": "α_{h}",
+                "desc": "One learnable parameter per head"
+              },
+              {
+                "sym": "σ(α_{h})",
+                "desc": "After the sigmoid, it lies between 0 and 1: the closer to 0, the more this position’s key resembles the previous token’s key."
+              }
+            ],
+            "note": "If σ(α_{h}) learns to be close to 0, the key is almost entirely determined by the previous token, so even a one-layer model can do prefix matching directly, without help from a previous-token head."
+          },
+          "plain": {
+            "title": "Labels printed directly on the cards",
+            "text": "In the card-chain game, the first player originally has to write “what is the previous token” on each card. A smeared key is like printing the previous card’s content faintly on each card when the cards are made. Then one person can play the game alone.",
+            "pic": "ih-smear"
+          }
+        },
+        {
+          "p": "If induction heads are the main mechanism of in-context learning, the prediction would be this: one-layer models with smeared keys should develop a phase change and in-context learning; multi-layer models’ phase change should happen earlier. That is exactly what happens: one-layer smeared-key models develop in-context learning (they previously had none), and models with two or more layers go through the phase change earlier. The authors caution that this shows induction heads are the minimal mechanism for the large improvement in in-context learning, but it does not rule out other mechanisms in large models."
+        }
+      ]
+    },
+    {
+      "h": "Evidence 3: directly knock out induction heads",
+      "blocks": [
+        {
+          "p": "The third line of evidence is the strongest causal evidence: remove an attention head from the model at test time and see how much the in-context learning score drops. The result: in small attention-only models, almost all in-context learning comes from induction heads — from the phase change until the end of training.",
+          "plain": {
+            "title": "Unplug a wire and see which light goes dark",
+            "text": "To learn which light a wire connects to, the most direct method is to unplug it and see which light goes out. In a small attention-only model, unplugging induction heads almost completely kills its “better as it reads” ability. But in a building — a large model — circuits intertwine: a light may be powered by several wires, so unplugging one doesn’t reveal the whole picture."
+          }
+        },
+        {
+          "p": "But this evidence has limits. The paper did not run ablations on large models. In models with MLPs, in-context learning may also come from interactions between MLPs and attention, so the relationship between the effect of an ablation and true importance is more complex. Also, ablations only measure the marginal effect of removing a single head; if two heads overlap in function, each head’s individual importance can be masked. The authors conclude: in small attention-only models, induction heads are the main mechanism of in-context learning; in models with MLPs, this evidence is only “suggestive.”"
+        }
+      ]
+    },
+    {
+      "h": "Evidence 4: the same heads also do more abstract things",
+      "blocks": [
+        {
+          "p": "The fourth line of evidence comes from a different angle: look directly inside a large model (40 layers, 13 billion parameters) for heads that count as induction heads under the strict definition and that also do more complex things. The authors show three examples:"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Three \"multi-talented\" induction heads",
+            "subtitle": "From the table in the paper's fourth argument; all are 40-layer models",
+            "columns": [
+              "Head",
+              "Layer (per table)",
+              "Copying score",
+              "Prefix matching score"
+            ],
+            "rows": [
+              [
+                "Literal copying head",
+                "21 / 40",
+                "0.89",
+                "0.75"
+              ],
+              [
+                "Translation head",
+                "7 / 40",
+                "0.20",
+                "0.85"
+              ],
+              [
+                "Pattern matching head",
+                "8 / 40 (the text says layer 26)",
+                "0.69",
+                "0.94"
+              ]
+            ],
+            "note": "All three heads show prefix matching and copying on \"repeated random tokens,\" so under the definition they all count as induction heads. The translation head has a lower copying score; the paper speculates that its output still needs further processing by later layers."
+          }
+        },
+        {
+          "list": [
+            "**Literal copying**: On the opening paragraph of Harry Potter, this head predicts the repeated \"Dursley,\" \"Potters,\" and \"a small son,\" as well as later whole repeated sentences, all by attending back to where they last appeared.",
+            "**Translation**: Given English, French, and German versions of the same sentence, its attention roughly follows a diagonal offset by one sentence, but it drifts left and right because word order and tokenization length differ across languages. It attends to the position, in the earlier language version, of the word that should come next semantically.",
+            "**Pattern matching**: The authors created synthetic text in which each line is generated from one of four templates, such as \"(month) (animal): 0\" and \"(color) (fruit): 3\"; the number at the end of each line is the template ID. At the colon, this head attends back to earlier lines of the same template type. For example, \"January bird\" mainly looks at \"April fish\" (also month + animal), not at \"grey bird,\" which only shares the word \"bird.\" Across a batch of similar queries, it put about 65% of its attention on the correct position."
+          ]
+        },
+        {
+          "p": "Why can the same head do both literal copying and these more abstract things? The paper offers two possibilities. Maybe induction heads actually implement a more general algorithm of \"find similar, complete in kind,\" and literal copying is just the special case where \"similar\" happens to mean \"identical.\" Or maybe when the head reads raw tokens directly it does literal copying, and when it reads abstract representations produced by earlier layers (for example, an English word and its French counterpart placed in the same position), it naturally does abstract matching."
+        }
+      ]
+    },
+    {
+      "h": "Evidence 5: Mechanistically, it ought to help",
+      "blocks": [
+        {
+          "p": "The fifth line of evidence is logical: if we know how induction heads work, we can deduce that they should help with in-context learning. An induction head treats earlier context as data points for a nearest-neighbor algorithm, and nearest-neighbor algorithms get better with more data points. So the longer the context, the more it should help."
+        },
+        {
+          "p": "For small two-layer attention-only models, the previous paper already reverse-engineered induction heads at the parameter level:"
+        },
+        {
+          "list": [
+            "**Copying** is done by the OV circuit (output-value): it behaves like a \"copying matrix,\" with mostly positive eigenvalues. Transformers contain many copying heads; induction heads are only a subset.",
+            "**Prefix matching** is done by the QK circuit (query-key) through \"K-composition\": the induction head's key matrix reads information that an earlier previous-token head wrote into the residual stream, so it compares the current token with each position's previous token. More complex versions also use \"Q-composition\" to match more than one preceding token.",
+            "**Another implementation**: In GPT-2, the authors saw a kind of \"pointer arithmetic\" induction head: an earlier head brings over the positional encodings of positions where the current token appeared before, and the induction head then attends one position forward. The models studied in this paper do not add positional information to the residual stream, so they cannot use this mechanism."
+          ]
+        },
+        {
+          "p": "In two-layer attention-only models, the authors believe there is almost no mechanism other than induction heads that can drive in-context learning. But for models with MLPs, a complete reverse-engineering is not yet possible. The paper speculates that the more abstract induction heads in large models differ in two ways: their QK circuits match more complex features, not just the previous token; and they match and copy abstract linguistic features rather than exact tokens."
+        }
+      ]
+    },
+    {
+      "h": "Evidence 6: From small models to large ones",
+      "blocks": [
+        {
+          "p": "The final argument is inferential: the first five lines of evidence are strong in small models and weak in large ones. Can we extrapolate from small models to large ones? The authors' reason is that across all their measurements, small attention-only models, small models with MLPs, and full-size large models look very similar. As long as they have more than one layer, they all undergo a phase change; they all show the same sudden improvement in in-context learning, with similar before-and-after values; they follow similar paths in principal-component space; and they all form induction heads. If the mechanism changed from small to large, where would it change? Why would none of the measurements show a trace of it?"
+        },
+        {
+          "p": "The authors also acknowledge the counterargument: there are many examples of large and small models behaving very differently, and extrapolating across several orders of magnitude demands extra caution. They think the strongest alternative explanation is that large models have more attention heads, and at the phase change they can form many other \"composition heads\" at the same time. Beyond some scale, these non-induction composition heads might together contribute more to in-context learning than induction heads do."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "The six lines of evidence combined: how strong is the case?",
+            "subtitle": "From the paper's opening summary table (each cell shows the strongest argument)",
+            "columns": [
+              "Sub-conclusion",
+              "Attention-only small models",
+              "Small models with MLPs",
+              "Large models"
+            ],
+            "rows": [
+              [
+                "Induction heads make \"some\" contribution to in-context learning",
+                "Strong, causal",
+                "Strong, causal",
+                "Moderate, correlational + mechanistic reasoning"
+              ],
+              [
+                "Induction heads contribute \"most\" of in-context learning",
+                "Strong, causal",
+                "Moderate, causal",
+                "Moderate, correlational"
+              ]
+            ],
+            "highlight": {
+              "col": 3
+            },
+            "note": "Moving right and down the table, the evidence gets weaker. The paper's headline conclusion, that induction heads may be the mechanism behind most in-context learning, has only moderate-strength correlational evidence in large models."
+          }
+        }
+      ]
+    },
+    {
+      "h": "A few unanswered mysteries",
+      "blocks": [
+        {
+          "p": "**Why is the in-context learning score constant?** One of the strangest findings is that after the phase change, all models have an in-context learning score of about 0.4 nats, from two-layer small models to 13-billion-parameter large models, and whether measured immediately after the phase change or much later in training. Changing the 50 and 500 positions does not alter the conclusion. The authors' explanation: large models do predict better at every position, but most of their additional advantage over small models is already in place within the first ten tokens of context, perhaps because large models know more and need less information from context. After that, they reduce loss by a roughly fixed amount. Reducing by the same amount from a lower starting point may actually be harder for large models. This, the authors say, turns the phenomenon from \"stunning\" into \"a little odd.\"",
+          "plain": {
+            "title": "The top student and the average student improve by the same amount",
+            "text": "Two students read the same essay. The top student guesses it nearly right from the start; the average student starts off completely lost. By the end, both improve by about the same amount from where they began. The top student's whole advantage is at the start, but improving by the same amount from a high starting point is actually harder."
+          }
+        },
+        {
+          "list": [
+            "**The ranking of loss-descent speed flips at the phase change**: before it, small models' loss drops faster than large models'; after it, the reverse is true.",
+            "**Some oddities in the appendix**: a six-layer attention-only model develops, in the second half of training, a head that is not an induction head, yet removing it seems to \"undo the phase change.\" A four-layer model with MLPs has ablation results that do not concentrate on particular heads the way other models do. A six-layer model with MLPs shows a loss spike, and removing one induction head actually improves in-context learning. In large models above 16 layers, a few heads do prefix matching but copy in reverse, so under the definition they do not count as induction heads. The authors list all of these as open puzzles."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Why this matters",
+      "blocks": [
+        {
+          "list": [
+            "**Phase changes and safety**: If neural networks' behavior can suddenly change as they train or scale, it becomes harder to prepare for future problems in advance. The paper notes that safety problems such as reward hacking can also emerge suddenly in a phase change (see the Concrete Problems in AI Safety close read). Studying one phase change up close may yield generalizable lessons.",
+            "**In-context learning and safety**: In-context learning means a model's behavior can \"change\" at inference time, without retraining. Some in the safety community worry that in-context learning is driven by an \"inner optimizer\" (mesa-optimization). The paper says that, at least in small models, the main mechanism of in-context learning is induction heads, and they see no evidence of an inner optimizer.",
+            "**A \"Rosetta Stone\"**: The authors compare the relationship between scaling laws and mechanistic interpretability to the relationship between thermodynamics and individual-particle physics; the two are missing a bridge, which in physics is statistical mechanics. The induction-head phase change is the first example they know of where a macroscopic loss phenomenon can be explained at the circuit level. They also speculate that the scaling laws paper's observation that one-layer Transformers do not follow the same scaling laws is likely because one-layer models lack induction heads.",
+            "**Relationship to \"grokking\"**: This sudden change during training most resembles the \"grokking\" reported by Power et al. in 2022. The paper argues that induction heads are the first example of a phase change in machine learning with a mechanistic explanation."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Since then",
+      "blocks": [
+        {
+          "list": [
+            "**Widely reproduced**: Later research found induction heads in many open-source models. \"Previous token head + induction head\" became one of the most-cited circuits in interpretability research and a standard beginner exercise.",
+            "**Not the whole story**: Follow-up work also found that in-context learning involves other mechanisms, such as the \"function vectors\" discovered by Todd et al. in 2023: few-shot examples are compressed inside the model into a vector that represents what task to perform. This is consistent with the alternative explanations the paper itself lists.",
+            "**Up next in this series**: Toy Models of Superposition (2022). Induction heads are studied at the level of attention heads; to understand MLPs and larger models, we first need a more basic puzzle: why does a single neuron often represent several unrelated things at once?"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Limitations, and a few details worth noting",
+      "blocks": [
+        {
+          "list": [
+            "**Mostly correlational for large models**: the headline conclusion has no ablation support in large models, and the authors themselves repeatedly stress that this is \"preliminary, indirect evidence.\"",
+            "**Each model was trained only once**: the 34 models each had a single training run, with no repeated runs to measure random variation.",
+            "**Choice of definitions**: in-context learning is measured as the loss difference between token 50 and token 500, which cannot distinguish which specific behavior is involved; induction heads are defined by behavior on repeated random tokens, which may miss similar circuits implemented in other ways."
+          ]
+        },
+        {
+          "p": "A few things we noticed while reading the original:"
+        },
+        {
+          "list": [
+            "**The score's sign is reversed**: the \"Key Concepts\" section and the \"Unexplained Curiosities\" section both define the in-context learning score as the loss at token 500 minus the loss at token 50, which should come out negative. But the \"Argument 1\" section writes it as token 50 minus token 500 and reports positive values such as 0.4 nats. Given the positive reports, the latter should be taken as correct.",
+            "**Which layer is the pattern matching head in?** The table says layer 8 (8 / 40), but the text says the head is \"in layer 26 of the 40-layer model.\"",
+            "**How large is the large model?** Argument 4 first says \"the largest model we study has up to 12 billion parameters,\" then immediately says the model is \"40 layers, 13 billion parameters\"; the model table also says 13 billion.",
+            "**A wrong cross-reference**: Argument 5 says \"those induction heads with more complex behavior that we saw in Argument 2,\" but those examples are actually in Argument 4.",
+            "**The phase change window**: the main text says the phase change occurs between about 2.5 billion and 5 billion tokens, while the \"Model Details\" section says the phase change for small models is between about 1 billion and 3 billion tokens. These may refer to different model families, but the paper does not say.",
+            "**Learning-rate warmup overlaps the phase change**: Argument 1 says the phase-change window \"does not correspond to any scheduled learning-rate, warmup, or weight-decay adjustment,\" but the \"Model Details\" section itself acknowledges that learning-rate warmup continues until about 1.5 billion tokens, right within the small-model phase-change range. So the claim that \"no external factor\" is involved is stated more strongly than the appendix supports.",
+            "**Read the web version**: this PDF was printed from the web. The paper itself recommends the HTML version, since many figures are interactive and cannot be seen in the PDF."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Check yourself: have you really got it?",
+      "blocks": [
+        {
+          "quiz": {
+            "q": "What rule does an induction head implement?",
+            "options": [
+              "[A][B] … [B] → [A]",
+              "[A][B] ... [A] → [B]: earlier, A was followed by B; seeing A again, predict B",
+              "Always predict the most common token",
+              "Read the sentence backwards"
+            ],
+            "answer": 1,
+            "why": "It looks through the context for the previous occurrence of the current token and copies the token that immediately followed it."
+          }
+        },
+        {
+          "quiz": {
+            "q": "Why can't a standard one-layer Transformer form an induction head?",
+            "options": [
+              "Too few parameters",
+              "An induction head's key needs to contain \"previous token\" information, which has to be moved there by an attention head in an earlier layer; a one-layer model has no such earlier layer",
+              "One-layer models have no attention",
+              "One-layer models cannot be trained"
+            ],
+            "answer": 1,
+            "why": "With a smeared-key structure that directly mixes in the previous token's key, a one-layer model can form an induction head, and the phase change appears along with it."
+          }
+        },
+        {
+          "quiz": {
+            "q": "Where does the paper's strongest causal evidence come from?",
+            "options": [
+              "Principal-component analysis of large models",
+              "Knocking out induction heads in small attention-only models makes almost all in-context learning disappear",
+              "The translation-head example",
+              "Extrapolating from small models"
+            ],
+            "answer": 1,
+            "why": "No ablations were done on large models, so the evidence there is mainly correlational."
+          }
+        },
+        {
+          "quiz": {
+            "q": "Roughly what is the in-context learning score before and after the phase change?",
+            "options": [
+              "From 0 to 10 nats",
+              "It jumps from under 0.15 nats to about 0.4 nats, then stays roughly unchanged",
+              "It rises slowly and steadily",
+              "Larger models have higher scores"
+            ],
+            "answer": 1,
+            "why": "Moreover, this 0.4 is similar for models of all sizes, which is one of the open puzzles the paper lists."
+          }
+        },
+        {
+          "p": "After reading this, you should be able to answer these questions:"
+        },
+        {
+          "list": [
+            "What metric does the paper use for in-context learning? Why not few-shot tasks?",
+            "Which two attention heads work together to implement an induction head, and what does each do?",
+            "What four things happen at the same time during the phase change?",
+            "Why is the smeared-key experiment \"interventional\" evidence, and what does its result show?",
+            "Why can't ablation experiments give the full picture in large models?",
+            "How does a \"fuzzy\" induction head do translation?",
+            "How strong is the paper's evidence in small versus large models?"
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "In-context Learning and Induction Heads (Transformer Circuits Thread)",
+      "publisher": "Anthropic",
+      "date": "2022-03-08",
+      "url": "https://transformer-circuits.pub/2022/in-context-learning-and-induction-heads/index.html"
+    },
+    "note": "This article is based on a PDF printed from the web version of the paper. Tables marked \"Illustrative\" use examples defined by this site and are computed according to the rules described in the paper. Follow-up work such as function vectors comes from other public sources and is not covered here. Conflict-of-interest note: the paper is from Anthropic, and this article was written with Anthropic's Claude."
+  },
+  "claims": [
+    {
+      "text": "34 models",
+      "value": "34 transformers",
+      "source_url": "https://transformer-circuits.pub/2022/in-context-learning-and-induction-heads/index.html",
+      "quote": "analysis of 34 transformers over the course of training",
+      "as_written": "34"
+    },
+    {
+      "text": "more than 50,000 ablations",
+      "value": "50,000",
+      "source_url": "https://transformer-circuits.pub/2022/in-context-learning-and-induction-heads/index.html",
+      "quote": "more than 50,000 attention head ablations",
+      "as_written": "50,000"
+    },
+    {
+      "text": "2.5 billion to 5 billion tokens",
+      "value": "2.5 to 5 billion tokens",
+      "source_url": "https://transformer-circuits.pub/2022/in-context-learning-and-induction-heads/index.html",
+      "quote": "roughly 2.5 to 5 billion tokens",
+      "as_written": "2.5 billion"
+    },
+    {
+      "text": "5 billion",
+      "value": "5 billion tokens",
+      "source_url": "https://transformer-circuits.pub/2022/in-context-learning-and-induction-heads/index.html",
+      "quote": "roughly 2.5 to 5 billion tokens",
+      "as_written": "5 billion"
+    },
+    {
+      "text": "under 0.15 nats",
+      "value": "0.15 nats",
+      "source_url": "https://transformer-circuits.pub/2022/in-context-learning-and-induction-heads/index.html",
+      "quote": "less than 0.15 nats",
+      "as_written": "0.15"
+    },
+    {
+      "text": "about 0.4 nats",
+      "value": "0.4 nats",
+      "source_url": "https://transformer-circuits.pub/2022/in-context-learning-and-induction-heads/index.html",
+      "quote": "roughly 0.4 nats",
+      "as_written": "0.4"
+    },
+    {
+      "text": "10,000 tokens",
+      "value": "10,000 random tokens",
+      "source_url": "https://transformer-circuits.pub/2022/in-context-learning-and-induction-heads/index.html",
+      "quote": "a consistent set of 10,000 random tokens",
+      "as_written": "10,000"
+    },
+    {
+      "text": "13 billion parameters",
+      "value": "13 billion parameters",
+      "source_url": "https://transformer-circuits.pub/2022/in-context-learning-and-induction-heads/index.html",
+      "quote": "our 40-layer model with 13 billion parameters",
+      "as_written": "13 billion"
+    },
+    {
+      "text": "12 billion",
+      "value": "12B",
+      "source_url": "https://transformer-circuits.pub/2022/in-context-learning-and-induction-heads/index.html",
+      "quote": "we study up to 12B parameter models",
+      "as_written": "12 billion"
+    },
+    {
+      "text": "65% attention",
+      "value": "65%",
+      "source_url": "https://transformer-circuits.pub/2022/in-context-learning-and-induction-heads/index.html",
+      "quote": "about 65% of its attention",
+      "as_written": "65%"
+    },
+    {
+      "text": "15 snapshots",
+      "value": "15 points",
+      "source_url": "https://transformer-circuits.pub/2022/in-context-learning-and-induction-heads/index.html",
+      "quote": "when one only has 15 points in time",
+      "as_written": "15"
+    },
+    {
+      "text": "small-model phase change: 1 billion to 3 billion tokens",
+      "value": "1-3 billion tokens",
+      "source_url": "https://transformer-circuits.pub/2022/in-context-learning-and-induction-heads/index.html",
+      "quote": "approximately 1-3 billion tokens in the small models",
+      "as_written": "1 billion"
+    },
+    {
+      "text": "3 billion",
+      "value": "1-3 billion",
+      "source_url": "https://transformer-circuits.pub/2022/in-context-learning-and-induction-heads/index.html",
+      "quote": "approximately 1-3 billion tokens",
+      "as_written": "3 billion"
+    },
+    {
+      "text": "more than 75% form within the window",
+      "value": "75%",
+      "source_url": "https://transformer-circuits.pub/2022/in-context-learning-and-induction-heads/index.html",
+      "quote": "over 75% of final in-context learning forms in this window",
+      "as_written": "75%"
+    },
+    {
+      "text": "copying score 0.89",
+      "value": "0.89",
+      "source_url": "https://transformer-circuits.pub/2022/in-context-learning-and-induction-heads/index.html",
+      "quote": "0.89",
+      "as_written": "0.89"
+    },
+    {
+      "text": "0.94",
+      "value": "0.94",
+      "source_url": "https://transformer-circuits.pub/2022/in-context-learning-and-induction-heads/index.html",
+      "quote": "0.94",
+      "as_written": "0.94"
+    },
+    {
+      "text": "0.85",
+      "value": "0.85",
+      "source_url": "https://transformer-circuits.pub/2022/in-context-learning-and-induction-heads/index.html",
+      "quote": "0.85",
+      "as_written": "0.85"
+    },
+    {
+      "text": "warmup until 1.5 billion tokens",
+      "value": "1.5e9 tokens",
+      "source_url": "https://transformer-circuits.pub/2022/in-context-learning-and-induction-heads/index.html",
+      "quote": "ramps up over the first 1.5e9 tokens",
+      "as_written": "1.5 billion"
+    },
+    {
+      "text": "first ten tokens",
+      "value": "first ten tokens",
+      "source_url": "https://transformer-circuits.pub/2022/in-context-learning-and-induction-heads/index.html",
+      "quote": "the majority of the difference forms in the first ten tokens",
+      "as_written": "first ten"
+    },
+    {
+      "text": "Perplexity illustration (computed by this site)",
+      "value": "nats",
+      "source_url": "https://transformer-circuits.pub/2022/in-context-learning-and-induction-heads/index.html",
+      "quote": "0.4 nats",
+      "as_written": "one-third"
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "8284eea2c5e0e2d5"
+}
