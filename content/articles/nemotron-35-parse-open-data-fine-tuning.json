@@ -1,0 +1,801 @@
+{
+  "slug": "nemotron-35-parse-open-data-fine-tuning",
+  "date": "2026-11-26",
+  "category": "product",
+  "publisher": "NVIDIA",
+  "topics": [
+    "nvidia"
+  ],
+  "title": "Nemotron 3.5 Parse 开放三个数据集与微调配方，DFlash2 推理快 7.62 倍",
+  "summary": "如果你在用模型把扫描件、PDF 或图表转成结构化数据，NVIDIA 这次把 Nemotron 3.5 Parse 的训练数据和微调配方都开放出来，还给出 DFlash2 加速方案：单块 H200 上，并发 1 时吞吐提升 7.62 倍。",
+  "ai_summary": "NVIDIA 在 Nemotron 3.5 Parse 后开源三样：三个合成训练数据集（图表 9.98M、表格 1M、多语种 OCR 7.9M 条）、一套 SFT+RLVR 微调配方、一个叫 DFlash2 的投机解码加速器。训练先用监督微调学读页，再用可验证奖励的强化学习提一致性：循环输出从 126 页降到 29 页，总分从 66.24 到 71.38。推理端在单块 H200、BF16 下，DFlash2 单并发吞吐提高 7.62 倍，512 并发达 20.44 页/秒。最实用的是照搬配方微调自己的文档：官方示例中牙科表单首次成功率从 0.00% 到 96.58%。这些是 NVIDIA 自建评测数字，换到你的数据需自行验证。",
+  "brief": [
+    "三个开放数据集覆盖 9.98M 图表、1M 表格、7.9M 多语种 OCR 页面，含图片、标注和训练格式。",
+    "同条件对比里，RLVR 把循环输出从 126 页降到 29 页，总分从 66.24 提到 71.38。",
+    "DFlash2 在单块 H200、BF16 下：并发 1 吞吐 7.62 倍，并发 512 达 20.44 页/秒。",
+    "牙科表单微调示例：首次成功率从 0.00% 到 96.58%；配方开源，可套用自己的文档。"
+  ],
+  "readMinutes": 7,
+  "cover": {
+    "headline": "Nemotron Parse 再开源",
+    "highlight": "开放数据、配方与更快推理",
+    "big": {
+      "value": 7.62,
+      "unit": "倍",
+      "label": "DFlash2 低并发吞吐提升"
+    }
+  },
+  "sections": [
+    {
+      "h": "这是什么：把一页纸变成带标签和位置框的结构化数据",
+      "blocks": [
+        {
+          "p": "Nemotron 3.5 Parse 是 NVIDIA 的文档解析模型：给它一页扫描件或 PDF 图片，它把页面内容按阅读顺序整理出来，给每块内容打上类别（标题、段落、表格、图表等），并返回 bounding box——也就是标明这块内容在页面哪个矩形区域的坐标。表格和图表还会被转成结构化记录，方便后续做 RAG（检索增强生成：先从文档里捞出相关内容，再交给模型回答）或喂给 agent。"
+        },
+        {
+          "p": "这篇博客在模型发布之后补了三件事：开放训练用的合成数据集、给出一套可照搬的微调配方、并发布 DFlash2 加速推理。重点是「数据和方法」一起开源，别人可以按同样路径训练自己的文档模型。"
+        },
+        {
+          "fig": {
+            "type": "schematic",
+            "title": "Parse 把一页纸拆成带标签和位置框的内容块",
+            "subtitle": "示意：琥珀色是被框选并提取的部分；标签和坐标是模型输出",
+            "items": [
+              {
+                "glyph": {
+                  "kind": "pages",
+                  "count": 8,
+                  "select": [
+                    2,
+                    3
+                  ]
+                },
+                "title": "标题与段落",
+                "sub": "按阅读顺序输出",
+                "rows": [
+                  {
+                    "k": "类别",
+                    "v": "heading / paragraph"
+                  },
+                  {
+                    "k": "位置",
+                    "v": "bounding box 坐标"
+                  }
+                ]
+              },
+              {
+                "glyph": {
+                  "kind": "sheet",
+                  "rows": 6,
+                  "cols": 5,
+                  "select": [
+                    2,
+                    2,
+                    5,
+                    5
+                  ]
+                },
+                "title": "表格",
+                "sub": "保留行列与表头",
+                "rows": [
+                  {
+                    "k": "结构",
+                    "v": "rows / columns / headers"
+                  },
+                  {
+                    "k": "输出",
+                    "v": "结构化记录"
+                  }
+                ]
+              },
+              {
+                "glyph": {
+                  "kind": "doc",
+                  "lines": 9,
+                  "select": [
+                    3,
+                    4
+                  ]
+                },
+                "title": "图表",
+                "sub": "无标注也能推数值，如 18、27、39、54",
+                "rows": [
+                  {
+                    "k": "输入",
+                    "v": "柱高 + 坐标轴"
+                  },
+                  {
+                    "k": "输出",
+                    "v": "系列与数值"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "开放了哪三个数据集？",
+      "blocks": [
+        {
+          "p": "三个数据集都是合成数据：不是拿真实扫描件人工标注，而是用程序渲染出图表、表格、多语种页面。因为生成时就知道每个柱子的值、每个格子的内容，所以标注（ground truth，标准答案）天然精确，还能随意换字体、换布局、换语言来扩大变化。"
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "三个开放数据集，分三档规模",
+            "subtitle": "单位：条（example），M 表示百万",
+            "items": [
+              {
+                "value": 9.98,
+                "unit": "M",
+                "label": "Synthetic Charts V1",
+                "note": "渲染图表 + 结构化标注"
+              },
+              {
+                "value": 1,
+                "unit": "M",
+                "label": "Synthetic Tables V1",
+                "note": "HTML 表格，保留行列与表头"
+              },
+              {
+                "value": 7.9,
+                "unit": "M",
+                "label": "OCR Synthetic Multilingual v2",
+                "note": "多语种合成页面"
+              }
+            ]
+          }
+        },
+        {
+          "p": "每个数据集都包含图片、标注、生成文档和训练格式。作者的用法建议是：直接拿来微调文档模型，或者照这个方法为特定文档类型或语言生成新变体。"
+        },
+        {
+          "p": "社区已经把 Parse 扩展到了泰语、波斯语/法尔西语和阿拉伯语；这次开源数据和配方，是想让更多人能做类似的事。"
+        }
+      ]
+    },
+    {
+      "h": "图表和表格解析为什么变强了？",
+      "blocks": [
+        {
+          "p": "这次版本最明显的提升在图表和表格，尤其是「难、容易有歧义」的情况。比如很多柱状图或折线图根本没标数字，模型得自己看坐标轴和柱高把数值推出来；原文举的例子是，Parse 从一张图的几何形状里恢复了 18、27、39、54 四个数。"
+        },
+        {
+          "p": "表格更棘手，因为结构本身就是含义：一行或一列错位，整张表的解释就变了。这些进步主要靠合成数据——先渲染「已知标准答案」的图表和表格，再让模型做反推，等于拿一份可控的练习册来训练。"
+        },
+        {
+          "callout": {
+            "kind": "intuition",
+            "title": "为什么合成数据特别适合图表和表格",
+            "text": "真实文档要人工标注数值，又慢又贵还容易标错；渲染出来的图，每个柱子的值和每个单元格都是已知的，可以自动生成大量带标准答案的题目。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "两阶段训练：SFT 学会能力，RLVR 提高一致性",
+      "blocks": [
+        {
+          "p": "训练分两步。第一步 SFT（supervised fine-tuning，监督微调）：给模型「页面 + 标准结构化输出」的成对数据，让它学会读一页并把内容表示出来。这一步覆盖文本、布局、表格、图表和多语种文档，建立基础能力。"
+        },
+        {
+          "p": "第二步 RLVR（reinforcement learning with verifiable rewards，用可验证奖励的强化学习），优化算法是 GRPO。做法是让模型采样生成结果，再用可以自动检查的规则打分：图表有没有恢复正确的系列和数值、结构能不能用、有没有重复生成同一段内容。一个难页面可能有多种合法表示，所以不强制唯一标准答案，而是奖励「正确且完整」，惩罚「循环和没写完」。"
+        },
+        {
+          "fig": {
+            "type": "columns",
+            "title": "RLVR 让输出更少循环、更少超长、总分更高",
+            "subtitle": "开发检查点：SFT 与 GRPO 同条件对比；琥珀色是 GRPO 后的值",
+            "note": "原文为开发检查点，非最终发布模型；循环用重复检查统计",
+            "items": [
+              {
+                "label": "循环输出",
+                "sub": "126 → 29 页",
+                "value": 29,
+                "display": "29 页",
+                "tone": "hi"
+              },
+              {
+                "label": "触及 9,000-token 上限",
+                "sub": "185 → 35 页",
+                "value": 35,
+                "display": "35 页",
+                "tone": "hi"
+              },
+              {
+                "label": "总分",
+                "sub": "66.24 → 71.38",
+                "value": 71.38,
+                "display": "71.38",
+                "tone": "hi"
+              }
+            ]
+          }
+        },
+        {
+          "p": "原文给了一组同条件对比：循环输出从 126 页降到 29 页，大约少 77%；触及 9,000-token 上限的输出从 185 页降到 35 页；总分从 66.24 提到 71.38，其中表格 +5.18 分、图表 +4.15 分。注意这些是开发检查点，不是最终发布模型。"
+        }
+      ]
+    },
+    {
+      "h": "DFlash2 让推理更快：改架构 + 小模型先猜",
+      "blocks": [
+        {
+          "p": "解析模型每页都要吐出一大堆文字和结构，很吃计算。Parse 3.5 在架构上改了四处，下面这张图把它和 Parse 2.0 摆在一起看。"
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "Parse 3.5 把固定画布改成按页面自适应",
+            "subtitle": "琥珀色是这次的变化",
+            "left": {
+              "label": "Parse 2.0",
+              "sub": "旧架构",
+              "items": [
+                {
+                  "label": "固定 2048 × 1664 画布",
+                  "tag": "画布",
+                  "state": "base"
+                },
+                {
+                  "label": "encoder–decoder 交叉注意力",
+                  "tag": "图文连接",
+                  "state": "base"
+                },
+                {
+                  "label": "multi-head attention",
+                  "tag": "解码注意力",
+                  "state": "base"
+                },
+                {
+                  "label": "MTP 单 token 前瞻",
+                  "tag": "投机解码",
+                  "state": "base"
+                }
+              ]
+            },
+            "right": {
+              "label": "Parse 3.5",
+              "sub": "新架构",
+              "items": [
+                {
+                  "label": "NaViT 动态矩形输入",
+                  "tag": "画布",
+                  "state": "hi"
+                },
+                {
+                  "label": "视觉 token 压缩成前缀",
+                  "tag": "图文连接",
+                  "state": "hi"
+                },
+                {
+                  "label": "GQA-8",
+                  "tag": "解码注意力",
+                  "state": "hi"
+                },
+                {
+                  "label": "DFlash2 最多 32 token 前瞻",
+                  "tag": "投机解码",
+                  "state": "hi"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "p": "其中最有意思的是投机解码（speculative decoding）：让一个小的草稿模型先猜后面要生成什么，大模型再一次性验证这些猜测对不对，猜对就省时间。内置的 MTP 头只向前看 1 个 token；DFlash2 是更强的草稿模型，最多往前猜 32 个 token，由 Parse 一起验证。实测在 32-token 配置下，平均接受约 14 个草稿 token，加上目标 token，每次验证大约前进 15 个输出 token。"
+        },
+        {
+          "p": "在单块 H200、BF16、同一批 2,078 页的基准上：并发 1 时，DFlash2 把吞吐提高 7.62 倍；并发 512 时提高 1.52 倍。看绝对数字，并发 512 下 Parse 3.5 不开投机是 13.48 页/秒，开 DFlash2 是 20.44 页/秒，Parse 2.0 只有 2.98 页/秒。也就是说，相对 Parse 2.0，分别是 4.53 倍和 6.86 倍。"
+        },
+        {
+          "fig": {
+            "type": "bars",
+            "title": "并发 512 时，开 DFlash2 从 13.48 涨到 20.44 页/秒",
+            "subtitle": "单位：页/秒；单块 H200、BF16、同 2,078 页；琥珀色是 DFlash2",
+            "legend": [
+              {
+                "tone": "base",
+                "label": "Parse 2.0"
+              },
+              {
+                "tone": "ref",
+                "label": "Parse 3.5 不开投机"
+              },
+              {
+                "tone": "hi",
+                "label": "Parse 3.5 + DFlash2"
+              }
+            ],
+            "groups": [
+              {
+                "label": "并发 512",
+                "items": [
+                  {
+                    "label": "Parse 2.0",
+                    "value": 2.98,
+                    "display": "2.98",
+                    "tone": "base"
+                  },
+                  {
+                    "label": "Parse 3.5（不开投机）",
+                    "value": 13.48,
+                    "display": "13.48",
+                    "tone": "ref"
+                  },
+                  {
+                    "label": "Parse 3.5 + DFlash2",
+                    "value": 20.44,
+                    "display": "20.44",
+                    "tone": "hi"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "单次不够，可以双次、三次重读难区域",
+      "blocks": [
+        {
+          "p": "速度快了之后，就有了对难区域多读几遍的余地。单次解析（single pass）把整页读一遍，输出文本、布局、表格和图表；双次（double pass）把第一次找到的表格和图表区域裁出来、放大再解析一次，再把细化结果合并回去；三次（triple pass）再加一遍「检测模式」，确认所有位置框都找对、没有漏掉文本，然后再重读找到的图表和表格。"
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "一遍不够，就把难区域裁出来再读",
+            "subtitle": "示意：琥珀色是多遍解析新增的步骤；分数来自官方参考评测",
+            "left": {
+              "label": "单次（single pass）",
+              "sub": "整页读一遍",
+              "items": [
+                {
+                  "label": "文本、布局、表格、图表一次输出",
+                  "state": "base"
+                }
+              ]
+            },
+            "right": {
+              "label": "多遍（double / triple）",
+              "sub": "对难区域重读",
+              "items": [
+                {
+                  "label": "双次：裁出表格和图表区域放大重读",
+                  "state": "hi"
+                },
+                {
+                  "label": "三次：再加检测模式确认框和文本",
+                  "state": "hi"
+                },
+                {
+                  "label": "双次 +2.18 分，三次 +2.46 分",
+                  "state": "hi"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "p": "官方参考评测里，双次比单次高 2.18 个 ParseBench 分，三次高 2.46 分。代价是多次裁剪会带来多次请求，吞吐会下降——本质是用速度换难区域的准确率。"
+        },
+        {
+          "callout": {
+            "kind": "takeaway",
+            "title": "速度和质量可以分开调",
+            "text": "DFlash2 解决的是速度，双次/三次解析解决的是难区域的准确率。两者可以组合：先用多遍解析提高质量，再靠 DFlash2 把多花的算力补回来。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "微调配方：从一个牙科表单例子看怎么用",
+      "blocks": [
+        {
+          "p": "官方配方是一条流水线：用自己的「图片 + 标准标签」成对数据，用 NeMo Automodel 做 SFT，再用 NeMo RL 的 GRPO 做强化学习，期间用 vLLM 生成候选答案。还要配一个验证器（verifier）判断一次抽取对不对；自带的文档奖励组件覆盖文本保真、边界框、表格、图表事实和完成度，你可以按任务组合，再加自己的 schema（结构）检查。"
+        },
+        {
+          "p": "示例用了一张合成牙科表单，里面有个 odontogram（牙位图，标出牙齿、计划操作和受影响的牙面）。微调前，Parse 能读出印在纸上的牙号，但漏掉了计划操作表；SFT 之后，它学会把每颗标记的牙齿和操作、位置对应起来。原文配图说，SFT 后所有六行图表都和目标一致。"
+        },
+        {
+          "p": "在 256 张同一生成器产出的留出表单、每页采 8 次的评测里，首次尝试成功率（sampled pass@1，即第一次采样就完全正确）从基础模型的 0.00% 升到 SFT 后的 95.85%，RLVR 后再到 96.58%。「成功」的标准是：自然完成、图表内容完全一致、归一化后的页面文本没有错误。"
+        },
+        {
+          "fig": {
+            "type": "capacity",
+            "title": "牙科表单：首次尝试成功率从 0 到 96.58%",
+            "subtitle": "256 张留出表单、每页采 8 次；成功 = 完成 + 图表一致 + 文本无误；单位：%",
+            "unit": "%",
+            "max": 100,
+            "thresholds": [
+              {
+                "value": 0,
+                "label": "基础模型"
+              },
+              {
+                "value": 95.85,
+                "label": "SFT 后"
+              },
+              {
+                "value": 96.58,
+                "label": "RLVR 后"
+              }
+            ],
+            "items": [
+              {
+                "label": "基础模型",
+                "value": 0,
+                "display": "0.00%",
+                "tone": "bad"
+              },
+              {
+                "label": "SFT 后",
+                "value": 95.85,
+                "display": "95.85%",
+                "tone": "good"
+              },
+              {
+                "label": "RLVR 后",
+                "value": 96.58,
+                "display": "96.58%",
+                "tone": "good"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "官方还没说的",
+      "blocks": [
+        {
+          "list": [
+            "三个数据集和配方的许可证细节没有单独列出，实际使用前需要到对应模型、数据集页面确认。",
+            "微调效果只在合成数据上演示；牙科示例本身也来自同一个合成生成器，换到真实、异质的扫描件上表现未知。",
+            "DFlash2 的吞吐只在单块 H200、BF16 下测过；其他 GPU、其他精度、更大并发的表现没有给出。",
+            "双次/三次解析只给了分数提升（+2.18、+2.46），具体多花多少请求或吞吐下降多少没有数字。",
+            "价格没有提及：模型和数据集开源，但自托管推理的 GPU 成本要自己算。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "适合谁",
+      "blocks": [
+        {
+          "p": "价值在于：如果你要把扫描件、PDF、票据、病历、表单变成结构化数据，这套开源数据和配方能让你少走弯路，图表、表格解析和多语种 OCR 都有现成起点。DFlash2 在并发 1 时提升 7.62 倍，比高并发更明显。"
+        },
+        {
+          "p": "代价是：你需要自己准备配对数据、写验证器、跑训练；文中的评测数字都是 NVIDIA 自建基准和开发检查点，不能当成通用承诺。"
+        },
+        {
+          "list": [
+            "如果你在搭 RAG 或文档 agent：先直接用 Parse 3.5 做解析，看够不够用，再决定要不要微调。",
+            "如果你有特定格式（牙科表单、发票、合同）：照配方做 SFT + RLVR，比从头训练省事。",
+            "如果你是低并发、单张处理：优先开 DFlash2；高并发批量时提升变小，但仍比 Parse 2.0 快。",
+            "如果文档很难（密集表格、小图表）：用双次或三次解析，用吞吐换准确率。"
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Building on Nemotron 3.5 Parse: Open Data, Fine-Tuning, and Faster Inference",
+      "publisher": "Hugging Face（NVIDIA 团队发布）",
+      "date": "2026-11-26",
+      "url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin"
+    },
+    "note": "文中图表均为按原文数字重绘或示意；吞吐、跑分为 NVIDIA 自建评测与开发检查点，非第三方横评。所有二手数字均来自主材料链接。"
+  },
+  "claims": [
+    {
+      "text": "Synthetic Charts V1 数据集包含 9.98M 条样本",
+      "value": "9.98M",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "9.98M",
+      "quote": "Synthetic Charts V1 — 9.98M examples"
+    },
+    {
+      "text": "Synthetic Tables V1 包含 1M 条样本",
+      "value": "1M",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "1M",
+      "quote": "Synthetic Tables V1 — 1M examples"
+    },
+    {
+      "text": "OCR Synthetic Multilingual v2 包含 7.9M 条样本",
+      "value": "7.9M",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "7.9M",
+      "quote": "OCR Synthetic Multilingual v2 — 7.9M examples"
+    },
+    {
+      "text": "SFT 检查点有 126 页被标记为循环输出",
+      "value": "126",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "126 页",
+      "quote": "loop-flagged outputs fall from 126 to 29 pages—about 77% fewer"
+    },
+    {
+      "text": "GRPO 检查点循环输出降到 29 页",
+      "value": "29",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "29 页",
+      "quote": "loop-flagged outputs fall from 126 to 29 pages—about 77% fewer"
+    },
+    {
+      "text": "循环输出减少约 77%",
+      "value": "77%",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "约 77%",
+      "quote": "loop-flagged outputs fall from 126 to 29 pages—about 77% fewer"
+    },
+    {
+      "text": "SFT 检查点有 185 页触及 9,000-token 上限",
+      "value": "185",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "185 页",
+      "quote": "outputs reaching the 9,000-token limit fall from 185 to 35"
+    },
+    {
+      "text": "GRPO 检查点触及上限的页数降到 35 页",
+      "value": "35",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "35 页",
+      "quote": "outputs reaching the 9,000-token limit fall from 185 to 35"
+    },
+    {
+      "text": "输出长度上限为 9,000 token",
+      "value": "9,000",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "9,000-token",
+      "quote": "outputs reaching the 9,000-token limit fall from 185 to 35"
+    },
+    {
+      "text": "SFT 检查点总分 66.24",
+      "value": "66.24",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "66.24",
+      "quote": "Overall score improves from 66.24 to 71.38"
+    },
+    {
+      "text": "GRPO 检查点总分 71.38",
+      "value": "71.38",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "71.38",
+      "quote": "Overall score improves from 66.24 to 71.38"
+    },
+    {
+      "text": "表格分提高 +5.18 分",
+      "value": "+5.18",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "+5.18 分",
+      "quote": "including +5.18 points in tables and +4.15 in charts"
+    },
+    {
+      "text": "图表分提高 +4.15 分",
+      "value": "+4.15",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "+4.15 分",
+      "quote": "including +5.18 points in tables and +4.15 in charts"
+    },
+    {
+      "text": "Parse 2.0 用固定 2048 × 1664 画布",
+      "value": "2048 × 1664",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "2048 × 1664",
+      "quote": "Fixed 2048 × 1664 canvas"
+    },
+    {
+      "text": "GQA-8 有 16 个 query head",
+      "value": "16",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "16 个 query head",
+      "quote": "GQA-8: 16 query heads, 8 key/value heads"
+    },
+    {
+      "text": "GQA-8 有 8 个 key/value head",
+      "value": "8",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "8 个 key/value head",
+      "quote": "GQA-8: 16 query heads, 8 key/value heads"
+    },
+    {
+      "text": "DFlash2 草稿模型最多向前看 32 个 token",
+      "value": "32",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "32 个 token",
+      "quote": "a small draft model proposes up to 32 tokens ahead"
+    },
+    {
+      "text": "32-token 配置下平均接受约 14 个草稿 token",
+      "value": "14",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "约 14 个",
+      "quote": "it averages about 14 accepted draft tokens"
+    },
+    {
+      "text": "每次验证约前进 15 个输出 token",
+      "value": "15",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "约 15 个",
+      "quote": "roughly 15 output tokens of progress per verification step including the target token"
+    },
+    {
+      "text": "并发 1 时 DFlash2 把吞吐提高 7.62 倍",
+      "value": "7.62×",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "7.62 倍",
+      "quote": "DFlash2 increased throughput 7.62× at concurrency 1 and 1.52× at concurrency 512"
+    },
+    {
+      "text": "并发 512 时 DFlash2 把吞吐提高 1.52 倍",
+      "value": "1.52×",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "1.52 倍",
+      "quote": "DFlash2 increased throughput 7.62× at concurrency 1 and 1.52× at concurrency 512"
+    },
+    {
+      "text": "并发 512 下 Parse 3.5 不开投机为 13.48 页/秒",
+      "value": "13.48",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "13.48 页/秒",
+      "quote": "Parse 3.5 reaches 13.48 pages/s without speculation and 20.44 pages/s with DFlash2, versus 2.98 for Parse 2.0"
+    },
+    {
+      "text": "开 DFlash2 后为 20.44 页/秒",
+      "value": "20.44",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "20.44 页/秒",
+      "quote": "Parse 3.5 reaches 13.48 pages/s without speculation and 20.44 pages/s with DFlash2, versus 2.98 for Parse 2.0"
+    },
+    {
+      "text": "Parse 2.0 为 2.98 页/秒",
+      "value": "2.98",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "2.98 页/秒",
+      "quote": "Parse 3.5 reaches 13.48 pages/s without speculation and 20.44 pages/s with DFlash2, versus 2.98 for Parse 2.0"
+    },
+    {
+      "text": "相对 Parse 2.0 为 4.53 倍",
+      "value": "4.53×",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "4.53 倍",
+      "quote": "Those are 4.53× and 6.86× the Parse 2.0 throughput"
+    },
+    {
+      "text": "相对 Parse 2.0 为 6.86 倍",
+      "value": "6.86×",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "6.86 倍",
+      "quote": "Those are 4.53× and 6.86× the Parse 2.0 throughput"
+    },
+    {
+      "text": "基准使用同一批 2,078 页",
+      "value": "2,078",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "2,078 页",
+      "quote": "using the same 2,078 pages"
+    },
+    {
+      "text": "基准在单块 H200 上进行",
+      "value": "1",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "单块",
+      "quote": "on one H200 in BF16"
+    },
+    {
+      "text": "基准的并发档位之一为 1",
+      "value": "1",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "并发 1",
+      "quote": "DFlash2 increased throughput 7.62× at concurrency 1 and 1.52× at concurrency 512"
+    },
+    {
+      "text": "基准的并发档位之一为 512",
+      "value": "512",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "512 并发",
+      "quote": "DFlash2 increased throughput 7.62× at concurrency 1 and 1.52× at concurrency 512"
+    },
+    {
+      "text": "双次解析比单次高 2.18 个 ParseBench 分",
+      "value": "2.18",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "2.18 分",
+      "quote": "double and triple pass add 2.18 and 2.46 ParseBench points over single pass"
+    },
+    {
+      "text": "三次解析比单次高 2.46 分",
+      "value": "2.46",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "2.46 分",
+      "quote": "double and triple pass add 2.18 and 2.46 ParseBench points over single pass"
+    },
+    {
+      "text": "牙科表单基础模型首次成功率 0.00%",
+      "value": "0.00%",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "0.00%",
+      "quote": "rose from 0.00% for the base model to 95.85% after SFT and 96.58% after RLVR"
+    },
+    {
+      "text": "SFT 后首次成功率 95.85%",
+      "value": "95.85%",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "95.85%",
+      "quote": "rose from 0.00% for the base model to 95.85% after SFT and 96.58% after RLVR"
+    },
+    {
+      "text": "RLVR 后首次成功率 96.58%",
+      "value": "96.58%",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "96.58%",
+      "quote": "rose from 0.00% for the base model to 95.85% after SFT and 96.58% after RLVR"
+    },
+    {
+      "text": "评测用 256 张留出表单",
+      "value": "256",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "256 张",
+      "quote": "Matched evaluation on 256 held-out forms from the same synthetic generator, with eight samples per page"
+    },
+    {
+      "text": "每页采样 8 次",
+      "value": "8",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "8 次",
+      "quote": "Matched evaluation on 256 held-out forms from the same synthetic generator, with eight samples per page"
+    },
+    {
+      "text": "SFT 后六行图表都与目标一致",
+      "value": "6",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "六行",
+      "quote": "after SFT, all six chart rows match the target"
+    },
+    {
+      "text": "Parse 从图表几何恢复数值 18",
+      "value": "18",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "18",
+      "quote": "Parse recovers 18, 27, 39, and 54 from the chart geometry"
+    },
+    {
+      "text": "Parse 从图表几何恢复数值 27",
+      "value": "27",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "27",
+      "quote": "Parse recovers 18, 27, 39, and 54 from the chart geometry"
+    },
+    {
+      "text": "Parse 从图表几何恢复数值 39",
+      "value": "39",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "39",
+      "quote": "Parse recovers 18, 27, 39, and 54 from the chart geometry"
+    },
+    {
+      "text": "Parse 从图表几何恢复数值 54",
+      "value": "54",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "54",
+      "quote": "Parse recovers 18, 27, 39, and 54 from the chart geometry"
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "origin": "auto",
+    "candidate": "d3aa48daa6",
+    "tier": "primary",
+    "via": null,
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "generated_at": "2026-11-27T08:32:10.174Z"
+  }
+}
