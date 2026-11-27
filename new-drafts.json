@@ -1,10 +1,10 @@
 [
   {
-    "slug": "anthropic-messages-api-rust-migration",
-    "title": "Anthropic Messages API 迁 Rust：CPU 省约 70%、首个 token 快 20%",
-    "file": "content/articles/anthropic-messages-api-rust-migration.json",
+    "slug": "minimax-h3-family",
+    "title": "MiniMax H3 开源 100 天：社区衍生 1,472 个模型，下载超 1.48 亿次",
+    "file": "content/articles/minimax-h3-family.json",
     "errors": 0,
-    "warnings": 0,
+    "warnings": 1,
     "provider": "deepseek",
     "model": "deepseek-v4-pro"
   }
