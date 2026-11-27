@@ -54,7 +54,8 @@ jobs:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           WG_TRANSLATE_MODEL: ${{ vars.WG_TRANSLATE_MODEL }}
         run: |
-          ARGS=(--max "${{ inputs.max || '6' }}" --out /tmp/new-translations.json)
+          # 一篇长精读要翻 10 分钟左右；预算 110 分钟，最后一篇翻完也赶得上 150 分钟的超时，已翻好的不会白丢
+          ARGS=(--max "${{ inputs.max || '6' }}" --budget 110 --out /tmp/new-translations.json)
           if [ -n "${{ inputs.slugs }}" ]; then ARGS+=(--slug "${{ inputs.slugs }}"); fi
           node scripts/translate.mjs "${ARGS[@]}"
       - name: 只预览：译文推到 preview/en-<运行编号> 分支，不开 PR、不上线

@@ -3,6 +3,7 @@
    用法：node scripts/translate.mjs                 翻译还没有英文版、或中文稿改过的文章（默认最多 6 篇）
          node scripts/translate.mjs --slug a,b      只翻指定的几篇（不管是否已有英文版）
          node scripts/translate.mjs --max 20        这次最多翻几篇
+         node scripts/translate.mjs --budget 110    最多花多少分钟：超时就不再开始新的一篇，已翻好的照常开 PR
          node scripts/translate.mjs --list          只列出要翻的文章，不调模型
          node scripts/translate.mjs --mock          不调模型，用假译文跑通流程（测试用）
    需要 DEEPSEEK_API_KEY。结果清单写到 --out（默认 data/new-translations.json），开 PR 的脚本读它 */
@@ -19,6 +20,7 @@ const only = (arg("--slug", "") || "").split(",").map(s => s.trim()).filter(Bool
 const max = Number(arg("--max", 6));
 const out = arg("--out", dataFile("new-translations.json"));
 const mock = args.includes("--mock");
+const budgetMin = Number(arg("--budget", process.env.WG_TRANSLATE_BUDGET_MIN || 0)) || 0;
 
 /* 需要翻译的：已发布、且（没有英文版，或英文版是从旧的中文稿翻的） */
 export function pending({ slugs = [] } = {}) {
@@ -38,7 +40,12 @@ async function main() {
   const batch = todo.slice(0, max);
   console.log(`要翻译 ${todo.length} 篇，这次翻 ${batch.length} 篇`);
   const done = [];
+  const t0 = Date.now();
   for (const a of batch) {
+    if (budgetMin && (Date.now() - t0) / 60000 > budgetMin) {
+      console.log(`\n⏱ 已用 ${Math.round((Date.now() - t0) / 60000)} 分钟，超过 ${budgetMin} 分钟的预算，剩下的留给下一次`);
+      break;
+    }
     console.log(`\n▸ ${a.slug}：${a.title}`);
     try {
       const texts = loadSourceTexts(a);
@@ -48,10 +55,11 @@ async function main() {
       writeJson(path.join(CONTENT_EN, `${a.slug}.json`), r.article);
       console.log(`  ✓ ${r.segments} 段 → ${r.article.title}`);
       done.push({ slug: a.slug, file: `content/en/${a.slug}.json`, title: r.article.title, zh: a.title });
+      writeJson(out, done);   // 每翻好一篇就记一次，万一中途被打断也不至于全丢
     } catch (e) { console.log(`  ✗ ${e.message}`); }
   }
   writeJson(out, done);
-  console.log(`\n完成 ${done.length} / ${batch.length} 篇`);
+  console.log(`\n完成 ${done.length} / ${batch.length} 篇（还剩 ${todo.length - done.length} 篇待翻）`);
   if (batch.length && !done.length) process.exitCode = 1;
 }
 
