@@ -74,3 +74,10 @@ test("论文书单：学习路线里的每篇论文都在书单里，补充论�
   for (const t of lib.tracks) for (const id of t.ids) assert.ok(ids.has(id), `主线 ${t.k} 里的 ${id} 不在书单里`);
   for (const p of lib.papers.filter(p => p.extra)) assert.match(p.url, /^https:\/\//, `${p.id} 缺少链接`);
 });
+
+test("回首页的链接：只有首页本身原地回顶部，论文精读页和专题页要真的跳回首页", () => {
+  const js = fs.readFileSync("site/assets/app.js", "utf8");
+  const m = js.match(/if\("home" in d\)\{if\(([^)]*)\)\{location\.href=HOME\+"index\.html"/);
+  assert.ok(m, "找不到 data-home 的点击处理");
+  for (const k of ["!LIST", "TOPIC", "SECTION"]) assert.ok(m[1].includes(k), `跳转条件缺少 ${k}`);
+});

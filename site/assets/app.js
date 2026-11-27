@@ -360,7 +360,7 @@ document.addEventListener("click",e=>{
   if("close" in d){closeAll();return}
   if(d.goto){document.getElementById(d.goto)?.scrollIntoView({behavior:"smooth",block:"start"});return}
   if(d.scroll){const tr=el.closest(".lane").querySelector(".track");tr.scrollBy({left:tr.clientWidth*.9*(+d.scroll)});return}
-  if("home" in d){if(!LIST){location.href=HOME+"index.html";return}window.scrollTo({top:0,behavior:"smooth"});document.body.classList.remove("side-open");return}
+  if("home" in d){if(!LIST||TOPIC||SECTION){location.href=HOME+"index.html";return}  /* 只有首页本身才原地回到顶部；论文精读页、专题页要真的跳回首页 */window.scrollTo({top:0,behavior:"smooth"});document.body.classList.remove("side-open");return}
 });
 document.addEventListener("keydown",e=>{
   if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"){e.preventDefault();openSearch();return}
