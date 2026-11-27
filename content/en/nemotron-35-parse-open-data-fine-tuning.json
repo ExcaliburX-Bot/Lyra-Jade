@@ -1,0 +1,794 @@
+{
+  "slug": "nemotron-35-parse-open-data-fine-tuning",
+  "date": "2026-11-26",
+  "category": "product",
+  "publisher": "NVIDIA",
+  "topics": [
+    "nvidia"
+  ],
+  "title": "NVIDIA opens three Nemotron 3.5 Parse datasets and a fine-tuning recipe, with DFlash2 inference 7.62x faster",
+  "summary": "If you use models to turn scans, PDFs, or charts into structured data, NVIDIA has now released the Nemotron 3.5 Parse training data and fine-tuning recipe, plus a DFlash2 acceleration option: on a single H200, throughput at concurrency 1 improves 7.62x.",
+  "ai_summary": "NVIDIA has open-sourced three things after Nemotron 3.5 Parse: three synthetic training datasets (9.98M chart examples, 1M table examples, 7.9M multilingual OCR examples), an SFT + RLVR fine-tuning recipe, and a speculative-decoding accelerator called DFlash2. Training first uses supervised fine-tuning to teach the model to read pages, then reinforcement learning with verifiable rewards to improve consistency: looped outputs drop from 126 to 29 pages, and total score rises from 66.24 to 71.38. On a single H200 in BF16, DFlash2 improves throughput 7.62x at concurrency 1 and reaches 20.44 pages/s at concurrency 512. The most practical part is applying the recipe to your own documents: in NVIDIA's example, first-attempt success on a dental form goes from 0.00% to 96.58%. These are NVIDIA's own evaluation numbers; verify them on your own data.",
+  "brief": [
+    "The three open datasets cover 9.98M chart examples, 1M table examples, and 7.9M multilingual OCR examples, including images, annotations, and training format.",
+    "In a matched comparison, RLVR cuts looped outputs from 126 pages to 29 and lifts the overall score from 66.24 to 71.38.",
+    "On a single H200 in BF16, DFlash2 delivers 7.62x throughput at concurrency 1 and 20.44 pages/s at concurrency 512.",
+    "Dental-form fine-tuning example: first-attempt success rises from 0.00% to 96.58%; the recipe is open, so you can apply it to your own documents."
+  ],
+  "readMinutes": 7,
+  "cover": {
+    "headline": "Nemotron Parse opens further",
+    "highlight": "Open data, a fine-tuning recipe, and faster inference",
+    "big": {
+      "value": 7.62,
+      "unit": "x",
+      "label": "DFlash2 low-concurrency throughput gain"
+    }
+  },
+  "sections": [
+    {
+      "h": "What it is: turning a page into structured data with labels and bounding boxes",
+      "blocks": [
+        {
+          "p": "Nemotron 3.5 Parse is NVIDIA's document parser: feed it a scanned page or PDF image and it arranges the content in reading order, assigns each block a type such as heading, paragraph, table, or chart, and returns a bounding box — the coordinates for the rectangular area the content occupies. Tables and charts also become structured records you can use for RAG (retrieval-augmented generation: pull relevant content from a document, then let a model answer from it) or feed to agents."
+        },
+        {
+          "p": "This post follows the model release with three additions: open synthetic training datasets, a fine-tuning recipe you can copy, and DFlash2 for faster inference. The point is that the data and the method are both open, so others can train their own document models the same way."
+        },
+        {
+          "fig": {
+            "type": "schematic",
+            "title": "Parse splits a page into labeled content blocks with position boxes",
+            "subtitle": "Illustrative: amber marks the region selected and extracted; labels and coordinates are model output.",
+            "items": [
+              {
+                "glyph": {
+                  "kind": "pages",
+                  "count": 8,
+                  "select": [
+                    2,
+                    3
+                  ]
+                },
+                "title": "Headings and paragraphs",
+                "sub": "Output in reading order",
+                "rows": [
+                  {
+                    "k": "Category",
+                    "v": "heading / paragraph"
+                  },
+                  {
+                    "k": "Position",
+                    "v": "Bounding box coordinates"
+                  }
+                ]
+              },
+              {
+                "glyph": {
+                  "kind": "sheet",
+                  "rows": 6,
+                  "cols": 5,
+                  "select": [
+                    2,
+                    2,
+                    5,
+                    5
+                  ]
+                },
+                "title": "Tables",
+                "sub": "Rows, columns, and headers preserved",
+                "rows": [
+                  {
+                    "k": "Structure",
+                    "v": "rows / columns / headers"
+                  },
+                  {
+                    "k": "Output",
+                    "v": "Structured record"
+                  }
+                ]
+              },
+              {
+                "glyph": {
+                  "kind": "doc",
+                  "lines": 9,
+                  "select": [
+                    3,
+                    4
+                  ]
+                },
+                "title": "Charts",
+                "sub": "Infers values even without labels, e.g. 18, 27, 39, 54",
+                "rows": [
+                  {
+                    "k": "Input",
+                    "v": "Bar height + axes"
+                  },
+                  {
+                    "k": "Output",
+                    "v": "Series and values"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "Which three datasets are open?",
+      "blocks": [
+        {
+          "p": "All three datasets are synthetic: rather than hand-labeling real scans, NVIDIA rendered charts, tables, and multilingual pages programmatically. Because the generator knows each bar's value and each cell's content, the ground truth is exact by construction, and fonts, layouts, and languages can be varied to increase diversity."
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "Three open datasets, three scales",
+            "subtitle": "Units: examples; M means million",
+            "items": [
+              {
+                "value": 9.98,
+                "unit": "M",
+                "label": "Synthetic Charts V1",
+                "note": "Rendered charts with structured annotations"
+              },
+              {
+                "value": 1,
+                "unit": "M",
+                "label": "Synthetic Tables V1",
+                "note": "HTML tables with rows, columns, and headers preserved"
+              },
+              {
+                "value": 7.9,
+                "unit": "M",
+                "label": "OCR Synthetic Multilingual v2",
+                "note": "Multilingual synthetic pages"
+              }
+            ]
+          }
+        },
+        {
+          "p": "Each dataset includes images, annotations, generation documentation, and the training format. NVIDIA suggests either fine-tuning a document model directly or following the same method to generate new variants for a specific document type or language."
+        },
+        {
+          "p": "The community has already extended Parse to Thai, Persian/Farsi, and Arabic; releasing this data and recipe is meant to help more people do similar work."
+        }
+      ]
+    },
+    {
+      "h": "Why chart and table parsing got better",
+      "blocks": [
+        {
+          "p": "The most obvious gains in this release are on charts and tables, especially hard or ambiguous cases. Many bar and line charts have no printed numbers, so the model has to infer values from axes and bar heights; the post gives an example where Parse recovers 18, 27, 39, and 54 from a chart's geometry."
+        },
+        {
+          "p": "Tables are trickier because the structure itself carries meaning: one shifted row or column changes the interpretation of the whole table. These gains mostly come from synthetic data — render charts and tables with known ground truth, then have the model reverse the process, like a controlled workbook of exercises."
+        },
+        {
+          "callout": {
+            "kind": "intuition",
+            "title": "Why synthetic data fits charts and tables especially well",
+            "text": "Labeling values in real documents by hand is slow, expensive, and error-prone. With rendered images, every bar value and cell content is already known, so you can automatically generate large numbers of examples with exact answers."
+          }
+        }
+      ]
+    },
+    {
+      "h": "Two-stage training: SFT builds the skill, RLVR improves consistency",
+      "blocks": [
+        {
+          "p": "Training happens in two steps. First, SFT (supervised fine-tuning): the model gets page-plus-correct-structured-output pairs and learns to read a page and represent its contents. This stage covers text, layout, tables, charts, and multilingual documents to build the core ability."
+        },
+        {
+          "p": "Second, RLVR (reinforcement learning with verifiable rewards), optimized with GRPO. The model samples outputs, then automatically checkable rules score them: did the chart recover the right series and values? Is the structure usable? Did it repeat the same content? A hard page can have many valid representations, so the reward does not force one exact answer; it rewards correct and complete output and penalizes looping and unfinished work."
+        },
+        {
+          "fig": {
+            "type": "columns",
+            "title": "RLVR cuts looping, trims overlong outputs, and raises the total score",
+            "subtitle": "Development checkpoints: SFT vs. GRPO in matched settings; amber marks GRPO values",
+            "note": "Source uses development checkpoints, not the final released model; loops are counted with a repetition check",
+            "items": [
+              {
+                "label": "Looped output",
+                "sub": "126 → 29 pages",
+                "value": 29,
+                "display": "29 pages",
+                "tone": "hi"
+              },
+              {
+                "label": "Hit 9,000-token limit",
+                "sub": "185 → 35 pages",
+                "value": 35,
+                "display": "35 pages",
+                "tone": "hi"
+              },
+              {
+                "label": "Total score",
+                "sub": "66.24 → 71.38",
+                "value": 71.38,
+                "display": "71.38",
+                "tone": "hi"
+              }
+            ]
+          }
+        },
+        {
+          "p": "The post gives a matched comparison: looped outputs fall from 126 to 29 pages, about 77% fewer; outputs hitting the 9,000-token limit fall from 185 to 35 pages; total score rises from 66.24 to 71.38, including +5.18 points on tables and +4.15 on charts. Note these are development checkpoints, not the final released model."
+        }
+      ]
+    },
+    {
+      "h": "DFlash2 speeds inference: architecture changes plus a small draft model",
+      "blocks": [
+        {
+          "p": "A parsing model emits a lot of text and structure for every page, which is compute-hungry. Parse 3.5 makes four architecture changes; the figure below compares it with Parse 2.0."
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "Parse 3.5 swaps a fixed canvas for page-adaptive input",
+            "subtitle": "Amber marks the changes this time",
+            "left": {
+              "label": "Parse 2.0",
+              "sub": "Old architecture",
+              "items": [
+                {
+                  "label": "Fixed 2048 × 1664 canvas",
+                  "tag": "Canvas",
+                  "state": "base"
+                },
+                {
+                  "label": "Encoder–decoder cross-attention",
+                  "tag": "Image–text connection",
+                  "state": "base"
+                },
+                {
+                  "label": "multi-head attention",
+                  "tag": "Decoder attention",
+                  "state": "base"
+                },
+                {
+                  "label": "MTP one-token lookahead",
+                  "tag": "Speculative decoding",
+                  "state": "base"
+                }
+              ]
+            },
+            "right": {
+              "label": "Parse 3.5",
+              "sub": "New architecture",
+              "items": [
+                {
+                  "label": "NaViT dynamic rectangular inputs",
+                  "tag": "Canvas",
+                  "state": "hi"
+                },
+                {
+                  "label": "Compressed visual tokens as a causal prefix",
+                  "tag": "Image–text connection",
+                  "state": "hi"
+                },
+                {
+                  "label": "GQA-8",
+                  "tag": "Decoder attention",
+                  "state": "hi"
+                },
+                {
+                  "label": "DFlash2 up to 32-token lookahead",
+                  "tag": "Speculative decoding",
+                  "state": "hi"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "p": "The most interesting part is speculative decoding: a small draft model guesses what comes next, and the large model verifies the guesses in one pass; correct guesses save time. The built-in MTP head only looks ahead 1 token, while DFlash2 is a more powerful draft model that can guess up to 32 tokens ahead, which Parse verifies together. In the measured 32-token configuration, about 14 draft tokens are accepted on average, so each verification advances roughly 15 output tokens including the target token."
+        },
+        {
+          "p": "On a single H200 in BF16 on the same 2,078-page benchmark, DFlash2 improves throughput by 7.62x at concurrency 1 and 1.52x at concurrency 512. In absolute terms at concurrency 512, Parse 3.5 without speculation runs at 13.48 pages/s, with DFlash2 at 20.44 pages/s, and Parse 2.0 only 2.98 pages/s. That is 4.53x and 6.86x over Parse 2.0, respectively."
+        },
+        {
+          "fig": {
+            "type": "bars",
+            "title": "At concurrency 512, DFlash2 lifts throughput from 13.48 to 20.44 pages/s",
+            "subtitle": "Units: pages/s; single H200, BF16, same 2,078 pages; amber shows DFlash2",
+            "legend": [
+              {
+                "tone": "base",
+                "label": "Parse 2.0"
+              },
+              {
+                "tone": "ref",
+                "label": "Parse 3.5 without speculation"
+              },
+              {
+                "tone": "hi",
+                "label": "Parse 3.5 + DFlash2"
+              }
+            ],
+            "groups": [
+              {
+                "label": "Concurrency 512",
+                "items": [
+                  {
+                    "label": "Parse 2.0",
+                    "value": 2.98,
+                    "display": "2.98",
+                    "tone": "base"
+                  },
+                  {
+                    "label": "Parse 3.5 (no speculation)",
+                    "value": 13.48,
+                    "display": "13.48",
+                    "tone": "ref"
+                  },
+                  {
+                    "label": "Parse 3.5 + DFlash2",
+                    "value": 20.44,
+                    "display": "20.44",
+                    "tone": "hi"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "When one pass is not enough, double or triple pass re-reads hard regions",
+      "blocks": [
+        {
+          "p": "Faster inference leaves room to re-read difficult regions. Single-pass parsing reads the whole page once and outputs text, layout, tables, and charts. Double-pass takes the table and chart regions found on the first pass, crops and enlarges them, parses them again, and merges the refinements back. Triple-pass adds a detection mode that verifies all boxes are found and no text is missed, then re-reads the charts and tables it found."
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "If one pass is not enough, crop the hard regions and read them again",
+            "subtitle": "Illustrative: amber marks steps added in multi-pass parsing; scores from NVIDIA's reference evaluation",
+            "left": {
+              "label": "Single pass",
+              "sub": "Reads the full page once",
+              "items": [
+                {
+                  "label": "Outputs text, layout, tables, and charts in one pass",
+                  "state": "base"
+                }
+              ]
+            },
+            "right": {
+              "label": "Multi-pass (double / triple)",
+              "sub": "Re-reads difficult regions",
+              "items": [
+                {
+                  "label": "Double: crops and enlarges table and chart regions for re-reading",
+                  "state": "hi"
+                },
+                {
+                  "label": "Triple: adds a detection mode to confirm boxes and text",
+                  "state": "hi"
+                },
+                {
+                  "label": "Double +2.18 points; triple +2.46 points",
+                  "state": "hi"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "p": "In NVIDIA's reference evaluation, double pass scores 2.18 ParseBench points higher than single pass, and triple pass 2.46 points higher. The tradeoff is that multiple crops mean multiple requests, so throughput drops — essentially trading speed for accuracy on hard regions."
+        },
+        {
+          "callout": {
+            "kind": "takeaway",
+            "title": "Speed and quality can be tuned separately",
+            "text": "DFlash2 addresses speed; double/triple parsing addresses accuracy on hard regions. The two can be combined: use multi-pass parsing to raise quality, then use DFlash2 to claw back the extra compute."
+          }
+        }
+      ]
+    },
+    {
+      "h": "The fine-tuning recipe: a dental form example",
+      "blocks": [
+        {
+          "p": "NVIDIA's recipe is a pipeline: pair your own images with gold labels, run SFT with NeMo Automodel, then run RLVR with GRPO in NeMo RL, using vLLM to generate candidate answers. You also need a verifier to decide whether an extraction is correct. The built-in document reward components cover text fidelity, bounding boxes, tables, chart facts, and completion; combine the ones your task needs and add your own schema checks."
+        },
+        {
+          "p": "The worked example uses a synthetic dental form with an odontogram — a chart showing teeth, planned procedures, and affected tooth surfaces. Before fine-tuning, Parse reads the printed tooth numbers but misses the planned procedure table; after SFT, it learns to link each marked tooth to a procedure and position. The post says all six chart rows match the target after SFT."
+        },
+        {
+          "p": "On an evaluation of 256 held-out forms from the same generator, with 8 samples per page, the first-attempt success rate (sampled pass@1 — correct on the first sample) rises from 0.00% for the base model to 95.85% after SFT and 96.58% after RLVR. Success means natural completion, exact chart content, and error-free normalized page text."
+        },
+        {
+          "fig": {
+            "type": "capacity",
+            "title": "Dental form: first-attempt success from 0 to 96.58%",
+            "subtitle": "256 held-out forms, 8 samples per page; success = completion + chart match + clean text; unit: %",
+            "unit": "%",
+            "max": 100,
+            "thresholds": [
+              {
+                "value": 0,
+                "label": "Base model"
+              },
+              {
+                "value": 95.85,
+                "label": "After SFT"
+              },
+              {
+                "value": 96.58,
+                "label": "After RLVR"
+              }
+            ],
+            "items": [
+              {
+                "label": "Base model",
+                "value": 0,
+                "display": "0.00%",
+                "tone": "bad"
+              },
+              {
+                "label": "After SFT",
+                "value": 95.85,
+                "display": "95.85%",
+                "tone": "good"
+              },
+              {
+                "label": "After RLVR",
+                "value": 96.58,
+                "display": "96.58%",
+                "tone": "good"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "What NVIDIA hasn't said",
+      "blocks": [
+        {
+          "list": [
+            "License details for the three datasets and the recipe are not listed separately; check the corresponding model and dataset pages before using them.",
+            "The fine-tuning demo is only shown on synthetic data; the dental example itself comes from the same synthetic generator, so performance on real, heterogeneous scans is unknown.",
+            "DFlash2 throughput is tested only on a single H200 in BF16; other GPUs, precisions, and higher concurrency are not reported.",
+            "Double/triple parsing only reports score gains (+2.18, +2.46), with no numbers for extra requests or throughput loss.",
+            "Pricing is not mentioned: the model and datasets are open, but you will need to calculate GPU costs for self-hosted inference."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Who it is for",
+      "blocks": [
+        {
+          "p": "The value: if you need to turn scans, PDFs, receipts, medical records, or forms into structured data, the open data and recipe save you from starting from scratch, with chart/table parsing and multilingual OCR as ready-made starting points. DFlash2's 7.62x gain at concurrency 1 is more pronounced than at high concurrency."
+        },
+        {
+          "p": "The cost: you need to prepare paired data, write a verifier, and run training yourself; the numbers in the post are NVIDIA's own benchmarks and development checkpoints, not a general guarantee."
+        },
+        {
+          "list": [
+            "If you are building RAG or a document agent: start by running Parse 3.5 directly and see if it is good enough before deciding to fine-tune.",
+            "If you have a specific format such as dental forms, invoices, or contracts: follow the recipe with SFT + RLVR; it is less work than training from scratch.",
+            "If you process low-concurrency or single documents: turn on DFlash2 first; the gain shrinks at high batch concurrency but remains faster than Parse 2.0.",
+            "If documents are hard, such as dense tables or small charts: use double or triple pass, trading throughput for accuracy."
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Building on Nemotron 3.5 Parse: Open Data, Fine-Tuning, and Faster Inference",
+      "publisher": "Hugging Face (published by the NVIDIA team)",
+      "date": "2026-11-26",
+      "url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin"
+    },
+    "note": "Charts and figures are redrawn from the original numbers or illustrative; throughput and scores are NVIDIA's own evaluations and development checkpoints, not third-party benchmarks. All secondary numbers come from the linked primary material."
+  },
+  "claims": [
+    {
+      "text": "Synthetic Charts V1 contains 9.98M examples",
+      "value": "9.98M",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "9.98M",
+      "quote": "Synthetic Charts V1 — 9.98M examples"
+    },
+    {
+      "text": "Synthetic Tables V1 contains 1M examples",
+      "value": "1M",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "1M",
+      "quote": "Synthetic Tables V1 — 1M examples"
+    },
+    {
+      "text": "OCR Synthetic Multilingual v2 contains 7.9M examples",
+      "value": "7.9M",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "7.9M",
+      "quote": "OCR Synthetic Multilingual v2 — 7.9M examples"
+    },
+    {
+      "text": "The SFT checkpoint has 126 pages flagged as looped output",
+      "value": "126",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "126 pages",
+      "quote": "loop-flagged outputs fall from 126 to 29 pages—about 77% fewer"
+    },
+    {
+      "text": "The GRPO checkpoint drops looped output to 29 pages",
+      "value": "29",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "29 pages",
+      "quote": "loop-flagged outputs fall from 126 to 29 pages—about 77% fewer"
+    },
+    {
+      "text": "Looped output falls about 77%",
+      "value": "77%",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "About 77%",
+      "quote": "loop-flagged outputs fall from 126 to 29 pages—about 77% fewer"
+    },
+    {
+      "text": "The SFT checkpoint has 185 pages hitting the 9,000-token limit",
+      "value": "185",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "185 pages",
+      "quote": "outputs reaching the 9,000-token limit fall from 185 to 35"
+    },
+    {
+      "text": "The GRPO checkpoint drops pages hitting the limit to 35",
+      "value": "35",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "35 pages",
+      "quote": "outputs reaching the 9,000-token limit fall from 185 to 35"
+    },
+    {
+      "text": "The output length limit is 9,000 tokens",
+      "value": "9,000",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "9,000-token",
+      "quote": "outputs reaching the 9,000-token limit fall from 185 to 35"
+    },
+    {
+      "text": "The SFT checkpoint scores 66.24 overall",
+      "value": "66.24",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "66.24",
+      "quote": "Overall score improves from 66.24 to 71.38"
+    },
+    {
+      "text": "The GRPO checkpoint scores 71.38 overall",
+      "value": "71.38",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "71.38",
+      "quote": "Overall score improves from 66.24 to 71.38"
+    },
+    {
+      "text": "Table score improves by +5.18 points",
+      "value": "+5.18",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "+5.18 points",
+      "quote": "including +5.18 points in tables and +4.15 in charts"
+    },
+    {
+      "text": "Chart score improves by +4.15 points",
+      "value": "+4.15",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "+4.15 points",
+      "quote": "including +5.18 points in tables and +4.15 in charts"
+    },
+    {
+      "text": "Parse 2.0 uses a fixed 2048 × 1664 canvas",
+      "value": "2048 × 1664",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "2048 × 1664",
+      "quote": "Fixed 2048 × 1664 canvas"
+    },
+    {
+      "text": "GQA-8 has 16 query heads",
+      "value": "16",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "16 query heads",
+      "quote": "GQA-8: 16 query heads, 8 key/value heads"
+    },
+    {
+      "text": "GQA-8 has 8 key/value heads",
+      "value": "8",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "8 key/value heads",
+      "quote": "GQA-8: 16 query heads, 8 key/value heads"
+    },
+    {
+      "text": "The DFlash2 draft model looks ahead up to 32 tokens",
+      "value": "32",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "32 tokens",
+      "quote": "a small draft model proposes up to 32 tokens ahead"
+    },
+    {
+      "text": "In the 32-token configuration, about 14 draft tokens are accepted on average",
+      "value": "14",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "About 14",
+      "quote": "it averages about 14 accepted draft tokens"
+    },
+    {
+      "text": "Each verification advances about 15 output tokens",
+      "value": "15",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "About 15",
+      "quote": "roughly 15 output tokens of progress per verification step including the target token"
+    },
+    {
+      "text": "At concurrency 1, DFlash2 raises throughput 7.62x",
+      "value": "7.62×",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "7.62x",
+      "quote": "DFlash2 increased throughput 7.62× at concurrency 1 and 1.52× at concurrency 512"
+    },
+    {
+      "text": "At concurrency 512, DFlash2 raises throughput 1.52x",
+      "value": "1.52×",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "1.52x",
+      "quote": "DFlash2 increased throughput 7.62× at concurrency 1 and 1.52× at concurrency 512"
+    },
+    {
+      "text": "At concurrency 512, Parse 3.5 without speculation reaches 13.48 pages/s",
+      "value": "13.48",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "13.48 pages/s",
+      "quote": "Parse 3.5 reaches 13.48 pages/s without speculation and 20.44 pages/s with DFlash2, versus 2.98 for Parse 2.0"
+    },
+    {
+      "text": "With DFlash2 it reaches 20.44 pages/s",
+      "value": "20.44",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "20.44 pages/s",
+      "quote": "Parse 3.5 reaches 13.48 pages/s without speculation and 20.44 pages/s with DFlash2, versus 2.98 for Parse 2.0"
+    },
+    {
+      "text": "Parse 2.0 reaches 2.98 pages/s",
+      "value": "2.98",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "2.98 pages/s",
+      "quote": "Parse 3.5 reaches 13.48 pages/s without speculation and 20.44 pages/s with DFlash2, versus 2.98 for Parse 2.0"
+    },
+    {
+      "text": "That is 4.53x over Parse 2.0",
+      "value": "4.53×",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "4.53x",
+      "quote": "Those are 4.53× and 6.86× the Parse 2.0 throughput"
+    },
+    {
+      "text": "That is 6.86x over Parse 2.0",
+      "value": "6.86×",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "6.86x",
+      "quote": "Those are 4.53× and 6.86× the Parse 2.0 throughput"
+    },
+    {
+      "text": "The benchmark uses the same 2,078 pages",
+      "value": "2,078",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "2,078 pages",
+      "quote": "using the same 2,078 pages"
+    },
+    {
+      "text": "The benchmark runs on a single H200",
+      "value": "1",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "Single",
+      "quote": "on one H200 in BF16"
+    },
+    {
+      "text": "One benchmark concurrency level is 1",
+      "value": "1",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "Concurrency 1",
+      "quote": "DFlash2 increased throughput 7.62× at concurrency 1 and 1.52× at concurrency 512"
+    },
+    {
+      "text": "One benchmark concurrency level is 512",
+      "value": "512",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "Concurrency 512",
+      "quote": "DFlash2 increased throughput 7.62× at concurrency 1 and 1.52× at concurrency 512"
+    },
+    {
+      "text": "Double-pass parsing scores 2.18 ParseBench points higher than single pass",
+      "value": "2.18",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "2.18 points",
+      "quote": "double and triple pass add 2.18 and 2.46 ParseBench points over single pass"
+    },
+    {
+      "text": "Triple-pass parsing scores 2.46 points higher than single pass",
+      "value": "2.46",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "2.46 points",
+      "quote": "double and triple pass add 2.18 and 2.46 ParseBench points over single pass"
+    },
+    {
+      "text": "Base-model first-attempt success on the dental form is 0.00%",
+      "value": "0.00%",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "0.00%",
+      "quote": "rose from 0.00% for the base model to 95.85% after SFT and 96.58% after RLVR"
+    },
+    {
+      "text": "First-attempt success after SFT is 95.85%",
+      "value": "95.85%",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "95.85%",
+      "quote": "rose from 0.00% for the base model to 95.85% after SFT and 96.58% after RLVR"
+    },
+    {
+      "text": "First-attempt success after RLVR is 96.58%",
+      "value": "96.58%",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "96.58%",
+      "quote": "rose from 0.00% for the base model to 95.85% after SFT and 96.58% after RLVR"
+    },
+    {
+      "text": "The evaluation uses 256 held-out forms",
+      "value": "256",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "256 forms",
+      "quote": "Matched evaluation on 256 held-out forms from the same synthetic generator, with eight samples per page"
+    },
+    {
+      "text": "Each page is sampled 8 times",
+      "value": "8",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "8 times",
+      "quote": "Matched evaluation on 256 held-out forms from the same synthetic generator, with eight samples per page"
+    },
+    {
+      "text": "After SFT, all six chart rows match the target",
+      "value": "6",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "Six rows",
+      "quote": "after SFT, all six chart rows match the target"
+    },
+    {
+      "text": "Parse recovers the value 18 from chart geometry",
+      "value": "18",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "18",
+      "quote": "Parse recovers 18, 27, 39, and 54 from the chart geometry"
+    },
+    {
+      "text": "Parse recovers the value 27 from chart geometry",
+      "value": "27",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "27",
+      "quote": "Parse recovers 18, 27, 39, and 54 from the chart geometry"
+    },
+    {
+      "text": "Parse recovers the value 39 from chart geometry",
+      "value": "39",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "39",
+      "quote": "Parse recovers 18, 27, 39, and 54 from the chart geometry"
+    },
+    {
+      "text": "Parse recovers the value 54 from chart geometry",
+      "value": "54",
+      "source_url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+      "as_written": "54",
+      "quote": "Parse recovers 18, 27, 39, and 54 from the chart geometry"
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "eeff742f3ab7c421"
+}
