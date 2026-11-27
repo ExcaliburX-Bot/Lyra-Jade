@@ -1,0 +1,461 @@
+{
+  "slug": "openai-chatgpt-academic-researchers-expansion",
+  "date": "2026-11-16",
+  "category": "product",
+  "publisher": "OpenAI",
+  "topics": [
+    "openai"
+  ],
+  "title": "OpenAI expands free ChatGPT access to 200,000 researchers and adds 50,000 new grants",
+  "summary": "If you’re doing research and hesitating over a ChatGPT subscription: OpenAI is expanding free research access to up to 200,000 researchers worldwide, and the next round of 50,000 grants opens November 23 on a first-come, first-served basis.",
+  "ai_summary": "OpenAI is expanding ChatGPT for Academic Researchers from a small July pilot into a free program for up to 200,000 researchers worldwide. The next round opens November 23 with 50,000 grants, first come, first served. Each grant covers the recipient and up to two collaborators, so this round could reach up to 150,000 people. Two changes from the pilot: selection moves from a lottery to first come, first served, and the free subscription switches from ChatGPT Pro to Plus, because OpenAI says most participants would have stayed within Plus limits. By default, data shared through the program isn’t used to train models. It’s aimed at researchers who want to apply frontier models to their work without tracking subscription costs; the announcement doesn’t give regular Plus pricing or detailed eligibility criteria.",
+  "brief": [
+    "The new round offers 50,000 free grants, first come, first served from November 23 — no more lottery.",
+    "Each grant covers the recipient plus up to two collaborators, so this round can reach up to 150,000 researchers.",
+    "The free subscription switches from ChatGPT Pro to ChatGPT Plus; by default, data shared through the program isn’t used to train models.",
+    "The pilot has brought in 20,000 researchers across 33 countries; participants estimated the same research work would take nearly twice as long without AI."
+  ],
+  "readMinutes": 6,
+  "sections": [
+    {
+      "h": "What this is: OpenAI expands free ChatGPT access for researchers from a pilot to a larger program",
+      "blocks": [
+        {
+          "p": "On November 16, 2026, OpenAI announced the expansion of ChatGPT for Academic Researchers. In short, it gives eligible researchers free access to ChatGPT so they can apply frontier models to their work without being shut out by subscription fees. The program ran as a small pilot in July and now moves into a larger round."
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "Four numbers that show the scale of this expansion",
+            "subtitle": "Units are labeled separately; 150,000 is the ceiling when every grant includes both collaborators.",
+            "items": [
+              {
+                "value": "200,000",
+                "unit": "researchers",
+                "label": "Program goal",
+                "note": "Worldwide, double the goal announced when the pilot launched in July."
+              },
+              {
+                "value": "50,000",
+                "unit": "grants",
+                "label": "New grants this round",
+                "note": "First come, first served for eligible applicants."
+              },
+              {
+                "value": "150,000",
+                "unit": "people",
+                "label": "Maximum reach this round",
+                "note": "Based on 50,000 grants, each covering the recipient plus up to two collaborators."
+              },
+              {
+                "value": "33",
+                "unit": "countries",
+                "label": "Countries in the pilot",
+                "note": "Since the pilot launched in July."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "How to apply in the new round: first come, first served, each grant covers you and up to two collaborators",
+      "blocks": [
+        {
+          "p": "Applications open Monday, November 23. The biggest change from the pilot: no lottery. Instead, the first 50,000 eligible applications get a grant. If you’re already on the waitlist and qualify, OpenAI will email you before applications open with instructions for activating your account."
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "Three changes between the pilot and this round",
+            "subtitle": "Amber marks what changes this round; the neutral color marks the pilot approach; gray marks what the announcement doesn’t say.",
+            "left": {
+              "label": "Pilot period (from July)",
+              "sub": "Small-scale validation",
+              "items": [
+                {
+                  "label": "Selection method",
+                  "tag": "Lottery",
+                  "state": "base"
+                },
+                {
+                  "label": "Free subscription tier",
+                  "tag": "ChatGPT Pro",
+                  "state": "base"
+                },
+                {
+                  "label": "What each grant covers",
+                  "tag": "Not specified",
+                  "state": "dim"
+                }
+              ]
+            },
+            "right": {
+              "label": "This round (from November 23)",
+              "sub": "Expands to 50,000 grants",
+              "items": [
+                {
+                  "label": "Selection method",
+                  "tag": "First come, first served",
+                  "state": "hi"
+                },
+                {
+                  "label": "Free subscription tier",
+                  "tag": "ChatGPT Plus",
+                  "state": "hi"
+                },
+                {
+                  "label": "What each grant covers",
+                  "tag": "You + up to 2 collaborators",
+                  "state": "hi"
+                }
+              ]
+            },
+            "footer": "First come, first served means applying as soon as you're eligible is the safer bet; it’s no longer down to luck."
+          }
+        },
+        {
+          "p": "Each grant gives the recipient plus up to two collaborators free access to ChatGPT Plus. That makes this round’s ceiling 150,000 researchers — 50,000 grants, each covering up to two additional people."
+        },
+        {
+          "fig": {
+            "type": "illustration",
+            "title": "One grant can connect the recipient and up to two collaborators",
+            "subtitle": "Illustrative: the amber center is the free grant, connected to the recipient and up to two collaborators.",
+            "glyph": {
+              "kind": "hub",
+              "center": {
+                "label": "1 grant",
+                "tone": "hi"
+              },
+              "nodes": [
+                {
+                  "label": "Grant recipient",
+                  "tone": "base"
+                },
+                {
+                  "label": "Collaborator A",
+                  "tone": "base"
+                },
+                {
+                  "label": "Collaborator B",
+                  "tone": "base"
+                }
+              ]
+            },
+            "note": "When all 50,000 grants are fully used, they cover up to 150,000 researchers."
+          }
+        },
+        {
+          "callout": {
+            "kind": "takeaway",
+            "title": "150,000 is the ceiling, not a guarantee",
+            "text": "The total reaches 150,000 only if every grant includes both collaborators; the actual number depends on how many people each grant covers."
+          }
+        }
+      ]
+    },
+    {
+      "h": "Why OpenAI replaced free ChatGPT Pro with Plus",
+      "blocks": [
+        {
+          "p": "The pilot gave researchers ChatGPT Pro, the pricier tier with higher limits and more compute. After reviewing pilot usage, OpenAI says most participants would have stayed within ChatGPT Plus limits, so this round offers Plus to extend access to more research teams."
+        },
+        {
+          "callout": {
+            "kind": "note",
+            "title": "Good enough for most projects — but watch out for heavy compute",
+            "text": "If your research needs long-running, large-scale compute, Plus limits may be tighter than Pro. The announcement doesn’t specify limits for either tier, so they can’t be compared directly."
+          }
+        }
+      ]
+    },
+    {
+      "h": "Pilot results: 20,000 researchers in 33 countries, saving nearly half the time",
+      "blocks": [
+        {
+          "p": "Since the pilot began in July, 20,000 researchers across 33 countries have joined. OpenAI’s Economic Research team has published Science at the Frontier: How Scientists Use ChatGPT, a study of more than 1,800 pilot participants."
+        },
+        {
+          "p": "One notable number: respondents estimated that without AI, doing the same research at the same quality would have taken nearly twice as long."
+        },
+        {
+          "callout": {
+            "kind": "note",
+            "title": "How to read that 'nearly twice as long' figure",
+            "text": "It’s a self-estimate from survey respondents, not a controlled experiment, so treat it with some caution."
+          }
+        }
+      ]
+    },
+    {
+      "h": "What researchers actually use ChatGPT for",
+      "blocks": [
+        {
+          "p": "The pilot surfaced two public examples: one in medicine and one in biodiversity."
+        },
+        {
+          "fig": {
+            "type": "cards",
+            "title": "Pilot use cases: from drug targets to museum specimens",
+            "subtitle": "Cards show research examples mentioned in the announcement, plus one general program benefit.",
+            "items": [
+              {
+                "icon": "search",
+                "title": "Finding new drug targets",
+                "desc": "Shuqi Li, a researcher at Brigham and Women’s Hospital and Harvard Medical School, is exploring whether ChatGPT can connect lab and patient data to speed up antibiotic development, with one goal being to shorten tuberculosis treatment.",
+                "tags": [
+                  "Drug targets",
+                  "Tuberculosis"
+                ],
+                "tone": "base"
+              },
+              {
+                "icon": "image",
+                "title": "Turning specimen photos into databases",
+                "desc": "Arthur Porto’s team at the Florida Museum of Natural History uses AI to turn museum specimen photos into searchable databases, and created a 3D butterfly model whose wings change color as you turn it.",
+                "tags": [
+                  "Museum specimens",
+                  "3D models"
+                ],
+                "tone": "base"
+              },
+              {
+                "icon": "robot",
+                "title": "Frontier models + training",
+                "desc": "Participants get access to OpenAI’s frontier models and training on how to use ChatGPT in their research.",
+                "tags": [
+                  "Frontier models",
+                  "Training"
+                ],
+                "tone": "base"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "Beyond this program, what other access do researchers have?",
+      "blocks": [
+        {
+          "p": "ChatGPT for Academic Researchers is just one route. OpenAI also offers ChatGPT Edu for universities, covering research, teaching, and learning with data analysis tools and administrative controls, and GPT-Rosalind for biology research, which combines specialized biological reasoning with access to scientific tools and databases."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Three research access paths, for different audiences and different free offerings",
+            "subtitle": "Compiled from the announcement; amber marks the main program in this article.",
+            "columns": [
+              "Entry point",
+              "Who it’s for",
+              "What’s free",
+              "Notes"
+            ],
+            "rows": [
+              [
+                "ChatGPT for Academic Researchers",
+                "Eligible researchers worldwide",
+                "Free ChatGPT Plus for the recipient and up to 2 collaborators",
+                "First come, first served"
+              ],
+              [
+                "ChatGPT Edu",
+                "University campuses",
+                "Access for research, teaching, and learning",
+                "Includes data analysis and administrative controls"
+              ],
+              [
+                "GPT-Rosalind / Rosalind Academic Plan",
+                "Eligible U.S. university labs",
+                "Up to 30 seats free for up to 12 months",
+                "Requires trusted-access approval"
+              ]
+            ],
+            "highlight": {
+              "row": 0
+            }
+          }
+        },
+        {
+          "p": "The Rosalind Academic Plan gives eligible U.S. university labs up to 30 free seats for up to 12 months, but accessing GPT-Rosalind first requires going through a trusted-access approval process."
+        },
+        {
+          "p": "In mathematics, OpenAI contributed $5 million to a new Simons Foundation initiative to help mathematicians examine, understand, and build on results produced by AI."
+        }
+      ]
+    },
+    {
+      "h": "Pricing and privacy: how free is it, and will your data be used to train models?",
+      "blocks": [
+        {
+          "p": "On price: this round is a free grant of ChatGPT Plus, and the 50,000 grants themselves cost nothing. But the announcement doesn’t give the regular ChatGPT Plus subscription price or the pilot-period ChatGPT Pro price, so you can’t calculate exactly how much you’re saving."
+        },
+        {
+          "p": "On privacy: by default, OpenAI doesn’t use data shared through the program to train its models. That’s the default setting — the announcement doesn’t spell out exceptions."
+        }
+      ]
+    },
+    {
+      "h": "What OpenAI hasn’t said",
+      "blocks": [
+        {
+          "list": [
+            "The regular price of ChatGPT Plus and the pilot-period ChatGPT Pro price: not stated.",
+            "The exact meaning of 'eligible': the announcement says applications must be eligible but doesn’t list detailed criteria.",
+            "How long the 50,000 grants are expected to last, or how they’re distributed across countries: not stated.",
+            "Whether researchers who got Pro during the pilot will be automatically renewed or downgraded in this round: not stated.",
+            "The application deadline: the announcement only says applications open November 23, with no closing date.",
+            "Whether there are exceptions or options beyond 'not trained by default': not stated."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Who it’s for",
+      "blocks": [
+        {
+          "p": "The value is straightforward: eligible researchers, plus up to two collaborators, get free ChatGPT Plus for their work, with training included and a default guarantee that your data isn’t used to train models. The tradeoff is that it’s only ChatGPT Plus — which may be tight for heavy compute — and you have to claim a grant before they run out."
+        },
+        {
+          "list": [
+            "If your project involves lots of literature searching, coding, data cleaning, or paper drafting, and your team is no larger than you plus two collaborators, apply as early as possible in this round.",
+            "If you’re on the waitlist, check your inbox: eligible researchers will get activation instructions before applications open.",
+            "If you’re a biology lab at a U.S. university, look at the Rosalind Academic Plan’s 30 free seats as well.",
+            "If you need long-running, large-scale compute, first confirm that Plus limits will be enough — the announcement doesn’t give specific limits."
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Broadening access to AI for scientists",
+      "publisher": "OpenAI",
+      "date": "2026-11-16",
+      "url": "https://openai.com/index/expanding-chatgpt-for-academic-researchers"
+    },
+    "more": [],
+    "note": "The infographic is based on numbers from OpenAI’s official announcement; the hub diagram is illustrative. 150,000 is the ceiling OpenAI gives directly (50,000 grants × each grant covering the recipient plus up to two collaborators). No secondary sources cited."
+  },
+  "claims": [
+    {
+      "text": "OpenAI announced the expansion on November 16, 2026.",
+      "value": "November 16, 2026",
+      "source_url": "https://openai.com/index/expanding-chatgpt-for-academic-researchers",
+      "as_written": "November 16, 2026",
+      "quote": "November 16, 2026 · Research · Science"
+    },
+    {
+      "text": "The program’s overall goal is to give up to 200,000 researchers worldwide free access to ChatGPT.",
+      "value": "200,000",
+      "source_url": "https://openai.com/index/expanding-chatgpt-for-academic-researchers",
+      "as_written": "200,000",
+      "quote": "We're expanding the ChatGPT for Academic Researchers program to give up to 200,000 researchers worldwide free access to ChatGPT."
+    },
+    {
+      "text": "That goal is double the target announced when the pilot launched in July.",
+      "value": "double",
+      "source_url": "https://openai.com/index/expanding-chatgpt-for-academic-researchers",
+      "as_written": "double",
+      "quote": "Our goal for the program as a whole is to reach 200,000 researchers, double the goal we announced when the pilot launched in July."
+    },
+    {
+      "text": "The new round awards 50,000 new grants, first come, first served.",
+      "value": "50,000",
+      "source_url": "https://openai.com/index/expanding-chatgpt-for-academic-researchers",
+      "as_written": "50,000",
+      "quote": "We'll award 50,000 new grants to eligible researchers on a first-come, first-served basis."
+    },
+    {
+      "text": "Applications for the new round open Monday, November 23.",
+      "value": "November 23",
+      "source_url": "https://openai.com/index/expanding-chatgpt-for-academic-researchers",
+      "as_written": "November 23",
+      "quote": "Applications for the next round open Monday, November 23."
+    },
+    {
+      "text": "Each grant covers the recipient and up to two collaborators.",
+      "value": "two",
+      "source_url": "https://openai.com/index/expanding-chatgpt-for-academic-researchers",
+      "as_written": "two",
+      "quote": "Each grant gives the recipient and up to two collaborators free access to ChatGPT Plus."
+    },
+    {
+      "text": "The grants in this round can support up to 150,000 researchers.",
+      "value": "150,000",
+      "source_url": "https://openai.com/index/expanding-chatgpt-for-academic-researchers",
+      "as_written": "150,000",
+      "quote": "Each grant for this round covers the recipient and up to two collaborators, supporting up to 150,000 researchers."
+    },
+    {
+      "text": "20,000 researchers have joined since the pilot began in July.",
+      "value": "20,000",
+      "source_url": "https://openai.com/index/expanding-chatgpt-for-academic-researchers",
+      "as_written": "20,000",
+      "quote": "20,000 researchers in 33 countries have joined the program since the pilot began in July."
+    },
+    {
+      "text": "The pilot spans 33 countries.",
+      "value": "33",
+      "source_url": "https://openai.com/index/expanding-chatgpt-for-academic-researchers",
+      "as_written": "33",
+      "quote": "20,000 researchers in 33 countries have joined the program since the pilot began in July."
+    },
+    {
+      "text": "The new study surveyed more than 1,800 researchers.",
+      "value": "1,800",
+      "source_url": "https://openai.com/index/expanding-chatgpt-for-academic-researchers",
+      "as_written": "more than 1,800",
+      "quote": "examining how more than 1,800 researchers used ChatGPT during the program's summer pilot."
+    },
+    {
+      "text": "Respondents estimated that without AI, the same work would take nearly twice as long.",
+      "value": "nearly twice",
+      "source_url": "https://openai.com/index/expanding-chatgpt-for-academic-researchers",
+      "as_written": "nearly twice as long",
+      "quote": "the same research work at the same quality would have taken nearly twice as long."
+    },
+    {
+      "text": "The pilot began in July.",
+      "value": "July",
+      "source_url": "https://openai.com/index/expanding-chatgpt-for-academic-researchers",
+      "as_written": "July",
+      "quote": "The program began as a pilot in July."
+    },
+    {
+      "text": "OpenAI donated $5 million to a new Simons Foundation initiative.",
+      "value": "$5 million",
+      "source_url": "https://openai.com/index/expanding-chatgpt-for-academic-researchers",
+      "as_written": "$5 million",
+      "quote": "we contributed $5 million to a new Simons Foundation initiative"
+    },
+    {
+      "text": "The Rosalind Academic Plan offers up to 30 free seats.",
+      "value": "30",
+      "source_url": "https://openai.com/index/expanding-chatgpt-for-academic-researchers",
+      "as_written": "30",
+      "quote": "offering up to 30 seats at no cost for up to 12 months."
+    },
+    {
+      "text": "Those free seats last up to 12 months.",
+      "value": "12 months",
+      "source_url": "https://openai.com/index/expanding-chatgpt-for-academic-researchers",
+      "as_written": "12 months",
+      "quote": "offering up to 30 seats at no cost for up to 12 months."
+    }
+  ],
+  "cover": {
+    "headline": "Free ChatGPT for researchers expands to 200,000",
+    "highlight": "50,000 new grants, first come, first served",
+    "big": {
+      "value": "200,000",
+      "unit": "researchers",
+      "label": "Program goal"
+    }
+  },
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "fe79f1a03529ea91"
+}
