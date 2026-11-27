@@ -1,0 +1,905 @@
+{
+  "slug": "ppo-proximal-policy-optimization-algorithms",
+  "category": "paper",
+  "publisher": "OpenAI",
+  "date": "2017-07-20",
+  "title": "A close read of PPO: add a clip to policy updates, and reinforcement learning becomes easier and more stable",
+  "summary": "PPO replaces TRPO's complex trust-region constraint with a clipped probability ratio: if a change is good, the ratio counts only up to 1.2; if a change is bad, the penalty still applies. We work through six clipping cases and a small GAE calculation to show why it is stable, how it became the RLHF default, and where the paper has a formula typo and an Atari tally that does not add up.",
+  "ai_summary": "Proximal Policy Optimization Algorithms (Schulman et al., OpenAI, 2017) introduced Proximal Policy Optimization (PPO). It targets two problems: policy gradient methods cannot safely optimize the same batch repeatedly, and TRPO is complex. PPO designs a clipped probability-ratio surrogate objective L^{CLIP} and takes a minimum to form a pessimistic lower bound, allowing multiple epochs of minibatch gradient ascent on the same data; it also offers an adaptive KL penalty variant. On MuJoCo continuous control, the clipped version (ε = 0.2) performs best and beats TRPO, A2C, and others; on Atari it learns fastest, while final performance is mixed against ACER. PPO later became a standard RLHF algorithm.",
+  "brief": [
+    "Problem: optimizing a policy-gradient objective for multiple steps on the same batch can cause destructively large updates. TRPO solves this, but it needs second-order optimization, is complex to implement, and does not support parameter sharing.",
+    "Method: take the probability ratio between the new and old policies, clip it to [1 - ε, 1 + ε], then take the minimum with the unclipped value to form a pessimistic objective; combine with GAE and multiple epochs of minibatch updates.",
+    "Result: on MuJoCo, the clipped version with ε = 0.2 scores 0.82 on average, the best; on continuous control it beats TRPO and others on almost all tasks; on Atari it learns fastest, while final performance is mixed against ACER.",
+    "Limits: no theoretical guarantee of monotonic improvement, and clipping does not impose a hard KL cap; benchmarks are limited in scale; equations (10) and (11) contain an exponent typo."
+  ],
+  "paper": {
+    "title": "Proximal Policy Optimization Algorithms",
+    "authors": "John Schulman, Filip Wolski, Prafulla Dhariwal, Alec Radford, Oleg Klimov",
+    "org": "OpenAI",
+    "venue": "arXiv 2017",
+    "year": 2017,
+    "arxiv": "1707.06347",
+    "url": "https://arxiv.org/abs/1707.06347"
+  },
+  "cover": {
+    "headline": "A close reading of the PPO paper",
+    "highlight": "A clip on every update",
+    "glyph": {
+      "kind": "flow",
+      "nodes": [
+        {
+          "label": "Collect a batch of data"
+        },
+        {
+          "label": "Clip the ratio to 0.8–1.2",
+          "tone": "hi"
+        },
+        {
+          "label": "Train for several epochs"
+        }
+      ]
+    }
+  },
+  "sections": [
+    {
+      "h": "What this paper actually does",
+      "blocks": [
+        {
+          "p": "In July 2017, John Schulman and four coauthors at OpenAI published this paper, with a nine-page main text. It introduced **Proximal Policy Optimization** (PPO), which became one of the most widely used reinforcement learning algorithms: for training robots to walk, playing video games, and—most famously—**training ChatGPT with human feedback** (RLHF), where it is the default."
+        },
+        {
+          "p": "The question PPO solves can be stated in one line: **in reinforcement learning, how much should the model change per update?** Change too little, learning is slow and hard-won data is used once and thrown away; change too much, the model goes off the rails, performance falls off a cliff, and recovery is hard. Before PPO, TRPO solved this with a strict mathematical constraint, but it was complex to implement. PPO's contribution is to achieve much the same effect with an extremely simple “clip”:"
+        },
+        {
+          "list": [
+            "Compute a **ratio**: the probability of choosing an action under the new policy, divided by its probability under the old policy.",
+            "If the action is good, the ratio counts only up to 1.2; if it is bad, only down to 0.8. Beyond that range, the objective no longer rewards moving further.",
+            "That makes it safe to train on the same batch for several epochs without the model updating itself into a corner."
+          ]
+        },
+        {
+          "callout": {
+            "kind": "takeaway",
+            "title": "The one-sentence version",
+            "text": "PPO turns the requirement “do not move too far from the old policy on each update” from TRPO's complex second-order constraint into a single clip in the objective: improvements beyond ±20% stop earning credit, while changes that make things worse still get penalized. It needs only ordinary first-order gradient descent, is far easier to implement than TRPO, performs as well or better, and so became the standard RLHF setup."
+          }
+        },
+        {
+          "callout": {
+            "kind": "prereq",
+            "title": "Four small concepts you need for this paper",
+            "text": "No background needed; these four are enough:",
+            "list": [
+              "**Policy**: the model's “behavioral habit.” Given the current situation (state), it gives a probability for each possible action. For a language model, the state is the text written so far, and the action is the next token.",
+              "**Reward and return**: the environment's score for an action is the reward; the total reward accumulated from now onward is the return.",
+              "**Advantage**: how much better this action is than what you would get on average in this state. Positive means do it more; negative means do it less.",
+              "**KL divergence**: a measure of how far apart two probability distributions are. The more similar two policies are, the closer KL is to 0."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "A quick RL primer: what policy gradients do",
+      "blocks": [
+        {
+          "p": "In reinforcement learning, the model—the “policy” π_θ—acts step by step in an environment and collects a sequence of states, actions, and rewards. The most direct learning method is **policy gradient**: raise the probability of actions that led to good outcomes and lower the probability of actions that led to bad ones. Section 2.1 of the paper writes this as:"
+        },
+        {
+          "formula": {
+            "expr": "ĝ = Ê_t[ ∇_θ log π_θ(a_t | s_t) · Â_t ]\nL^{PG}(θ) = Ê_t[ log π_θ(a_t | s_t) · Â_t ]",
+            "parts": [
+              {
+                "sym": "π_{θ}(a_{t} | s_{t})",
+                "desc": "The probability of choosing action a_t in state s_t under the policy; θ is the neural network parameters."
+              },
+              {
+                "sym": "Â_{t}",
+                "desc": "Estimated advantage: how much better this action is than average."
+              },
+              {
+                "sym": "Ê_{t}[ … ]",
+                "desc": "Empirical average over a batch of samples."
+              },
+              {
+                "sym": "ĝ",
+                "desc": "Estimated gradient. Moving along it (gradient ascent) increases L^{PG}."
+              }
+            ],
+            "note": "Intuition: if the advantage is positive, push this action's log probability up; if negative, push it down. The larger the advantage, the harder you push."
+          },
+          "plain": {
+            "title": "Dog training: reward the behavior you want",
+            "text": "Your dog sits—better than usual (positive advantage)—so you give it a treat, and next time it is more likely to sit. It jumps on someone—worse than usual (negative advantage)—so you ignore it, and next time it is less likely to jump. “Advantage” measures not absolute good or bad, but how much better than usual.",
+            "pic": "ppo-pg"
+          }
+        },
+        {
+          "p": "Here is the key constraint: **the data must be collected by the current policy itself.** Sampling is expensive—robots have to actually walk, games have to actually be played—so it is natural to want to reuse the same data. But the paper notes that multiple optimization steps on L^{PG} with the same trajectories are “not well-justified,” and in practice often lead to **destructively large updates**: the policy is pushed too far and performance collapses."
+        },
+        {
+          "p": "Why? Because the batch was collected by the old policy, and it only reflects the neighborhood around that policy. After the first update, the policy has already changed. If you keep pushing on the same data, the gradient still says “raise the good-action probability further,” and nothing tells the model “enough—you are now outside the region where this data is informative.”",
+          "plain": {
+            "title": "Driving with an old map",
+            "text": "Data is like a small map drawn around your current position. Drive within the map and the route is reliable; once you cross the edge, you think the road ahead is flat, but it might be a cliff. PPO's job is to keep each move within the mapped area.",
+            "pic": "ppo-map"
+          }
+        }
+      ]
+    },
+    {
+      "h": "TRPO: draw a circle around each step",
+      "blocks": [
+        {
+          "p": "PPO's predecessor is **Trust Region Policy Optimization** (TRPO), proposed by the same authors in 2015. It uses a different objective and adds a constraint:"
+        },
+        {
+          "formula": {
+            "expr": "maximize_{θ}  Ê_{t}[ (π_{θ}(a_{t} | s_{t}) ⁄ π_{θ_old}(a_{t} | s_{t})) · Â_{t} ]\nsubject to  Ê_{t}[ KL[ π_{θ_old}(· | s_{t}), π_{θ}(· | s_{t}) ] ] ≤ δ",
+            "parts": [
+              {
+                "sym": "π_{θ_old}",
+                "desc": "The old policy from before the update, i.e. the policy that collected this batch."
+              },
+              {
+                "sym": "π_{θ} ⁄ π_{θ_old}",
+                "desc": "The probability ratio, written r_t(θ). Before the update it equals exactly 1."
+              },
+              {
+                "sym": "KL[ · , · ]",
+                "desc": "The gap between the new and old policies in the same state."
+              },
+              {
+                "sym": "δ",
+                "desc": "The maximum allowed average gap—the size of the circle."
+              }
+            ],
+            "note": "Why divide by the old probability? Because the data was collected by the old policy: actions that the old policy rarely chose but the new policy often chooses appear rarely in the data, so they need to be reweighted proportionally. This trick is called importance sampling."
+          },
+          "plain": {
+            "title": "The ratio is “how much more often the new habit happens than the old habit.”",
+            "text": "Suppose the old policy chose “left” in this state with probability 0.30, and the new policy now gives it 0.45. The ratio is 0.45 ÷ 0.30 = 1.5, meaning “left” is now chosen 50% more often. A ratio of 1 means no change; less than 1 means the action is chosen less often."
+          }
+        },
+        {
+          "p": "TRPO works well, but has two problems. First, it is **hard to implement**: constrained optimization requires conjugate gradients, plus a linear approximation of the objective and a quadratic approximation of the constraint. Second, it is **not compatible** with noisy architectures such as dropout, or with networks that share parameters between the policy and value function."
+        },
+        {
+          "p": "Actually, the theory behind TRPO suggests using a **penalty** instead of a constraint: subtract β times KL from the objective. The reason TRPO did not do that is that it is hard to pick one β that works across problems—or even across the whole training run of a single problem. The paper's experiments also confirm that a fixed β plus ordinary gradient descent fails to reproduce TRPO's behavior. PPO's goal is a method that uses only first-order gradients but stays as stable as TRPO."
+        }
+      ]
+    },
+    {
+      "h": "PPO-Clip: the ratio clipped between 0.8 and 1.2",
+      "blocks": [
+        {
+          "p": "Write the ratio as r_t(θ). TRPO's unconstrained objective is L^{CPI} = Ê_t[ r_t(θ) · Â_t ] (CPI stands for “conservative policy iteration”; the objective first appeared in that 2002 paper). Maximizing it without a constraint leads to excessively large updates. PPO's main idea is the modified objective below:"
+        },
+        {
+          "formula": {
+            "expr": "L^{CLIP}(θ) = Ê_t[ min( r_t(θ) · Â_t ,  clip(r_t(θ), 1 - ε, 1 + ε) · Â_t ) ]",
+            "parts": [
+              {
+                "sym": "r_{t}(θ)",
+                "desc": "Probability ratio between new and old policies; it equals 1 at the start of an update."
+              },
+              {
+                "sym": "clip(r, 1 - ε, 1 + ε)",
+                "desc": "Clips r to the interval [1 - ε, 1 + ε]: below the lower bound it uses the lower bound; above the upper bound it uses the upper bound."
+              },
+              {
+                "sym": "ε",
+                "desc": "Clipping range. The paper recommends 0.2, i.e. the interval [0.8, 1.2]."
+              },
+              {
+                "sym": "min( · , · )",
+                "desc": "Take the smaller of the “unclipped” and “clipped” values—the more pessimistic one."
+              }
+            ],
+            "note": "Taking the minimum of the two terms means: when the ratio moves outside the interval in a **favorable** direction, the objective stops increasing (gradient is 0); when it moves outside in an **unfavorable** direction, the objective still gets worse and the gradient still exists."
+          },
+          "plain": {
+            "title": "Good changes are capped; mistakes are not",
+            "text": "In a performance review, good changes are rewarded only up to “20% more often”; beyond that earns no extra credit, so no single update is too aggressive. But when a change makes things worse—good actions become less likely, bad actions more likely—the penalty is not capped: it has to be corrected. The left panel shows the positive-advantage case; the right panel shows the negative-advantage case.",
+            "pic": "ppo-clip"
+          }
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "By hand: six cases for one term of L^{CLIP}, and whether a gradient remains",
+            "subtitle": "Illustrative: ε = 0.2, advantage set to +1 or -1; numbers are ours.",
+            "columns": [
+              "Case",
+              "Advantage Â",
+              "Ratio r",
+              "r · Â",
+              "Clipped ratio · Â",
+              "Min",
+              "Gradient?"
+            ],
+            "rows": [
+              [
+                "Good action, starting to do more",
+                "+1",
+                "1.1",
+                "1.1",
+                "1.1",
+                "1.1",
+                "Push: keep doing more"
+              ],
+              [
+                "Good action, already 50% more",
+                "+1",
+                "1.5",
+                "1.5",
+                "1.2",
+                "1.2",
+                "No push: capped"
+              ],
+              [
+                "Good action, now done less",
+                "+1",
+                "0.6",
+                "0.6",
+                "0.8",
+                "0.6",
+                "Push: corrections are not capped"
+              ],
+              [
+                "Bad action, starting to do less",
+                "−1",
+                "0.9",
+                "−0.9",
+                "−0.9",
+                "−0.9",
+                "Push: keep doing less"
+              ],
+              [
+                "Bad action, already cut by half",
+                "−1",
+                "0.5",
+                "−0.5",
+                "−0.8",
+                "−0.8",
+                "No push: hit the floor"
+              ],
+              [
+                "Bad action, now done more",
+                "−1",
+                "1.5",
+                "−1.5",
+                "−1.2",
+                "−1.5",
+                "Push: corrections are not capped"
+              ]
+            ],
+            "highlight": {
+              "col": 5
+            },
+            "note": "Rows 2 and 5 are clipped; the selected value is a constant, so its gradient with respect to θ is 0 and the sample no longer drives the update. Rows 3 and 6 are not clipped, because the min picks the worse unclipped value. The paper's wording: only ignore the ratio change when it would make the objective improve, and include it when it makes the objective worse."
+          }
+        },
+        {
+          "p": "**Why call it a “pessimistic lower bound”?** Because it takes a min, L^{CLIP} never exceeds L^{CPI} on any sample. Near r = 1 the two agree to first order; the farther the policy moves, the lower L^{CLIP} is relative to L^{CPI}, which acts as a penalty on large updates. The paper's Figure 2 interpolates from the old parameters along the update direction: L^{CLIP} peaks at a new-vs-old KL of about 0.02, then declines."
+        },
+        {
+          "callout": {
+            "kind": "myth",
+            "title": "“PPO guarantees the ratio stays inside [0.8, 1.2]”",
+            "text": "Not true. Clipping only removes the “keep pushing outward” gradient for samples that are already outside the interval. Because parameters are shared across all samples, gradients from other samples can still push that ratio farther out. So PPO is a “soft” constraint, not a hard KL cap like TRPO. The paper also gives no theoretical guarantee of monotonic improvement; PPO's reliability rests mainly on experiments."
+          }
+        }
+      ]
+    },
+    {
+      "h": "The alternative: an adaptive KL penalty",
+      "blocks": [
+        {
+          "p": "The paper also gives a second variant, as an alternative or supplement: subtract β times KL from the objective, and let β **adjust itself**:"
+        },
+        {
+          "formula": {
+            "expr": "L^{KLPEN}(θ) = Ê_t[ r_t(θ) · Â_t - β · KL[ π_{θ_old}(· | s_t), π_θ(· | s_t) ] ]\nCompute d = Ê_t[ KL[ π_{θ_old}, π_θ ] ]\nd < d_{targ} / 1.5  →  β ← β / 2\nd > d_{targ} × 1.5  →  β ← β × 2",
+            "parts": [
+              {
+                "sym": "β",
+                "desc": "Penalty coefficient: the larger it is, the more reluctant the policy is to deviate from the old one."
+              },
+              {
+                "sym": "d",
+                "desc": "The actual average KL between the new and old policies after this round of updates."
+              },
+              {
+                "sym": "d_{targ}",
+                "desc": "Target KL; roughly how far each round should move."
+              }
+            ],
+            "note": "1.5 and 2 are chosen heuristically; the paper says the algorithm is not very sensitive to them. The initial β is also unimportant because it adjusts after a few rounds."
+          },
+          "plain": {
+            "title": "Like a thermostat",
+            "text": "The target temperature is d_{targ}. If this round moved too little (KL too small), the control is too tight, so halve the penalty; if it moved too far, the control is too loose, so double it. Occasionally a round deviates more, but the next round pulls it back."
+          }
+        },
+        {
+          "p": "In the paper's experiments this version underperforms the clipped one, but the authors include it as an important baseline. Around the same time, Heess et al. at DeepMind used this KL variant of PPO to train 3D robots to walk."
+        },
+        {
+          "callout": {
+            "kind": "note",
+            "title": "Don't confuse it with the KL penalty in RLHF",
+            "list": [
+              "**PPO's KL**: the distance between the new policy and “the previous version of itself.” The goal is to keep each update small, and the reference changes every round.",
+              "**RLHF's KL**: in training such as InstructGPT, the reward subtracts an extra KL between the current model and the original supervised-finetuned model, to prevent the model from gaming the reward model and producing nonsense. The reference never changes.",
+              "The two often appear in the same RLHF codebase, but they control different things. (For the RLHF side, see the InstructGPT close read.)"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "The full algorithm: actor, critic, and GAE",
+      "blocks": [
+        {
+          "p": "To compute the advantage Â_t, you usually add a **value function** V(s) that estimates “how much return I can expect from this state.” The policy that picks actions is the “actor”; the value function that estimates returns is the “critic.” If they share some network parameters, their losses must be combined, plus an entropy bonus to encourage exploration:"
+        },
+        {
+          "formula": {
+            "expr": "L_t^{CLIP+VF+S}(θ) = Ê_t[ L_t^{CLIP}(θ) - c_1 · L_t^{VF}(θ) + c_2 · S[π_θ](s_t) ]",
+            "parts": [
+              {
+                "sym": "L_{t}^{VF}",
+                "desc": "Squared error for the value function, (V_θ(s_t) - V_t^{targ})², so the critic estimates more accurately."
+              },
+              {
+                "sym": "S[π_{θ}]",
+                "desc": "Policy entropy: the more uncertain the action choice, the higher the entropy. Adding it discourages the policy from locking onto one action too early."
+              },
+              {
+                "sym": "c_1, c_2",
+                "desc": "Weights for the two terms. In the Atari experiments they are 1 and 0.01."
+              }
+            ]
+          }
+        },
+        {
+          "p": "Advantage is computed with **Generalized Advantage Estimation** (GAE, from the same authors in 2015). It first computes each step's “surprise” δ_t, then adds later surprises with a (γλ) discount:"
+        },
+        {
+          "formula": {
+            "expr": "δ_t = r_t + γ · V(s_{t+1}) - V(s_t)\nÂ_t = δ_t + (γλ) · δ_{t+1} + (γλ)² · δ_{t+2} + … + (γλ)^{T-t-1} · δ_{T-1}",
+            "parts": [
+              {
+                "sym": "r_{t}",
+                "desc": "The reward at this step. Note: here r_t is the reward, reusing the same letter as the probability ratio r_t(θ) earlier."
+              },
+              {
+                "sym": "δ_{t}",
+                "desc": "What was actually received, plus the critic's estimate of the next state, minus the critic's original estimate of this state, gives “how much better than expected.”"
+              },
+              {
+                "sym": "γ",
+                "desc": "Discount factor: the farther in the future, the less a reward counts. The paper uses 0.99."
+              },
+              {
+                "sym": "λ",
+                "desc": "GAE parameter controlling how far ahead to look; the paper uses 0.95. When λ = 1, it reduces to directly summing actual rewards."
+              }
+            ]
+          },
+          "plain": {
+            "title": "A commentator's “surprise”",
+            "text": "The critic is like a sports commentator constantly predicting the final score. δ is the surprise at each step: how much better the outcome is than the prediction just made. An action's advantage is a weighted sum of the surprises that follow it, with weights shrinking further out, because later events cannot be credited to this action as much.",
+            "pic": "ppo-gae"
+          }
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "By hand: GAE over a 3-step trajectory",
+            "subtitle": "Illustrative: to keep it simple, γ = 1 and λ = 0.5; rewards and value estimates are ours. The trajectory ends after step 3, with terminal value 0.",
+            "columns": [
+              "Step t",
+              "Reward r_t",
+              "Value V(s_t)",
+              "Next-state value",
+              "Surprise δ_t",
+              "Advantage Â_t"
+            ],
+            "rows": [
+              [
+                "0",
+                "0",
+                "0.5",
+                "0.6",
+                "0 + 0.6 - 0.5 = 0.1",
+                "0.1 + 0.5 × 0.2 + 0.25 × 0.2 = 0.25"
+              ],
+              [
+                "1",
+                "0",
+                "0.6",
+                "0.8",
+                "0 + 0.8 - 0.6 = 0.2",
+                "0.2 + 0.5 × 0.2 = 0.3"
+              ],
+              [
+                "2",
+                "1",
+                "0.8",
+                "0 (terminal)",
+                "1 + 0 - 0.8 = 0.2",
+                "0.2"
+              ]
+            ],
+            "highlight": {
+              "col": 5
+            },
+            "note": "It's easiest to work backward: Â_{2} = δ_{2}, Â_{1} = δ_{1} + 0.5 × Â_{2}, Â_{0} = δ_{0} + 0.5 × Â_{1}. All three advantages are positive, so this trajectory was better overall than the critic expected."
+          }
+        },
+        {
+          "list": [
+            "**Collect**: N actors run in parallel, each using the current policy π_{θ_old} to run T timesteps in the environment.",
+            "**Estimate**: for these N × T timesteps of data, use GAE to compute each step's advantage.",
+            "**Learn**: on this batch, optimize L^{CLIP} with minibatch gradient ascent, usually Adam, for K epochs.",
+            "**Roll over**: set θ_old ← θ, discard this batch, and return to the first step."
+          ],
+          "plain": {
+            "title": "Collect a batch, train on it several times, collect again.",
+            "text": "Ordinary policy gradient: collect a batch, take one update, throw it away. PPO: collect a batch, train on it for K epochs — 10 in the MuJoCo experiments — with clipping as a backstop against over-updating; when done, throw the batch away and collect a new one with the updated policy. Data efficiency is therefore much higher.",
+            "pic": "ppo-loop"
+          }
+        }
+      ]
+    },
+    {
+      "h": "Experiment 1: which objective works best",
+      "blocks": [
+        {
+          "p": "The authors first compared different objective functions and hyperparameters on 7 MuJoCo simulated robotics tasks, including HalfCheetah, Hopper, InvertedDoublePendulum, and Swimmer. Each task trained for 1 million timesteps with 3 random seeds; scores were normalized so a random policy equals 0 and the best result equals 1, then averaged over 7 × 3 = 21 runs. The policy network was a fully connected network with two hidden layers of 64 units each."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Clipping with ε = 0.2 is best; no clipping or penalty collapses",
+            "subtitle": "From the paper's Table 1, normalized average score; higher is better.",
+            "columns": [
+              "Objective function",
+              "Hyperparameters",
+              "Avg. normalized score"
+            ],
+            "rows": [
+              [
+                "No clipping or penalty",
+                "—",
+                "−0.39"
+              ],
+              [
+                "Clipping",
+                "ε = 0.1",
+                "0.76"
+              ],
+              [
+                "Clipping",
+                "ε = 0.2",
+                "0.82"
+              ],
+              [
+                "Clipping",
+                "ε = 0.3",
+                "0.70"
+              ],
+              [
+                "Adaptive KL",
+                "d_{targ} = 0.003",
+                "0.68"
+              ],
+              [
+                "Adaptive KL",
+                "d_{targ} = 0.01",
+                "0.74"
+              ],
+              [
+                "Adaptive KL",
+                "d_{targ} = 0.03",
+                "0.71"
+              ],
+              [
+                "Fixed KL",
+                "β = 0.3",
+                "0.62"
+              ],
+              [
+                "Fixed KL",
+                "β = 1",
+                "0.71"
+              ],
+              [
+                "Fixed KL",
+                "β = 3",
+                "0.72"
+              ],
+              [
+                "Fixed KL",
+                "β = 10",
+                "0.69"
+              ]
+            ],
+            "highlight": {
+              "row": 2
+            },
+            "note": "“No clipping or penalty” means repeatedly optimizing L^{CPI} directly. Its average score is negative because, on HalfCheetah, it performs far worse than the random policy — exactly the “destructively large updates” mentioned earlier."
+          }
+        },
+        {
+          "p": "A few points stand out. First, all three clipping settings do well, so ε works across 0.1 to 0.3, with 0.2 the best. Second, the best KL-penalty variant scores 0.74, slightly below clipping but not by much. Third, this comparison assumes each setting had its hyperparameters tuned separately, and the benchmark was chosen to be cheap; the authors say explicitly this was so they could search more hyperparameter settings."
+        }
+      ]
+    },
+    {
+      "h": "Experiment 2: comparing against other algorithms",
+      "blocks": [
+        {
+          "p": "**Continuous control.** Under the same 7-task, 1-million-timestep setup, PPO with clipping at ε = 0.2 was compared with tuned TRPO, the cross-entropy method, vanilla policy gradient with an adaptive step size, A2C, and A2C with a trust region. The paper concludes that PPO outperforms previous methods on “almost all” tasks; Figure 3 shows the learning curves."
+        },
+        {
+          "p": "**3D humanoid.** To show PPO's ability on high-dimensional problems, the authors trained a 3D humanoid in Roboschool: run forward; chase a target whose position changes randomly every 200 timesteps; and get up after falling while being pelted by cubes. The paper shows only PPO's own learning curves, not a comparison with other algorithms."
+        },
+        {
+          "p": "**Atari games.** The comparison with A2C and ACER covered 49 Atari games. All three algorithms used the same policy network, while the other two algorithms' hyperparameters were tuned specifically for this benchmark. The paper used two scoring methods:"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "How many of the 49 Atari games each algorithm “won”",
+            "subtitle": "From the paper's Table 2; each game is averaged over three runs before comparing.",
+            "columns": [
+              "Scoring metric",
+              "A2C",
+              "ACER",
+              "PPO",
+              "Ties"
+            ],
+            "rows": [
+              [
+                "Average score over the whole training run — measures how fast it learns",
+                "1",
+                "18",
+                "30",
+                "0"
+              ],
+              [
+                "Average score over the last 100 episodes — measures final performance",
+                "1",
+                "28",
+                "19",
+                "1"
+              ]
+            ],
+            "highlight": {
+              "col": 3
+            },
+            "note": "PPO learns fastest, but on final performance ACER wins more games. The paper's introduction says PPO has “significantly better” sample efficiency than A2C, is “similar to ACER,” and is “much simpler.”"
+          }
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "The games with the widest gaps",
+            "subtitle": "From the paper's Table 6, average score over the last 100 episodes after training on 40M frames.",
+            "columns": [
+              "Game",
+              "A2C",
+              "ACER",
+              "PPO"
+            ],
+            "rows": [
+              [
+                "Enduro (racing)",
+                "0.0",
+                "0.0",
+                "758.3"
+              ],
+              [
+                "Kangaroo",
+                "45.3",
+                "50.0",
+                "9928.7"
+              ],
+              [
+                "Zaxxon",
+                "16.3",
+                "29.0",
+                "5008.7"
+              ],
+              [
+                "Gopher",
+                "1500.9",
+                "37802.3",
+                "2932.9"
+              ],
+              [
+                "VideoPinball",
+                "19735.9",
+                "156225.6",
+                "37389.0"
+              ],
+              [
+                "DemonAttack",
+                "6639.1",
+                "38808.3",
+                "11378.4"
+              ]
+            ],
+            "note": "The first three are games PPO learned while the other two barely did; the last three are games where ACER led by a wide margin. On Atari, each algorithm's strengths are uneven, and looking only at “games won” hides that."
+          }
+        }
+      ]
+    },
+    {
+      "h": "Why it became the default",
+      "blocks": [
+        {
+          "p": "Judging by the experimental numbers, PPO does not win everywhere. Its real advantage is in the paper's conclusion: it takes only **a few changed lines** to add trust-region-style stability to ordinary policy gradient code. Because it uses only first-order optimization, it can use Adam, share parameters between the policy and value network, and work with dropout. For engineers, “simple, stable, good enough” matters more than “best on some benchmark.”"
+        },
+        {
+          "list": [
+            "**Training language models**: OpenAI's 2020 “Learning to Summarize from Human Feedback” and 2022 InstructGPT both use PPO to fine-tune language models against a reward model's scores. Here the “state” is the prompt plus the text written so far, the “action” is the next token, and the model gets a single reward only after the entire response is written. (See the InstructGPT close read; the summarization paper is also covered after Main Thread 3.)",
+            "**The direction of simplification**: PPO requires training both the policy and an equally large value model, which uses a lot of memory on large language models. DeepSeek's GRPO simply removes the value model and uses the average score of multiple responses to the same prompt as a baseline (see the DeepSeek-R1 close read); DPO goes further and skips reinforcement learning altogether, directly treating preference data as a classification problem (see the DPO close read). Both are subtractions built on PPO.",
+            "**“Implementation details matter”**: later work by Engstrom et al. in 2020 found that much of PPO's advantage over TRPO actually comes from details the paper does not emphasize, such as clipping the value function, scaling rewards, and annealing the learning rate. A PPO implementation that keeps only the clipped objective and removes those details cannot reliably keep the new policy within the trust region. The lesson: PPO's success comes partly from that one “clip” line and partly from a whole body of engineering experience."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Limitations, and a few details worth noting",
+      "blocks": [
+        {
+          "list": [
+            "**No theoretical guarantee**: TRPO has theoretical support for monotonic improvement, though its practical implementation also uses approximations. PPO has only intuition and experiments. Clipping also cannot guarantee an upper bound on the KL between the new and old policies.",
+            "**Limited benchmark scale**: each continuous-control task trains for only 1 million timesteps with 3 seeds, and the comparison is a single normalized average score. The 3D humanoid experiments have no comparison group.",
+            "**The “games won” tally**: we counted the last-100-episode scores game by game from Appendix Table 6. ACER leads in 27 games, PPO in 19, A2C in 1 (Krull), with 2 ties: in Pong, ACER and PPO both score 20.7, and in Venture, all three score 0.0. The paper's Table 2 says ACER 28 and 1 tie. The difference may come from decimals hidden by rounding in Table 6, but the paper does not explain it.",
+            "**A typo in the equations**: in equations (10) and (11), the exponent on the last term is written as T - t + 1, but by the pattern of the sum it should be T - t - 1. The last term corresponds to δ_{T−1}, and there are already T - t - 1 discounts before it. This article gives the corrected version.",
+            "**Two other small issues**: in the clipped objective listed in Section 6.1, the parentheses are placed incorrectly; it is written as clip(r_t(θ)), 1 - ε, 1 + ε). Also, the text of Appendix B and the title of Table 6 both describe it as “a comparison of PPO and A2C,” but the table actually includes an ACER column.",
+            "**One letter, two meanings**: in the paper, r_t(θ) is a probability ratio, but in equations (10) and (12), r_t is a reward. This is easy to confuse when reading the original."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Check yourself: did you get it?",
+      "blocks": [
+        {
+          "quiz": {
+            "q": "What does PPO's ratio r_t(θ) refer to?",
+            "options": [
+              "Reward divided by value",
+              "The probability of choosing this action under the new policy, divided by its probability under the old policy",
+              "A scaling factor for the learning rate",
+              "The difference between new and old parameters"
+            ],
+            "answer": 1,
+            "why": "At the start of an update it equals 1; greater than 1 means the action is now chosen more often, and less than 1 means it is chosen less often."
+          }
+        },
+        {
+          "quiz": {
+            "q": "With ε = 0.2 and a positive advantage, if the ratio has already reached 1.5, will this sample still push the policy to further increase the action's probability?",
+            "options": [
+              "Yes, and push even harder",
+              "No: after taking the min, the result is the clipped value 1.2 × Â, which is constant, so the gradient is 0.",
+              "Yes, but in the opposite direction",
+              "Depends on the value function"
+            ],
+            "answer": 1,
+            "why": "Once the ratio moves outside the interval in the favorable direction, it stops earning credit; this is exactly the mechanism that prevents excessive updates."
+          }
+        },
+        {
+          "quiz": {
+            "q": "If the advantage is negative but the ratio has become 1.5 — a bad action is now done more — what does L^{CLIP} do?",
+            "options": [
+              "Clip it to 1.2 and ignore it",
+              "The min selects the unclipped 1.5 × Â, so the gradient still exists and pushes it back",
+              "Discard this sample",
+              "Change the advantage to positive"
+            ],
+            "answer": 1,
+            "why": "The min makes the objective reflect things honestly when they get worse, so correcting a bad change has no ceiling."
+          }
+        },
+        {
+          "quiz": {
+            "q": "How does the common RLHF “KL penalty to the supervised fine-tuned model” differ from the KL penalty in Section 4 of the PPO paper?",
+            "options": [
+              "They are exactly the same",
+              "PPO's reference is the previous round's policy, which changes every round; RLHF's reference is the fixed initial model, to keep the model from drifting while chasing reward.",
+              "RLHF's KL is used to compute the advantage",
+              "The PPO paper has no KL penalty"
+            ],
+            "answer": 1,
+            "why": "They often appear together, but they serve different purposes."
+          }
+        },
+        {
+          "p": "After reading this, you should be able to answer the following questions:"
+        },
+        {
+          "list": [
+            "Why can't ordinary policy gradient be optimized repeatedly on the same batch of data?",
+            "How does TRPO solve this problem, and what are its drawbacks?",
+            "What do the clip and min in L^{CLIP} each do? Why is it called “pessimistic”?",
+            "How does the adaptive KL penalty adjust β?",
+            "What does δ_t mean in GAE, and what does λ control?",
+            "On Atari, how does PPO compare with ACER — who is actually better?",
+            "Why are later methods like GRPO and DPO both “subtractions” from PPO?"
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Proximal Policy Optimization Algorithms (arXiv:1707.06347, v2)",
+      "publisher": "OpenAI",
+      "date": "2017-08-28",
+      "url": "https://arxiv.org/abs/1707.06347"
+    },
+    "note": "This article is based on version 2 of the paper on arXiv, first published in July 2017. Tables marked “Illustrative” use numbers set by us and computed from the paper's formulas; the Atari win count was rechecked by us game by game from Appendix Table 6. PPO's use in RLHF, the Engstrom et al. study of implementation details, and the relationship to GRPO and DPO come from other public papers, not from this paper."
+  },
+  "claims": [
+    {
+      "text": "arXiv v2",
+      "value": "1707.06347v2",
+      "source_url": "https://arxiv.org/abs/1707.06347",
+      "quote": "arXiv:1707.06347v2",
+      "as_written": "arXiv"
+    },
+    {
+      "text": "1M timesteps per task",
+      "value": "one million timesteps",
+      "source_url": "https://arxiv.org/abs/1707.06347",
+      "quote": "one million timesteps of training",
+      "as_written": "1 million"
+    },
+    {
+      "text": "Atari 40M frames",
+      "value": "40M game frames",
+      "source_url": "https://arxiv.org/abs/1707.06347",
+      "quote": "40M game frames",
+      "as_written": "40 million"
+    },
+    {
+      "text": "ε = 0.2",
+      "value": "0.2",
+      "source_url": "https://arxiv.org/abs/1707.06347",
+      "quote": "is a hyperparameter, say",
+      "as_written": "0.2"
+    },
+    {
+      "text": "KL ≈ 0.02",
+      "value": "0.02",
+      "source_url": "https://arxiv.org/abs/1707.06347",
+      "quote": "KL divergence of about 0.02",
+      "as_written": "0.02"
+    },
+    {
+      "text": "Table 1: -0.39",
+      "value": "-0.39",
+      "source_url": "https://arxiv.org/abs/1707.06347",
+      "quote": "-0.39",
+      "as_written": "−0.39"
+    },
+    {
+      "text": "Table 1: 0.82",
+      "value": "0.82",
+      "source_url": "https://arxiv.org/abs/1707.06347",
+      "quote": "0.82",
+      "as_written": "0.82"
+    },
+    {
+      "text": "Table 1: 0.74",
+      "value": "0.74",
+      "source_url": "https://arxiv.org/abs/1707.06347",
+      "quote": "0.74",
+      "as_written": "0.74"
+    },
+    {
+      "text": "Table 2: 30",
+      "value": "30",
+      "source_url": "https://arxiv.org/abs/1707.06347",
+      "quote": "30",
+      "as_written": "30"
+    },
+    {
+      "text": "Table 6: Kangaroo",
+      "value": "9928.7",
+      "source_url": "https://arxiv.org/abs/1707.06347",
+      "quote": "9928.7",
+      "as_written": "9928.7"
+    },
+    {
+      "text": "Table 6: Enduro",
+      "value": "758.3",
+      "source_url": "https://arxiv.org/abs/1707.06347",
+      "quote": "758.3",
+      "as_written": "758.3"
+    },
+    {
+      "text": "Table 6: VideoPinball",
+      "value": "156225.6",
+      "source_url": "https://arxiv.org/abs/1707.06347",
+      "quote": "156225.6",
+      "as_written": "156225.6"
+    },
+    {
+      "text": "Pong 20.7",
+      "value": "20.7",
+      "source_url": "https://arxiv.org/abs/1707.06347",
+      "quote": "20.7",
+      "as_written": "20.7"
+    },
+    {
+      "text": "new target position every 200 timesteps",
+      "value": "200 timesteps",
+      "source_url": "https://arxiv.org/abs/1707.06347",
+      "quote": "every 200 timesteps",
+      "as_written": "200 timesteps"
+    },
+    {
+      "text": "two hidden layers of 64 units",
+      "value": "64 units",
+      "source_url": "https://arxiv.org/abs/1707.06347",
+      "quote": "two hidden layers of 64 units",
+      "as_written": "64 units"
+    },
+    {
+      "text": "21 runs",
+      "value": "21 runs",
+      "source_url": "https://arxiv.org/abs/1707.06347",
+      "quote": "averaged over 21 runs",
+      "as_written": "21 runs"
+    },
+    {
+      "text": "γ = 0.99",
+      "value": "0.99",
+      "source_url": "https://arxiv.org/abs/1707.06347",
+      "quote": "0.99",
+      "as_written": "0.99"
+    },
+    {
+      "text": "λ = 0.95",
+      "value": "0.95",
+      "source_url": "https://arxiv.org/abs/1707.06347",
+      "quote": "0.95",
+      "as_written": "0.95"
+    },
+    {
+      "text": "c2 = 0.01",
+      "value": "0.01",
+      "source_url": "https://arxiv.org/abs/1707.06347",
+      "quote": "0.01",
+      "as_written": "0.01"
+    },
+    {
+      "text": "β adjustment: 1.5 and 2",
+      "value": "1.5",
+      "source_url": "https://arxiv.org/abs/1707.06347",
+      "quote": "The parameters 1.5 and 2 above are chosen heuristically",
+      "as_written": "1.5"
+    },
+    {
+      "text": "ratio cap ±20% (converted from ε = 0.2 by us)",
+      "value": "0.2",
+      "source_url": "https://arxiv.org/abs/1707.06347",
+      "quote": "is a hyperparameter, say",
+      "as_written": "20%"
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "28bbb3f06f8ba823"
+}

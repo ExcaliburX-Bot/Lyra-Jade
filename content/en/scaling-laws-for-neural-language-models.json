@@ -1,33 +1,33 @@
 {
   "slug": "scaling-laws-for-neural-language-models",
   "category": "paper",
-  "publisher": "Kaplan et al., OpenAI",
+  "publisher": "Kaplan et al. · OpenAI",
   "date": "2020-01-23",
-  "title": "A close read of Scaling Laws: 10x compute, how much larger the model? Three power laws for language models",
-  "summary": "This paper shows that language model loss falls smoothly as a power law in parameters, data, and compute, while architectural details barely matter. We unpack the power laws, the 6N compute formula, the overfitting formula, and the optimal allocation, work through a few tables by hand, and look at how the paper predicts its own laws will eventually break down—and what Chinchilla later changed.",
-  "ai_summary": "Scaling Laws for Neural Language Models (OpenAI, 2020) trained a large set of Transformers ranging from under 1,000 to 1.5 billion parameters and found that test loss falls as a power law in parameter count N, dataset size D, and compute C, with exponents of roughly 0.076, 0.095, and 0.050; shape choices such as depth and width matter little. Overfitting depends only on N^{0.74}/D: scale the model 8x and data only needs to grow about 5x. Under a fixed compute budget, the optimal model size grows as C^{0.73}, training steps barely change, and training should stop about 10% above convergence. The paper also notes that its laws become self-contradictory at around 10^{12} parameters. Chinchilla (2022) later revised the model-to-data split.",
+  "title": "Scaling Laws: With 10x more compute, how much bigger should the model get? The three power laws",
+  "summary": "The paper finds that language model loss falls smoothly with parameters, data, and compute according to power laws, while architectural details barely matter. We unpack the power laws, the 6N compute formula, the overfitting formula, and the optimal allocation, work through several tables by hand, then look at how the paper shows its own laws must eventually break down—and what Chinchilla later changed.",
+  "ai_summary": "Scaling Laws for Neural Language Models (OpenAI, 2020) trained Transformers ranging from under a thousand to 1.5 billion parameters and found that test loss falls as a power law with parameter count N, dataset size D, and compute C, with exponents of about 0.076, 0.095, and 0.050, respectively. Depth, width, and other shape choices matter little. Overfitting depends only on N^{0.74}/D: scale the model 8x and about 5x more data is enough. Under fixed compute, optimal model size grows as C^{0.73}, training steps barely change, and training should stop about 10% above convergence. The paper also notes that its laws become self-contradictory around 10^{12} parameters. In 2022, Chinchilla revised the model-to-data allocation ratio.",
   "brief": [
-    "Problem: Does language-model quality come from scale or architecture? For a given budget, how do you choose model size, data volume, and training steps?",
-    "Method: Train many Transformers of different sizes, shapes, and data volumes on WebText2, and fit power laws to their loss.",
-    "Findings: Loss falls smoothly as a power law in parameters, data, and compute; shape is nearly irrelevant; larger models are more data-efficient; compute should go mostly toward larger models stopped early.",
-    "Limitations: These are empirical laws with no theory behind them. Fixed training length and learning-rate schedules bias the conclusions toward larger models; in 2022, Chinchilla instead scaled model and data together."
+    "Question: Does language model performance come from scale or architecture? Given a budget, how big should the model be, how much data should you use, and how many training steps should you run?",
+    "Method: Train many Transformers of different sizes, shapes, and data volumes on WebText2, then fit the loss with power laws.",
+    "Result: Loss falls smoothly as a power law with parameters, data, and compute; architecture barely matters. Larger models are more data-efficient, and compute should go mostly toward larger models with early stopping.",
+    "Limitations: These are empirical laws with no theory; fixed training length and learning-rate schedules favor large models. In 2022, Chinchilla revised the conclusion to scale model and data in sync."
   ],
   "paper": {
     "title": "Scaling Laws for Neural Language Models",
     "authors": "Jared Kaplan, Sam McCandlish, Tom Henighan, Tom B. Brown, Benjamin Chess, Rewon Child, Scott Gray, Alec Radford, Jeffrey Wu, Dario Amodei",
-    "org": "OpenAI, Johns Hopkins University",
+    "org": "OpenAI and Johns Hopkins University",
     "venue": "arXiv preprint",
     "year": 2020,
     "arxiv": "2001.08361",
     "url": "https://arxiv.org/abs/2001.08361"
   },
   "cover": {
-    "headline": "Scaling Laws: a close read of the original paper",
-    "highlight": "10x more compute, 5x the model",
+    "headline": "A close read of the Scaling Laws paper",
+    "highlight": "10x more compute, 5x bigger model",
     "big": {
       "value": "5",
       "unit": "x",
-      "label": "How much the optimal model size grows for every 10x increase in compute"
+      "label": "Optimal model growth per 10x compute"
     }
   },
   "sections": [
@@ -35,56 +35,56 @@
       "h": "The bottom line: what this paper actually did",
       "blocks": [
         {
-          "p": "In January 2020, ten OpenAI authors—first author Jared Kaplan, then also teaching at Johns Hopkins University—published this 30-page paper. It did not propose a new model; it asked a more basic question: **What actually determines how good a language model is? And can that be predicted in advance?**"
+          "p": "In January 2020, ten OpenAI authors (first author Jared Kaplan was then also at Johns Hopkins University) published this 30-page paper. It didn't propose a new model; it asked a more basic question: what actually determines how good a language model is, and can that be computed in advance?"
         },
         {
-          "p": "They trained a large number of Transformer language models—the smallest under 1,000 parameters, the largest 1.5 billion—and plotted their loss on log axes. The result is strikingly clean: as long as no other factor is the bottleneck, loss (lower is better) falls along a straight line in each of **parameter count N**, **dataset size D**, and **training compute C**. That relationship is a **power law**, and some trends span more than seven orders of magnitude. By comparison, whether a model is deeper or wider, or how many attention heads it has, has almost no effect."
+          "p": "They trained a large number of Transformer language models, the smallest with fewer than a thousand parameters and the largest with 1.5 billion, then plotted performance on log axes. The result was strikingly clean: as long as no other factor bottlenecks it, the model's loss (lower is better) falls along a straight line with parameter count N, dataset size D, and training compute C. That relationship is called a power law, and some trends span more than seven orders of magnitude. By comparison, whether the model is deeper or wider, or how many attention heads it has, barely matters."
         },
         {
-          "p": "From these relationships the paper drew an influential recommendation: **when you get more compute, spend most of it on making the model bigger**. For every 10x increase in compute, the model should grow about 5x and the data only about 2x; the most economical approach is to train a very large model and stop well before it has \"finished learning.\" GPT-3 (175 billion parameters), released four months later, was built in this spirit, and several of the paper's authors were also authors of GPT-3."
+          "p": "From these laws, the paper made an influential recommendation: when you have more compute, spend most of it making the model bigger. For every 10x more compute, scale the model up about 5x and the data only about 2x. The most economical approach is to train a very large model and stop well before it has fully \"learned.\" GPT-3 (175 billion parameters), released four months later, was built in this spirit; several of the paper's authors were also GPT-3 authors."
         },
         {
-          "p": "The paper was later revised: DeepMind's 2022 Chinchilla paper found that data should grow about as fast as the model. But the core finding—that loss can be predicted ahead of time with power laws—has held, and today teams run small-scale experiments like these to extrapolate before training large models."
+          "p": "The paper's conclusions were later revised: DeepMind's 2022 Chinchilla paper found that data should grow roughly as fast as model size. But the core discovery—loss can be predicted ahead of time with power laws—has held, and today labs run small-scale experiments like these to extrapolate before training large models."
         },
         {
           "callout": {
             "kind": "takeaway",
             "title": "One-sentence version",
-            "text": "A language model's test loss L falls as a power law in parameter count N, dataset size D, and compute C: L ∝ N^{−0.076}, D^{−0.095}, C^{−0.050}. Shape barely matters; scale does. Larger models are more data-efficient; under a fixed compute budget, spend most of it on a larger model and do not train to convergence."
+            "text": "A language model's test loss L falls as a power law with parameter count N, dataset size D, and compute C: L ∝ N^{−0.076}, D^{−0.095}, C^{−0.050}. Architecture barely matters; scale does. Larger models are more data-efficient; under a fixed compute budget, spend most of it on bigger models and don't train to convergence."
           }
         },
         {
           "callout": {
             "kind": "prereq",
-            "title": "Four small concepts you need before reading",
-            "text": "If you're not familiar with them, these four are enough:",
+            "title": "Four small concepts you need for this paper",
+            "text": "You don't need to go deep on them; these four will do:",
             "list": [
-              "**Loss (cross-entropy)**: how \"surprised\" the model is when predicting the next token. A perfect prediction gives 0; more uncertainty gives a larger value. The paper's unit is nats (computed with natural logarithms); on this paper's data, good models score between about 2 and 3.",
-              "**Log axes**: the axis places 1, 10, 100, 1000 at equal spacing. On this kind of plot, a power law is a straight line—exactly how every key figure in the paper is drawn.",
-              "**Parameter count N**: the number of trainable numbers in the model. The paper deliberately **excludes** token embeddings and positional embeddings; we'll see why below.",
-              "**Floating-point operations and PF-day**: units for measuring compute. 1 PF-day is a quadrillion operations per second sustained for one day, about 8.64 × 10^{19} operations."
+              "**Loss (cross-entropy)**: how \"surprised\" the model is when predicting the next token. Perfect prediction gives 0; the more uncertain it is, the larger the loss. The paper uses nats (natural logarithms); on this paper's data, good models score between 2 and 3.",
+              "**Log scale**: an axis where 1, 10, 100, and 1000 sit at equal intervals. On such a plot, a power law is a straight line—which is how all the paper's key figures are drawn.",
+              "**Parameter count N**: the number of trainable numbers in the model. This paper deliberately does not count token or positional embeddings; we'll see why below.",
+              "**Floating-point operations and PF-days**: units for measuring compute. One PF-day is 10^15 operations per second sustained for a day, about 8.64 × 10^{19} operations."
             ]
           }
         }
       ]
     },
     {
-      "h": "The question: what actually makes models better?",
+      "h": "The question: why do models actually get better?",
       "blocks": [
         {
-          "p": "By 2019, language models were improving fast: GPT-2, BERT, and others approached human-level performance on many tasks. But it was hard to say why: bigger models, more data, more training, or cleverer architecture? Every new paper changed several of those at once, so they were difficult to disentangle."
+          "p": "By 2019, language models were improving quickly: GPT-2, BERT, and others were approaching human-level performance on many tasks. But the reason for the improvement was unclear: was it larger models, more data, longer training, or cleverer architectures? Every new paper changed several things at once, making the factors hard to separate."
         },
         {
-          "p": "This matters in practice. Training a large model takes a lot of compute, and before you start, you want to know: for a given budget, how large should the model be? How much data should you prepare? How many steps should you train? Without a pattern to rely on, you are left guessing—or running the experiment first."
+          "p": "This matters in practice. Training a large model costs enormous compute, and before you start you want to know: given the budget, how big should the model be? How much data should you prepare? How many steps should you run? Without a pattern to follow, you either guess or run the experiment first."
         },
         {
-          "p": "The paper chose a deliberately simple metric: cross-entropy loss on the WebText2 test set. The reason is that it is continuous and comparable, measurable from tiny models to the largest models of the day, so it can reveal trends across many orders of magnitude. The tradeoff is that low loss does not mean strong performance on specific tasks—a point the paper explicitly flags at the end."
+          "p": "The paper chose a deliberately simple metric: cross-entropy loss on the WebText2 test set. The rationale is that it is continuous and comparable, and can be measured from very small models to the largest models of the era, so trends can be observed across many orders of magnitude. The tradeoff is that lower loss doesn't guarantee better real-task performance—a caveat the paper itself flags at the end."
         },
         {
           "callout": {
             "kind": "intuition",
             "title": "Like physicists studying gases",
-            "text": "The paper draws an analogy: these laws are like the ideal gas law. A gas is made of countless molecules whose details differ enormously, yet pressure, volume, and temperature obey a simple relationship that is almost independent of what the molecules look like. The authors hope to find \"macroscopic laws\" for language models; as for the underlying \"statistical mechanics,\" the paper admits it does not yet know."
+            "text": "The paper offers an analogy: these laws are like the ideal gas law. A gas contains countless molecules with wildly different details, yet pressure, volume, and temperature obey a simple relationship that barely depends on what the molecules look like. The authors hope to find the \"macroscopic laws\" of language models; as for the underlying \"statistical mechanics,\" the paper admits it doesn't yet know."
           }
         }
       ]
@@ -93,10 +93,10 @@
       "h": "What a power law is: every doubling multiplies loss by a fixed factor",
       "blocks": [
         {
-          "p": "A power law has the form L = (X_{c} / X)^{α}: X is the scale (parameters, data, or compute), X_{c} is a constant, and α is the exponent. Its most intuitive meaning is: **whenever X grows by a factor of k, loss multiplies by k^{−α}**, no matter what scale you are currently at."
+          "p": "A power law has the form L = (X_{c} / X)^{α}: X is scale (parameters, data, or compute), X_{c} is a constant, and α is the exponent. Its most direct meaning: every time X grows by a factor of k, loss multiplies by k^{−α}, no matter what scale you're at."
         },
         {
-          "p": "Take parameter count as an example. The paper measures α_{N} ≈ 0.076. Double the parameters and loss multiplies by 2^{−0.076} ≈ 0.95, a drop of about 5%; increase parameters 10x and loss multiplies by 10^{−0.076} ≈ 0.84, a drop of about 16%. The ratio is the same from a thousand parameters to a billion."
+          "p": "For parameters, the paper measures α_N ≈ 0.076. Doubling parameters multiplies loss by 2^{−0.076} ≈ 0.95, a drop of about 5%. Multiplying parameters by 10 multiplies loss by 10^{−0.076} ≈ 0.84, a drop of about 16%. The ratio is the same at a thousand parameters and a billion."
         },
         {
           "formula": {
@@ -104,7 +104,7 @@
             "parts": [
               {
                 "sym": "L(N)",
-                "desc": "Test loss of a model with N parameters, given enough data and training to convergence"
+                "desc": "The test loss of a model with N parameters, trained to convergence on enough data"
               },
               {
                 "sym": "N",
@@ -112,21 +112,26 @@
               },
               {
                 "sym": "N_{c}",
-                "desc": "A scale constant. Its value depends on vocabulary and tokenization, so it has no fundamental meaning."
+                "desc": "A scale constant. Its value depends on the vocabulary and tokenization, and has no meaning in itself"
               },
               {
                 "sym": "α_{N}",
-                "desc": "The exponent that determines how much benefit you get from scaling. 0.076 is small, meaning the model has to grow a lot before the improvement is obvious."
+                "desc": "The exponent; it determines how much benefit a larger model brings. 0.076 is small, meaning you have to scale the model up a lot to see clear improvement"
               }
             ],
-            "note": "Taking logs of both sides: log L = α_{N} · (log N_{c} − log N). So on log axes, log L against log N is a straight line with slope −α_{N}."
+            "note": "Take logarithms on both sides: log L = α_{N} · (log N_{c} − log N). So on log axes, log L versus log N is a straight line with slope −α_{N}."
+          },
+          "plain": {
+            "title": "Every doubling applies a fixed discount",
+            "pic": "sl-loglog",
+            "text": "On linear axes, a power law is a curve that keeps flattening out (left), as if each step helps less. On log axes (right), it becomes a straight line: every doubling of parameters multiplies loss by 0.95, no matter where the doubling starts. Because the line can be extended, small models can be used to predict large ones."
           }
         },
         {
           "fig": {
             "type": "table",
-            "title": "Working through the formula: every 10x parameter increase lowers loss by about 16%",
-            "subtitle": "Illustrative: calculated from the paper's Eq. 1.1, not measured data; loss is in nats/token. Amber marks the GPT-2 scale (about 1.5 billion parameters).",
+            "title": "Using the formula: every 10x more parameters lowers loss about 16%",
+            "subtitle": "Illustrative: calculated from the paper's Equation 1.1, not measured data; loss is in nats/token. The amber row marks GPT-2's scale (about 1.5 billion parameters).",
             "columns": [
               "Parameter count N (excluding embeddings)",
               "L(N) = (8.8 × 10^{13} / N)^{0.076}",
@@ -162,45 +167,45 @@
             "highlight": {
               "row": 3
             },
-            "note": "This formula only holds when the model is parameter-limited: data must be plentiful and training long enough. The largest model actually tested in the paper had about 1.5 billion parameters; the 10B row is already an extrapolation."
+            "note": "This formula only holds when the model is bottlenecked by parameters: data must be plentiful and training long enough. The largest model actually tested in the paper is about 1.5 billion parameters, so the 10-billion row is already an extrapolation."
           }
         },
         {
           "callout": {
             "kind": "myth",
-            "title": "A power law does not mean \"bigger is better forever\"",
-            "text": "Keep two things in mind. First, each 10x increase only lowers loss by about 16%, so the **absolute** drop keeps shrinking: going from 4.02 to 3.37 is a drop of 0.65, while going from 2.38 to 1.99 is only 0.39. This is **diminishing returns**. Second, language itself has irreducible uncertainty (many plausible words can follow the same sentence), so loss can never reach 0; the straight line must eventually flatten. The paper saw no sign of flattening within its experimental range, but it is guaranteed to happen."
+            "title": "Power laws are not \"bigger is always better, without end\"",
+            "text": "Two things are true at once. First, each 10x increase only reduces loss about 16%, so the absolute drop shrinks: from 4.02 to 3.37 is a drop of 0.65, while from 2.38 to 1.99 is only 0.39. That's diminishing returns. Second, language has its own uncertainty—many plausible tokens can follow the same prefix—so loss can never reach 0, and the straight line must eventually flatten. The paper says it saw no sign of flattening within its experimental range, but it will happen."
           }
         },
         {
-          "p": "Why a power law rather than some other curve? The paper's appendix compares logarithmic and other functional forms, and the power law fits noticeably better. As for the theoretical reason, the paper is frank that there is no solid understanding yet. It notes that similar power laws appear in density estimation, random forests, and other models, with one rough interpretation: the exponent roughly corresponds to the reciprocal of the number of \"useful features\" in the data."
+          "p": "Why a power law rather than some other curve? The appendix compares logarithmic and other forms, and the power law fits clearly better. As for the theoretical reason, the paper admits there is no solid understanding yet. It notes that similar power laws appear in density estimation, random forests, and other models, and offers a rough interpretation: the exponent roughly corresponds to the inverse of the number of \"useful features\" in the data."
         },
         {
           "quiz": {
-            "q": "The parameter exponent is α_{N} ≈ 0.076. If you scale a model from 100 million to 1 billion parameters, roughly what happens to test loss?",
+            "q": "The parameter exponent is α_N ≈ 0.076. If you scale a model from 100 million parameters to 1 billion, what roughly happens to test loss?",
             "options": [
-              "It falls to one-tenth of its previous value",
-              "It falls by about 16%",
-              "It falls by about 76%",
-              "It falls by about 0.076"
+              "It drops to one-tenth of its original value",
+              "It drops by about 16%",
+              "It drops by about 76%",
+              "It drops by about 0.076"
             ],
             "answer": 1,
-            "why": "A 10x increase multiplies the loss by 10^{−0.076} ≈ 0.84, meaning a drop of about 16%. \"One-tenth\" mistakes the power law for inverse proportionality; \"falling by 0.076\" mistakes the exponent for an absolute change in loss."
+            "why": "A 10x increase multiplies loss by 10^{−0.076} ≈ 0.84, so it drops about 16%. One-tenth would mean mistaking the power law for inverse proportionality; \"drops by 0.076\" mistakes the exponent for an absolute change in loss."
           }
         }
       ]
     },
     {
-      "h": "How the experiments were done: many models, one dataset",
+      "h": "How the experiments worked: many models, one dataset",
       "blocks": [
         {
-          "p": "All models were trained on **WebText2**, an extended version of the WebText data used for GPT-2. It collects outbound-linked pages from Reddit posts with at least 3 karma, extended through October 2018. In total it has 20.3 million documents and 96 GB of text; GPT-2's tokenizer turns this into about 22.9 billion tokens, of which 660 million are reserved as a test set. The paper also evaluates on Books Corpus, Common Crawl, English Wikipedia, and a collection of online books to check whether models transfer to other text."
+          "p": "All models were trained on WebText2, an extended version of the WebText dataset used for GPT-2. It collects outbound Reddit links with at least 3 karma, extended through October 2018. In total it contains 20.3 million documents and 96 GB of text, tokenized with GPT-2's tokenizer into about 22.9 billion tokens; 660 million of those are held out as a test set. The paper also evaluates on Books Corpus, Common Crawl, English Wikipedia, and a collection of internet books to check whether models transfer to other text."
         },
         {
-          "p": "The factors varied include model size (768 to 1.5 billion parameters excluding embeddings), data volume (22 million to 23 billion tokens), shape (layers, width, attention heads, feed-forward width), context length, and batch size. Defaults were Adam, a fixed 2.5 × 10^{5} training steps, a batch of 512 sequences of 1024 tokens, and a learning-rate schedule with 3000 steps of linear warmup followed by cosine decay to 0. Models larger than 1 billion parameters used Adafactor because of memory constraints."
+          "p": "The factors varied included model size (non-embedding parameters from 768 to 1.5 billion), data volume (22 million to 23 billion tokens), shape (layers, width, attention heads, feed-forward width), context length, and batch size. The default setup used the Adam optimizer, a fixed 2.5 × 10^{5} training steps, batches of 512 sequences of 1024 tokens, and a learning rate that rises linearly for 3000 steps then cosine-decays to 0; models above 1 billion parameters switched to Adafactor due to memory constraints."
         },
         {
-          "p": "**How parameter count is computed.** A Transformer layer consists mainly of the weight matrices in attention and the feed-forward layer. Ignoring biases and other small terms, the non-embedding parameter count is:"
+          "p": "**How parameter count is computed.** A Transformer layer mostly consists of the attention and feed-forward weight matrices. Ignoring biases and other small terms, the non-embedding parameter count is:"
         },
         {
           "formula": {
@@ -208,135 +213,139 @@
             "parts": [
               {
                 "sym": "n_{layer}",
-                "desc": "Number of layers"
+                "desc": "number of layers"
               },
               {
                 "sym": "d_{model}",
-                "desc": "Dimension of each token vector (residual stream width)"
+                "desc": "the dimension of each token vector (the width of the residual stream)"
               },
               {
                 "sym": "d_{attn}",
-                "desc": "Attention output dimension, usually equal to d_{model}"
+                "desc": "attention output dimension, usually equal to d_{model}"
               },
               {
                 "sym": "d_{ff}",
-                "desc": "Width of the intermediate feed-forward layer, usually 4 · d_{model}"
+                "desc": "the intermediate width of the feed-forward layer, usually 4 · d_{model}"
               },
               {
                 "sym": "12 · n_{layer} · d_{model}^{2}",
-                "desc": "Substituting the standard settings d_{attn} = d_{model}, d_{ff} = 4d_{model}: 2 × (2 + 4) = 12."
+                "desc": "Substituting the standard settings d_{attn} = d_{model} and d_{ff} = 4d_{model}: 2 × (2 + 4) = 12"
               }
             ],
-            "note": "The attention layer has four d_{model} × d_{model} matrices—query, key, value, and output—for 4d_{model}^{2} total. The feed-forward layer has two d_{model} × 4d_{model} matrices, for 8d_{model}^{2}. Together that is exactly 12d_{model}^{2} per layer."
+            "note": "The attention layer has four d_{model} × d_{model} matrices—query, key, value, and output—totaling 4d_{model}^{2}; the feed-forward layer has two d_{model} × 4d_{model} matrices, totaling 8d_{model}^{2}. Together that is exactly 12d_{model}^{2} per layer."
+          },
+          "plain": {
+            "title": "A layer is a handful of large matrices",
+            "text": "Each layer's parameters are mostly four d × d attention matrices plus two d × 4d feed-forward matrices—together, 12 d². Multiply by the number of layers, and you get the whole model's parameter count. If you know the layer count and width, you can estimate the model size in your head."
           }
         },
         {
           "fig": {
             "type": "table",
             "title": "Checking 12 · n_{layer} · d_{model}^{2} against two real models",
-            "subtitle": "Illustrative: layer counts and widths are from the GPT-2 and GPT-3 papers; calculations are ours.",
+            "subtitle": "Illustrative: layer counts and widths from the GPT-2 and GPT-3 papers; calculations by this site.",
             "columns": [
               "Model",
-              "Number of layers n_{layer}",
+              "Layers n_{layer}",
               "Width d_{model}",
               "12 · n_{layer} · d_{model}^{2}",
-              "Reported parameter count"
+              "Published parameter count"
             ],
             "rows": [
               [
-                "GPT-2 (largest)",
+                "GPT-2 largest",
                 "48",
                 "1600",
-                "≈ 1.47B",
-                "1.5B"
+                "about 1.47 billion",
+                "1.5 billion"
               ],
               [
                 "GPT-3",
                 "96",
                 "12288",
-                "≈ 173.9B",
-                "175B"
+                "about 173.9 billion",
+                "175 billion"
               ]
             ],
-            "note": "The gap is mostly the embedding layer this paper deliberately excludes: GPT-3's vocabulary has more than 50,000 tokens, each mapped to a 12,288-dimensional vector, adding up to over 600 million parameters."
+            "note": "The gap is mostly the embedding layer this paper deliberately excludes: GPT-3's vocabulary has more than 50,000 tokens, each with a 12,288-dimensional vector, adding up to over 600 million parameters."
           }
         },
         {
-          "p": "**Why exclude embeddings?** The paper found that including embedding parameters made models of different depths land on different curves, making depth look important; after removing embedding parameters, models of various depths collapsed almost onto a single line (only models with fewer than 2 layers, or extreme depth-to-width ratios, clearly deviate). This suggests the embedding matrix can be made smaller without hurting performance."
+          "p": "**Why exclude the embedding layer?** The paper found that when embedding parameters are counted, models of different depths fall on different curves, making depth look important. Once embeddings are removed, models of varying depth collapse onto almost a single line; only models with fewer than 2 layers or extreme depth-to-width ratios clearly deviate. This suggests the embedding matrix can be made smaller without hurting performance."
         },
         {
-          "p": "**How compute is counted.** In the forward pass, each parameter does about one multiplication and one addition per token—2N operations—and the backward pass is about twice the forward pass. So training takes **about 6N floating-point operations per token**, and total compute C ≈ 6N · B · S (B is batch size in tokens, S is steps). This ignores attention work tied to context length; as long as d_{model} is much larger than one-twelfth of the context length, that part is small."
+          "p": "**How compute is calculated.** In the forward pass, each parameter does about one multiply and one add per token, or 2N operations; the backward pass is about twice the forward pass. Training therefore takes about 6N floating-point operations per token, so total compute C ≈ 6N · B · S (B is tokens per batch, S is steps). This ignores context-dependent attention computation, which is small as long as d_{model} is much larger than one-twelfth of the context length."
         },
         {
           "callout": {
             "kind": "intuition",
-            "title": "The 6N rule is very handy",
-            "text": "It lets you estimate training cost in your head. Take GPT-3: 175 billion parameters, trained on 300 billion tokens. 6 × 1.75 × 10^{11} × 3 × 10^{11} ≈ 3.15 × 10^{23} operations, or about 3,650 PF-day. The GPT-3 paper itself reports 3.14 × 10^{23} operations and about 3,640 PF-day—nearly identical (this is our own cross-check from the formula). People still use this equation today to estimate large-model training costs."
+            "title": "The 6N rule is surprisingly handy",
+            "text": "It lets you estimate training cost in your head. Take GPT-3: 175 billion parameters, trained on 300 billion tokens. 6 × 1.75 × 10^{11} × 3 × 10^{11} ≈ 3.15 × 10^{23} operations, or about 3650 PF-days. The GPT-3 paper itself reports 3.14 × 10^{23} operations and about 3640 PF-days—almost identical (this site's check using the formula). Today people still use the same equation to estimate the training cost of large models."
           }
         },
         {
           "quiz": {
-            "q": "A Transformer has 24 layers and width d_{model} = 1024 (standard d_{attn} and d_{ff}). By the paper's method, its non-embedding parameter count is about:",
+            "q": "A Transformer has 24 layers and width d_{model} = 1024 (with standard d_{attn} and d_{ff}). Using the paper's formula, roughly how many non-embedding parameters does it have?",
             "options": [
-              "about 25 million",
-              "about 300 million",
-              "about 1.2 billion",
-              "about 24,000"
+              "About 25 million",
+              "About 300 million",
+              "About 1.2 billion",
+              "About 24,000"
             ],
             "answer": 1,
-            "why": "12 × 24 × 1024² = 12 × 24 × 1,048,576 ≈ 302 million. That is the scale of BERT-LARGE and GPT-2 Medium (about 340 million with embedding layers added). 25 million comes from forgetting to multiply by the layer count; 1.2 billion comes from multiplying by 12 twice."
+            "why": "12 × 24 × 1024² = 12 × 24 × 1,048,576 ≈ 302 million. That's the BERT-LARGE / GPT-2 Medium class (about 340 million with embeddings). 25 million comes from forgetting to multiply by the number of layers; 1.2 billion comes from multiplying by 12 twice."
           }
         }
       ]
     },
     {
-      "h": "Finding 1: shape barely matters; scale does",
+      "h": "Finding 1: Architecture barely matters; scale does",
       "blocks": [
         {
-          "p": "The paper fixes non-embedding parameter count N, changes a single shape parameter (adjusting width so N stays constant), and observes the loss. The conclusion: across a wide range, loss changes by only a few percentage points."
+          "p": "The paper fixes non-embedding parameter count N and changes only one shape parameter at a time (adjusting width to keep N constant), then looks at the loss. The conclusion: across a wide range, loss changes by only a few percentage points."
         },
         {
           "list": [
-            "**Depth-to-width ratio**: d_{model} / n_{layer} varies 40x with little effect. A model with only 6 layers and width 4288 has loss within 3% of GPT-2's 48-layer, width-1600 model.",
-            "**Attention heads and feed-forward width**: likewise have little effect within reasonable ranges.",
-            "**Compared with LSTM**: at equal parameter count, an LSTM matches a Transformer on the early tokens of a sequence, but stops improving after about 100 tokens. A Transformer keeps getting more accurate across the full 1024-token context. So the Transformer's advantage comes mainly from using long context.",
-            "**Transfer to other text**: on Wikipedia, books, and Common Crawl, loss also falls smoothly with N, and the curves are nearly parallel to the WebText2 curve, offset by a roughly constant margin. Generalization depends almost entirely on loss on the training distribution, not on how long the model trained or how deep it is."
+            "**Depth-to-width ratio**: varying d_{model} / n_{layer} by a factor of 40 has little effect. A model with only 6 layers and width 4288 differs in loss from the 48-layer, width-1600 configuration used in GPT-2 by less than 3%.",
+            "**Attention head count and feed-forward width**: also barely matter within reasonable ranges.",
+            "**Compared with LSTM**: at the same parameter count, an LSTM matches the Transformer at the beginning of a text, but stops improving after about 100 tokens. The Transformer keeps getting more accurate across the whole 1024-token context. So the Transformer's advantage comes mainly from exploiting long context.",
+            "**Transfer to other text**: On Wikipedia, books, and Common Crawl, loss also falls smoothly with N, and the curves run almost parallel to the WebText2 curve, offset by a roughly constant amount. How well a model generalizes depends almost entirely on its loss on the training distribution, not on how long it trained or how deep it is."
           ]
         },
         {
-          "p": "The paper mentions a possible explanation: deep networks may act like an ensemble of shallow networks (a view earlier proposed for ResNets), so moderate differences in depth do not matter much."
+          "p": "The paper mentions one possible explanation: a deep network may behave like an ensemble of shallow networks (an idea earlier research proposed for ResNets), which would explain why depth makes little difference."
         },
         {
           "callout": {
             "kind": "note",
-            "title": "\"Not important\" has limits",
-            "text": "This refers to shape mattering little within a reasonable range and at a fixed parameter count. Models with only 1 layer, or with extreme depth-to-width ratios, still get clearly worse. The practical point is: when designing a large model, do not spend too much effort on architectural details; get the scale right first."
+            "title": "'Doesn't matter' has limits",
+            "text": "The claim is that shape matters little **within a reasonable range** and **at fixed parameter count**. A model with only one layer, or an extreme depth-to-width ratio, still gets clearly worse. The practical takeaway: when designing a large model, don't spend much effort on architectural details; get the scale right first."
           }
         }
       ]
     },
     {
-      "h": "Finding 2: three power laws, one each for model, data, and compute",
+      "h": "Finding 2: Three power laws for model, data, and compute",
       "blocks": [
         {
-          "p": "When only one factor is the bottleneck and the other two are ample, loss follows three clean power laws:"
+          "p": "When only one factor is the bottleneck and the other two are plentiful, loss follows three clean power laws:"
         },
         {
           "fig": {
             "type": "table",
-            "title": "Three power laws: data has the largest exponent, compute the smallest",
-            "subtitle": "From the paper's Eqs. 1.1–1.3 and Appendix Table 5; the “loss multiplier for a 10x scale increase” is our calculation via 10^{−α}. Amber marks the compute row.",
+            "title": "The three power laws: the data exponent is largest, the compute exponent smallest",
+            "subtitle": "From the paper's Equations 1.1–1.3 and Appendix Table 5; the 'loss multiplier for 10x' column is computed by this site using 10^{−α}. Amber marks the compute row.",
             "columns": [
               "Bottleneck",
-              "When it applies",
+              "Condition",
               "Exponent α",
               "Scale constant",
-              "Loss multiplier for 10x scale"
+              "Loss multiplier for 10x"
             ],
             "rows": [
               [
                 "Parameter count N",
-                "Enough data, trained to convergence",
+                "Data plentiful, trained to convergence",
                 "0.076",
                 "N_{c} ≈ 8.8 × 10^{13} parameters",
                 "0.84"
@@ -350,7 +359,7 @@
               ],
               [
                 "Compute C_{min}",
-                "Model size optimal, batch size sufficiently small",
+                "Optimally sized model, batch sufficiently small",
                 "0.050",
                 "C_{c} ≈ 3.1 × 10^{8} PF-day",
                 "0.89"
@@ -359,19 +368,24 @@
             "highlight": {
               "row": 2
             },
-            "note": "The scale constants depend on tokenization, so changing the tokenizer changes their values; do not treat them as meaningful physical quantities."
+            "note": "The scale constants depend on tokenization; change the tokenizer and their values change, so don't read physical meaning into them."
           }
         },
         {
-          "p": "Compute has the smallest exponent, which at first looks like the worst deal: 10x more compute lowers loss by only about 11%. But compute is the fundamental budget—N and D are both bought with it. The core question of the paper's second half is: given a compute budget, how do you split it between model size and data to follow this C curve."
+          "p": "The compute exponent is the smallest, which makes it look like the worst deal: 10x more compute reduces loss by only about 11%. But compute is the fundamental budget—both N and D have to be bought with it. The central question of the paper's second half is: given a compute budget, how should you split it between model size and data to move along this C curve."
         },
         {
-          "p": "The paper also measures the critical batch size: how many tokens per batch is best. Too small, and GPUs are underutilized; past a critical value, larger batches only waste compute and barely reduce steps. The critical value depends only on current loss, not model size: B_{crit} ≈ 2.1 × 10^{8} · L^{−4.8} tokens. Every time loss falls 13%, critical batch size roughly doubles. At convergence for the largest models, critical batch size is about one to two million tokens."
+          "p": "The paper also measured the **critical batch size**: how many tokens per batch is best. Too small, and the GPU is underutilized; above a critical value, larger batches only waste compute and barely reduce the number of steps. The critical value depends only on current loss, not model size, roughly B_{crit} ≈ 2.1 × 10^{8} · L^{−4.8} tokens: every time loss drops 13%, the critical batch size roughly doubles. For the largest models trained to convergence, it is about one to two million tokens.",
+          "plain": {
+            "title": "At some point, extra hands just get in each other's way",
+            "pic": "sl-batch",
+            "text": "In a move, three people are much faster than one; ten is faster still. Beyond that, the hallway gets jammed and the speed barely increases. Batch size works the same way: past the critical value B_crit, packing more data into each batch barely reduces the number of training steps—it just burns compute."
+          }
         },
         {
           "fig": {
             "type": "table",
-            "title": "The stronger the model, the more tokens per batch",
+            "title": "The stronger the model, the more tokens a batch can hold",
             "subtitle": "Illustrative: calculated from the paper's formula B_{crit} ≈ 2.1 × 10^{8} · L^{−4.8}, not measured data.",
             "columns": [
               "Current loss L (nats)",
@@ -383,25 +397,25 @@
             "rows": [
               [
                 "Critical batch size (tokens)",
-                "≈ 270,000",
-                "≈ 510,000",
-                "≈ 1.08 million",
-                "≈ 2.58 million"
+                "about 270,000",
+                "about 510,000",
+                "about 1.08 million",
+                "about 2.58 million"
               ]
             ],
             "highlight": {
               "col": 3
             },
-            "note": "The intuition: the better the model, the finer what remains to be learned, and the noise in each gradient step is relatively larger, so larger batches are needed to average it out. Blue marks the point where loss is about 3.0 and critical batch size is about one million tokens."
+            "note": "The intuition: the better the model, the finer the remaining signal, so the 'noise' in each step's gradient is relatively larger and needs a bigger batch to average out. Blue marks a loss of about 3.0, roughly one million tokens."
           }
         }
       ]
     },
     {
-      "h": "Finding 3: model and data should grow together, but data can grow more slowly",
+      "h": "Finding 3: Model and data grow together—but data can grow more slowly",
       "blocks": [
         {
-          "p": "Scaling only the model without more data leads to overfitting; adding only data without a larger model gives a model too small to absorb it. The paper found a formula combining both that fits experiments while N and D vary together:"
+          "p": "Scaling the model without adding data causes overfitting; adding data without scaling the model means the model can't absorb it. The paper found a single formula combining both that fits the experiments across simultaneous changes in N and D:"
         },
         {
           "formula": {
@@ -409,56 +423,61 @@
             "parts": [
               {
                 "sym": "D → ∞",
-                "desc": "With infinite data, the second term vanishes and the formula collapses to L(N): limited only by model size."
+                "desc": "When data is infinite, the second term vanishes and this reduces to L(N): constrained only by model size."
               },
               {
                 "sym": "N → ∞",
-                "desc": "With an infinitely large model, the first term vanishes and it collapses to L(D): limited only by dataset size."
+                "desc": "When the model is infinite, the first term vanishes and this reduces to L(D): constrained only by dataset size."
               },
               {
                 "sym": "α_{N} / α_{D}",
-                "desc": "The exponent on the first term, about 0.076 / 0.095 ≈ 0.8, ensures both limits agree."
+                "desc": "The exponent on the first term is about 0.076 / 0.095 ≈ 0.8, ensuring both limits agree."
               }
             ],
-            "note": "The paper says it chose this form for three reasons: changing the tokenizer should only rescale loss; both limits should match; and near infinite data, loss can be expanded in integer powers of 1/D. The paper admits the third justification is weak."
+            "note": "The paper says it chose this form based on three principles: changing the vocabulary should only rescale loss; the two limits must match; and near infinite data, loss should be expandable in integer powers of 1/D. The authors admit the third has weaker theoretical support."
+          },
+          "plain": {
+            "title": "Two pipes: the narrower one sets the flow",
+            "pic": "sl-funnel",
+            "text": "Model size N and dataset size D are like two pipes feeding a funnel. Whichever is narrower limits the flow: a big model with little data overfits; lots of data with a small model can't be absorbed. The formula puts both bottlenecks together, and whichever is tighter mainly determines the loss."
           }
         },
         {
-          "p": "From this, it follows that **the degree of overfitting depends only on the ratio N^{0.74} / D** (0.74 ≈ 0.076 / 0.095). Plainly: **every time the model grows 8x, the data only needs to grow about 5x** (8^{0.74} ≈ 4.7) to avoid being hurt by insufficient data. This is a “sublinear” relationship: data does not need to grow in proportion to parameters."
+          "p": "From this, the paper calculates that **overfitting depends only on the ratio N^{0.74} / D** (0.74 ≈ 0.076 / 0.095). Plainly: **every time you scale the model 8x, you only need about 5x more data** (8^{0.74} ≈ 4.7) to avoid being hurt by a data shortage. This is a 'sublinear' relationship: data volume doesn't have to grow in proportion to parameters."
         },
         {
-          "p": "The paper estimates loss variation across random seeds at about 0.02, so to keep the overfitting penalty below that, data should satisfy roughly D ≳ 5 × 10^{3} · N^{0.74} (in tokens):"
+          "p": "The paper estimates loss variation across random seeds at about 0.02. To keep the effect of overfitting below that fluctuation, data should satisfy D ≳ 5 × 10^{3} · N^{0.74} (in tokens):"
         },
         {
           "fig": {
             "type": "table",
-            "title": "A rough estimate from Eq. 4.4: how much data you need to avoid overfitting",
-            "subtitle": "Illustrative: calculated by us from the paper's formula D ≳ 5 × 10^{3} · N^{0.74}; N excludes embeddings. The amber row matches the paper's experiments.",
+            "title": "Using Equation 4.4: how much data do you need to avoid overfitting?",
+            "subtitle": "Illustrative: computed by this site from the paper's formula D ≳ 5 × 10^{3} · N^{0.74}; N excludes embedding parameters. The amber row matches the paper's experiments.",
             "columns": [
               "Model parameters N",
-              "Minimum tokens required",
-              "Reference point"
+              "Minimum tokens needed",
+              "Comparison"
             ],
             "rows": [
               [
                 "100 million",
-                "≈ 4.2 billion",
+                "about 4.2 billion",
                 "—"
               ],
               [
                 "1 billion",
-                "≈ 23 billion",
-                "Exactly the scale of WebText2: the paper says models below 1 billion parameters barely overfit on it."
+                "about 23 billion",
+                "Exactly WebText2's size: the paper says models under 1 billion parameters barely overfit on it"
               ],
               [
                 "10 billion",
-                "≈ 126 billion",
+                "about 126 billion",
                 "—"
               ],
               [
                 "175 billion",
-                "≈ 1 trillion",
-                "GPT-3 actually trained on about 300 billion tokens (different dataset, so only a rough comparison)."
+                "about 1 trillion",
+                "GPT-3 actually trained on about 300 billion tokens (different dataset, so only a rough comparison)"
               ]
             ],
             "highlight": {
@@ -467,76 +486,81 @@
           }
         },
         {
-          "p": "In the experiments, all models used 10% dropout and stopped early when test loss stopped improving. The fit worked well; the only exception was the group where data was reduced to about 20 million tokens: one epoch contained only 40 update steps, overfitting set in too early, and this may be a different regime."
+          "p": "In the experiments, all models used 10% dropout and stopped early when test loss stopped improving. The fit was good, with one exception: the group where data was cut to about 20 million tokens had only 40 update steps per epoch, so overfitting happened too early and may fall into a different regime."
         },
         {
           "callout": {
             "kind": "myth",
-            "title": "\"Data must match parameters\" does not hold in this paper.",
-            "text": "According to this paper, data only needs to grow as the 0.74 power of parameter count, so larger models are more \"data-efficient.\" This was one basis for the 2020-era tendency toward \"large models, relatively little data.\" Two years later, Chinchilla reached a different conclusion (see the end), which is what this paper is now most often cited for."
+            "title": "The paper doesn't support 'data should match parameters'",
+            "text": "According to this paper, data only needs to grow as parameters to the 0.74 power, so larger models are more 'data-frugal.' This was one basis for the 2020-era preference for 'large model, relatively little data.' Two years later, Chinchilla reached a different conclusion (see the end), and this is also the point for which the paper is most often cited."
           }
         },
         {
           "quiz": {
-            "q": "According to the paper's law, if you scale model parameters 8x, how much more data do you need to avoid being hurt by limited data?",
+            "q": "According to this paper's scaling law, when you increase model parameters 8x, by how much should data grow to avoid being hurt by too little data?",
             "options": [
               "8x",
-              "About 5x",
-              "About 2x",
-              "No increase"
+              "about 5x",
+              "about 2x",
+              "No increase needed"
             ],
             "answer": 1,
-            "why": "Overfitting depends only on N^{0.74} / D. To keep that ratio unchanged, D must be multiplied by 8^{0.74} ≈ 4.7, or about 5x. 8x would be linear growth—that is the direction of Chinchilla's later conclusion, not this paper's."
+            "why": "Overfitting depends only on N^{0.74} / D. To keep that ratio constant, D must be multiplied by 8^{0.74} ≈ 4.7, or about 5x. 8x is linear growth—the direction Chinchilla later took, not this paper's conclusion."
           }
         }
       ]
     },
     {
-      "h": "Finding 4: larger models learn faster, and training curves are predictable too",
+      "h": "Finding 4: Larger models learn faster, and training curves are predictable",
       "blocks": [
         {
-          "p": "The paper also fits how loss changes with **training steps**. With infinite data, after the initial unstable phase, the learning curve can be written as:"
+          "p": "The paper also fits loss as a function of **training steps**. With infinite data, after the initial unstable phase, the learning curve is:"
         },
         {
           "formula": {
-            "expr": "L(N, S) = ( N_{c} / N )^{α_{N}} + ( S_{c} / S_{min} )^{α_{S}},  α_{S} ≈ 0.76,  S_{c} ≈ 2.1 × 10^{3}",
+            "expr": "L(N, S) = ( N_{c} / N )^{α_{N}} + ( S_{c} / S_{min} )^{α_{S}}, α_{S} ≈ 0.76, S_{c} ≈ 2.1 × 10^{3}",
             "parts": [
               {
                 "sym": "First term",
-                "desc": "The floor set by model size: no amount of extra training can push loss below it."
+                "desc": "The 'floor' set by model size: even infinite training can't go below it"
               },
               {
                 "sym": "Second term",
-                "desc": "The extra loss from too little training, which decays as a power law in steps."
+                "desc": "The added loss from not training long enough, decaying as a power law in steps"
               },
               {
                 "sym": "S_{min}",
-                "desc": "Converted to the minimum steps needed when batches are large enough, to offset differences in batch size."
+                "desc": "Converted to the minimum steps required when 'the batch is large enough', used to cancel out the effect of different batch sizes"
               }
             ],
-            "note": "This means that seeing the early part of a model's training curve is enough to roughly predict its loss after much longer training."
+            "note": "This means you can look at the early part of a model's training curve and roughly predict its loss after much longer training."
+          },
+          "plain": {
+            "title": "Larger models learn faster",
+            "pic": "sl-fastlearn",
+            "text": "The three curves are models of three sizes (green is largest). At the dashed moment, all have seen the same amount of data, but the large model's loss is already far lower. Large models aren't 'slow and careful'; they learn more from every example."
           }
         },
         {
-          "p": "Behind this formula is an important phenomenon: **larger models are more sample-efficient**. To reach the same loss, larger models need fewer training steps and fewer data points. In the appendix, from the smallest to the largest model, sample efficiency differs by nearly 100x."
+          "p": "Behind this formula is an important phenomenon: **larger models are more sample-efficient**. To reach the same loss, a larger model needs fewer training steps and less data. In the appendix, sample efficiency from the smallest to largest model differs by nearly 100x."
         },
         {
           "callout": {
             "kind": "intuition",
-            "title": "Larger models don't take longer to become useful; they learn faster",
-            "text": "People often assume larger models need longer training to pay off. The paper's figure shows the opposite: at the same number of tokens seen, a larger model's loss is already much lower than a smaller model's. A large model learns more from each example. This is also the fundamental reason for \"train a large model and stop early.\""
+            "title": "Large models aren't 'slow and careful': they learn faster",
+            "text": "People often assume large models must be trained longer to pay off. The paper's chart shows the opposite: at the same number of tokens seen, a large model already has much lower loss than a small one. A large model learns more from each example. This is also the fundamental reason behind 'train a big model and stop early.'"
           }
         },
         {
-          "p": "The paper also looks at loss by position in the context: for a fixed model size, loss at token T falls as a power law in T; larger models are not only more accurate in the end, they also improve faster with only a little context, suggesting they are better at quickly finding patterns. During training, models first learn short-range relationships and only later learn long-range ones."
+          "p": "The paper also examined loss at different positions in the context. At fixed model size, loss at token T falls as a power law in T. Large models are not only more accurate at the end; they also improve faster with very little context, which suggests they are better at quickly finding patterns. During training, models first learn short-range relationships and later learn long-range ones."
         }
       ]
     },
     {
-      "h": "Core conclusion: with more compute, spend it mainly on a bigger model",
+      "h": "The core conclusion: spend extra compute primarily on a bigger model",
       "blocks": [
         {
-          "p": "Now we can answer the most practical question: given a compute budget C, what is the best allocation? The paper substitutes C ≈ 6N · B · S into the learning-curve formula, solves for the model size that minimizes loss at fixed C, and compares with experiments. The experimental results are:"
+          "p": "Now we can answer the most practical question: given a compute budget C, what's the best allocation? The paper substitutes C ≈ 6N · B · S into the learning-curve formula, solves for the model size that minimizes loss at fixed C, and compares with experiments. The experimental result is:"
         },
         {
           "formula": {
@@ -544,29 +568,34 @@
             "parts": [
               {
                 "sym": "N",
-                "desc": "Optimal model size: grows fastest and consumes most of the increase in compute."
+                "desc": "Optimal model size: grows fastest, absorbing most of the increase in compute"
               },
               {
                 "sym": "B",
-                "desc": "Batch size: grows along with it; this part can be absorbed by more GPU parallelism."
+                "desc": "Batch size: grows with it; this part can be absorbed with more GPU parallelism"
               },
               {
                 "sym": "S",
-                "desc": "Training steps: barely grows with compute; the exponent 0.03 is small enough that it might as well be 0."
+                "desc": "Training steps: barely grows with compute; the exponent 0.03 is small enough that it may be 0"
               },
               {
                 "sym": "D",
-                "desc": "Data seen = batch size × steps, growing roughly as C^{0.27}."
+                "desc": "Data seen = batch size × steps, growing roughly as C^{0.27}"
               }
             ],
-            "note": "The theoretical value from the learning-curve formula is N ∝ C^{0.71}, only a few percentage points from the measured 0.73; the paper argues this shows the laws can predict each other consistently."
+            "note": "The theoretical value derived from the learning-curve formula is N ∝ C^{0.71}, within a few percentage points of the measured 0.73. The paper says this shows the whole set of laws can predict each other self-consistently."
+          },
+          "plain": {
+            "title": "With a bigger budget, upgrade the kitchen before buying more groceries",
+            "pic": "sl-budget",
+            "text": "Compute is the total budget. In this paper's account, for every 10x more compute, most money should go to a bigger model (about 5x), data increases only a little (about 2x), and there's no need to train to the end. Two years later, Chinchilla revised the ratio, arguing model and data should grow at roughly the same rate."
           }
         },
         {
           "fig": {
             "type": "table",
-            "title": "Every 10x more compute: about 5x larger model, only about 2x more data",
-            "subtitle": "Illustrative: calculated by us from the paper's exponents 0.73, 0.27, 0.24, 0.03. The blue column is model size.",
+            "title": "Every 10x more compute: model grows about 5x, data only about 2x",
+            "subtitle": "Illustrative: computed by this site from the paper's exponents 0.73, 0.27, 0.24, and 0.03. Blue column is model size.",
             "columns": [
               "Compute increase",
               "Optimal model size",
@@ -577,76 +606,76 @@
             "rows": [
               [
                 "10x",
-                "≈ 5.4x",
-                "≈ 1.9x",
-                "≈ 1.7x",
-                "≈ 1.07x"
+                "about 5.4x",
+                "about 1.9x",
+                "about 1.7x",
+                "about 1.07x"
               ],
               [
                 "100x",
-                "≈ 29x",
-                "≈ 3.5x",
-                "≈ 3.0x",
-                "≈ 1.15x"
+                "about 29x",
+                "about 3.5x",
+                "about 3.0x",
+                "about 1.15x"
               ],
               [
                 "1000x",
-                "≈ 155x",
-                "≈ 6.5x",
-                "≈ 5.2x",
-                "≈ 1.23x"
+                "about 155x",
+                "about 6.5x",
+                "about 5.2x",
+                "about 1.23x"
               ],
               [
                 "1 billion x",
-                "≈ 3.7 million x",
-                "≈ 270x",
-                "≈ 145x",
-                "≈ 1.9x"
+                "about 3.7 million x",
+                "about 270x",
+                "about 145x",
+                "about 1.9x"
               ]
             ],
             "highlight": {
               "col": 1
             },
-            "note": "Figure 3 of the paper draws the same allocation for a 1-billion-fold increase in compute: most of it goes to model size, a little to data; of the data increase, most can come from larger batches for parallelism, with serial steps barely increasing."
+            "note": "Figure 3 of the paper makes the same allocation for a 1-billion-fold increase in compute: most goes to model size, a little to data; within the data increase, most is absorbed by larger batches in parallel, while serial steps barely rise."
           }
         },
         {
-          "p": "**Do not train to convergence.** Under these laws, the most compute-efficient approach is to train a large model until its loss is about 10% above the final loss it could eventually reach (this ratio is exactly α_{N} / α_{S} ≈ 0.076 / 0.76). The paper compares this with common practice: if you instead train to within 2% of convergence, reaching the same loss requires a model 2.7x smaller but 7.7x more steps, costing substantially more compute. Put another way, the optimal approach **saves about 65% of compute**."
+          "p": "**Do not train to convergence.** By these laws, the most compute-efficient approach is to train a large model until its loss is about 10% above what it could ultimately reach—then stop (this ratio is exactly α_{N} / α_{S} ≈ 0.076 / 0.76). The paper compares this with common practice: if you train to within 2% of convergence, as people habitually do, then to reach the same loss you need a model 2.7x smaller but 7.7x more steps, which spends considerably more total compute. Conversely, the optimal approach **saves about 65% of compute**."
         },
         {
           "callout": {
             "kind": "intuition",
-            "title": "Why \"large model, early stop\" is a better deal",
-            "text": "Training a model improves quickly at first and slows later: that last bit of loss takes many steps. Rather than squeeze the final potential out of a small model, switch to a larger model that \"learns fast\" and reaches the same point in fewer steps. An analogy: rather than having someone push their score from 90 to 98, hire someone who learns faster and stop at 90—because the faster learner's 90 already beats the other person's 98."
+            "title": "Why 'big model, early stopping' is cheaper",
+            "text": "Training a model progresses fast early and slower later: that final sliver of loss costs a huge number of steps. Rather than squeezing the last bit out of a small model, it's better to switch to a larger model that learns faster and reaches the same position in fewer steps. An analogy: rather than making one person train from 90 to 98, hire someone who learns faster and stop them at 90—the latter's 90 is already better than the former's 98."
           }
         },
         {
-          "p": "Getting the model size slightly wrong is not costly: the paper estimates that using 0.6 to 2.2x the optimal size costs only about 20% more compute. Going larger also has a benefit: a 2.2x larger model needs 45% fewer steps, and with enough parallel hardware, training is actually faster. Going smaller saves on deployment (lower inference cost)."
+          "p": "It's also fine if the model size isn't exactly right: the paper estimates that using 0.6x to 2.2x the optimal size costs only about 20% more compute. Slightly larger has an advantage: a 2.2x larger model needs 45% fewer steps, so if hardware is parallel enough, training is actually faster. Slightly smaller is cheaper at deployment (lower inference cost)."
         },
         {
           "quiz": {
-            "q": "According to this paper, when the compute budget grows 10x, what should you primarily increase?",
+            "q": "According to this paper, when a compute budget increases 10x, what should you increase most?",
             "options": [
               "Training steps",
-              "Dataset size",
+              "Data volume",
               "Model size",
               "All three in equal proportion"
             ],
             "answer": 2,
-            "why": "Optimal model size grows as C^{0.73}, so 10x compute means about 5x larger model; data grows only about C^{0.27} (about 2x), and serial steps barely change. \"All three in equal proportion\" is not what this paper concludes, though Chinchilla later argued model and data should grow equally fast."
+            "why": "Optimal model size grows as C^{0.73}, so 10x compute means about 5x larger model; data grows only about C^{0.27} (about 2x), and serial steps barely change. 'All three in equal proportion' doesn't match this paper's conclusion; however, Chinchilla later argued model and data should grow at about the same rate."
           }
         },
         {
           "quiz": {
-            "q": "A team has a fixed compute budget and trains a medium-sized model until its loss has completely stopped falling. According to this paper, what is wrong?",
+            "q": "A team fixes a compute budget and trains a medium-sized model until loss completely stops improving. According to this paper, what's wrong?",
             "options": [
               "Nothing; training to convergence is always best",
-              "The model is too small: using the same compute to train a larger model and stopping early would give lower loss",
+              "The model was too small: the same compute used to train a larger model and stop early would produce lower loss",
               "They used too little data",
               "The batch size is too large"
             ],
             "answer": 1,
-            "why": "One of the paper's core conclusions is that \"convergence is inefficient\": the final drop in loss is very expensive, and spending that compute on a larger model has already surpassed the converged small model at the same step count. The paper estimates the optimal approach saves about 65% of compute."
+            "why": "One of the paper's core conclusions is that 'convergence is inefficient': the last stretch of loss reduction is very expensive. Spending that compute on a larger model instead already beats the converged smaller model at the same step count. The paper estimates the optimal approach saves about 65% of compute."
           }
         }
       ]
@@ -655,45 +684,50 @@
       "h": "The contradiction the paper itself found: the laws must eventually fail",
       "blocks": [
         {
-          "p": "The most interesting section of the paper is where it points out that its own laws conflict with each other at larger scales."
+          "p": "The most interesting section of the paper is where it shows that its own laws start to conflict at larger scales."
         },
         {
           "list": [
-            "**On one hand**, to avoid overfitting, data should grow with model size as D ∝ N^{0.74}; with the optimal model growing as N ∝ C^{0.73}, together data should grow roughly as C^{0.54}.",
-            "**On the other hand**, under the most compute-efficient training (using each data point only once), the data actually used grows only about C^{0.26}—much more slowly.",
-            "**Result**: when compute is large enough, a model trained in the optimal way becomes data-limited. Under a data constraint, loss falls only about C^{−0.03}, slower than L(C_{min})'s C^{−0.050}, so the two lines must eventually cross; past that intersection, L(C_{min})'s prediction is impossible."
-          ]
+            "**On one hand**, to avoid overfitting, data should grow with model size as D ∝ N^{0.74}; since the optimal model grows as N ∝ C^{0.73}, together these imply data should grow as about C^{0.54}.",
+            "**On the other hand**, training in the most compute-efficient way (each data point seen only once) uses data growing only about C^{0.26}, much more slowly.",
+            "**Result**: when compute is large enough, the optimally trained model hits a data wall. Under a data bottleneck, loss falls only about C^{−0.03}, slower than the C^{−0.050} of L(C_{min}); the two lines eventually cross, and beyond that point the L(C_{min}) prediction can no longer be realized."
+          ],
+          "plain": {
+            "title": "The two laws eventually collide",
+            "pic": "sl-cross",
+            "text": "The solid line is the loss achievable by 'training in the most compute-efficient way'; the dashed line is the lower bound from 'data seen only once', which falls much more slowly. The two curves eventually cross, and after that intersection the two laws cannot both hold. The paper guesses the intersection may be near the limit of such models, but it also says the numerical value is very uncertain."
+          }
         },
         {
           "fig": {
             "type": "table",
-            "title": "Where the two lines cross: the paper guesses this may be the limit for Transformer language models",
-            "subtitle": "From the paper's Eq. 6.8. The paper stresses that these numbers are uncertain by about an order of magnitude.",
+            "title": "The intersection: the paper's guess at the limit of Transformer language models",
+            "subtitle": "From the paper's Equation 6.8. The paper stresses that these values are uncertain by an order of magnitude in either direction.",
             "columns": [
               "Quantity",
-              "Estimated value at the intersection",
+              "Estimated value at intersection",
               "Intuition"
             ],
             "rows": [
               [
                 "Compute C^{*}",
-                "≈ 10^{4} PF-day",
-                "≈ 3x GPT-3's training compute (our comparison)"
+                "about 10^{4} PF-day",
+                "about 3x GPT-3's training compute (this site's comparison)"
               ],
               [
                 "Model N^{*}",
-                "≈ 10^{12} parameters",
+                "about 10^{12} parameters",
                 "1 trillion parameters"
               ],
               [
                 "Data D^{*}",
-                "≈ 10^{12} tokens",
+                "about 10^{12} tokens",
                 "1 trillion tokens"
               ],
               [
                 "Loss L^{*}",
-                "≈ 1.7 nats/token",
-                "Possibly close to the per-token \"entropy\" of natural language"
+                "about 1.7 nats/token",
+                "possibly close to the 'entropy' of natural language per token"
               ]
             ],
             "highlight": {
@@ -702,93 +736,93 @@
           }
         },
         {
-          "p": "The most direct reading is that the laws break down before reaching this point. But the paper also floats a bolder conjecture: if models cannot surpass N^{*} without changing the nature of the data, perhaps by then they have extracted all the reliable information in natural-language data, and L^{*} is a rough estimate of the per-token entropy of natural language. The paper stresses this is only a conjecture."
+          "p": "The most direct reading is that the laws will fail before this point is reached. But the paper also offers a bolder conjecture: if models cannot exceed N^{*} without changing the nature of the data, perhaps by then all reliable information in natural-language data has already been extracted, and L^{*} is a rough estimate of natural language's per-token entropy. The paper stresses this is only a conjecture."
         },
         {
           "callout": {
             "kind": "note",
-            "title": "A few numbers in the paper don't line up",
+            "title": "The paper has a few numbers that don't line up",
             "list": [
-              "**Orders of magnitude**: the abstract and Section 1.1 say trends span \"more than seven orders of magnitude,\" but the summary list in the same section says \"more than six\"; elsewhere it says C_{min} spans eight, N six, and D a little over two orders of magnitude.",
-              "**Three versions of the compute exponent**: the measured fit is 0.050; Section 6 derives a theoretical value of 0.054 from the other exponents, which the paper calls a very close match; Appendix B uses the same formula and gets 0.052. Our own check, 1 / (1/0.76 + 1/0.21 + 1/0.076), gives 0.052.",
-              "**Inconsistent scale constants**: Figure 13's fit label says C_{min} / 2.3 × 10^{8}, while Eq. 1.3 and Appendix Table 5 say 3.1 × 10^{8}; another fit label in Figures 1 and 13 says C / 2.0 × 10^{7}, while Appendix Table 5 says 1.6 × 10^{7}.",
-              "**Leftover placeholders**: Appendix B.4 says \"results in Figure X\" and \"see Figure Y\"—apparently they forgot to replace these with Figure 12.",
-              "**Two sets of parameters**: fitting L(D) alone gives α_{D} ≈ 0.095, while the joint fit of L(N, D) gives 0.103, and N_{c} changes from 8.8 × 10^{13} to 6.4 × 10^{13}. This one the paper explains: different equations were being fit."
+              "**Orders of magnitude**: the abstract and Section 1.1 say the trends span 'more than seven orders of magnitude,' but the bullet list in the same section says 'more than six'; another spot says C_{min} spans eight orders, N six, and D a little over two.",
+              "**The compute exponent has three versions**: the empirical fit is 0.050; Section 6 derives a theoretical 0.054 from other exponents and the paper calls this 'very close'; Appendix B computes 0.052 using the same formula. This site's check with 1 / (1/0.76 + 1/0.21 + 1/0.076) gives 0.052.",
+              "**Scale constants don't match**: the fit label in Figure 13 is C_{min} / 2.3 × 10^{8}, but Equation 1.3 in the main text and Appendix Table 5 write 3.1 × 10^{8}; another fit label in Figures 1 and 13 is C / 2.0 × 10^{7}, while Appendix Table 5 gives 1.6 × 10^{7}.",
+              "**Leftover placeholders**: Appendix B.4 says \"see Figure X\" and \"see Figure Y\"—apparently the authors forgot to replace them with Figure 12.",
+              "**Two sets of parameters**: fitting L(D) alone gives α_{D} ≈ 0.095, while the joint fit of L(N, D) gives 0.103; N_{c} also changes from 8.8 × 10^{13} to 6.4 × 10^{13}. The paper explains this one itself: the two fits are to different equations."
             ]
           }
         }
       ]
     },
     {
-      "h": "Limitations, and what happened next",
+      "h": "Limitations and what came next",
       "blocks": [
         {
-          "p": "The paper's appendix includes a section of caveats:"
+          "p": "The paper's appendix has a dedicated list of caveats:"
         },
         {
           "list": [
-            "**No theory**: these laws are empirical fits, and the scaling with model size and compute is \"especially mysterious.\" Without theory, it is hard to know when they can be trusted.",
-            "**The small-data regime is understudied**: the fit is poor with very little data; the paper also did not try regularization or data augmentation, which could change the conclusions.",
-            "**Untuned hyperparameters**: learning rate was tuned, but initialization scale, momentum, and others may not have been; moreover, **for experiments that did not run to convergence, a larger learning rate was never tried.**",
+            "**No theory**: the laws are empirical fits, and the model-size and compute laws are \"especially mysterious.\" Without theory, it's hard to know when they can be trusted.",
+            "**The small-data regime is understudied**: the fit is poor when data is scarce, and the paper did not test regularization or data augmentation; those could change the conclusions.",
+            "**Hyperparameters left untuned**: the learning rate was tuned, but initialization scale, momentum, and others may not have been. Also, **the runs that stopped before convergence never tried larger learning rates.**",
             "**The compute formula ignores context**: with very long contexts, C ≈ 6N underestimates compute.",
-            "**Critical batch size extrapolation is unreliable**: far outside the measured loss range, B_{crit} predictions may not hold, and this affects the tradeoff between parallelism and training time.",
-            "**Loss is not ability**: at the end, the paper says a smooth improvement in loss may hide qualitative changes in capability, just as smoothly growing economic output hides which specific technical breakthroughs are behind it."
+            "**Critical batch extrapolation is unreliable**: far outside the experimental loss range, the B_{crit} prediction may not hold—and it affects the tradeoff between parallelism and training time.",
+            "**Loss is not capability**: at the end, the paper notes that smooth improvements in loss may hide qualitative changes in capability, just as smooth growth in total economic output hides the specific technological breakthroughs behind it."
           ]
         },
         {
-          "p": "**What happened next.** Four months later, OpenAI released GPT-3: 175 billion parameters, trained on about 300 billion tokens, following exactly the \"large model, relatively little data, stop before convergence\" approach. The GPT-3 paper also used this paper's method to plot loss falling smoothly with scale (see our GPT-3 close read)."
+          "p": "**What came next.** Four months later, OpenAI released GPT-3: 175 billion parameters, trained on about 300 billion tokens—exactly the \"large model, relatively little data, stop before convergence\" playbook. The GPT-3 paper also used this paper's methods to plot the loss curve falling smoothly with scale (see our GPT-3 close read)."
         },
         {
-          "p": "In 2022, DeepMind’s Chinchilla paper (“Training Compute-Optimal Large Language Models”) re-examined this question and concluded that model and data should grow **at about the same rate**. The Chinchilla they trained on that principle—70 billion parameters, 1.4 trillion tokens—beat the 280-billion-parameter Gopher under the same compute budget. The key difference Chinchilla pointed to: this paper used the same training length and learning-rate schedule for every model (a fixed 2.5 × 10^{5} steps, with cosine decay to 0). With a schedule designed for long training, intermediate checkpoints never get the final learning-rate decay, so their loss is overestimated—and the benefit of training on less data is underestimated. Chinchilla argues this is one reason the “model should grow faster than data” conclusion emerged. In hindsight, that lands exactly on a limitation this paper itself listed: it never tuned learning rates for runs that did not go to convergence."
+          "p": "In 2022, DeepMind's Chinchilla paper (\"Training Compute-Optimal Large Language Models\") re-examined this question and concluded that model and data should **grow at roughly the same rate**. The authors trained Chinchilla at 70 billion parameters and 1.4 trillion tokens accordingly, and it outperformed a 280-billion-parameter Gopher trained with the same compute. Chinchilla identified one key difference: this paper gave every model the same training length and learning-rate schedule (a fixed 2.5 × 10^{5} steps, with cosine decay to zero). Under a schedule designed for long training, the intermediate checkpoints were never properly wound down, so their loss was overstated and the benefit of training on less data was understated. Chinchilla argues that this is one reason for the \"model should grow faster than data\" conclusion. In hindsight, that lands on a limitation the paper itself listed: it never tuned learning rates for runs that stopped short of convergence."
         },
         {
-          "p": "But the paper’s most important legacy has not been overturned: **before spending serious money, fit power laws on a series of small models and extrapolate to the large one**. That has become standard practice before training large models. Chinchilla is also in your saved list, and it will be our next close read."
+          "p": "But the paper's most important legacy still stands: **before spending real money, fit power laws from a series of small models and extrapolate to large ones**. This has become standard practice before training large models. Chinchilla is also in your saved papers and will be our next close read."
         }
       ]
     },
     {
-      "h": "Check yourself: did it sink in?",
+      "h": "Check yourself: did you actually get it?",
       "blocks": [
         {
           "quiz": {
-            "q": "Why does the paper exclude embedding layers when counting parameters?",
+            "q": "Why did the paper exclude the embedding layer when counting parameters?",
             "options": [
-              "Because embedding-layer parameters are too few to matter.",
-              "Because removing them puts models of different depths on the same power-law curve, giving cleaner laws.",
-              "Because embedding layers are not trained.",
-              "Because embedding layers do not appear in the compute formula."
+              "Because the embedding layer has too few parameters to matter.",
+              "Because removing it makes models of different depths fall on the same power-law curve, giving a cleaner law.",
+              "Because the embedding layer isn't trained.",
+              "Because the compute formula doesn't include the embedding layer."
             ],
             "answer": 1,
-            "why": "Figure 6 in the paper shows that including embedding parameters puts models of different depths on separate curves; removing them collapses nearly onto one. The embedding layer is not small—about 600 million parameters in GPT-3—and it is trained. The compute formula excluding it is a side effect, not the reason."
+            "why": "Figure 6 shows that with embedding parameters included, models of different depths follow their own curves; remove them and they almost collapse onto one. The embedding layer is not small—roughly 600 million parameters in GPT-3—and it is trained. The compute formula's omission of it is a side effect, not the reason."
           }
         },
         {
           "quiz": {
-            "q": "The paper predicts that scaling compute in the optimal way eventually runs into what problem?",
+            "q": "According to the paper, what problem eventually appears when you scale compute optimally?",
             "options": [
-              "Not enough GPUs",
-              "Data grows too slowly, so the model becomes data-limited and the two power laws cross at some point.",
-              "The model becomes unstable",
-              "The batch size exceeds the dataset size"
+              "Not enough GPUs.",
+              "Data grows too slowly, so the model hits a data wall and two power laws cross.",
+              "The model becomes unstable.",
+              "Batch size will exceed the dataset size."
             ],
             "answer": 1,
-            "why": "The most compute-efficient training lets data grow only as about C^{0.26}, but avoiding overfitting requires about C^{0.54}. When data-limited, loss falls more slowly, so the L(D(C)) and L(C_{min}) curves must cross. The paper estimates the crossing at about 10^{4} PF-day and 10^{12} parameters, and speculates it may be near the entropy of natural language."
+            "why": "The most compute-efficient training grows data only about as C^{0.26}, but avoiding overfitting needs about C^{0.54}. When data-limited, loss falls more slowly, so L(D(C)) and L(C_{min}) eventually cross. The paper estimates the intersection near 10^{4} PF-days and 10^{12} parameters, and conjectures it may be close to natural language's entropy."
           }
         },
         {
-          "p": "After this close read, you should be able to answer these:"
+          "p": "After reading this, you should be able to answer these questions:"
         },
         {
           "list": [
-            "What does a power law look like on log axes? If parameters grow 10x, how much does loss roughly drop?",
-            "Why does each 10x scale-up bring a smaller absolute drop in loss? Can loss reach 0?",
+            "What does a power law look like on log axes? How much does loss drop when parameters grow 10x?",
+            "Why does each additional 10x bring a smaller absolute drop in loss? Can loss reach 0?",
             "Where does N ≈ 12 · n_{layer} · d_{model}^{2} come from? Why does training each token take about 6N operations?",
-            "Why does the paper say “shape barely matters”? Within what range does that hold?",
-            "If the model grows 8x, how much more data does it need? How does that differ from Chinchilla’s conclusion?",
-            "Why is “training to convergence inefficient”? About where should optimal training stop?",
-            "When compute grows 10x, how should model size, data, batch size, and steps each change?",
-            "What is the “contradiction” the paper points out, and what might the intersection mean?",
-            "Where does Chinchilla think this paper went wrong? Which of the paper’s own listed limitations does that relate to?"
+            "Why does the paper say architecture barely matters? In what range does that conclusion hold?",
+            "If the model grows 8x, how much should data grow? How does that differ from Chinchilla's conclusion?",
+            "Why is training to convergence inefficient? Where does the optimal approach roughly stop?",
+            "With 10x more compute, how should model size, data, batch size, and steps change?",
+            "What contradiction does the paper identify? What might the intersection point mean?",
+            "Where does Chinchilla think this paper got it wrong? Which limitation the paper itself listed does that relate to?"
           ]
         }
       ]
@@ -797,11 +831,11 @@
   "sources": {
     "main": {
       "title": "Scaling Laws for Neural Language Models (arXiv:2001.08361, v1)",
-      "publisher": "Kaplan et al., OpenAI",
+      "publisher": "Kaplan et al. · OpenAI",
       "date": "2020-01-23",
       "url": "https://arxiv.org/abs/2001.08361"
     },
-    "note": "This article is based on arXiv v1 of the paper (January 2020). Figures are redrawn by us from the paper’s formulas and data; tables marked “Illustrative” are calculated by us from the paper’s formulas, not measured data. GPT-2 and GPT-3 layer counts and widths come from their respective papers; the Chinchilla details come from DeepMind’s 2022 paper and are not in this paper."
+    "note": "This article is based on arXiv v1 of the paper (January 2020). Figures are redrawn by this site from the paper's equations and data; tables marked \"Illustrative\" are computed by this site from the paper's formulas, not measured data. GPT-2 and GPT-3 layer counts and widths come from their respective papers; details about Chinchilla come from DeepMind's 2022 paper, not from this one."
   },
   "claims": [
     {
@@ -812,14 +846,14 @@
       "as_written": "January 2020"
     },
     {
-      "text": "Trends span more than seven orders of magnitude",
+      "text": "Some trends span more than seven orders of magnitude",
       "value": "seven orders of magnitude",
       "source_url": "https://arxiv.org/abs/2001.08361",
       "quote": "with some trends spanning more than seven orders of magnitude",
       "as_written": "seven"
     },
     {
-      "text": "The summary list says more than six orders of magnitude",
+      "text": "The bullet list says more than six orders of magnitude",
       "value": "six orders of magnitude",
       "source_url": "https://arxiv.org/abs/2001.08361",
       "quote": "with trends spanning more than six orders of magnitude",
@@ -833,7 +867,7 @@
       "as_written": "eight"
     },
     {
-      "text": "αN ≈ 0.076 (our calculation: 10x corresponds to about 16%)",
+      "text": "αN ≈ 0.076 (this site's check: 10x means about 16%)",
       "value": "0.076",
       "source_url": "https://arxiv.org/abs/2001.08361",
       "quote": "αN ∼ 0.076",
@@ -868,7 +902,7 @@
       "as_written": "5.4 × 10^{13}"
     },
     {
-      "text": "αCmin ≈ 0.050 (our calculation: 10x corresponds to about 11%)",
+      "text": "αC min ≈ 0.050 (this site's check: 10x means about 11%)",
       "value": "0.050",
       "source_url": "https://arxiv.org/abs/2001.08361",
       "quote": "∼ 0.050, Ccmin ∼ 3.1 × 108 (PF-days)",
@@ -889,14 +923,14 @@
       "as_written": "1.6 × 10^{7}"
     },
     {
-      "text": "In-figure fit: 2.3 × 10^8",
+      "text": "Fit in figures: 2.3 × 10^8",
       "value": "2.3",
       "source_url": "https://arxiv.org/abs/2001.08361",
       "quote": "L = Cmin/2.3 108 0.050",
       "as_written": "2.3 × 10^{8}"
     },
     {
-      "text": "In-figure fit: 2.0 × 10^7, 0.057",
+      "text": "Fit in figures: 2.0 × 10^7, 0.057",
       "value": "0.057",
       "source_url": "https://arxiv.org/abs/2001.08361",
       "quote": "L = (C/2.0 107) 0.057",
@@ -924,21 +958,21 @@
       "as_written": "8x"
     },
     {
-      "text": "About 5x data",
+      "text": "about 5x data",
       "value": "5x",
       "source_url": "https://arxiv.org/abs/2001.08361",
       "quote": "we only need to increase the data by roughly 5x",
       "as_written": "5x"
     },
     {
-      "text": "10x compute: 5x model, 2x data",
+      "text": "10x compute: model 5x, data 2x",
       "value": "5x for each 10x",
       "source_url": "https://arxiv.org/abs/2001.08361",
       "quote": "increasing by 5x for each 10x increase in compute",
       "as_written": "10x"
     },
     {
-      "text": "Data grows only 2x",
+      "text": "data grows only 2x",
       "value": "only 2x",
       "source_url": "https://arxiv.org/abs/2001.08361",
       "quote": "growing relatively modestly by only 2x",
@@ -994,18 +1028,18 @@
       "as_written": "5 × 10^{3}"
     },
     {
-      "text": "Random-seed variation: about 0.02",
+      "text": "Random-seed variation is about 0.02",
       "value": "0.02",
       "source_url": "https://arxiv.org/abs/2001.08361",
       "quote": "the variation in the loss with different random seeds is roughly 0.02",
       "as_written": "0.02"
     },
     {
-      "text": "Models below 1 billion parameters barely overfit on 22B tokens",
+      "text": "Models under 1 billion parameters barely overfit on 22B tokens",
       "value": "22B",
       "source_url": "https://arxiv.org/abs/2001.08361",
       "quote": "models smaller than 109 parameters can be trained with minimal overfitting on the 22B token WebText2 dataset",
-      "as_written": "23B"
+      "as_written": "23 billion"
     },
     {
       "text": "10% dropout",
@@ -1015,14 +1049,14 @@
       "as_written": "10%"
     },
     {
-      "text": "One epoch has only 40 steps, about 2 × 10^7 tokens",
+      "text": "Only 40 update steps per epoch, about 2 × 10^7 tokens",
       "value": "40 parameter updates",
       "source_url": "https://arxiv.org/abs/2001.08361",
       "quote": "an epoch consists of only 40 parameter updates",
       "as_written": "40 steps"
     },
     {
-      "text": "Data reduced to about 20 million tokens",
+      "text": "Data cut to about 20 million tokens",
       "value": "1024",
       "source_url": "https://arxiv.org/abs/2001.08361",
       "quote": "the dataset has been reduced by a factor of 1024, to about 2 × 107 tokens",
@@ -1050,7 +1084,7 @@
       "as_written": "0.21"
     },
     {
-      "text": "Loss down 13%: critical batch doubles",
+      "text": "Loss drop of 13% doubles the critical batch size",
       "value": "13%",
       "source_url": "https://arxiv.org/abs/2001.08361",
       "quote": "the critical batch size approximately doubles for every 13% decrease in loss",
@@ -1064,7 +1098,7 @@
       "as_written": "one to two million"
     },
     {
-      "text": "Train until loss is about 10% above convergence",
+      "text": "Train to about 10% above convergence loss",
       "value": "10%",
       "source_url": "https://arxiv.org/abs/2001.08361",
       "quote": "we should train to a fixed percentage ααNS ≈ 10% above the converged loss",
@@ -1078,7 +1112,7 @@
       "as_written": "2%"
     },
     {
-      "text": "7.7x steps, 2.7x parameters, saves 65% compute",
+      "text": "7.7x steps, 2.7x parameters, 65% compute saved",
       "value": "7.7x",
       "source_url": "https://arxiv.org/abs/2001.08361",
       "quote": "compute-efficient training uses 7.7x fewer parameter updates, 2.7x more parameters, and 65% less compute",
@@ -1092,21 +1126,21 @@
       "as_written": "2.7x"
     },
     {
-      "text": "Saves 65% compute",
+      "text": "saves 65% compute",
       "value": "65%",
       "source_url": "https://arxiv.org/abs/2001.08361",
       "quote": "and 65% less compute to reach the same loss",
       "as_written": "65%"
     },
     {
-      "text": "0.6–2.2x costs only about 20% more compute",
+      "text": "0.6–2.2x the optimal size: only about 20% more compute",
       "value": "20%",
       "source_url": "https://arxiv.org/abs/2001.08361",
       "quote": "Models between 0.6x and 2.2x the optimal size can be used with only a 20% increase in compute budget",
       "as_written": "20%"
     },
     {
-      "text": "2.2x larger model needs 45% fewer steps",
+      "text": "A model 2.2x larger needs 45% fewer steps",
       "value": "45%",
       "source_url": "https://arxiv.org/abs/2001.08361",
       "quote": "A 2.2x larger model requires 45% fewer steps at a cost of 20% more training compute",
@@ -1127,14 +1161,14 @@
       "as_written": "100x"
     },
     {
-      "text": "Depth-to-width ratio varies 40x",
+      "text": "Depth-to-width ratio varied 40x",
       "value": "factor of 40",
       "source_url": "https://arxiv.org/abs/2001.08361",
       "quote": "Aspect ratio in particular can vary by a factor of 40",
       "as_written": "40x"
     },
     {
-      "text": "(6, 4288) and (48, 1600) differ by under 3%",
+      "text": "(6, 4288) vs. (48, 1600): within 3%",
       "value": "3%",
       "source_url": "https://arxiv.org/abs/2001.08361",
       "quote": "reaches a loss within 3% of the (48, 1600) model",
@@ -1166,7 +1200,7 @@
       "value": "2.29",
       "source_url": "https://arxiv.org/abs/2001.08361",
       "quote": "which yields 2.29 × 1010 tokens",
-      "as_written": "22.9B"
+      "as_written": "22.9 billion"
     },
     {
       "text": "Test set: 6.6 × 10^8 tokens",
@@ -1197,28 +1231,28 @@
       "as_written": "23 billion"
     },
     {
-      "text": "2.5 × 10^5 steps, batch of 512 sequences of 1024 tokens",
+      "text": "2.5 × 10^5 steps; batches of 512 sequences of 1024 tokens",
       "value": "512",
       "source_url": "https://arxiv.org/abs/2001.08361",
       "quote": "for a fixed 2.5 × 105 steps with a batch size of 512 sequences of 1024 tokens",
       "as_written": "2.5 × 10^{5}"
     },
     {
-      "text": "Models over 1 billion parameters used Adafactor",
+      "text": "Models above 1 billion parameters used Adafactor",
       "value": "1B",
       "source_url": "https://arxiv.org/abs/2001.08361",
       "quote": "our largest models (more than 1B parameters) were trained with Adafactor",
       "as_written": "1 billion"
     },
     {
-      "text": "3000 steps of warmup",
+      "text": "3000-step warmup",
       "value": "3000",
       "source_url": "https://arxiv.org/abs/2001.08361",
       "quote": "a 3000 step linear warmup followed by a cosine decay to zero",
       "as_written": "3000 steps"
     },
     {
-      "text": "1 PF-day = 8.64 × 10^19",
+      "text": "1 PF-day = 8.64 × 10^19 operations",
       "value": "8.64",
       "source_url": "https://arxiv.org/abs/2001.08361",
       "quote": "8.64 × 1019 floating point operations",
@@ -1232,14 +1266,14 @@
       "as_written": "6N"
     },
     {
-      "text": "C* ~ 10^4 PF-day, N* ~ 10^12, L* ~ 1.7",
+      "text": "C* ~ 10^4 PF-days, N* ~ 10^12 parameters, L* ~ 1.7 nats/token",
       "value": "1.7",
       "source_url": "https://arxiv.org/abs/2001.08361",
       "quote": "L∗ ∼ 1.7 nats/token",
       "as_written": "1.7"
     },
     {
-      "text": "Data-limited loss falls as C^-0.03; single-pass data grows as C^0.26",
+      "text": "When data-limited: C^-0.03; single-pass data: C^0.26",
       "value": "0.26",
       "source_url": "https://arxiv.org/abs/2001.08361",
       "quote": "≈ 4 × 1010 tokens (Cmin /PF-Day)0.26",
@@ -1253,21 +1287,21 @@
       "as_written": "0.54"
     },
     {
-      "text": "Joint fit αD: 0.103",
+      "text": "Joint-fit αD: 0.103",
       "value": "0.103",
       "source_url": "https://arxiv.org/abs/2001.08361",
       "quote": "0.103",
       "as_written": "0.103"
     },
     {
-      "text": "Joint fit Nc: 6.4 × 10^13",
+      "text": "Joint-fit Nc: 6.4 × 10^13",
       "value": "6.4",
       "source_url": "https://arxiv.org/abs/2001.08361",
       "quote": "6.4 × 1013",
       "as_written": "6.4 × 10^{13}"
     },
     {
-      "text": "Figure X placeholders",
+      "text": "\"Figure X\" placeholder",
       "value": "Figure X",
       "source_url": "https://arxiv.org/abs/2001.08361",
       "quote": "The result is shown in Figure X",
@@ -1295,14 +1329,14 @@
       "as_written": "300 billion"
     },
     {
-      "text": "GPT-3 training compute: 3.14E+23",
+      "text": "GPT-3 training compute: 3.14E+23 operations",
       "value": "3.14E+23",
       "source_url": "https://arxiv.org/abs/2005.14165",
       "quote": "3.14E+23",
       "as_written": "3.14 × 10^{23}"
     },
     {
-      "text": "GPT-3 training compute: 3,640 PF-days",
+      "text": "GPT-3 training compute: 3640 PF-days",
       "value": "3.64E+03",
       "source_url": "https://arxiv.org/abs/2005.14165",
       "quote": "3.64E+03",
@@ -1334,18 +1368,18 @@
       "value": "scaled equally",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "the number of training tokens should be scaled equally",
-      "as_written": "same"
+      "as_written": "same rate"
     },
     {
-      "text": "Kaplan used a fixed training length and learning-rate schedule",
+      "text": "Kaplan et al. used a fixed training length and learning-rate schedule",
       "value": "fixed number of training tokens",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "the authors use a fixed number of training tokens and learning rate schedule for all models",
-      "as_written": "the same training length"
+      "as_written": "same training length"
     }
   ],
   "status": "published",
   "verified": false,
   "lang": "en",
-  "translated_from": "528862c0cfd66ed7"
+  "translated_from": "0ad3fe5ccebc4608"
 }

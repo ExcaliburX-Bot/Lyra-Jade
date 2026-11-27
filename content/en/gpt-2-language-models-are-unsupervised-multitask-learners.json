@@ -3,14 +3,14 @@
   "category": "paper",
   "publisher": "Radford et al. · OpenAI",
   "date": "2019-02-14",
-  "title": "GPT-2, explained: no fine-tuning, just a prompt—and the model learns tasks on its own",
-  "summary": "GPT-2 scales GPT-1 up to 1.5 billion parameters and retrains it on 40 GB of web text, then drops fine-tuning entirely: write the task as a prompt and the model does reading comprehension, summarization, translation, and QA zero-shot. We unpack the core idea that “a task is also text,” WebText and byte-level BPE, how prompts were phrased for each task, the results, and then how the paper checks for memorization—and where it got its parameter counts wrong.",
-  "ai_summary": "Language Models are Unsupervised Multitask Learners (OpenAI, 2019) argues that language models trained on large and diverse enough text will learn many tasks without explicit supervision. The authors built 40 GB of WebText from upvoted Reddit outbound links and trained GPT-2, up to 1.5 billion parameters, keeping GPT-1's architecture but moving to pre-layer normalization, byte-level BPE, and a 1024-token context. With no fine-tuning, only prompts, GPT-2 set zero-shot records on 7 of 8 language modeling datasets and reached 55 F1 on CoQA reading comprehension, while summarization, translation, and QA remained rudimentary. Every task improved with model size, and even the largest model still underfit WebText.",
+  "title": "GPT-2: no fine-tuning, just a prompt, and the language model teaches itself tasks",
+  "summary": "GPT-2 scales GPT-1 up to 1.5 billion parameters and 40 GB of web text, then drops fine-tuning entirely: write the task as a prompt and the model does reading comprehension, summarization, translation, and QA zero-shot. We unpack the core idea that a task is also text, WebText and byte-level BPE, how each task is prompted and scored, and how the paper checks for memorization — plus the parameter count it got wrong.",
+  "ai_summary": "\"Language Models are Unsupervised Multitask Learners\" (OpenAI, 2019) argues that a language model trained on large and diverse text learns many tasks without explicit supervision. The authors built 40 GB of WebText from Reddit links with karma, trained GPT-2 with up to 1.5 billion parameters, kept the GPT-1 structure but switched to pre-layer norm, byte-level BPE, and a 1,024-token context. With no fine-tuning and only a prompt, GPT-2 set zero-shot records on 7 of 8 language modeling datasets and scored 55 F1 on CoQA reading comprehension, but summarization, translation, and QA were still rudimentary. Everything improved with model size, and the largest model still underfits.",
   "brief": [
-    "Problem: every task needs its own labeled dataset, so multitask learning doesn't scale. Can a model learn tasks from natural language itself?",
-    "Method: train a Transformer decoder with up to 1.5B parameters on 40 GB of WebText; with no fine-tuning, write the task as a prompt and let the model continue.",
-    "Results: zero-shot records on 7 of 8 language modeling datasets; 55 F1 on CoQA; summarization, translation, and QA are still rudimentary but all improve steadily with scale.",
-    "Limits: zero-shot is far from practical, and the paper's reported parameter counts are wrong; GPT-3 later makes this path work with few-shot prompts and much larger scale."
+    "Problem: every task requires its own labeled dataset, and multi-task learning doesn't scale. Can a model learn tasks from natural language itself?",
+    "Method: train a Transformer decoder with up to 1.5 billion parameters on 40 GB of WebText. With no fine-tuning, write each task as a prompt and let the model continue.",
+    "Results: new zero-shot records on 7 of 8 language modeling datasets; 55 F1 on CoQA; summarization, translation, and QA are still rudimentary but improve steadily with model size.",
+    "Limits: zero-shot is far from practical, and the paper's reported parameter counts are wrong. GPT-3 later makes this path work with few-shot prompting and much more scale."
   ],
   "paper": {
     "title": "Language Models are Unsupervised Multitask Learners",
@@ -21,73 +21,73 @@
     "url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf"
   },
   "cover": {
-    "headline": "A close read of the GPT-2 paper",
+    "headline": "A close read of the original GPT-2 paper",
     "highlight": "No fine-tuning, just a prompt",
     "big": {
       "value": "15",
       "unit": "billion parameters",
-      "label": "GPT-2 is over an order of magnitude larger than GPT-1"
+      "label": "GPT-2 has over an order of magnitude more parameters than GPT-1."
     }
   },
   "sections": [
     {
-      "h": "Start with the conclusion: what the paper actually did",
+      "h": "The bottom line: what this paper actually did",
       "blocks": [
         {
-          "p": "In February 2019, OpenAI's Alec Radford, Jeffrey Wu, Rewon Child, David Luan, Dario Amodei, and Ilya Sutskever released this paper. Like the earlier GPT-1 paper, it did not go on arXiv; it was a PDF on OpenAI's website. The largest model in the paper is **GPT-2**, with 1.5 billion parameters—more than an order of magnitude larger than GPT-1."
+          "p": "In February 2019, OpenAI's Alec Radford, Jeffrey Wu, Rewon Child, David Luan, Dario Amodei, and Ilya Sutskever released this paper. Like its predecessor GPT-1, it was not posted on arXiv but appeared as a PDF on OpenAI's website. The largest model in the paper, **GPT-2**, has 1.5 billion parameters — more than ten times as many as GPT-1."
         },
         {
-          "p": "Its central claim is right in the title: **language models are unsupervised multitask learners**. Train a model to guess the next word on large and diverse enough text, and it **learns many tasks by itself**—reading comprehension, summarization, translation, QA—with no fine-tuning and no changes to its architecture. You just write the task as a piece of text and let the model continue. This is called **zero-shot**."
+          "p": "Its core claim is right in the title: **language models are unsupervised multitask learners**. Train a model to guess the next word on enough large and varied text, and it will **learn many tasks on its own** — reading comprehension, summarization, translation, question answering — with no fine-tuning and no architecture changes. You just write the task as a piece of text and let the model continue. This is called **zero-shot**."
         },
         {
-          "p": "To do this, the authors crawled more than 8 million web pages from upvoted Reddit links—40 GB of text total—and called the dataset WebText. The result: GPT-2 set zero-shot records on 7 of 8 language modeling datasets. Given a passage and a conversation history, it reached 55 F1 on CoQA reading comprehension, matching or beating 3 of 4 supervised baselines that used more than 127,000 human-labeled question-answer pairs. On summarization, translation, and QA it was still far from practical, but every one of those tasks improved steadily as models got larger."
+          "p": "To test this, the authors crawled more than 8 million web pages from links that had been upvoted on Reddit, producing 40 GB of text called WebText. GPT-2 then set zero-shot records on 7 of 8 language modeling datasets; given a passage and the dialogue history, it scored 55 F1 on CoQA reading comprehension, matching or beating 3 of 4 supervised baselines that used over 127,000 human-labeled question-answer pairs. On summarization, translation, and QA, it was still far from practical, but every task improved steadily as the model grew."
         },
         {
-          "p": "This paper is the bridge in the series. GPT-1 showed that pretraining plus fine-tuning works and hinted at zero-shot at the end; GPT-2 turns that hint into the main event, **making “no fine-tuning, just prompts” a serious research direction for the first time**; a year later GPT-3 scales up by more than 100× and uses few-shot prompts to make the approach genuinely useful."
+          "p": "This paper is the bridge in the main story: GPT-1 showed that pre-training + fine-tuning works, with a hint of zero-shot at the end; GPT-2 made that hint the main act, **turning \"do tasks with a prompt and no fine-tuning\" into a serious research direction**; a year later GPT-3 scaled up more than another 100x and made it genuinely useful with few-shot prompting."
         },
         {
           "callout": {
             "kind": "takeaway",
             "title": "The one-sentence version",
-            "text": "GPT-2 = GPT-1's architecture, lightly modified + scaled to 1.5 billion parameters + trained on 40 GB of high-quality web text. With no fine-tuning, just prefix the task in text (for example, add “TL;DR:” after an article to get a summary), and the model can do reading comprehension, summarization, translation, and QA. Performance rises steadily with model size, and even the largest model still underfits."
+            "text": "GPT-2 = GPT-1's architecture with small changes + scaled to 1.5 billion parameters + trained on 40 GB of high-quality web text. With no fine-tuning, you write the task as a text prefix — for example, append \"TL;DR:\" to an article to get a summary — and the model can do reading comprehension, summarization, translation, and QA. Performance rises steadily with model size, and the largest model still underfits."
           }
         },
         {
           "callout": {
             "kind": "prereq",
-            "title": "Three small concepts you need for this paper",
-            "text": "Don't worry if you haven't met them; these three are enough:",
+            "title": "Three concepts to know before reading",
+            "text": "Not knowing them is fine — these three are enough:",
             "list": [
-              "**GPT-1**: a Transformer decoder pretrained on books and then fine-tuned for specific tasks. See the previous article in this series, “GPT-1.”",
-              "**Zero-shot**: the model sees no training examples for the task and updates no parameters; it simply takes the test.",
-              "**Perplexity (PPL)**: how “surprised” a language model is by text. A perplexity of 10 is loosely like choosing among 10 words at every step; lower is better."
+              "**GPT-1** — a Transformer decoder pre-trained on books and then fine-tuned for specific tasks. See the previous article in this series on GPT-1.",
+              "**Zero-shot** — the model sees no training examples for the task, updates no parameters, and does the task directly.",
+              "**Perplexity (PPL)** — a measure of how \"surprised\" a language model is by text. A perplexity of 10 roughly means the model is choosing among 10 words at each step; lower is better."
             ]
           }
         }
       ]
     },
     {
-      "h": "Problem: every task needs its own labeled data—and that doesn't scale",
+      "h": "Problem: a labeled dataset for every task doesn't scale",
       "blocks": [
         {
-          "p": "The paper's opening judgment is blunt: machine learning systems of the time were “narrow experts,” not “competent generalists.” The standard approach was to collect examples of the desired behavior for each task, train a model to imitate them, then evaluate it on held-out examples from the same distribution. Such systems are fragile to small changes in data distribution or task description."
+          "p": "The paper opens bluntly: machine-learning systems of the time were \"narrow experts\" rather than \"competent generalists.\" The standard recipe was to collect demonstrations for each task, train a model to imitate them, and evaluate on held-out data from the same distribution. These systems were brittle to small changes in data distribution or task specification."
         },
         {
-          "p": "Multitask learning is a way out, but the authors do the math: from a meta-learning perspective, each (dataset, objective) pair is effectively one training example. The largest multitask efforts at the time used only 10 and 17 such pairs, while existing learning methods usually need hundreds or thousands of examples to learn something generalizable. Manually piling up datasets and designing objectives is unlikely to reach the required scale."
+          "p": "Multi-task learning looked like a way out, but the authors do the math: from a meta-learning perspective, each (dataset, objective) pair is just one training example. The two most ambitious multi-task studies at the time used only 10 and 17 such pairs, while current methods usually need hundreds or thousands of examples to learn something that generalizes. Manually accumulating datasets and designing objectives was unlikely to scale far enough."
         },
         {
-          "p": "So the paper tries something else: **can a model learn tasks from natural language itself, without a human telling it which part is the input and which part is the answer?**"
+          "p": "So the paper takes a different approach: **can a model learn tasks from natural language itself, without a human specifying which part is the input and which is the answer?**"
         }
       ]
     },
     {
-      "h": "Core idea: a task can itself be written as text",
+      "h": "Core idea: the task itself can be written as text",
       "blocks": [
         {
-          "p": "The paper first expresses “doing a task” in probability: learning a task means estimating the conditional distribution p(output | input). But a general system may need to do different tasks for the same input, so it should estimate **p(output | input, task)**—it needs to know, besides the input, what to do."
+          "p": "The paper reframes \"doing a task\" in probabilistic terms: learning a task is estimating the conditional distribution p(output | input). But a general system may need to do different tasks with the same input, so it should estimate **p(output | input, task)** — conditioned not only on the input but also on the task."
         },
         {
-          "p": "Previously, “what to do” was communicated through model architecture—a task-specific encoder or decoder—or through the training algorithm. The paper points out that **language itself can flexibly describe the task, the input, and the output**. A translation example can be written as one string: (translate to French, English text, French text); a reading comprehension example can be written as (answer the question, document, question, answer)."
+          "p": "Previously, \"what to do\" was communicated through model architecture (task-specific encoders and decoders) or training algorithms. The paper points out that **language itself can flexibly specify tasks, inputs, and outputs**. A translation example can be written as one sequence: (translate to French, English text, French text); a reading-comprehension example can be: (answer the question, document, question, answer)."
         },
         {
           "formula": {
@@ -95,110 +95,114 @@
             "parts": [
               {
                 "sym": "x",
-                "desc": "A sequence of text made up of tokens s_{1}, …, s_{n}"
+                "desc": "A piece of text made up of tokens s_{1}, …, s_{n}."
               },
               {
                 "sym": "p(s_{i} | s_{1}, …, s_{i−1})",
-                "desc": "The probability of the next token s_{i}, given all previous tokens. That is what a language model learns."
+                "desc": "The probability that the next token is s_{i} given all previous tokens. This is what a language model learns."
               },
               {
                 "sym": "Π",
-                "desc": "The probability of the whole text is the product of these per-step probabilities. It lets the model both score any text and generate it one token at a time."
+                "desc": "The probability of the whole text is the product of these step-by-step probabilities. This lets the model both score any text and generate it token by token."
               }
             ],
-            "note": "The key point: if the task, input, and answer all live in the same text, then “predict the answer” is just part of “predict the next word.” As the paper puts it, the supervised objective is the same as the unsupervised objective, only evaluated on a subset of the sequence—so the global optimum of the unsupervised objective is also the global optimum of the supervised objective."
+            "note": "The key insight: if the task, input, and answer are all written in the same text, then predicting the answer is just part of predicting the next token. As the paper puts it, the supervised objective is the same as the unsupervised objective, only evaluated on a subset of the sequence. So the global minimum of the unsupervised objective is also the global minimum of the supervised objective."
+          },
+          "plain": {
+            "title": "A task is just text too",
+            "text": "A language model does only one thing: guess the next word given the earlier text. GPT-2's idea is that task instructions, examples, and questions can all be written as the earlier text, and the answer is simply the most likely continuation. If the model reads enough, it can continue in the right way."
           }
         },
         {
           "callout": {
             "kind": "intuition",
-            "title": "The web is full of “natural demonstrations”",
-            "text": "The paper finds many naturally occurring translation demonstrations in WebText, such as “as they say in French: Je ne suis pas un imbecile [I'm not a fool],” or an English news story that quotes French and then gives an English translation. A model trying to predict the next word accurately, if it is large enough, would pick up that when French is followed by something like “which means,” an English translation should come next. The authors' conjecture: with enough capacity, a language model will infer and execute the tasks shown in text, simply to predict that text better."
+            "title": "The web is full of natural demonstrations",
+            "text": "The paper found many naturally occurring translation demonstrations in WebText, such as \"as the French say: Je ne suis pas un imbecile (I'm not a fool),\" or an English report that quotes a French sentence and then gives its English translation. A model trying to predict the next word accurately — if it is big enough — will learn along the way that after French text followed by something like \"which means,\" an English translation should come next. The authors' guess: with enough capacity, language models will infer and perform tasks demonstrated in text simply to predict that text better."
           }
         },
         {
-          "p": "The paper admits this only holds in theory. The real question is whether, in practice, the unsupervised objective can be optimized well enough. Preliminary experiments show that large enough language models can indeed learn multitask in this setting—just much more slowly than with explicit supervision."
+          "p": "The paper concedes this is only true in principle. The real question is whether the unsupervised objective can be optimized well enough in practice. Early experiments showed that large enough language models can indeed learn multiple tasks this way, just much more slowly than with explicit supervision."
         }
       ]
     },
     {
-      "h": "Data: WebText, with humans filtering first",
+      "h": "Data: WebText, filtered by humans first",
       "blocks": [
         {
-          "p": "To expose the model to as many task demonstrations as possible, the data has to be **large and diverse**. Earlier language models were mostly trained on a single domain: news, Wikipedia, or fiction. Web-crawl data such as Common Crawl is far larger but much messier; one study found that many documents were “mostly unintelligible.”"
+          "p": "To show the model as many task demonstrations as possible, the data must be **both large and diverse**. Earlier language models trained mostly on a single domain: news, Wikipedia, or fiction. Web crawls such as Common Crawl are far larger but much messier, with one study finding many documents \"whose content is mostly unintelligible.\""
         },
         {
-          "p": "The authors' compromise: only crawl pages **already filtered by humans**. They scraped all outbound links on Reddit that received at least 3 karma (upvotes), treating it as a rough signal that someone found the link interesting, useful, or funny."
+          "p": "The authors' compromise: scrape only pages that **humans have already filtered**. They took every outbound link from Reddit with at least 3 karma (upvotes), treating it as a rough signal that someone found the link interesting, useful, or funny."
         },
         {
           "fig": {
             "type": "table",
-            "title": "WebText: 45 million links, cleaned down to 8 million+ documents, 40 GB",
-            "subtitle": "Based on paper section 2.1",
+            "title": "WebText: 45 million links, cleaned down to 8 million+ documents and 40 GB",
+            "subtitle": "Compiled from section 2.1 of the paper",
             "columns": [
               "Step",
-              "Details"
+              "What was done"
             ],
             "rows": [
               [
                 "Source",
-                "All outbound links on Reddit with at least 3 karma: 45 million"
+                "All outbound links from Reddit with at least 3 karma — 45 million total"
               ],
               [
-                "Time range",
+                "Time window",
                 "Excludes links created after December 2017"
               ],
               [
-                "Text extraction",
-                "Extracted text from HTML using Dragnet and Newspaper"
+                "Extract text",
+                "Use Dragnet and Newspaper to extract text from HTML"
               ],
               [
                 "Cleaning",
-                "Deduplication and heuristic cleaning, leaving 8 million+ documents and 40 GB of text"
+                "Deduplicate and apply heuristic cleaning, leaving over 8 million documents and 40 GB of text"
               ],
               [
                 "Deliberately removed",
-                "All Wikipedia documents, because many evaluation datasets also draw from Wikipedia; removing them reduces train/test overlap"
+                "All Wikipedia documents: many evaluation datasets also draw from Wikipedia, so removing them reduces training/test overlap"
               ]
             ]
           }
         },
         {
-          "p": "**Input representation**: to let the model score **any string**, GPT-2 switches to **byte-level BPE**. Standard BPE operates on Unicode characters; to cover all Unicode characters, the base vocabulary would exceed 130,000. Byte-level BPE needs a base vocabulary of only 256 bytes. But applying BPE directly to bytes produces many redundant tokens such as dog, dog., dog!, dog?, wasting vocabulary slots. To avoid this, the paper prevents BPE from merging across character categories—letters, punctuation, and so on—except for spaces. The final vocabulary has 50,257 tokens."
+          "p": "**Input representation** — to let the model score **any string**, GPT-2 switches to **byte-level BPE**. Ordinary BPE works on Unicode code points, so covering all Unicode symbols would require a base vocabulary of over 130,000; byte-level BPE needs only 256 bytes. But applying BPE directly to bytes would merge common words into many near-duplicate tokens like dog, dog., dog!, dog? and waste the vocabulary. The paper therefore prevents merging across character categories (letters, punctuation, etc.), with an exception for spaces. The final vocabulary is 50,257 tokens."
         },
         {
-          "p": "The advantage: the model can be evaluated on any language modeling dataset, regardless of preprocessing, tokenization, or vocabulary size. The <UNK> token, extremely rare in WebText, appears only 26 times in 40 billion bytes."
+          "p": "The benefit: the model can be evaluated on any language modeling dataset regardless of preprocessing, tokenization, or vocabulary size. The <UNK> token is extremely rare in WebText, appearing only 26 times in 40 billion bytes."
         }
       ]
     },
     {
-      "h": "Model: GPT-1's architecture, in four sizes",
+      "h": "Model: GPT-1's architecture in four sizes",
       "blocks": [
         {
-          "p": "The model largely follows GPT-1, with a few changes:"
+          "p": "The model mostly follows GPT-1, with a few changes:"
         },
         {
           "list": [
-            "**Layer normalization moved to the input of each sub-block** (like a pre-activation residual network), with an extra layer norm added after the final self-attention block. This “pre-norm” layout later became standard for large models because it makes very deep networks easier to train.",
-            "**Residual-layer initialization scaled by depth**: initial weights are multiplied by 1/√N, where N is the number of residual layers. More layers means more values accumulate on the residual path; scaling them down keeps the signal from growing too large.",
-            "**Vocabulary expanded to 50,257**; **context size increased from 512 to 1024 tokens**; batch size increased to 512."
+            "**Layer normalization is moved to the input of each sub-block** (similar to a pre-activation residual network), with an extra layer normalization after the final self-attention block. This \"pre-norm\" design later became standard for large models because it makes very deep networks easier to train.",
+            "**Residual-layer initialization is scaled down with depth** — initial weights are multiplied by 1/√N, where N is the number of residual layers. More layers mean more accumulation on the residual path, and this scaling keeps the values from growing layer by layer.",
+            "**Vocabulary expanded to 50,257**; **context length increased from 512 to 1,024 tokens**; batch size increased to 512."
           ]
         },
         {
-          "p": "The paper trained four models with roughly log-uniform sizes. The smallest is equivalent to the original GPT; the second-smallest is equivalent to the largest BERT; the largest is GPT-2. The learning rate for each model was manually tuned for the best perplexity on a 5% held-out sample of WebText."
+          "p": "The paper trains four models with roughly log-uniform sizes. The smallest is equivalent to the original GPT, the second-smallest is equivalent to the largest BERT, and the largest is GPT-2. Each model's learning rate was manually tuned for the best perplexity on a held-out 5% sample of WebText."
         },
         {
           "fig": {
             "type": "table",
-            "title": "The four models: the paper's parameter counts don't match what the architecture implies",
-            "subtitle": "“Estimated from architecture” is our calculation: about 12 × d_{model}^{2} per layer, plus 50,257 × d_{model} for vocabulary and 1024 × d_{model} for position, ignoring small terms such as layer norm. Amber marks GPT-2",
+            "title": "Four models: the paper's parameter counts don't match the configurations",
+            "subtitle": "The \"estimated from config\" column is our calculation: about 12 × d_{model}^{2} per layer, plus 50,257 × d_{model} for token embeddings and 1,024 × d_{model} for position embeddings, ignoring layer normalization and other small terms. Amber indicates GPT-2.",
             "columns": [
               "Paper's parameter count",
               "Layers",
               "d_{model}",
-              "Transformer block",
-              "Token + positional embeddings",
-              "Estimated from architecture"
+              "Transformer blocks",
+              "Token + position embeddings",
+              "Estimated from config"
             ],
             "rows": [
               [
@@ -207,7 +211,7 @@
                 "768",
                 "84.9M",
                 "39.4M",
-                "≈124M"
+                "about 124M"
               ],
               [
                 "345M",
@@ -215,7 +219,7 @@
                 "1024",
                 "302M",
                 "52.6M",
-                "≈355M"
+                "about 355M"
               ],
               [
                 "762M",
@@ -223,7 +227,7 @@
                 "1280",
                 "708M",
                 "65.6M",
-                "≈773M"
+                "about 773M"
               ],
               [
                 "1542M (GPT-2)",
@@ -231,29 +235,29 @@
                 "1600",
                 "1.475B",
                 "82M",
-                "≈1.557B"
+                "about 1.557B"
               ]
             ],
             "highlight": {
               "row": 3
             },
-            "note": "Every model comes out larger when counted from its architecture than the paper says. The smallest model's 117M is close to the ≈116M you get from GPT-1's configuration (40,000-token vocab, 512 context), so the paper seems to have reused GPT-1's figure without adding the larger vocabulary and longer context. OpenAI later admitted in the open-source code notes that the original parameter counts were wrong and updated them to 124M, 355M, 774M, and 1.5B, consistent with the estimates here."
+            "note": "All four models are larger by this estimate than the paper reports. The smallest model's 117M is close to the roughly 116M you get from GPT-1's configuration (40,000-token vocabulary, 512 context), which suggests the paper reused GPT-1's number and did not account for the larger vocabulary and longer context. OpenAI later acknowledged in its open-source release notes that the original parameter counts were wrong, revising them to 124M, 355M, 774M, and 1.5B — matching these estimates."
           }
         },
         {
-          "p": "The paper also makes a point: **all models still underfit WebText**. With more training time, held-out perplexity kept improving. In Figure 4, train and test perplexity are nearly identical and both fall as models get larger—so even GPT-2 is far from “memorizing” the training data."
+          "p": "The paper also stresses that **all models still underfit WebText**; with more training, held-out perplexity keeps dropping. In Figure 4, train and test perplexity are nearly identical and fall together as models grow — so even GPT-2 is far from simply memorizing the training data."
         },
         {
           "quiz": {
-            "q": "Why does GPT-2 use byte-level BPE instead of BPE over Unicode characters?",
+            "q": "Why does GPT-2 use byte-level BPE rather than BPE over Unicode characters?",
             "options": [
-              "It's faster at the byte level",
-              "Unicode has too many characters, so the base vocabulary would exceed 130,000; bytes only number 256 and can represent any string",
-              "To make the model learn only English",
-              "To reduce parameter count"
+              "Byte-level is faster",
+              "Unicode has too many characters: the base vocabulary would exceed 130,000. Bytes have only 256 values and can represent any string",
+              "So the model learns only English",
+              "To reduce parameters"
             ],
             "answer": 1,
-            "why": "The point is to let the model compute probabilities for arbitrary text. Byte-level BPE has a base vocabulary of just 256, so there are no out-of-vocabulary cases; merges then learn common subword pieces. The paper adds a rule to avoid merging dog with its following punctuation into many redundant tokens."
+            "why": "The goal is to let the model compute probabilities for arbitrary text. A byte-level base vocabulary has only 256 entries, so there are no out-of-vocabulary tokens, and merging can then learn common subwords. The paper also adds a rule that keeps dog and its trailing punctuation from merging into many redundant tokens."
           }
         }
       ]
@@ -262,13 +266,13 @@
       "h": "How to make it do tasks without fine-tuning: write the task as a prompt",
       "blocks": [
         {
-          "p": "All results are zero-shot: no parameters are updated. You arrange the context the model sees, then let it generate or score the continuation. Different tasks use different phrasings:"
+          "p": "All results are zero-shot: no parameters are updated. You carefully arrange the context the model sees, then let it generate or score. Different tasks use different prompt formats:"
         },
         {
           "fig": {
             "type": "table",
-            "title": "One language model, different contexts for different tasks",
-            "subtitle": "Based on paper section 3",
+            "title": "The same language model does different tasks with different contexts",
+            "subtitle": "Compiled from section 3 of the paper",
             "columns": [
               "Task",
               "What the model sees",
@@ -277,17 +281,17 @@
             "rows": [
               [
                 "Reading comprehension (CoQA)",
-                "Passage + conversation history + a final “A:”",
+                "Passage + dialogue history + a final \"A:\"",
                 "Greedy decoding; the continuation is the answer"
               ],
               [
                 "Summarization (CNN / Daily Mail)",
-                "Passage + “TL;DR:”",
-                "Generate 100 tokens with top-k sampling (k = 2), take the first 3 sentences"
+                "Article + \"TL;DR:\"",
+                "Generate 100 tokens with top-k sampling (k = 2), then take the first 3 sentences"
               ],
               [
-                "Translation (WMT'14 English-French)",
-                "Several “English sentence = French sentence” examples + one English sentence + “=”",
+                "Translation (WMT'14 En-Fr)",
+                "Examples of \"English sentence = French sentence\" + an English sentence + \"=\"",
                 "Greedy decoding; take the first generated sentence"
               ],
               [
@@ -296,49 +300,54 @@
                 "Generate a short answer"
               ],
               [
-                "Cloze (CBT, Winograd)",
-                "Insert each candidate word into the sentence",
-                "Compare the full-sentence probability, choose the highest"
+                "Cloze tasks (CBT, Winograd)",
+                "Fill the sentence with each candidate word in turn",
+                "Compare the probability of each filled sentence and choose the highest"
               ]
             ]
+          },
+          "plain": {
+            "title": "Append \"TL;DR:\" to the article",
+            "pic": "gpt2-tldr",
+            "text": "On the web, many long posts end with \"TL;DR:\" (too long; didn't read) followed by a one-line summary. Feed GPT-2 an article with \"TL;DR:\" at the end, and its most likely continuation is a summary. No training needed — swap the prompt and you've swapped the task."
           }
         },
         {
           "callout": {
             "kind": "intuition",
-            "title": "TL;DR is the web's “natural prompt”",
-            "text": "TL;DR stands for “Too Long; Didn't Read.” People on the web often put it at the end of a long post, followed by a sentence or two of summary. The model saw this pattern countless times in WebText, so when it sees “TL;DR:” it knows to write a summary. The paper ran a control: removing the TL;DR prompt lowered the overall summarization score by 6.4 points, showing that natural language alone can trigger a specific behavior. It is one of the earliest glimpses of today's prompt engineering."
+            "title": "TL;DR is the web's natural prompt",
+            "text": "TL;DR stands for Too Long; Didn't Read, and people online often add it at the end of a long post followed by a sentence or two of summary. The model has seen this pattern countless times in WebText, so when it sees \"TL;DR:\" it knows to write a summary. The paper ran a control: removing the TL;DR prompt lowered the combined summarization score by 6.4 points, showing that natural language alone can evoke a specific behavior. Today's prompt engineering has one of its earliest roots here."
           }
         },
         {
           "quiz": {
-            "q": "The paper says removing the “TL;DR:” prompt lowers the summarization score by 6.4 points. What does that show?",
+            "q": "The paper says removing the \"TL;DR:\" prompt lowers summarization scores by 6.4 points. What does that show?",
             "options": [
               "TL;DR is a special control symbol",
-              "The model learned from training data that TL;DR is usually followed by a summary, so natural language alone can specify the task",
+              "The model learned from training data that TL;DR is usually followed by a summary, so natural language can specify the task",
               "Summarization requires fine-tuning",
               "ROUGE scores are unreliable"
             ],
             "answer": 1,
-            "why": "To the model, TL;DR is just ordinary text, not a specially designed control. The model learned a pattern from the web: TL;DR is followed by a summary. That lets a prompt switch its behavior—exactly the evidence that language itself can specify a task."
+            "why": "To the model, TL;DR is just ordinary text with no special design. It learned from the web that \"TL;DR is followed by a summary,\" so a small prompt switches its behavior. That is exactly the evidence that language itself can specify a task."
           }
         }
       ]
     },
     {
-      "h": "Result one: language modeling, records on 7 of 8 datasets",
+      "h": "Result 1: language modeling — records on 7 of 8 datasets",
       "blocks": [
         {
-          "p": "First, the thing a language model does by default: language modeling. Models trained on WebText were evaluated directly on other language modeling benchmarks, with no training or fine-tuning. Those datasets contain aggressively normalized text—split punctuation and contractions, shuffled sentences, even <UNK> tokens—so they are clearly out-of-distribution for GPT-2. Using invertible de-tokenizers to remove those artifacts improved GPT-2's perplexity by 2.5 to 5 points."
+          "p": "First, the model's core job: language modeling. WebText-trained models were evaluated directly on other language modeling benchmarks — no training, no fine-tuning. These datasets contain aggressively standardized text (disconnected punctuation and contractions, shuffled sentences, even <UNK> tokens), so for GPT-2 they are clearly out-of-distribution. The paper uses invertible de-tokenizers to remove these artifacts, which improves GPT-2's perplexity by 2.5 to 5 points."
         },
         {
           "fig": {
             "type": "table",
-            "title": "Zero-shot language modeling: GPT-2 beats prior best everywhere except 1BW",
-            "subtitle": "From paper Table 3. PPL is perplexity (lower is better), ACC is accuracy %, and BPB / BPC are bits per byte / per character (lower is better). Blue marks GPT-2",
+            "title": "Zero-shot language modeling: GPT-2 beats the prior best on every dataset except 1BW",
+            "subtitle": "From Table 3 of the paper. PPL is perplexity (lower is better), ACC is accuracy in %, and BPB / BPC are bits per byte / per character (lower is better). Blue indicates GPT-2.",
             "columns": [
               "Dataset (metric)",
-              "Previous best",
+              "Prior best",
               "117M",
               "1542M (GPT-2)"
             ],
@@ -407,29 +416,29 @@
             "highlight": {
               "col": 3
             },
-            "note": "The gains are largest on small datasets such as Penn Treebank and WikiText-2, which have only one to two million training tokens. 1BW is the only dataset GPT-2 did not beat; the paper attributes this to 1BW being both the largest and sentence-shuffled, which destroys all long-range structure."
+            "note": "The biggest gains came on small datasets like Penn Treebank and WikiText-2, which have only one to two million training tokens. 1BW was the only miss: the paper argues it is the largest and is shuffled at the sentence level, which destroys long-range structure."
           }
         },
         {
-          "p": "**LAMBADA** specifically tests long-range dependencies: the goal is to predict the last word of a sentence, and humans need at least 50 tokens of context to get it right. GPT-2 cut perplexity from 99.8 to 8.6 and lifted accuracy from 19% to 52.66%. After examining the errors, the paper found that most were fluent continuations that simply could not serve as the sentence's **final word**; adding a stop-word filter raised accuracy to 63.24%, 4 points above the previous best."
+          "p": "**LAMBADA** is designed to test long-range dependencies: the model must predict the final word of a sentence, and a human needs at least the preceding 50 tokens of context to guess it. GPT-2 cuts perplexity from 99.8 to 8.6 and lifts accuracy from 19% to 52.66%. After analyzing errors, the paper finds that most wrong answers are fluent continuations that just cannot serve as the sentence's **final word**; adding a stopword-filtering rule raises accuracy to 63.24%, 4 points above the prior best."
         },
         {
-          "p": "**Winograd commonsense reasoning**: GPT-2 scored 70.70%, 7 points above the previous best. But the paper cautions that this dataset has only 273 questions."
+          "p": "**Winograd commonsense reasoning**: GPT-2 scores 70.70%, 7 points above the prior best. But the paper cautions that this dataset has only 273 questions."
         }
       ]
     },
     {
-      "h": "Result two: zero-shot on tasks—some close, some still weak",
+      "h": "Result 2: zero-shot task performance — some close, some far behind",
       "blocks": [
         {
           "fig": {
             "type": "table",
-            "title": "Zero-shot results on five tasks: reading comprehension close to supervised models; summarization and translation still rudimentary",
-            "subtitle": "From paper sections 3.5–3.8 and Table 4. Amber marks reading comprehension, the strongest result",
+            "title": "Zero-shot results on five tasks: reading comprehension nears supervised models, while summarization and translation remain rudimentary",
+            "subtitle": "From sections 3.5–3.8 and Table 4 of the paper. Amber highlights reading comprehension, the best result.",
             "columns": [
               "Task",
               "GPT-2 zero-shot",
-              "Baseline"
+              "Comparison"
             ],
             "rows": [
               [
@@ -438,14 +447,14 @@
                 "Matches or beats 3 of 4 supervised baselines; the best BERT system is close to the human score of 89"
               ],
               [
-                "CNN / Daily Mail summarization (ROUGE average)",
+                "CNN / Daily Mail summarization (average ROUGE)",
                 "21.40",
-                "Random 3 sentences: 20.98; first 3 sentences: 31.55; previous best: 32.75"
+                "Random 3-sentence baseline: 20.98; first-3-sentences baseline: 31.55; prior best: 32.75"
               ],
               [
                 "French-to-English (BLEU)",
                 "11.5",
-                "Best unsupervised translation method at the time: 33.5"
+                "Best unsupervised machine translation at the time: 33.5"
               ],
               [
                 "English-to-French (BLEU)",
@@ -455,7 +464,7 @@
               [
                 "Natural Questions QA (exact match)",
                 "4.1%",
-                "A simple baseline that answers with the most common answer per question type gets 1.0%; retrieval + extraction systems get 30–50%"
+                "Simple baseline that answers with the most common answer for each question type: 1.0%; retrieve-and-extract systems: 30% to 50%"
               ]
             ],
             "highlight": {
@@ -464,22 +473,22 @@
           }
         },
         {
-          "p": "**Reading comprehension** comes closest to being useful: given the passage, conversation history, and a final “A:”, GPT-2 with greedy decoding reaches 55 F1, while the supervised systems it is compared against trained on more than 127,000 human-labeled QA pairs. However, the paper's analysis found that it often uses simple retrieval-style heuristics—for example, when asked “who,” it picks a person's name from the passage."
+          "p": "**Reading comprehension** is closest to usable: given the passage, dialogue history, and a final “A:”, GPT-2 scores 55 F1 with greedy decoding, while the supervised systems it is compared against trained on over 127,000 human-written question-answer pairs. However, the paper finds that it often falls back on simple retrieval heuristics — for example, when asked “who,” it picks a person's name from the passage."
         },
         {
-          "p": "**Summarization** looks like summarization but often only summarizes the end of the article or gets details wrong (such as how many cars were in a crash, or whether a logo was on a hat or a shirt). By ROUGE score, it is only slightly better than picking 3 random sentences."
+          "p": "**Summarization** looks like summarization, but it often only summarizes the end of the article or gets details wrong (such as how many cars were in a crash, or whether a logo was on a hat or a shirt). By ROUGE, it is only slightly better than randomly selecting three sentences."
         },
         {
-          "p": "**Translation** surprised the authors most: they had deliberately filtered non-English pages out of WebText, and after the fact a language detector found only about 10 MB of French—roughly 500 times smaller than the French monolingual corpora commonly used in earlier unsupervised translation research. Even so, GPT-2 scored 11.5 BLEU on French-to-English, beating several unsupervised translation baselines. English-to-French reached only 5 BLEU, because its French ability is far weaker than its English ability."
+          "p": "**Translation** was the biggest surprise for the authors: they had deliberately filtered non-English pages out of WebText, and a post-hoc language detector found only about 10 MB of French — roughly 500 times less than the French monolingual corpora typically used in unsupervised translation research. Even so, GPT-2 scored 11.5 BLEU on French-to-English, beating several unsupervised translation baselines. English-to-French scored only 5 BLEU, because the model's French ability is far weaker than its English."
         },
         {
-          "p": "**Question answering** tests how much knowledge is stored in the model's parameters. GPT-2's exact match is only 4.1%, but the smallest model did not even beat the 1.0% baseline of answering with the most common answer per question type; GPT-2 answered correctly 5.3 times as often. Its confidence is also fairly reliable: on the 1% of questions it was most confident about, accuracy reached 63.1%."
+          "p": "**Question answering** tests how much knowledge is stored in the model's parameters. GPT-2 achieves only 4.1% exact match, but the smallest model does not even beat the 1.0% baseline of answering with the most common answer for each question type, and GPT-2 answers correctly 5.3 times as often as the smallest model. Its confidence is also reasonably reliable: on the 1% of questions it is most confident about, accuracy reaches 63.1%."
         },
         {
           "fig": {
             "type": "table",
-            "title": "In GPT-2's 30 most confident answers, 8 were wrong",
-            "subtitle": "From paper Table 5 (Natural Questions dev set); 8 rows selected here. Correct/incorrect marked by the paper; probability is GPT-2's probability for its own answer",
+            "title": "Among GPT-2's 30 most confident answers, 8 are wrong",
+            "subtitle": "From Table 5 of the paper (Natural Questions dev set), with 8 rows selected here. Correctness is labeled by the paper; probability is the probability GPT-2 assigns to its own answer.",
             "columns": [
               "Question",
               "GPT-2's answer",
@@ -539,11 +548,11 @@
             "highlight": {
               "row": 3
             },
-            "note": "There is a fun aside in a paper footnote: first author Alec considers himself good at trivia, so he tested himself on 100 randomly sampled questions in the same setting and got 17 right. He then added: actually only 14 were right, and the other 3 “should have been right,” but the questions leaked the answer."
+            "note": "A footnote adds a small aside: lead author Alec considers himself good at trivia, so he tested himself on 100 random questions under the same setup and got 17 right. He then adds that he actually only got 14 right; the other 3 he “should have gotten,” but the questions leaked the answer."
           }
         },
         {
-          "p": "All tasks share one pattern: **performance improves steadily with model size**. Figure 1 in the paper shows that zero-shot reading comprehension, translation, summarization, and QA all improve as parameter count grows; the abstract calls this “log-linear” improvement. This is the phenomenon GPT-3 and “Scaling Laws” later studied systematically."
+          "p": "One pattern holds across all tasks: **performance improves steadily with model size**. Figure 1 of the paper shows zero-shot performance on reading comprehension, translation, summarization, and QA all rising with parameter count; the abstract calls the improvement “log-linear.” This is the phenomenon GPT-3 and the Scaling Laws paper later studied systematically."
         }
       ]
     },
@@ -551,16 +560,16 @@
       "h": "Learned, or memorized?",
       "blocks": [
         {
-          "p": "With training data this large, could the test questions have appeared in the training data already? The paper ran a dedicated overlap analysis: it put every 8-gram (8 consecutive words) in the WebText training set into a Bloom filter, then checked how many 8-grams from each test set also appeared in the training data."
+          "p": "With this much training data, could the test questions already have appeared in training? The paper runs a dedicated overlap analysis: it puts every 8-gram (8 consecutive words) from the WebText training set into a Bloom filter, then checks how many 8-grams from each test set also appear in the training data."
         },
         {
           "fig": {
             "type": "table",
-            "title": "Overlap with WebText is mostly no greater than overlap with a dataset's own training set",
-            "subtitle": "How many 8-grams in each test set also appear in training data, from paper Table 6. Amber marks 1BW",
+            "title": "Most test sets overlap no more with WebText than with their own training sets",
+            "subtitle": "How many 8-grams in each test set also appear in training data; from Table 6 of the paper. Amber indicates 1BW.",
             "columns": [
               "Dataset",
-              "Overlap with own training set",
+              "Overlap with its own training set",
               "Overlap with WebText training set"
             ],
             "rows": [
@@ -598,18 +607,22 @@
             "highlight": {
               "row": 5
             },
-            "note": "Common language modeling test sets overlap with WebText by 1% to 6%, averaging 3.2%; their average overlap with their own training sets is 5.9%, even higher. 1BW's overlap with its own training set is close to 13.2%. The paper also found that a WikiText-103 test set article appeared in its own training set."
+            "note": "For common language modeling test sets, overlap with WebText ranges from 1% to 6%, averaging 3.2%; overlap with their own training sets averages 5.9%, actually higher. 1BW's overlap with its own training set is close to 13.2%. The paper also finds that one article in WikiText-103's test set is also in its own training set."
+          },
+          "plain": {
+            "title": "Learned, or just seen the exact question?",
+            "text": "If the test questions themselves were already in pages the model read, good scores could simply mean the model memorized the answers. The paper checks how much the test sets duplicate WebText and finds that most overlap no more with WebText than with their own training sets, so the results are not mainly from memorization."
           }
         },
         {
           "list": [
-            "**LAMBADA**: average overlap 1.2%. Removing all overlapping samples and recalculating changes perplexity from 8.6 to 8.7 and drops accuracy from 63.2% to 62.9%—a small impact.",
-            "**CoQA**: about 15% of the news articles appear in WebText, and on those articles the model's F1 is about 3 points higher. Overall, overlap accounts for roughly 0.5 to 1.0 F1 improvement. CoQA was released after WebText's cutoff date, so the questions and answers themselves are not in the training data.",
+            "**LAMBADA**: average overlap 1.2%. Removing every sample with overlap changes perplexity from 8.6 to 8.7 and accuracy from 63.2% to 62.9% — a small effect.",
+            "**CoQA**: about 15% of news articles appear in WebText, and the model scores about 3 points higher F1 on those articles. Overall, overlap adds about 0.5 to 1.0 F1. CoQA was released after WebText's cutoff, so the questions and answers themselves are not in the training data.",
             "**Winograd**: only 10 questions have 8-gram overlap with WebText, and 2 of those are false positives."
           ]
         },
         {
-          "p": "The paper concludes that data overlap gives a **small but consistent** benefit, but for most datasets the overlap is no worse than the usual overlap between their own training and test sets. It suggests that n-gram overlap deduplication should become a standard check when building NLP datasets."
+          "p": "The paper concludes that data overlap gives a **small but consistent** advantage, but for most datasets the overlap is no worse than the overlap between their own training and test sets. It recommends that n-gram overlap deduplication become a standard check when building NLP datasets in the future."
         }
       ]
     },
@@ -618,77 +631,77 @@
       "blocks": [
         {
           "list": [
-            "**The parameter counts are wrong**: Table 2's 117M, 345M, 762M, and 1542M are all smaller than what the architecture implies (see the estimation table above). The smallest model's 117M is close to the estimate from GPT-1's configuration, so it likely omits the larger vocabulary and longer context.",
-            "**Two ways of stating the data size**: Section 2.1 says WebText is 40 GB of text, and Section 3.1 says <UNK> appears 26 times in “40 billion bytes.” 40 GB is about 40 billion bytes, so the two statements agree; they are just different units. Don't read them as two datasets.",
-            "**The “7 out of 8” accounting**: Table 3 has 10 columns, but LAMBADA's perplexity and accuracy count as one dataset, and CBT's two question types count as one, so there are 8 datasets. GPT-2 only failed to beat the previous best on 1BW.",
-            "**The paper does not actually describe GPT-2's release**: because OpenAI worried about misuse (such as generating fake news at scale), it initially released only the smallest model, then released larger versions in stages over several months. The full 1.5-billion-parameter model was only released in November 2019. This staged-release decision was controversial at the time, but the paper itself does not discuss it."
+            "**The parameter counts are wrong**: the paper's Table 2 figures of 117M, 345M, 762M, and 1542M are all smaller than what the configurations imply (see the estimate table above). The smallest model's 117M is close to the size estimated from GPT-1's configuration, so the larger vocabulary and longer context were likely left out.",
+            "**Two ways of stating the data size**: section 2.1 says WebText is 40 GB of text, and section 3.1 says <UNK> appears 26 times in “40 billion bytes.” 40 GB is about 40 billion bytes, so the two statements agree; they are just different units, not two different datasets.",
+            "**What “7 out of 8” actually counts**: Table 3 has 10 columns, but LAMBADA's perplexity and accuracy count as one dataset, and CBT's two question types also count as one. That makes 8 datasets, and GPT-2 fails to beat the prior best only on 1BW.",
+            "**The paper does not actually describe GPT-2's release details**: when OpenAI released it, concerns about misuse (such as mass-producing fake news) led it to publish only the smallest model at first, release larger versions in stages over several months, and only release the full 1.5-billion-parameter model in November 2019. This staged-release decision was highly controversial at the time, but the paper itself does not discuss it."
           ]
         }
       ]
     },
     {
-      "h": "Limitations, and the story after",
+      "h": "Limitations, and what came next",
       "blocks": [
         {
           "p": "The paper's discussion section is measured:"
         },
         {
           "list": [
-            "**Zero-shot is far from practical**: reading comprehension is competitive, but summarization is only “qualitatively similar” and still rudimentary by the metrics. The paper writes that, from a practical application standpoint, GPT-2's zero-shot performance is still nowhere near usable.",
-            "**Many tasks remain at chance level**: the authors acknowledge that on many practical tasks GPT-2 is surely no better than random guessing; even on QA and translation, it only begins to beat simple baselines when the model is large enough.",
-            "**The unidirectional limitation**: the paper notes that it is unclear whether more data and capacity for GPT-2 can compensate for the inefficiency of unidirectional representations, which BERT had already demonstrated. The authors plan to fine-tune GPT-2 on benchmarks such as GLUE to answer this."
+            "**Zero-shot is far from practical**: reading comprehension is competitive, while summarization only “qualitatively resembles” the real thing and is still rudimentary by the metrics. As the paper writes, from a practical standpoint, GPT-2's zero-shot performance is nowhere near usable.",
+            "**Many tasks are still at chance level**: the authors acknowledge that on many practical tasks GPT-2 is certainly no better than random guessing; even on QA and translation, it only starts to beat simple baselines once the model is large enough.",
+            "**The one-direction limitation**: the paper notes it is unclear whether more data and capacity for GPT-2 can make up for the inefficiency of unidirectional representations that BERT has already demonstrated. They plan to fine-tune GPT-2 on benchmarks such as GLUE to answer this."
           ]
         },
         {
-          "p": "**The story after.** The paper's conclusion says that large-capacity models trained on sufficiently large and diverse data will begin to learn many tasks without explicit supervision. A year later, GPT-3 (2020) pushed this to its extreme: 175 billion parameters, and **few-shot prompts** (a few examples in the context) instead of zero-shot, matching or even beating fine-tuned models on many tasks. That same year, “Scaling Laws” turned “bigger is better” into a predictable power law."
+          "p": "**What came next**. The paper's conclusion says that high-capacity models trained on sufficiently large and diverse data begin to learn many tasks without explicit supervision. A year later, GPT-3 (2020) took that claim to its extreme: 175 billion parameters, and instead of zero-shot prompting it used **few-shot prompting** — a few examples in the context — to approach or even beat fine-tuned models on many tasks. The Scaling Laws paper that same year turned “bigger is better” into a predictable power law."
         },
         {
-          "p": "GPT-2 itself left several lasting influences: pre-layer normalization became a standard architecture for large models; byte-level BPE was adopted by many subsequent models; and the idea of “using a prompt to elicit a task” later grew into the entire field of prompt engineering."
+          "p": "GPT-2 itself left several lasting marks: pre-layer normalization became the standard architecture for large models; byte-level BPE was adopted by many later models; and the idea of evoking a task with a prompt later grew into the entire discipline of prompt engineering."
         }
       ]
     },
     {
-      "h": "Check yourself: did you really get it?",
+      "h": "Check yourself: did you get it?",
       "blocks": [
         {
           "quiz": {
             "q": "Why does the paper say the global optimum of the supervised objective is also the global optimum of the unsupervised objective?",
             "options": [
-              "Because both use the same optimizer",
+              "Because they use the same optimizer",
               "Because if the task, input, and answer are all written in the same text, predicting the answer is just part of predicting the next word",
               "Because supervised data is a subset of unsupervised data",
               "Because language models don't need labels"
             ],
             "answer": 1,
-            "why": "When the answer is part of the text, the supervised objective is just predicting the next word at the answer positions—a subset of the language modeling objective. The paper also cautions that this is only true in theory; whether the objective can be optimized well enough in practice is the real issue, and preliminary experiments show learning is much slower than with direct supervision."
+            "why": "When the answer is also part of the text, the supervised objective is simply “predict the next word at those answer positions,” which is a subset of the language-model objective. The paper also cautions that this only holds in principle; the real question is whether the objective can be optimized well enough in practice, and early experiments show learning is much slower than with direct supervision."
           }
         },
         {
           "quiz": {
-            "q": "Many of GPT-2's LAMBADA errors were fluent continuations but not the sentence's final word. How did the paper improve this?",
+            "q": "Many of GPT-2's incorrect LAMBADA answers are fluent continuations but not the sentence's final word. How does the paper improve on this?",
             "options": [
               "Fine-tune the model",
-              "Add a stop-word filter that approximates the constraint of having to be the sentence's final word",
+              "Add a stopword-filtering rule that approximates the constraint that the answer must be the sentence-final word",
               "Use a larger model",
               "Only allow words that appear in the context"
             ],
             "answer": 1,
-            "why": "The paper added stop-word filtering, raising accuracy from 52.66% to 63.24%. The previous best method restricted output to words that appeared in the context; the paper found this actively hurts GPT-2, because 19% of answers are not in the context."
+            "why": "The paper adds stopword filtering and accuracy rises from 52.66% to 63.24%. The previous best method restricted outputs to words in the context, but the paper finds this actually hurts GPT-2, because 19% of the answers are not in the context."
           }
         },
         {
-          "p": "After reading this, you should be able to answer the following:"
+          "p": "After reading this, you should be able to answer these questions:"
         },
         {
           "list": [
-            "What does p(output | input, task) mean? Why is language able to describe tasks?",
-            "How was WebText built? Why were Wikipedia documents removed?",
+            "What does p(output | input, task) mean? Why does language let us specify tasks?",
+            "How was WebText built? Why remove Wikipedia?",
             "What problem does byte-level BPE solve?",
             "What three architectural changes does GPT-2 make to GPT-1?",
-            "For zero-shot summarization, translation, and reading comprehension, what does the model see?",
-            "Which tasks were close to practical? Which were still weak?",
-            "How did the paper check overlap between test data and training data, and what did it conclude?",
-            "Why don't the paper's reported parameter counts match the counts implied by the architecture?"
+            "For zero-shot summarization, translation, and reading comprehension, what does the model see in each case?",
+            "Which tasks are close to usable, and which are still poor?",
+            "How does the paper check for overlap between test data and training data? What does it conclude?",
+            "Why don't the paper's reported parameter counts match the counts computed from the configurations?"
           ]
         }
       ]
@@ -701,7 +714,7 @@
       "date": "2019-02-14",
       "url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf"
     },
-    "note": "This article is based on the paper PDF published by OpenAI in February 2019. The parameter count estimates are our own calculations from the paper's configurations; OpenAI's later corrected parameter counts and the staged release of GPT-2 come from OpenAI's public statements, not from the paper itself."
+    "note": "This article is based on the OpenAI paper PDF (February 2019). Parameter-count estimates were computed by this site from the paper's configurations; OpenAI's later corrections to the parameter counts and the staged release of GPT-2 come from OpenAI's public statements, not from this paper."
   },
   "claims": [
     {
@@ -712,21 +725,21 @@
       "as_written": "1.5 billion"
     },
     {
-      "text": "over an order of magnitude",
+      "text": "over an order of magnitude (more than 10x)",
       "value": "order of magnitude",
       "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
       "quote": "has over an order of magnitude more parameters than GPT",
-      "as_written": "more than an order of magnitude"
+      "as_written": "more than tenfold"
     },
     {
-      "text": "CoQA 55 F1, 3 of 4 baselines, 127,000",
+      "text": "CoQA 55 F1; 3 of 4 baselines; 127,000+",
       "value": "55",
       "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
       "quote": "the answers generated by the language model reach 55 F1 on the CoQA dataset - matching or exceeding the performance of 3 out of 4 baseline systems without using the 127,000+ training examples",
       "as_written": "55"
     },
     {
-      "text": "127,000+",
+      "text": "over 127,000",
       "value": "127,000+",
       "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
       "quote": "without using the 127,000+ training examples",
@@ -740,7 +753,7 @@
       "as_written": "7"
     },
     {
-      "text": "10 and 17 pairs",
+      "text": "10 and 17 (dataset, objective) pairs",
       "value": "10 and 17",
       "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
       "quote": "trained on a total of 10 and 17 (dataset, objective) pairs respectively",
@@ -761,11 +774,11 @@
       "as_written": "45 million"
     },
     {
-      "text": "8 million+ documents, 40 GB",
+      "text": "over 8 million documents; 40 GB",
       "value": "8 million",
       "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
       "quote": "contains slightly over 8 million documents for a total of 40 GB of text",
-      "as_written": "8 million+"
+      "as_written": "over 8 million"
     },
     {
       "text": "40 GB",
@@ -782,28 +795,28 @@
       "as_written": "130,000"
     },
     {
-      "text": "byte-level 256",
+      "text": "byte-level: 256",
       "value": "256",
       "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
       "quote": "a byte-level version of BPE only requires a base vocabulary of size 256",
       "as_written": "256"
     },
     {
-      "text": "vocabulary 50,257",
+      "text": "vocabulary: 50,257",
       "value": "50,257",
       "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
       "quote": "The vocabulary is expanded to 50,257",
       "as_written": "50257"
     },
     {
-      "text": "context 512→1024, batch size 512",
+      "text": "context length 512→1,024; batch size 512",
       "value": "1024",
       "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
       "quote": "We also increase the context size from 512 to 1024 tokens and a larger batchsize of 512 is used",
       "as_written": "1024"
     },
     {
-      "text": "<UNK> 26 times in 40 billion bytes",
+      "text": "<UNK> appears 26 times in 40 billion bytes",
       "value": "26 times",
       "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
       "quote": "occurring only 26 times in 40 billion bytes",
@@ -852,28 +865,28 @@
       "as_written": "1542M"
     },
     {
-      "text": "de-tokenizers 2.5–5 PPL",
+      "text": "de-tokenizer improves PPL by 2.5–5",
       "value": "2.5 to 5",
       "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
       "quote": "We observe gains of 2.5 to 5 perplexity for GPT-2 with these de-tokenizers",
       "as_written": "2.5 to 5"
     },
     {
-      "text": "PTB and WikiText-2: only 1–2 million training tokens",
+      "text": "PTB and WikiText-2 have only one to two million training tokens",
       "value": "1 to 2 million",
       "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
       "quote": "which have only 1 to 2 million training tokens",
-      "as_written": "1–2 million"
+      "as_written": "one to two million"
     },
     {
-      "text": "LAMBADA at least 50 tokens",
+      "text": "LAMBADA requires at least 50 tokens of context",
       "value": "50 tokens",
       "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
       "quote": "which require at least 50 tokens of context for a human to successfully predict",
       "as_written": "50"
     },
     {
-      "text": "LAMBADA 99.8→8.6, 19%→52.66%",
+      "text": "LAMBADA PPL 99.8→8.6; accuracy 19%→52.66%",
       "value": "8.6",
       "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
       "quote": "GPT-2 improves the state of the art from 99.8 (Grave et al., 2016) to 8.6 perplexity and increases the accuracy of LMs on this test from 19%",
@@ -901,7 +914,7 @@
       "as_written": "52.66%"
     },
     {
-      "text": "stop-word filter 63.24%, 4 points higher",
+      "text": "stopword filtering: 63.24%, +4 points",
       "value": "63.24%",
       "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
       "quote": "further increases accuracy to 63.24%, improving the overall state of the art on this task by 4%",
@@ -912,10 +925,10 @@
       "value": "4%",
       "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
       "quote": "improving the overall state of the art on this task by 4%",
-      "as_written": "4 points"
+      "as_written": "4 percentage points"
     },
     {
-      "text": "Winograd 70.70%, +7%, 273 questions",
+      "text": "Winograd 70.70%, +7 points, 273 questions",
       "value": "70.70%",
       "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
       "quote": "GPT-2 improves state of the art accuracy by 7%, achieving 70.70%",
@@ -926,7 +939,7 @@
       "value": "7%",
       "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
       "quote": "improves state of the art accuracy by 7%",
-      "as_written": "7 points"
+      "as_written": "7 percentage points"
     },
     {
       "text": "Winograd 273",
@@ -936,28 +949,28 @@
       "as_written": "273"
     },
     {
-      "text": "CoQA human 89",
+      "text": "CoQA human performance: 89",
       "value": "89 F1",
       "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
       "quote": "is nearing the 89 F1 performance of humans",
       "as_written": "89"
     },
     {
-      "text": "top-k k=2, 100 tokens",
+      "text": "top-k sampling with k=2; 100 tokens",
       "value": "k = 2",
       "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
       "quote": "generate 100 tokens with Top-k random sampling (Fan et al., 2018) with k = 2",
       "as_written": "k = 2"
     },
     {
-      "text": "removing prompt: −6.4",
+      "text": "removing the prompt costs 6.4 points",
       "value": "6.4",
       "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
       "quote": "GPT-2’s performance drops by 6.4 points on the aggregate metric when the task hint is removed",
       "as_written": "6.4 points"
     },
     {
-      "text": "Table 4: GPT-2 21.40, random 20.98, Lede-3 31.55, SOTA 32.75",
+      "text": "Table 4: GPT-2 21.40; random 20.98; lead-3 31.55; SOTA 32.75",
       "value": "21.40",
       "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
       "quote": "21.40",
@@ -985,39 +998,39 @@
       "as_written": "32.75"
     },
     {
-      "text": "English-to-French 5 BLEU",
+      "text": "English-to-French: 5 BLEU",
       "value": "5 BLEU",
       "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
       "quote": "GPT-2 gets 5 BLEU",
       "as_written": "5"
     },
     {
-      "text": "French-to-English 11.5 BLEU",
+      "text": "French-to-English: 11.5",
       "value": "11.5 BLEU",
       "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
       "quote": "achieving 11.5 BLEU",
       "as_written": "11.5"
     },
     {
-      "text": "best unsupervised 33.5",
+      "text": "best unsupervised MT: 33.5",
       "value": "33.5 BLEU",
       "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
       "quote": "the 33.5 BLEU of the current best unsupervised machine translation approach",
       "as_written": "33.5"
     },
     {
-      "text": "about 10 MB French, about 500× smaller",
+      "text": "about 10 MB of French; ~500x smaller",
       "value": "10MB",
       "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
       "quote": "which detected only 10MB of data in the French language which is approximately 500x smaller",
       "as_written": "10 MB"
     },
     {
-      "text": "500×",
+      "text": "500x",
       "value": "500x",
       "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
       "quote": "approximately 500x smaller",
-      "as_written": "500×"
+      "as_written": "500x"
     },
     {
       "text": "NQ 4.1%",
@@ -1027,49 +1040,49 @@
       "as_written": "4.1%"
     },
     {
-      "text": "baseline 1.0%",
+      "text": "question-type baseline: 1.0%",
       "value": "1.0%",
       "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
       "quote": "does not exceed the 1.0% accuracy of an incredibly simple baseline",
       "as_written": "1.0%"
     },
     {
-      "text": "5.3×",
+      "text": "5.3x",
       "value": "5.3 times",
       "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
       "quote": "GPT-2 answers 5.3 times more questions correctly",
-      "as_written": "5.3×"
+      "as_written": "5.3x"
     },
     {
-      "text": "most confident 1%: 63.1%",
+      "text": "63.1% accuracy on the top 1% most-confident questions",
       "value": "63.1%",
       "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
       "quote": "GPT-2 has an accuracy of 63.1% on the 1% of questions it is most confident in",
       "as_written": "63.1%"
     },
     {
-      "text": "the most confident 1%",
+      "text": "most-confident 1%",
       "value": "1%",
       "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
       "quote": "on the 1% of questions it is most confident in",
       "as_written": "1%"
     },
     {
-      "text": "retrieval systems 30–50%",
+      "text": "retrieval systems: 30–50%",
       "value": "30 to 50%",
       "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
       "quote": "the 30 to 50% range of open domain question answering systems",
       "as_written": "30%"
     },
     {
-      "text": "Alec 17 questions, actually 14",
+      "text": "Alec: 17 correct, actually 14",
       "value": "17 of 100",
       "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
       "quote": "answered 17 of 100 randomly sampled examples correctly",
       "as_written": "17 questions"
     },
     {
-      "text": "Alec 14 questions",
+      "text": "Alec: 14",
       "value": "14 right",
       "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
       "quote": "He actually only got 14 right",
@@ -1139,7 +1152,7 @@
       "as_written": "3.2%"
     },
     {
-      "text": "own average 5.9%",
+      "text": "own training set avg 5.9%",
       "value": "5.9%",
       "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
       "quote": "with an average of 5.9% overlap",
@@ -1188,7 +1201,7 @@
       "as_written": "1.2%"
     },
     {
-      "text": "8.6→8.7, 63.2%→62.9%",
+      "text": "8.6→8.7; 63.2%→62.9%",
       "value": "62.9%",
       "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
       "quote": "shifts results from 8.6 to 8.7 perplexity and reduces accuracy from 63.2% to 62.9%",
@@ -1209,7 +1222,7 @@
       "as_written": "8.7"
     },
     {
-      "text": "CoQA news about 15%, about 3 F1 higher, 0.5–1.0",
+      "text": "CoQA news ~15%, +~3 F1, overall 0.5–1.0",
       "value": "15%",
       "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
       "quote": "about 15% of documents in the news domain are already in WebText and the model performs about 3 F1 better on these",
@@ -1223,7 +1236,7 @@
       "as_written": "0.5"
     },
     {
-      "text": "Winograd 10 questions, 2 false positives",
+      "text": "Winograd: 10 questions, 2 false positives",
       "value": "10 schemata",
       "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
       "quote": "we found only 10 schemata which had any 8-gram overlaps with the WebText training set. Of these, 2 were spurious matches",
@@ -1251,7 +1264,7 @@
       "as_written": "512"
     },
     {
-      "text": "our estimate: ≈124M",
+      "text": "this site's estimate: about 124 million",
       "value": "50,257",
       "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
       "quote": "The vocabulary is expanded to 50,257",
@@ -1261,5 +1274,5 @@
   "status": "published",
   "verified": false,
   "lang": "en",
-  "translated_from": "9d9b08f7281c794f"
+  "translated_from": "609a8e90e10d501c"
 }

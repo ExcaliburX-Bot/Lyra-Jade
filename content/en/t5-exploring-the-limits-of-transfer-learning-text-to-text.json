@@ -3,14 +3,14 @@
   "category": "paper",
   "publisher": "Raffel et al. · Google",
   "date": "2019-10-23",
-  "title": "T5 close read: make every task text in, text out, then change one variable at a time",
-  "summary": "T5 turns translation, classification, summarization, and even scoring into “text in, text out,” then systematically compares architecture, pre-training objective, data, fine-tuning method, and scale from a single baseline. We work through why span masking saves compute, summarize each controlled experiment, and flag a duplicated row in the paper.",
-  "ai_summary": "Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer (Raffel et al., Google, JMLR 2020) casts every NLP task into a text-to-text format. It compares architecture, pre-training objective, data sets, fine-tuning and multi-task strategies, and scaling on an encoder-decoder baseline of about 220 million parameters, and releases the roughly 750GB cleaned web corpus C4. Conclusions: encoder-decoder plus a denoising objective works best; denoising variants differ little and should be chosen by compute cost; too much data repetition hurts; scaling up the model usually beats training longer. The largest model, 11B-parameter T5, set the state of the art on 18 of 24 tasks.",
+  "title": "A deep read of T5: every task as text in, text out, then change one variable at a time",
+  "summary": "T5 turns translation, classification, summarization, and even scoring into “text in, text out,” then starts from one baseline and systematically compares architecture, pretraining objective, data, fine-tuning approach, and scale. We do the arithmetic on why span corruption saves compute, walk through each controlled comparison, and flag a duplicated table row.",
+  "ai_summary": "“Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer” (Raffel et al., Google, JMLR 2020) casts all NLP tasks into a text-to-text format, then compares architecture, pretraining objective, dataset, fine-tuning and multitask strategy, and scaling on a roughly 220-million-parameter encoder-decoder baseline. It also releases C4, about 750GB of cleaned web text. Conclusions: an encoder-decoder with a denoising objective performs best; denoising variants are similar, so choose by compute cost; too much data repetition is harmful; increasing model size usually beats training longer. The largest T5, 11B parameters, was state of the art on 18 of 24 tasks at the time.",
   "brief": [
-    "Problem: Pre-training methods were proliferating, with objectives, data, architectures, and scale all changing at once, making it hard to tell which choices actually mattered.",
-    "Method: Cast every task into a text-to-text format, start from a unified baseline and change one factor at a time, and produce the cleaned C4 corpus.",
-    "Result: Encoder-decoder plus span-masking denoising wins; data should be large and clean; bigger models generally beat longer training; T5-11B reaches the best results on 18 tasks.",
-    "Limitations: Changing one factor at a time may miss interactions; translation tasks did not exceed the best prior results; Table 10 has a suspicious duplicated row."
+    "The problem: pretraining recipes were multiplying, with objective, data, architecture, and scale all changing at once — making it hard to tell which choices actually matter.",
+    "The method: cast every task into text-to-text format, start from one baseline and change a single factor at a time, and clean the C4 corpus.",
+    "Results: encoder-decoder plus span-corruption denoising wins; data should be large and clean; a bigger model usually beats more training; T5-11B achieves state of the art on 18 tasks.",
+    "Limitations: changing one factor at a time can miss interactions; translation never beat the prior best; Table 10 has a row that looks like a copy-paste error."
   ],
   "paper": {
     "title": "Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer",
@@ -22,7 +22,7 @@
     "url": "https://arxiv.org/abs/1910.10683"
   },
   "cover": {
-    "headline": "Close read of the original T5 paper",
+    "headline": "A close reading of the T5 paper",
     "highlight": "Everything is text in, text out",
     "glyph": {
       "kind": "flow",
@@ -42,36 +42,36 @@
   },
   "sections": [
     {
-      "h": "The bottom line: what this paper actually does",
+      "h": "First, the bottom line: what this paper actually did",
       "blocks": [
         {
-          "p": "In October 2019, nine Google authors including Colin Raffel, Noam Shazeer, Adam Roberts, and Katherine Lee released this 67-page paper; it was published in the Journal of Machine Learning Research (JMLR) in 2020. The model it introduces is **T5**, short for Text-to-Text Transfer Transformer."
+          "p": "In October 2019, nine Google researchers — Colin Raffel, Noam Shazeer, Adam Roberts, Katherine Lee, and others — released this 67-page paper; it was published in 2020 in the Journal of Machine Learning Research (JMLR). The model it introduces is **T5**, short for Text-to-Text Transfer Transformer."
         },
         {
-          "p": "Its starting point is pragmatic: after BERT and GPT in 2018, pre-training methods exploded, and every paper changed the objective, the data, the architecture, or the scale, making it hard to tell which change actually helped. The paper says its main purpose is **not to propose new methods** but to systematically compare existing approaches in one unified framework."
+          "p": "Its motivation is pragmatic: after BERT and GPT in 2018, pretraining methods exploded. Every paper changed the objective, the data, the architecture, or the scale, making it hard to tell which change actually helped. The paper says its main goal is **not to propose a new method**; it is to compare existing approaches systematically in a single unified framework."
         },
         {
-          "p": "That unified framework is **“text-to-text”**: translation, summarization, question answering, classification, and even regression tasks like scoring are all written as “input text, output text.” For translation, the input is “translate English to German: That is good.” and the output is “Das ist gut.”; for a sentence acceptability judgment, the output is “acceptable” or “not acceptable.” This means every task can use **the same model, the same loss function, the same hyperparameters, and the same decoding procedure**."
+          "p": "The unified framework is **text-to-text**: translation, summarization, QA, classification, and even regression-style scoring are all written as “text in, text out.” For translation, the input is “translate English to German: That is good.” and the output is “Das ist gut.” To judge whether a sentence is grammatical, output “acceptable” or “not acceptable.” That allows every task to use **one model, one loss function, one set of hyperparameters, and one decoding process.**"
         },
         {
-          "p": "Under this framework, the paper starts from a baseline, changes one factor at a time, and compares model architectures, pre-training objectives, pre-training data, fine-tuning methods, multi-task training, and scaling approaches. To support this, the authors also clean roughly 750GB of English web text into a corpus called **C4**. Finally, they combine the best choices and train a model with up to 11 billion parameters, achieving the best results of the time on 18 of 24 tasks."
+          "p": "Within this framework, the paper starts from a single baseline and changes one factor at a time: architecture, pretraining objective, pretraining data, fine-tuning approach, multitask training, and scaling. To support that, it also cleans a roughly 750GB corpus of English web text called **C4**. Finally it combines the best choices, trains a model with up to 11 billion parameters, and achieves state of the art on 18 of 24 tasks at that time."
         },
         {
           "callout": {
             "kind": "takeaway",
-            "title": "The one-sentence version",
-            "text": "Turn every NLP task into “text in, text out,” then change one variable at a time like a controlled experiment to systematically answer which pre-training choices matter. The answer: encoder-decoder + span-masking denoising + large, clean data + a bigger model."
+            "title": "In one sentence",
+            "text": "Turn every NLP task into “text in, text out,” then run it like a controlled experiment: change one variable at a time and systematically answer “which pretraining choices actually matter.” The answer: encoder-decoder + span corruption + large, clean data + a bigger model."
           }
         },
         {
           "callout": {
             "kind": "prereq",
-            "title": "Three small concepts you need for this read",
-            "text": "If they’re new to you, that’s fine; these three are enough:",
+            "title": "Three concepts you need before reading",
+            "text": "If you’re not familiar with them, these are the essentials:",
             "list": [
-              "**Pre-training + fine-tuning**: first train on a huge amount of unlabeled text, then continue training on a small amount of labeled data for the specific task. See the GPT-1 and BERT close reads.",
-              "**Encoder-decoder**: the encoder reads the input, and the decoder writes the output one word at a time, connected by attention. See the Transformer close read.",
-              "**Masked language model**: mask some words in the input and have the model guess them. This is the objective BERT uses."
+              "**Pretraining + fine-tuning**: train on massive unlabeled text first, then continue training on a small amount of labeled data for the specific task. See the GPT-1 and BERT deep reads.",
+              "**Encoder-decoder**: the encoder reads the input, the decoder writes the output one token at a time, and attention connects them. See the Transformer deep read.",
+              "**Masked language model**: mask some input tokens and make the model guess them. This is the objective BERT uses."
             ]
           }
         }
@@ -81,12 +81,12 @@
       "h": "Text-to-text: one format for every task",
       "blocks": [
         {
-          "p": "The paper’s approach: prepend a **task prefix** to the original input to tell the model what to do; the output is the answer as text."
+          "p": "The paper’s approach: prepend a **task prefix** to the original input to tell the model what to do, and the output is simply the answer as text."
         },
         {
           "fig": {
             "type": "table",
-            "title": "How different tasks become text in, text out",
+            "title": "How different tasks become “text in, text out”",
             "subtitle": "Examples from Figure 1 and Section 2.4 of the paper",
             "columns": [
               "Task",
@@ -120,53 +120,58 @@
                 "six people hospitalized after a storm in attala county."
               ]
             ]
+          },
+          "plain": {
+            "title": "Every task is “text in, text out”",
+            "pic": "t5-text",
+            "text": "Translation, summarization, acceptability judgment, and the rest used to need their own output heads. T5 adds a task name before the input (`translate:`, `summarize:`, `cola:`) and the output is always text, even if the answer is just `acceptable`. That means one model and one loss can train on every task."
           }
         },
         {
           "list": [
-            "**Regression tasks fit too**: STS-B asks for a score from 1 to 5 for a pair of sentences. The paper finds that scores are mostly labeled at 0.2 intervals, so it rounds each score to the nearest 0.2 and writes it as a string (for example, 2.57 becomes “2.6”), effectively turning the task into 21-class classification.",
-            "**What if the output is not one of the labels?** If a classification task emits a word that is not a label (the paper’s example is “hamburger”), it is always counted as wrong. The paper says their model never did this.",
-            "**The prefix wording doesn’t matter much**: the paper says changing the exact wording of the prefix has limited effect, so it did not study it separately."
+            "**Regression tasks fit too**: STS-B scores a pair of sentences from 1 to 5. The paper finds that the scores are mostly labeled in 0.2 increments, so it rounds each score to the nearest 0.2 and writes it as a string (2.57 becomes “2.6”), turning the task into 21-way classification.",
+            "**What if the output isn’t a valid label?** If a classification task produces a word that isn’t one of the labels (the paper’s example is “hamburger”), it is counted as wrong. The paper says their models never did this.",
+            "**The exact prefix wording doesn’t matter much**: the paper says changing the wording has limited effect, so it didn’t study it in depth."
           ]
         },
         {
-          "p": "The idea is not entirely new: earlier work cast all tasks as question answering, and GPT-2 used prompts to let a language model do tasks zero-shot (see the GPT-2 close read). T5 differs in that it allows each task to be fine-tuned separately and can handle generation tasks such as translation and summarization, where the answer set cannot be enumerated."
+          "p": "The idea isn’t entirely new: earlier work cast all tasks as question answering, and GPT-2 used prompts to get a language model to do tasks zero-shot (see the GPT-2 deep read). T5’s difference is that it allows per-task fine-tuning and handles generation tasks like translation and summarization where the answer space can’t be enumerated."
         }
       ]
     },
     {
-      "h": "The baseline: an encoder-decoder roughly the size of BERT-Base",
+      "h": "Baseline: an encoder-decoder about the size of BERT-Base",
       "blocks": [
         {
-          "p": "Every controlled experiment starts from the same baseline, changes one factor, and keeps the rest fixed. The paper calls this a “coordinate ascent” style of exploration and acknowledges that it may miss interactions between factors."
+          "p": "Every comparison starts from the same baseline and changes only one thing at a time, holding everything else fixed. The paper calls this a “coordinate ascent” exploration and admits it may miss interactions between factors."
         },
         {
           "list": [
-            "**Architecture**: a standard encoder-decoder Transformer with 12 encoder layers and 12 decoder layers; each layer is roughly the size of BERT-Base, for about 220 million parameters total. Layer normalization is applied at the input of each sublayer (scaling only, no additive bias), followed by a residual connection. Position information uses simplified relative position embeddings: each attention head learns only 32 scalars, bucketed by the offset between query and key, with offsets beyond 128 tokens assigned to the same bucket.",
-            "**Vocabulary**: SentencePiece is used to segment text into 32,000 subwords. The tokenizer is trained on a mixture of 10 parts English and 1 part each German, French, and Romanian, for translation.",
-            "**Pre-training**: train on C4 for 2^{19} = 524,288 steps, with about 2^{16} tokens per batch, for a total of about 2^{35} (about 34 billion) tokens—roughly one quarter of BERT’s. It uses the Adafactor optimizer.",
-            "**Fine-tuning**: train on each task for 2^{18} = 262,144 steps and pick the checkpoint with the best validation score.",
-            "**Pre-training objective**: randomly mask 15% of tokens, replace each consecutive span of masked tokens with a “sentinel” symbol, and require the model to output only the masked parts."
+            "**Architecture**: a standard encoder-decoder Transformer with 12 layers each in the encoder and decoder, sized like BERT-Base at about 220M parameters total. Layer normalization is applied at the input of each sublayer (rescale only, no bias), followed by a residual connection. For position, it uses simplified relative position embeddings: each attention head learns only 32 scalars, bucketed by query-key offset, and all offsets beyond 128 tokens share the same bucket.",
+            "**Vocabulary**: SentencePiece is used to split text into 32,000 subword tokens. The tokenizer is trained on a mix of 10 parts English and 1 part each of German, French, and Romanian, to support translation.",
+            "**Pretraining**: trained on C4 for 2^{19} = 524,288 steps with batches of about 2^{16} tokens, totaling about 2^{35} (about 34 billion) tokens — roughly one quarter of BERT. The optimizer is Adafactor.",
+            "**Fine-tuning**: each task is trained for another 2^{18} = 262,144 steps, and the best checkpoint on the validation set is used.",
+            "**Pretraining objective**: randomly mask 15% of tokens; each consecutive masked span is replaced by a single “sentinel” token, and the model only has to output the masked-out pieces."
           ]
         },
         {
           "fig": {
             "type": "table",
-            "title": "Baseline scores, and how much pre-training helps",
-            "subtitle": "From Table 1 of the paper, validation set. GLUE and SuperGLUE are average scores over subtasks; CNNDM is ROUGE-2 for summarization; SQuAD is exact match; translation is BLEU.",
+            "title": "Baseline results, and how much pretraining actually helps",
+            "subtitle": "From Table 1, validation set. GLUE and SGLUE are average scores across subtasks; CNNDM is ROUGE-2 for summarization; SQuAD is exact match; translation is BLEU.",
             "columns": [
               "",
               "GLUE",
               "CNNDM",
               "SQuAD",
               "SGLUE",
-              "En-De",
-              "En-Fr",
-              "En-Ro"
+              "EN-DE",
+              "EN-FR",
+              "EN-RO"
             ],
             "rows": [
               [
-                "Baseline (average of 10 runs)",
+                "Baseline (mean of 10 runs)",
                 "83.28",
                 "19.24",
                 "80.88",
@@ -176,7 +181,7 @@
                 "27.65"
               ],
               [
-                "Baseline standard deviation",
+                "Baseline std.",
                 "0.235",
                 "0.065",
                 "0.343",
@@ -186,7 +191,7 @@
                 "0.108"
               ],
               [
-                "No pre-training",
+                "No pretraining",
                 "66.22",
                 "17.60",
                 "50.31",
@@ -199,14 +204,14 @@
             "highlight": {
               "row": 0
             },
-            "note": "Except for English-French translation, where there is enough training data that pre-training doesn’t help much, pre-training brings large gains on every task. The paper trains the baseline 10 times to estimate random variation and uses that to judge whether later differences are significant."
+            "note": "Pretraining brings large gains on every task except English-French translation, where enough training data makes pretraining less helpful. The paper trains the baseline 10 times to estimate run-to-run variance and uses that to judge whether later differences are significant."
           }
         },
         {
           "callout": {
             "kind": "note",
-            "title": "An experimental habit worth copying",
-            "text": "Many papers report only a single result. T5 first trains the baseline 10 times, computes the standard deviation for each metric, and bolds any result within two standard deviations of the best score. The paper also cautions that small datasets such as CoLA, CB, and COPA fluctuate a lot—CB’s validation set has only 56 examples—so comparing models only by average GLUE or SuperGLUE scores can be misleading."
+            "title": "An experimental habit worth borrowing",
+            "text": "Many papers report a single run. T5 first trains the baseline 10 times, computes a standard deviation for each metric, and bolds every result within two standard deviations of the best. The paper also warns that small datasets like CoLA, CB, and COPA are extremely noisy — CB’s validation set has only 56 examples — so comparing models by aggregate GLUE or SuperGLUE scores alone requires care."
           }
         }
       ]
@@ -215,32 +220,32 @@
       "h": "Architecture: encoder-decoder, decoder-only, or prefix language model",
       "blocks": [
         {
-          "p": "Three architectures were popular at the time, differing mainly in the attention “mask”: who can see whom."
+          "p": "Three architectures were popular at the time, differing mainly in attention masking — in other words, who can see whom."
         },
         {
           "list": [
-            "**Encoder-decoder**: in the encoder, each position can see the entire input (fully visible); the decoder can see only the parts already generated (causal mask) and can see the encoder output through cross-attention. This is the architecture of the original Transformer and of T5.",
-            "**Decoder-only language model**: a single Transformer stack concatenates the input and output into one sequence, applies a causal mask throughout, and predicts from left to right. The GPT series uses this. The downside is that each input position can see only words to its left, which makes it harder to “read” the input.",
-            "**Prefix language model**: still one stack, but the input portion uses a fully visible mask and only the output portion uses a causal mask. The paper notes that, for classification, this is very similar to BERT."
+            "**Encoder-decoder**: in the encoder, every position can see the entire input (fully visible). The decoder can see only what it has already generated (causal mask), plus the encoder output through cross-attention. This is the original Transformer and T5 structure.",
+            "**Decoder-only language model**: a single Transformer stack concatenates the input and output and uses a causal mask throughout, predicting left to right. The GPT series works this way. The drawback is that even in the input portion each position can see only the tokens to its left, which is worse for reading the input.",
+            "**Prefix language model**: also a single stack, but the input part uses fully visible attention and only the output part uses a causal mask. The paper notes that for classification it resembles BERT."
           ]
         },
         {
-          "p": "How to compare fairly? The paper points out that parameter count and compute cannot be aligned: an L-layer encoder plus L-layer decoder has about the parameters of a 2L-layer language model, but only the compute of an L-layer language model, because the encoder processes only the input and the decoder only the output, while each layer of a language model processes input plus output."
+          "p": "How to compare fairly? The paper notes that parameter count and compute cannot be matched at the same time. An L-layer encoder plus L-layer decoder has about as many parameters as a 2L-layer language model, but only the compute of an L-layer language model: the encoder processes only the input and the decoder only the output, while each layer of a language model processes input plus output."
         },
         {
           "fig": {
             "type": "table",
             "title": "Comparing five architectures",
-            "subtitle": "From Table 2 of the paper (partial). P is the parameter count of a 12-layer BERT-Base-sized stack; M is the compute of a 12+12-layer encoder-decoder.",
+            "subtitle": "From Table 2 (excerpt). P is the parameter count of a 12-layer BERT-Base-sized stack; M is the compute of a 12+12 encoder-decoder.",
             "columns": [
               "Architecture",
               "Objective",
-              "Params",
+              "Parameters",
               "Compute",
               "GLUE",
               "SQuAD",
               "SGLUE",
-              "En-De"
+              "EN-DE"
             ],
             "rows": [
               [
@@ -307,22 +312,27 @@
             "highlight": {
               "row": 0
             },
-            "note": "Encoder-decoder + denoising objective is best on all tasks. Sharing parameters barely hurts; halving the depth clearly hurts. The denoising objective always beats the left-to-right language model objective."
+            "note": "Encoder-decoder with a denoising objective wins on every task. Sharing parameters barely hurts; halving the layers clearly does. The denoising objective always beats left-to-right language modeling."
+          },
+          "plain": {
+            "title": "Three rules for who can see what",
+            "pic": "t5-masks",
+            "text": "Rows show the position being computed; columns show the positions it can see (dark green = visible). In the encoder of an encoder-decoder, every position can see everything; a language model can see only itself and earlier positions; a prefix language model is a compromise: all prefix positions can see each other, while later positions can still see only earlier ones."
           }
         }
       ]
     },
     {
-      "h": "Pre-training objectives: what to mask, how much, and how",
+      "h": "Pretraining objective: where to mask, how much, and how",
       "blocks": [
         {
-          "p": "This is the paper’s most detailed section. It uses the same sentence, “Thank you for inviting me to your party last week.”, to demonstrate various objectives:"
+          "p": "This is the paper’s most detailed section. It demonstrates each objective on the same sentence: “Thank you for inviting me to your party last week.”"
         },
         {
           "fig": {
             "type": "table",
-            "title": "One sentence, different objectives, different inputs and outputs",
-            "subtitle": "From Table 3 of the paper. <M> is the shared masking symbol; <X>, <Y>, and <Z> are distinct sentinel symbols; the BERT-style objective also replaces some words with random words (here “apple”).",
+            "title": "One sentence, different pretraining objectives: input and output",
+            "subtitle": "From Table 3. <M> is a shared mask token; <X>, <Y>, <Z> are distinct sentinel tokens; the BERT-style objective also replaces some words with random ones (here, apple).",
             "columns": [
               "Objective",
               "Input",
@@ -360,6 +370,11 @@
                 "<X> for inviting me <Y> your party last <Z>"
               ]
             ]
+          },
+          "plain": {
+            "title": "Cut out a few spans and write only the missing pieces",
+            "pic": "t5-span",
+            "text": "Take a few consecutive spans out of the sentence and replace each hole with a marker (<X>, <Y>). Instead of copying the whole sentence, the model only has to write something like “<X> is for inviting, <Y> is last.” Shorter targets make training much cheaper."
           }
         },
         {
@@ -368,18 +383,18 @@
         {
           "list": [
             "**Big picture**: BERT-style denoising is best; the prefix language model is close on translation; deshuffling is clearly worst.",
-            "**Simplifying BERT**: removing the “replace with random word” step, or only predicting the masked parts (replace corrupted spans, drop corrupted tokens), performs about the same. Predicting only the masked parts produces much shorter target sequences, so training is faster.",
-            "**How much to mask**: the paper tries 10%, 15%, 25%, and 50%. The differences are small; only 50% is clearly worse on GLUE and SQuAD. So it keeps BERT’s 15%.",
-            "**Span masking**: instead of masking tokens independently, mask consecutive spans. With an average span length of 3, this is slightly better than per-token masking on most non-translation tasks, and the sequences are shorter, so training is faster."
+            "**Simplifying BERT**: dropping the random-word replacement step, or only predicting the masked part (replace spans, drop tokens), performs about the same. Predicting only the masked parts makes target sequences much shorter and training faster.",
+            "**How much to mask**: they tried 10%, 15%, 25%, and 50%. Differences are small; only 50% clearly hurts GLUE and SQuAD. So they keep BERT’s 15%.",
+            "**Masking spans**: instead of masking tokens independently, mask contiguous spans. An average span length of 3 is slightly better than per-token masking on most non-translation tasks, and the sequences are shorter and faster to train."
           ]
         },
         {
           "fig": {
             "type": "table",
-            "title": "Back-of-the-envelope: why predicting only masked parts and span masking saves compute",
-            "subtitle": "Illustrative: a 500-token text with 15% masked. The span-masking example comes from Section 3.3.4 of the paper; the other lengths are computed here according to the paper’s rules, and the number of spans for per-token masking is an expected value.",
+            "title": "The arithmetic: why predicting only masked spans saves compute",
+            "subtitle": "Illustrative: a 500-token text with 15% masked. Span-corruption example from Section 3.3.4; other lengths are computed by us from the paper’s rules; the span count for per-token masking is an expectation.",
             "columns": [
-              "Approach",
+              "Method",
               "Masked tokens",
               "Spans",
               "Input length",
@@ -394,14 +409,14 @@
                 "500"
               ],
               [
-                "Per-token masking, replace corrupted spans",
+                "Per-token masking, replace spans",
                 "75",
-                "about 64",
-                "about 489",
-                "about 140"
+                "≈ 64",
+                "≈ 489",
+                "≈ 140"
               ],
               [
-                "Span masking, average length 3",
+                "Span masking, mean length 3",
                 "75",
                 "25",
                 "450",
@@ -411,48 +426,48 @@
             "highlight": {
               "row": 2
             },
-            "note": "With span masking, input = 500 - 75 + 25 sentinels; target = 75 + 25 sentinels + 1 end sentinel. The decoder’s attention cost grows with target length, so shrinking the target from 500 to about 100 makes pre-training far cheaper."
+            "note": "With span corruption, input = 500 − 75 + 25 sentinels; target = 75 + 25 sentinels + 1 terminal sentinel. Decoder attention cost grows with target length, so shrinking the target from 500 to about 100 makes pretraining far cheaper."
           }
         },
         {
-          "p": "The paper sums up this section candidly: the most significant difference is only that “denoising beats language modeling and deshuffling.” The denoising variants differ little, so **choose mainly by compute cost**. It adds that continuing to fine-tune these objectives probably won’t yield much, and that it may be better to explore entirely different ways of using unlabeled data."
+          "p": "The paper’s summary here is candid: the only clear difference is that denoising beats language modeling and deshuffling. The denoising variants are close enough that **compute cost should drive the choice**. It adds that fine-tuning these objectives further probably has limited upside; the field would gain more from exploring entirely different ways to use unlabeled data."
         },
         {
           "quiz": {
-            "q": "What pre-training objective did T5 ultimately use?",
+            "q": "Which pretraining objective did T5 ultimately use?",
             "options": [
-              "Predict the next word from left to right",
-              "Randomly mask 15% of tokens as consecutive spans of average length 3, replace each span with a sentinel, and output only the masked spans",
+              "Predict the next word left to right",
+              "Mask 15% of tokens as contiguous spans with mean length 3, replace each span with a sentinel, and output only the masked spans.",
               "Shuffle the sentence and reconstruct it",
               "Mask 50% of tokens"
             ],
             "answer": 1,
-            "why": "This “span masking” objective performs about as well as the other denoising variants, but has the shortest target sequence and trains fastest. The paper’s principle: when performance is equal, choose by compute cost."
+            "why": "Span corruption performs about the same as other denoising variants, but has the shortest targets and trains fastest. The paper’s principle: when quality is comparable, choose by compute cost."
           }
         }
       ]
     },
     {
-      "h": "Data: C4, and how much “clean” and “on-target” matter",
+      "h": "Data: C4, and why “clean” and “in-domain” matter",
       "blocks": [
         {
-          "p": "C4 comes from Common Crawl web text from April 2019. Common Crawl produces about 20TB of text per month, but much of it is menus, error messages, and duplicated content. The paper cleans it with a simple set of rules:"
+          "p": "C4 starts from Common Crawl’s April 2019 web text. Common Crawl produces about 20TB of text every month, but much of it is menus, error messages, and duplicated content. The paper cleans it with a set of simple rules:"
         },
         {
           "list": [
-            "Keep only lines that end in a period, question mark, exclamation mark, or end quote.",
-            "Discard pages with fewer than 3 sentences, and keep only lines with at least 5 words.",
-            "Remove any page that contains a word on the bad-words list.",
-            "Remove lines containing “Javascript,” pages containing “lorem ipsum” placeholder text, and pages containing curly braces (likely code).",
-            "Remove Wikipedia-style citation markers and boilerplate privacy policies and cookie notices.",
-            "Keep only one copy of any repeated three-sentence span; use language detection to keep only pages classified as English with probability at least 0.99."
+            "Keep only lines ending in a period, question mark, exclamation mark, or closing quotation mark.",
+            "Discard pages with fewer than 3 sentences; keep only lines with at least 5 words.",
+            "Remove any page containing a word from the “List of Dirty, Naughty, Obscene or Otherwise Bad Words.”",
+            "Remove lines containing “Javascript”; remove pages containing “lorem ipsum” placeholder text; remove pages containing curly brackets, since they are mostly code.",
+            "Remove Wikipedia-style citation markers and boilerplate policy or cookie notices.",
+            "Deduplicate any three-sentence span that appears more than once; use language detection to keep only pages classified as English with probability at least 0.99."
           ]
         },
         {
           "fig": {
             "type": "table",
-            "title": "What happens with different pre-training data",
-            "subtitle": "From Table 8 of the paper (partial), validation set.",
+            "title": "What happens if you pretrain on different data?",
+            "subtitle": "From Table 8 (excerpt), validation set.",
             "columns": [
               "Data",
               "Size",
@@ -483,7 +498,7 @@
                 "72.38"
               ],
               [
-                "WebText-like (Reddit links with score ≥ 3)",
+                "WebText-like (links with Reddit score ≥ 3)",
                 "17GB",
                 "84.03",
                 "81.42",
@@ -497,27 +512,27 @@
                 "68.01"
               ],
               [
-                "Wikipedia + Toronto Books corpus",
+                "Wikipedia + Toronto Books Corpus",
                 "20GB",
                 "83.65",
                 "82.08",
                 "73.24"
               ]
             ],
-            "note": "Uncleaned C4 is worst on every task. Task-matched data sometimes helps: Wikipedia + Books does better on SuperGLUE, almost entirely because of MultiRC, whose data mostly comes from novels."
+            "note": "Uncleaned C4 is worst on every task. In-domain data sometimes helps: Wikipedia + books scores higher on SuperGLUE, almost entirely because of MultiRC, whose data largely comes from fiction."
           }
         },
         {
-          "p": "**On-target data helps, but it shrinks the dataset.** For example, WebText-like data performs well, but it uses 12 times as much raw web text and ends up only about 1/40 the size of C4. Smaller data means more reuse—so what does that cost?"
+          "p": "**In-domain data helps, but it shrinks the corpus.** WebText-like data performs well, but it takes 12x the raw pages to end up with about 1/40 as much data as C4. Smaller data means more repetition — and what does that cost?"
         },
         {
           "fig": {
             "type": "table",
-            "title": "Too many data repeats degrade results",
-            "subtitle": "From Table 9 of the paper (partial). Total training is fixed at 2^{35} tokens, using only the first N tokens of C4, so the data is repeated many times.",
+            "title": "Too much data repetition hurts",
+            "subtitle": "From Table 9 (excerpt). Total training is fixed at 2^{35} tokens, using only the first N tokens of C4, so the data is repeated many times.",
             "columns": [
               "Data used",
-              "Repeats",
+              "Repetitions",
               "GLUE",
               "SQuAD",
               "SGLUE"
@@ -559,29 +574,29 @@
                 "59.29"
               ]
             ],
-            "note": "Repeating 64 times matters little; repeating thousands of times clearly hurts. Training loss also drops substantially as the data shrinks, and the paper thinks the model is starting to memorize the data. So it recommends using large datasets when possible."
+            "note": "Repeating data 64 times makes little difference, but hundreds or thousands of repetitions clearly hurt. Training loss also drops sharply with smaller data, which the paper takes as a sign the model is memorizing. The recommendation: use the largest dataset you can."
           }
         }
       ]
     },
     {
-      "h": "Training strategy: how many parameters to fine-tune, and whether to use multi-task learning",
+      "h": "Training strategy: how many parameters to fine-tune, and whether to multitask",
       "blocks": [
         {
-          "p": "**Is fine-tuning only part of the parameters enough?** The paper compares two parameter-saving methods: inserting small “adapter” layers after each feed-forward network and training only those, or gradually “unfreezing” layers from the top. Both underperform fine-tuning all parameters. The adapter pattern is that small tasks need only a small internal dimension, while large tasks such as translation need a large dimension."
+          "p": "**Can you get away with fine-tuning only some parameters?** The paper compares two parameter-saving approaches: inserting small “adapter” layers after each feed-forward network and training only those, or “unfreezing” the model layer by layer from the top. Neither beats fine-tuning all parameters. The adapter pattern is that small tasks need only a small inner dimension, while large tasks like translation need a larger one."
         },
         {
           "fig": {
             "type": "table",
-            "title": "Fine-tuning only some parameters underperforms full fine-tuning",
-            "subtitle": "From Table 10 of the paper (partial). d is the adapter’s internal dimension.",
+            "title": "Partial fine-tuning always underperforms full fine-tuning",
+            "subtitle": "From Table 10 (excerpt). d is the adapter’s inner dimension",
             "columns": [
               "Fine-tuning method",
               "GLUE",
               "SQuAD",
               "SGLUE",
-              "En-De",
-              "En-Fr"
+              "EN-DE",
+              "EN-FR"
             ],
             "rows": [
               [
@@ -625,7 +640,7 @@
                 "27.50"
               ],
               [
-                "Gradual unfreezing",
+                "Layer-by-layer unfreezing",
                 "82.50",
                 "79.17",
                 "70.79",
@@ -636,62 +651,62 @@
             "highlight": {
               "row": 4
             },
-            "note": "Note that the d = 2048 row is identical to d = 128: all seven metrics in Table 10 match exactly (only five are shown here), most likely a copy-paste error in the table. See “A few details worth noting” below."
+            "note": "The d = 2048 row is identical to the d = 128 row: all seven metrics in Table 10 match exactly (only five are shown here), likely a copy-paste error in the paper. See “Details worth noting” later."
           }
         },
         {
-          "p": "**Multi-task training**. In the text-to-text framework, multi-task training means sampling from a mixture of all the datasets. The hard part is how much to sample from each task: if you sample in proportion to dataset size, large tasks crowd out small ones. The paper sets a per-dataset cap K and then samples proportionally, or uses a “temperature” to level out the proportions. The result: plain multi-task training underperforms “pre-training + separate fine-tuning,” but **pre-training on the multi-task mixture first and then fine-tuning each task separately** performs on par with the baseline."
+          "p": "**Multitask training.** In the text-to-text framework, multitask training simply means sampling from a mixture of datasets. The hard part is deciding how much to sample from each task. Sampling proportionally by dataset size lets big tasks crowd out small ones, so the paper sets a cap K per dataset and samples proportionally to that capped size, or uses a “temperature” to flatten the ratios. The result: direct multitask training is worse than “pretraining + separate fine-tuning,” but **pretraining on the multitask mixture and then fine-tuning each task separately** matches the baseline."
         },
         {
           "fig": {
             "type": "table",
-            "title": "Ways of doing multi-task training",
-            "subtitle": "From Table 12 of the paper (partial), validation set.",
+            "title": "Multitask training variants",
+            "subtitle": "From Table 12 (excerpt), validation set",
             "columns": [
               "Approach",
               "GLUE",
               "SQuAD",
               "SGLUE",
-              "En-Ro"
+              "EN-RO"
             ],
             "rows": [
               [
-                "Unsupervised pre-training + fine-tuning (baseline)",
+                "Unsupervised pretraining + fine-tuning (baseline)",
                 "83.28",
                 "80.88",
                 "71.36",
                 "27.65"
               ],
               [
-                "Multi-task training (no separate fine-tuning)",
+                "Multitask training (no separate fine-tuning)",
                 "81.42",
                 "79.78",
                 "67.30",
                 "27.76"
               ],
               [
-                "Multi-task pre-training + fine-tuning",
+                "Multitask pretraining + fine-tuning",
                 "83.11",
                 "80.26",
                 "71.03",
                 "28.07"
               ],
               [
-                "Leave-one-out multi-task pre-training + fine-tuning",
+                "Leave-one-out multitask pretraining + fine-tuning",
                 "81.98",
                 "79.97",
                 "71.68",
                 "27.87"
               ],
               [
-                "Pre-training on supervised tasks only + fine-tuning",
+                "Supervised-only pretraining + fine-tuning",
                 "79.93",
                 "77.38",
                 "65.36",
                 "28.04"
               ]
             ],
-            "note": "“Leave-one-out” means deliberately leaving a particular task out during pre-training and then fine-tuning on it, to simulate encountering a new task; it is only slightly worse, suggesting multi-task pre-training does not seriously interfere with new tasks. Pre-training on supervised data only, without unlabeled data, is clearly worse across the board except on translation."
+            "note": "“Leave-one-out” means deliberately excluding one task from pretraining and then fine-tuning on it, to simulate seeing a new task. It is only slightly worse, suggesting multitask pretraining does not seriously hurt new tasks. Pretraining on supervised data only, without unlabeled data, is clearly worse on everything except translation."
           }
         }
       ]
@@ -700,20 +715,20 @@
       "h": "Scale: how to spend 4x more compute",
       "blocks": [
         {
-          "p": "The paper poses a very practical question: “If you suddenly had 4x the compute, how would you use it?” It compares training longer, increasing the batch size, making the model bigger, and ensembling multiple models."
+          "p": "The paper asks a practical question: “If you suddenly had 4x more compute, how would you spend it?” It compares training longer, using larger batches, making the model bigger, and ensembling multiple models."
         },
         {
           "fig": {
             "type": "table",
-            "title": "The same 4x compute budget, allocated different ways",
-            "subtitle": "From Table 13 of the paper (partial), validation set.",
+            "title": "The same 4x compute budget, spent four different ways",
+            "subtitle": "From Table 13 (excerpt), validation set",
             "columns": [
               "Approach",
               "GLUE",
               "CNNDM",
               "SQuAD",
               "SGLUE",
-              "En-De"
+              "EN-DE"
             ],
             "rows": [
               [
@@ -725,7 +740,7 @@
                 "26.98"
               ],
               [
-                "Same model, 4x training steps",
+                "Same model, 4x steps",
                 "85.33",
                 "19.33",
                 "82.45",
@@ -741,7 +756,7 @@
                 "27.07"
               ],
               [
-                "2x larger model, 2x training steps",
+                "2x model, 2x steps",
                 "86.18",
                 "19.66",
                 "84.18",
@@ -749,7 +764,7 @@
                 "27.52"
               ],
               [
-                "4x larger model, same steps",
+                "4x model, same steps",
                 "85.91",
                 "19.73",
                 "83.86",
@@ -757,7 +772,7 @@
                 "27.47"
               ],
               [
-                "Ensemble of 4 models",
+                "4-model ensemble",
                 "84.77",
                 "20.10",
                 "83.09",
@@ -768,36 +783,36 @@
             "highlight": {
               "row": 3
             },
-            "note": "All of these options help. Scaling up the model is generally better than just training longer; a 2x larger model trained for 2x as long is roughly comparable to a 4x larger model, so the two can complement each other. Ensembling is best on summarization and translation but barely helps on SuperGLUE."
+            "note": "All of these help. Making the model bigger usually beats simply training longer; a 2x model trained for 2x steps performs about the same as a 4x model, so the two approaches can complement each other. Ensembling works best on summarization and translation but barely helps on SuperGLUE."
           }
         },
         {
-          "p": "The paper also notes the flip side of these choices: a larger model makes downstream fine-tuning and inference more expensive, whereas pre-training a smaller model longer can spread that cost over many downstream tasks."
+          "p": "The paper also notes the other side of these choices: larger models make downstream fine-tuning and inference more expensive, while extra pretraining of a smaller model can be amortized across many downstream tasks."
         }
       ]
     },
     {
-      "h": "Putting it all together: T5’s final recipe and results",
+      "h": "Putting it together: T5's final recipe and results",
       "blocks": [
         {
-          "p": "The final T5 combines these findings: the span-masking objective (average length 3, mask 15%); pre-training for 1 million steps with batches of 2^{11} sequences of length 512, for about 1 trillion tokens total, roughly 32x the baseline; pre-training first on the multi-task mixture, then fine-tuning each task individually; and beam search with width 4 for translation and summarization. The model comes in five sizes:"
+          "p": "The final T5 combines the earlier findings: span corruption (mean span length 3, 15% of tokens masked); pretraining for 1,000,000 steps with batches of 2^{11} sequences of length 512, totaling about 1 trillion tokens — about 32x the baseline; pretraining on a multitask mixture first, then fine-tuning each task separately; and beam search with width 4 for translation and summarization. The model comes in five sizes:"
         },
         {
           "fig": {
             "type": "table",
-            "title": "Five T5 sizes and their results",
-            "subtitle": "From Section 3.7 and Table 14 of the paper (partial), test set (SQuAD on validation). “Previous best” is as of October 24, 2019.",
+            "title": "Five T5 sizes and their scores",
+            "subtitle": "From Section 3.7 and Table 14 (excerpt), test set (SQuAD on validation). “Prior best” is as of October 24, 2019.",
             "columns": [
               "Model",
               "Parameters",
               "GLUE",
               "SuperGLUE",
               "SQuAD exact match",
-              "En-De BLEU"
+              "EN-DE BLEU"
             ],
             "rows": [
               [
-                "Previous best",
+                "Prior best",
                 "—",
                 "89.4",
                 "84.6",
@@ -806,7 +821,7 @@
               ],
               [
                 "T5-Small",
-                "about 60 million",
+                "≈ 60M",
                 "77.4",
                 "63.3",
                 "79.10",
@@ -814,7 +829,7 @@
               ],
               [
                 "T5-Base",
-                "about 220 million",
+                "≈ 220M",
                 "82.7",
                 "76.2",
                 "85.44",
@@ -822,7 +837,7 @@
               ],
               [
                 "T5-Large",
-                "about 770 million",
+                "≈ 770M",
                 "86.4",
                 "82.3",
                 "86.66",
@@ -830,7 +845,7 @@
               ],
               [
                 "T5-3B",
-                "about 2.8 billion",
+                "≈ 2.8B",
                 "88.5",
                 "86.4",
                 "88.53",
@@ -838,7 +853,7 @@
               ],
               [
                 "T5-11B",
-                "about 11 billion",
+                "≈ 11B",
                 "90.3",
                 "88.9",
                 "91.26",
@@ -848,92 +863,92 @@
             "highlight": {
               "row": 5
             },
-            "note": "SuperGLUE rises from 84.6 to 88.9, close to the human score of 89.8. None of the translation tasks beat the previous best result; the paper attributes this partly to pre-training only on English, while the best translation systems used data augmentation such as back-translation."
+            "note": "SuperGLUE rises from 84.6 to 88.9, approaching the human score of 89.8. None of the translation tasks beat the prior best; the paper attributes this partly to pretraining only on English, while the best translation systems used data augmentation such as back-translation."
           }
         },
         {
           "list": [
-            "**GLUE**: averages 90.3, clearly surpassing the previous best on reasoning tasks such as MNLI, RTE, and WNLI.",
-            "**SuperGLUE**: leads by a wide margin, but on two reading comprehension tasks it “exceeds human performance,” which the paper says may indicate that the metrics for these tasks favor machine output; on COPA and WSC humans score 100%, and the model is still far behind.",
-            "**SQuAD**: scores more than a point above the previous best, but is already past the estimated human level (82.30 exact match), so the paper doubts there is much value in continuing to push this leaderboard.",
-            "**Summarization**: reaches the best result, but only ROUGE-2 leads clearly; the paper also notes that a high ROUGE score does not mean the summaries are more coherent."
+            "**GLUE**: average 90.3, clearly ahead of the prior best on reasoning tasks such as MNLI, RTE, and WNLI.",
+            "**SuperGLUE**: a big lead overall, but on two reading comprehension tasks it “exceeds human performance,” which the paper says suggests the metrics may favor machine output. On COPA and WSC, humans score 100%, and the model is still far behind.",
+            "**SQuAD**: beats the prior best by more than a point, but it is already above the estimated human level (exact match 82.30), so the paper doubts that continuing to push this leaderboard is very meaningful.",
+            "**Summarization**: reaches state of the art, but only ROUGE-2 leads clearly; the paper also notes that a higher ROUGE score does not mean a summary is more coherent."
           ]
         },
         {
-          "p": "**How much do improvements beyond scale matter?** The paper runs one final experiment for this: train the baseline on 1 trillion tokens too (matching scale), then compare it with T5-Base, which adds span masking, multi-task pre-training, and other improvements. T5-Base is better on every task, showing that success is not just from scale."
+          "p": "**How much do the improvements beyond scale matter?** The paper runs one final experiment: it also trains the baseline on 1 trillion tokens (same scale) and compares it with T5-Base, which adds span corruption, multitask pretraining, and other improvements. T5-Base wins on every task, showing that success is not just a matter of scale."
         }
       ]
     },
     {
-      "h": "A few details worth noting",
+      "h": "Details worth noting",
       "blocks": [
         {
           "list": [
-            "**Table 10 has a duplicated row**: the results for adapter dimension d = 2048 are exactly the same as for d = 128, all seven numbers identical. According to the paper’s statement that “large tasks need a large dimension,” 2048 should have done better on translation, so this row was most likely copied by mistake.",
-            "**“Exponential decay” is not actually exponential**: Section 3.1.2 says the learning rate follows 1 / √max(n, k), “remains at 0.01 for the first 10^{4} steps, then decays exponentially.” But 1 / √n is a power-law decay, much slower than exponential: by this formula, it is about 0.0032 at step 100,000 and about 0.0014 at step 524,288.",
-            "**“3B” is actually about 2.8 billion**: the main text says the 3B variant has about 2.8 billion parameters, but the note in Table 14 says 3 billion.",
-            "**The tokenization terminology is a bit muddled**: the paper says it uses SentencePiece to encode text as WordPiece tokens, while also citing the BPE paper and Kudo’s subword regularization paper. These three are related but distinct methods (see the BPE subword tokenization close read).",
-            "**The conclusions have qualifiers**: “encoder-decoder is best” holds in the “pre-train then fine-tune per task” setting; all comparisons change only one factor at a time at baseline scale, and the paper itself acknowledges it may miss interactions between factors."
+            "**Table 10 has a duplicated row**: the adapter dimension d = 2048 results are identical to d = 128 — all seven metrics match exactly. Since the text says large tasks need larger adapter dimensions, d = 2048 should be better on translation, so this row was likely copied by mistake.",
+            "**“Exponential decay” is not actually exponential**: Section 3.1.2 says the learning rate follows 1 / √max(n, k), “held at 0.01 for the first 10^{4} steps, then decaying exponentially.” But 1 / √n is a power-law decay, much slower than exponential decay: by this formula it is about 0.0032 at step 100,000 and about 0.0014 at step 524,288.",
+            "**“3B” is actually about 2.8B**: the body text says the 3B variant has about 2.8 billion parameters, but the note in Table 14 says 3 billion.",
+            "**The tokenizer description is a bit muddled**: the paper says it “uses SentencePiece to encode text into WordPiece tokens,” while citing the BPE paper and Kudo’s subword regularization paper. These three are related but distinct methods (see the BPE subword tokenization deep read).",
+            "**The conclusions carry caveats**: “encoder-decoder is best” holds under pretraining followed by per-task fine-tuning. All comparisons were done at baseline scale while changing one factor at a time, and the paper itself admits they may miss interactions between factors."
           ]
         }
       ]
     },
     {
-      "h": "Afterward: T5’s legacy",
+      "h": "Afterwards: T5's legacy",
       "blocks": [
         {
           "list": [
             "**Text-to-text became the default mental model**: today’s large models almost all work through a “text in, text out” interface, and prompting is a natural extension of T5’s task prefixes.",
-            "**C4 became a common pre-training dataset**: C4 makes up 15% of LLaMA’s pre-training data.",
-            "**The architecture debate had a different ending**: T5 concluded that encoder-decoder was best, but later large language models (GPT-3, LLaMA, etc.) mostly chose decoder-only architectures. One reason is that the objective changed: when models are no longer fine-tuned per task but instead complete tasks directly through prompting, a large left-to-right stack is simpler and easier to scale.",
-            "**A through-line to multi-task and instruction-based training**: T5 found that “multi-task pre-training + fine-tuning” is no worse than plain pre-training; later work such as FLAN trained on many tasks written as natural language instructions, enabling zero-shot performance on unseen tasks (see the site’s alignment and safety track)."
+            "**C4 became a standard pretraining corpus**: C4 makes up 15% of LLaMA’s pretraining data.",
+            "**Another ending to the architecture debate**: T5 concluded that encoder-decoder was best, but later large language models (GPT-3, LLaMA, and others) mostly chose decoder-only. One reason is that the goal changed: when models no longer fine-tune per task and instead use prompts to perform tasks directly, a single left-to-right stack is simpler and easier to scale.",
+            "**A continuation through multitask and instruction tuning**: T5 found that “multitask pretraining + fine-tuning” was no worse than plain pretraining. Later work such as FLAN trained on many tasks written as natural-language instructions, enabling zero-shot performance on unseen tasks (see this site’s “Alignment and Safety” route)."
           ]
         },
         {
-          "p": "The next stop on this route is **sparse mixture-of-experts (MoE)**: Noam Shazeer, T5’s second author, proposed it in 2017 as a way for a model to have a huge number of parameters while using only a small fraction of them on each call."
+          "p": "The next paper in this reading path is **sparse mixture of experts (MoE)**: proposed in 2017 by T5’s second author, Noam Shazeer, it lets a model have a huge number of parameters while using only a small fraction of them at a time."
         }
       ]
     },
     {
-      "h": "Check yourself: did you really get it?",
+      "h": "Quiz: did you really get it?",
       "blocks": [
         {
           "quiz": {
             "q": "In the text-to-text framework, how is a regression task like STS-B, which requires a score from 1 to 5, handled?",
             "options": [
-              "Use a different regression output layer",
-              "Round the score to the nearest 0.2, write it as a string for the model to output, effectively turning it into 21-class classification",
-              "Skip the task",
-              "Output only 1 or 5"
+              "Swap in a regression output head",
+              "Round the score to the nearest 0.2 and write it as a string for the model to output, turning it into 21-way classification",
+              "Skip this task",
+              "Only output 1 or 5"
             ],
             "answer": 1,
-            "why": "This is both the cost and the cleverness of “everything is text”: numbers are written as text too. At test time, if the model outputs a string that is a number between 1 and 5, convert it back to a float; otherwise count it as wrong."
+            "why": "This is both the cost and the cleverness of “everything is text”: numbers become text too. At test time, if the model outputs a string that is a number between 1 and 5, it is converted back to a float; otherwise it is counted as wrong."
           }
         },
         {
           "quiz": {
-            "q": "Why does the paper say pre-training objectives “should mainly be chosen by compute cost”?",
+            "q": "Why does the paper say the pretraining objective “should mainly be chosen by compute cost”?",
             "options": [
               "Because compute is expensive",
-              "Because the various denoising objectives perform about the same, but their target sequence lengths differ a lot, and shorter ones train faster",
+              "Because the denoising objectives perform about the same, but their target sequences differ greatly in length, and shorter targets train faster",
               "Because the language model objective is best",
-              "Because the BERT objective is too complex"
+              "Because the BERT objective is too complicated"
             ],
             "answer": 1,
-            "why": "Aside from “denoising beats language modeling and deshuffling,” the differences among the other variants are all near the noise level. Span masking outputs only the masked parts, cutting target length from 500 to about 100."
+            "why": "Apart from “denoising beats language modeling and deshuffling,” differences among the other variants are all near the noise floor. Span corruption only outputs the masked parts, shrinking the target length from 500 to about 100."
           }
         },
         {
           "quiz": {
-            "q": "In the “4x more compute” experiment, which approach is generally best?",
+            "q": "In the “4x more compute” experiment, which option usually works best?",
             "options": [
-              "Only increase batch size 4x",
-              "Make the model bigger (2x model for 2x time, or 4x model), which usually beats just training longer",
-              "Change nothing",
-              "Only use ensembling"
+              "Only increase the batch size 4x",
+              "Make the model bigger (2x model for 2x steps, or 4x model), which usually beats only training longer",
+              "Do nothing",
+              "Only ensemble"
             ],
             "answer": 1,
-            "why": "Scaling up the model usually helps more than just training longer; a 2x model for 2x time and a 4x model are roughly comparable. Ensembling is strong on some tasks but nearly useless on SuperGLUE."
+            "why": "Making the model bigger usually helps more than only training longer; a 2x model for 2x steps is about the same as a 4x model. Ensembling is strong on some tasks but almost useless on SuperGLUE."
           }
         },
         {
@@ -941,11 +956,11 @@
         },
         {
           "list": [
-            "What is the text-to-text framework? How are classification, regression, and translation each written as text?",
-            "What are the differences among encoder-decoder, decoder-only, and prefix language model? Why can’t parameter count and compute be aligned at the same time?",
-            "What is T5’s span-masking objective? Why does it save compute compared with the BERT-style objective?",
-            "How was C4 cleaned? What effects do cleaning, on-target data, and repetition have?",
-            "What were the results of fine-tuning only some parameters and of multi-task training, respectively?",
+            "What is the text-to-text framework? How are classification, regression, and translation turned into text?",
+            "What are the differences among encoder-decoder, decoder-only, and prefix language models? Why can’t parameter count and compute be matched at the same time?",
+            "What is T5’s span-corruption objective, and why is it cheaper than the BERT-style objective?",
+            "How was C4 cleaned? What effects do cleaning, domain match, and repetition have?",
+            "What were the results for partial fine-tuning and multitask training?",
             "With 4x more compute, how does the paper suggest spending it?",
             "What are the shortcomings of T5’s final results?"
           ]
@@ -960,7 +975,7 @@
       "date": "2023-09-19",
       "url": "https://arxiv.org/abs/1910.10683"
     },
-    "note": "This article is based on version 4 of the paper on arXiv (the JMLR 2020 official version), first released in October 2019. Tables marked “Illustrative” are calculated by this site according to the rules given in the paper. The share of C4 used in LLaMA is taken from the LLaMA paper; later large models mostly using decoder-only architectures, FLAN, and similar points come from public sources and are not in this paper."
+    "note": "This article is based on arXiv v4 of the paper (the JMLR 2020 published version), first released in October 2019. Tables marked “Illustrative” are computed by this site according to the rules given in the paper. The share of C4 in LLaMA is taken from the LLaMA paper; points about later large models mostly using decoder-only architectures, FLAN, and similar content come from public sources, not from this paper."
   },
   "claims": [
     {
@@ -971,18 +986,18 @@
       "as_written": "JMLR"
     },
     {
-      "text": "C4, about 750GB",
+      "text": "C4 about 750GB",
       "value": "750 GB",
       "source_url": "https://arxiv.org/abs/1910.10683",
       "quote": "(about 750 GB)",
       "as_written": "750GB"
     },
     {
-      "text": "Largest model: 11 billion parameters",
+      "text": "Largest model 11B parameters",
       "value": "11 billion",
       "source_url": "https://arxiv.org/abs/1910.10683",
       "quote": "training\nmodels up to 11 billion parameters",
-      "as_written": "11 billion"
+      "as_written": "11B"
     },
     {
       "text": "Best on 18 of 24 tasks",
@@ -992,39 +1007,39 @@
       "as_written": "18"
     },
     {
-      "text": "Baseline: about 220 million parameters",
+      "text": "Baseline about 220M parameters",
       "value": "220 million",
       "source_url": "https://arxiv.org/abs/1910.10683",
       "quote": "about 220 million parameters",
-      "as_written": "220 million"
+      "as_written": "220M"
     },
     {
-      "text": "32 relative position embeddings, 128",
+      "text": "32 relative position embeddings, 128 max offset",
       "value": "32",
       "source_url": "https://arxiv.org/abs/1910.10683",
       "quote": "we use 32\nembeddings",
       "as_written": "32"
     },
     {
-      "text": "Vocabulary: 32,000",
+      "text": "Vocabulary 32,000",
       "value": "32,000",
       "source_url": "https://arxiv.org/abs/1910.10683",
       "quote": "a vocabulary of 32,000",
       "as_written": "32,000"
     },
     {
-      "text": "About 34 billion tokens",
+      "text": "About 34B tokens",
       "value": "34B",
       "source_url": "https://arxiv.org/abs/1910.10683",
       "quote": "34B tokens",
-      "as_written": "34 billion"
+      "as_written": "34B"
     },
     {
-      "text": "One quarter of BERT’s",
+      "text": "One quarter of BERT",
       "value": "1⁄4",
       "source_url": "https://arxiv.org/abs/1910.10683",
       "quote": "roughly 1⁄4",
-      "as_written": "one quarter"
+      "as_written": "One quarter"
     },
     {
       "text": "Mask 15%",
@@ -1034,14 +1049,14 @@
       "as_written": "15%"
     },
     {
-      "text": "CB validation set: 56 examples",
+      "text": "CB validation set has 56 examples",
       "value": "56",
       "source_url": "https://arxiv.org/abs/1910.10683",
       "quote": "contains only 56 examples",
       "as_written": "56"
     },
     {
-      "text": "Common Crawl: 20TB per month",
+      "text": "Common Crawl 20TB per month",
       "value": "20TB",
       "source_url": "https://arxiv.org/abs/1910.10683",
       "quote": "around 20TB of scraped text data each month",
@@ -1059,10 +1074,10 @@
       "value": "3 sentences",
       "source_url": "https://arxiv.org/abs/1910.10683",
       "quote": "fewer than 3 sentences",
-      "as_written": "3"
+      "as_written": "3 sentences"
     },
     {
-      "text": "12x the data, about 1/40",
+      "text": "12x data, about 1/40",
       "value": "40×",
       "source_url": "https://arxiv.org/abs/1910.10683",
       "quote": "about 40× smaller than C4 despite being based on 12× more data",
@@ -1090,11 +1105,11 @@
       "as_written": "32x"
     },
     {
-      "text": "1 million steps",
+      "text": "1M steps",
       "value": "1 million",
       "source_url": "https://arxiv.org/abs/1910.10683",
       "quote": "for 1 million\nsteps",
-      "as_written": "1 million steps"
+      "as_written": "1M steps"
     },
     {
       "text": "4x compute",
@@ -1111,32 +1126,32 @@
       "as_written": "2x"
     },
     {
-      "text": "Small: about 60 million",
+      "text": "Small about 60M",
       "value": "60 million",
       "source_url": "https://arxiv.org/abs/1910.10683",
       "quote": "about 60 million parameters",
-      "as_written": "60 million"
+      "as_written": "60M"
     },
     {
-      "text": "Large: about 770 million",
+      "text": "Large about 770M",
       "value": "770 million",
       "source_url": "https://arxiv.org/abs/1910.10683",
       "quote": "around 770 million parameters",
-      "as_written": "770 million"
+      "as_written": "770M"
     },
     {
-      "text": "3B: about 2.8 billion",
+      "text": "3B about 2.8B",
       "value": "2.8 billion",
       "source_url": "https://arxiv.org/abs/1910.10683",
       "quote": "around\n2.8 billion parameters",
-      "as_written": "2.8 billion"
+      "as_written": "2.8B"
     },
     {
-      "text": "Table 14 says 3 billion",
+      "text": "Table 14 says 3B",
       "value": "3 billion",
       "source_url": "https://arxiv.org/abs/1910.10683",
       "quote": "3 billion, and 11 billion parameters",
-      "as_written": "3 billion"
+      "as_written": "3B"
     },
     {
       "text": "SuperGLUE 84.6 → 88.9",
@@ -1146,7 +1161,7 @@
       "as_written": "88.9"
     },
     {
-      "text": "Human: 89.8",
+      "text": "Human 89.8",
       "value": "89.8",
       "source_url": "https://arxiv.org/abs/1910.10683",
       "quote": "human\nperformance of 89.8",
@@ -1160,14 +1175,14 @@
       "as_written": "90.3"
     },
     {
-      "text": "SQuAD human: 82.30",
+      "text": "SQuAD human 82.30",
       "value": "82.30",
       "source_url": "https://arxiv.org/abs/1910.10683",
       "quote": "82.30",
       "as_written": "82.30"
     },
     {
-      "text": "COPA, WSC human: 100%",
+      "text": "COPA, WSC human 100%",
       "value": "100%",
       "source_url": "https://arxiv.org/abs/1910.10683",
       "quote": "humans achieve 100% accuracy on both COPA and WSC",
@@ -1213,10 +1228,10 @@
       "value": "4",
       "source_url": "https://arxiv.org/abs/1910.10683",
       "quote": "a beam width of 4",
-      "as_written": "width 4"
+      "as_written": "Width 4"
     },
     {
-      "text": "Table 1: baseline",
+      "text": "Table 1: Baseline",
       "value": "83.28",
       "source_url": "https://arxiv.org/abs/1910.10683",
       "quote": "83.28",
@@ -1370,7 +1385,7 @@
       "as_written": "33.8"
     },
     {
-      "text": "LLaMA: C4 accounts for 15%",
+      "text": "LLaMA: C4 is 15%",
       "value": "15%",
       "source_url": "https://arxiv.org/abs/2302.13971",
       "quote": "C4 [15%]",
@@ -1380,5 +1395,5 @@
   "status": "published",
   "verified": false,
   "lang": "en",
-  "translated_from": "227ab463ea80155e"
+  "translated_from": "5c68e34e5ba03b4c"
 }

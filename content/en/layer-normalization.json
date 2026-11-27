@@ -3,14 +3,14 @@
   "category": "paper",
   "publisher": "Ba, Kiros, Hinton · University of Toronto",
   "date": "2016-07-21",
-  "title": "Layer Normalization: average in a different direction, drop the batch, become a Transformer staple",
-  "summary": "Batch normalization computes its mean and variance across training samples, so small batches break it and RNNs are awkward. Layer normalization computes them across all neurons in one layer for a single sample, making it independent of the batch. We work through the difference by hand, examine its invariances, RNN experiments, and weaknesses on convolutional networks, then look at how Transformer models have modified it twice.",
-  "ai_summary": "In \"Layer Normalization\" (Ba, Kiros, Hinton; University of Toronto, 2016), the authors switch batch normalization's \"statistics across a batch of samples\" to \"mean and variance across all neurons in the same layer for a single sample,\" then re-scale by a learned gain and add a bias. It does not depend on batch size, computes identically at training and test time, and can be applied separately at every RNN time step. The paper analyzes its invariance to scaling and shifting the whole weight matrix and to scaling individual samples, and shows faster training on tasks including image-text retrieval, reading comprehension, sentence representation, DRAW, and handwriting generation; on convolutional networks it is weaker than batch normalization.",
+  "title": "Layer Normalization: averaging across neurons instead of batches made it a Transformer staple",
+  "summary": "Batch normalization computes means and variances across a batch of samples, so it struggles with small batches and is hard to apply to RNNs. Layer normalization computes them across the neurons of one layer for a single sample, making it independent of the batch. We work through the difference by hand, examine its invariance properties, RNN results, and weaknesses on convolutional networks, then look at how it was adapted twice inside the Transformer.",
+  "ai_summary": "In “Layer Normalization” (Ba, Kiros, Hinton, University of Toronto, 2016), batch normalization’s “compute statistics across a batch of samples” becomes “compute the mean and variance across all neurons in the same layer for a single sample,” followed by a learned gain and bias. It does not depend on batch size, uses the same computation at training and test time, and can be computed separately at each time step of an RNN. The paper analyzes its invariance to scaling and shifting the entire weight matrix and to scaling a single sample, and shows faster training on image-caption retrieval, reading comprehension, sentence representation, DRAW, and handwriting generation; on convolutional networks, it is not as good as batch normalization.",
   "brief": [
-    "Problem: Batch normalization depends on batch size, behaves differently at training and test time, and is awkward for RNNs with variable-length sequences.",
-    "Method: For each sample, compute the mean and variance across all neurons in the same layer, normalize, then apply a learned gain and bias.",
-    "Result: It is independent of batch size and can be computed at every time step. RNN-style tasks generally train faster, with better results on image-text retrieval, sentence representation, and more.",
-    "Limits: It underperforms batch normalization on convolutional networks. Later, in Transformers, it moved to the sublayer input and was simplified to RMSNorm."
+    "Problem: batch normalization depends on batch size, behaves differently at training and test time, and is hard to use on RNNs with variable-length sequences.",
+    "Method: compute the mean and variance across all neurons in the same layer for a single sample, normalize, then apply a learned gain and bias.",
+    "Result: independent of batch size and usable at every time step; RNN tasks generally train faster, with better results on image-caption retrieval, sentence representation, and more.",
+    "Limitation: not as good as batch normalization on convolutional networks; later moved to the input of each sublayer in Transformers and simplified to RMSNorm."
   ],
   "paper": {
     "title": "Layer Normalization",
@@ -22,8 +22,8 @@
     "url": "https://arxiv.org/abs/1607.06450"
   },
   "cover": {
-    "headline": "Layer Normalization: a close reading of the original paper",
-    "highlight": "Normalize per sample, not per batch",
+    "headline": "A close reading of the Layer Normalization paper",
+    "highlight": "Normalizes each sample independently of the batch",
     "glyph": {
       "kind": "flow",
       "nodes": [
@@ -42,49 +42,49 @@
   },
   "sections": [
     {
-      "h": "The bottom line: what the paper actually did",
+      "h": "The short version: what the paper actually does",
       "blocks": [
         {
-          "p": "In July 2016, Jimmy Lei Ba, Jamie Ryan Kiros, and Geoffrey Hinton at the University of Toronto released this paper. The first author was also one of the authors of the earlier close reading of \"Adam.\""
+          "p": "In July 2016, Jimmy Lei Ba, Jamie Ryan Kiros, and Geoffrey Hinton at the University of Toronto published this paper. The first author was also one of the authors of “Adam.”"
         },
         {
-          "p": "It aims to improve on batch normalization, introduced by Google a year earlier. Batch normalization works like this: for every neuron in the network, look at its inputs over the current batch of training examples, compute their mean and variance, and standardize the inputs to mean 0 and variance 1. It made feed-forward networks train much faster, but it has two hard limitations: its effect depends on batch size, so tiny batches fail; and it is hard to apply to recurrent neural networks (RNNs), because each time step would need its own statistics."
+          "p": "It aims to improve **batch normalization**, which Google introduced a year earlier. Batch normalization takes each neuron, looks at its inputs across the current batch of training samples, computes the mean and variance, and “standardizes” the inputs to mean 0, variance 1. It made feedforward networks train much faster, but it has two hard problems: it depends on batch size and fails when the batch is too small, and it is hard to use in recurrent neural networks (RNNs), because every time step would need its own statistics."
         },
         {
-          "p": "Layer normalization changes only one thing: instead of computing statistics across samples in a batch, it computes them across all neurons in the same layer for the same sample. Each sample is normalized on its own, regardless of what else is in the batch or how large it is. Training and test time use exactly the same computation, and applying it to an RNN means computing the statistics once at each time step."
+          "p": "Layer normalization changes only the direction of averaging: **instead of computing statistics across samples in a batch, it computes them across all neurons in the same layer for the same sample**. Each sample normalizes itself, so it does not matter who else is in the batch or how large the batch is. Training and test computations are exactly the same. In an RNN, you only need to compute the statistics once at each time step."
         },
         {
-          "p": "The paper evaluates six task families, with emphasis on RNNs: image-text retrieval, reading comprehension, sentence representation, image generation, handwriting generation, and MNIST classification. Layer normalization generally trains faster and often produces better results. On convolutional networks, however, it does not beat batch normalization."
+          "p": "The paper evaluates six kinds of tasks, with the focus on RNNs: image-caption retrieval, reading comprehension, sentence representation, image generation, handwriting generation, and MNIST classification. Layer normalization generally trains faster and often gives better results; on convolutional networks, though, it is not as good as batch normalization."
         },
         {
-          "p": "At the time the paper was aimed mainly at RNNs, but what eventually made it a building block was the Transformer. From the original 2017 Transformer through GPT-2 and LLaMA, nearly every layer relies on layer normalization or a simplified version of it."
+          "p": "At the time, the paper was aimed mainly at RNNs. What later made it a foundational component was the Transformer: from the original 2017 Transformer to GPT-2 and LLaMA, nearly every layer relies on layer normalization or a simplified version."
         },
         {
           "callout": {
             "kind": "takeaway",
-            "title": "In one sentence",
-            "text": "Batch normalization: for the same neuron, compute mean and variance across a batch of examples. Layer normalization: for the same example, compute mean and variance across all neurons in a layer. Change the direction, and the dependence on the batch disappears."
+            "title": "The one-sentence version",
+            "text": "Batch normalization: take one neuron and compute the mean and variance across a batch of samples. Layer normalization: take one sample and compute the mean and variance across all neurons in a layer. Change the direction, and you are no longer dependent on the batch."
           }
         },
         {
           "callout": {
             "kind": "prereq",
-            "title": "Three small concepts you'll need",
-            "text": "If you don't know them, these three are enough:",
+            "title": "Three small concepts you need for this paper",
+            "text": "Don’t worry if they are unfamiliar; these three are enough:",
             "list": [
-              "**Neuron input (summed input)**: the previous layer's output is multiplied by weights and summed, written a. This is what gets normalized, before the bias is added and before the activation function.",
-              "**Standardization**: subtract the mean and divide by the standard deviation so a set of numbers has mean 0 and standard deviation 1.",
-              "**Recurrent neural network (RNN)**: at each time step, the same weights process one word and pass the hidden state to the next step. See the \"Seq2Seq\" reading for more."
+              "**A neuron’s input (summed input)**: the previous layer’s outputs multiplied by the weights and summed, written a. This is what gets normalized, before the bias and activation function are applied.",
+              "**Standardization**: subtract the mean and divide by the standard deviation, so that a set of numbers has mean 0 and standard deviation 1.",
+              "**Recurrent neural network (RNN)**: at each time step, it processes one word with the same set of weights and passes the hidden state to the next step. See the Seq2Seq close reading for more."
             ]
           }
         }
       ]
     },
     {
-      "h": "Background: where batch normalization helps—and where it gets stuck",
+      "h": "Background: what batch normalization gets right, and where it gets stuck",
       "blocks": [
         {
-          "p": "The paper starts with the problem: in a deep network, the gradient with respect to one layer's weights depends heavily on the previous layer's neuron outputs. If those outputs change in a highly correlated way, the next layer has to keep adapting. The batch normalization paper calls this \"covariate shift\" and proposes to standardize the inputs to every neuron:"
+          "p": "The paper first lays out the problem: in a deep network, the gradient for one layer’s weights depends heavily on the previous layer’s neuron outputs. If those outputs change in a highly correlated way, the next layer must constantly adapt. The batch normalization paper called this “covariate shift,” and the fix is to standardize each neuron’s summed input:"
         },
         {
           "formula": {
@@ -92,37 +92,41 @@
             "parts": [
               {
                 "sym": "a_{i}",
-                "desc": "input of the i-th neuron"
+                "desc": "The input to the i-th neuron"
               },
               {
                 "sym": "μ_{i}, σ_{i}",
-                "desc": "the mean and standard deviation of this neuron's input over the whole training set"
+                "desc": "The mean and standard deviation of this neuron’s input over the entire training data"
               },
               {
                 "sym": "g_{i}",
-                "desc": "learnable gain, multiplied back to restore a suitable scale after normalization"
+                "desc": "A learnable gain, applied after standardization to restore a useful scale"
               }
             ],
-            "note": "The expectation over the whole dataset is too expensive, so in practice we estimate it from the current mini-batch. The paper notes this places constraints on batch size and makes the method difficult to use in RNNs."
+            "note": "Computing the expectation over the whole dataset is too expensive, so in practice it is estimated from the current mini-batch. The paper notes that this constrains the batch size and makes batch normalization hard to apply to RNNs."
+          },
+          "plain": {
+            "title": "Batch normalization needs the whole class before it can rank you",
+            "text": "Batch normalization is like ranking by subject across the whole class: for a single neuron, you need that neuron’s value on every sample in the batch to compute the average and spread. If only one student shows up (batch size 1), there is no ranking; at test time, you have to make do with the historical average from training."
           }
         },
         {
           "list": [
-            "**Batch-size dependent**: with a small batch, the mean and variance estimates are poor; with batch size 1 they are impossible to compute. Online learning—or distributed training where the model is so large each device can hold only a very small batch—cannot use it.",
-            "**Training/test mismatch**: during training it uses the current batch's statistics; at test time it must use a running average accumulated during training.",
-            "**RNNs are awkward**: sentences vary in length, so a direct extension would store a separate set of statistics for every time step. If the test set contains a sentence longer than any training sentence, there is no stored statistic to use."
+            "**Depends on batch size**: with a small batch, the mean and variance estimates are very unreliable; with batch size 1, they cannot be computed at all. This rules out online learning, and also distributed training where each device can hold only a very small batch.",
+            "**Training and test time differ**: during training you use the current batch’s statistics, but at test time you must use a moving average accumulated during training.",
+            "**Awkward for RNNs**: sequences have different lengths. The obvious application would require storing a separate set of statistics for each time step, and a test sequence longer than any training sequence would have no statistics to use."
           ]
         },
         {
-          "p": "Batch normalization has a side benefit: because each batch differs, its statistics are noisy, which acts as a regularizer. Layer normalization gives that up."
+          "p": "Batch normalization has a side benefit: because every batch is different, the noisy statistics act as a regularizer. Layer normalization gives that up."
         }
       ]
     },
     {
-      "h": "Layer normalization: averaging in the other direction",
+      "h": "Layer normalization: averaging in a different direction",
       "blocks": [
         {
-          "p": "The paper's observation is that a layer's output changes often affect all neurons in the next layer together, in a correlated way, especially with activations such as ReLU whose outputs can change a lot. So it proposes to fix the mean and variance of the summed inputs inside each layer:"
+          "p": "The paper’s observation is that changes in one layer’s outputs tend to change all of the next layer’s summed inputs together, in a correlated way—especially with activations such as ReLU, whose outputs can change a lot. So the authors propose fixing the mean and variance of the summed inputs within each layer:"
         },
         {
           "formula": {
@@ -130,35 +134,40 @@
             "parts": [
               {
                 "sym": "H",
-                "desc": "number of neurons in this layer"
+                "desc": "Number of neurons in this layer"
               },
               {
                 "sym": "μ, σ",
-                "desc": "the mean and standard deviation over all neurons in this layer for the same sample. All neurons in the layer share this pair, but each sample has its own"
+                "desc": "The mean and standard deviation across all neurons in this layer for the same sample. All neurons in the layer share this pair, but each sample gets its own."
               },
               {
                 "sym": "g_{i}, b_{i}",
-                "desc": "per-neuron gain and bias, applied after normalization and before the activation, so the network can still express any scale and shift"
+                "desc": "A gain and bias for each neuron, applied after normalization and before the activation function, so the network can still express any scale and offset."
               },
               {
                 "sym": "f",
-                "desc": "activation function"
+                "desc": "Activation function"
               }
             ],
-            "note": "The only difference from batch normalization is the direction of averaging. The paper stresses that layer normalization places no constraint on batch size and can be used for pure online learning with batch size 1."
+            "note": "The only difference from batch normalization is the direction of the average. The paper emphasizes that layer normalization imposes no constraint on batch size and works even for pure online learning with batch size 1."
+          },
+          "plain": {
+            "title": "A different direction of averaging",
+            "pic": "ln-directions",
+            "text": "Lay out a batch as a table: rows are samples, columns are neurons. Batch normalization computes down the columns (blue; one column across all samples), and layer normalization computes across the rows (green; one row across all neurons). Computing across a row only needs that single sample, so it does not matter which other samples are in the batch, or how many there are."
           }
         },
         {
           "fig": {
             "type": "table",
-            "title": "Worked example: the same data give completely different results under the two normalizations",
-            "subtitle": "Illustrative: 4 neurons in a layer, 3 samples in a batch. The numbers are our own; Sample 3 is exactly 10 times Sample 1. Standard deviation is the population standard deviation.",
+            "title": "Worked example: the same batch gives completely different results under the two normalization methods",
+            "subtitle": "Illustrative: a layer with 4 neurons and a batch of 3 samples. The numbers are made up for this article; sample 3 is exactly 10× sample 1. Standard deviations use the population formula.",
             "columns": [
               "Sample",
-              "Neuron summed input a",
+              "Neuron input a",
               "Layer normalization (by row)",
               "Batch normalization (by column, batch of 3)",
-              "Batch normalization (batch with Sample 2 only)"
+              "Batch normalization (batch with sample 2 only)"
             ],
             "rows": [
               [
@@ -186,36 +195,36 @@
             "highlight": {
               "row": 0
             },
-            "note": "Under layer normalization, Sample 1 and Sample 3, which is 10 times larger, produce exactly the same result; the pattern of which neuron is larger within each sample is preserved. Under batch normalization, the result for Sample 1 depends on which batch it lands in: change the batch, and its output shifts from roughly −0.6 to 1."
+            "note": "Under layer normalization, sample 1 and the 10× larger sample 3 produce exactly the same result; the pattern of which neurons are larger or smaller within each sample is preserved. Under batch normalization, sample 1’s result depends on which other samples are in the batch: change the batch, and its output shifts from about −0.6 to 1."
           }
         },
         {
           "callout": {
             "kind": "intuition",
-            "title": "The two normalizations are like two ways of grading",
-            "text": "Batch normalization is like ranking by subject: for math, where do you stand in the class? Layer normalization is like looking at your own strengths: put all your grades side by side and see which subjects are relatively strong or weak. The first needs the whole class's scores; the second only needs your own transcript."
+            "title": "Two normalization methods, two ways of grading",
+            "text": "Batch normalization is like ranking by subject: in math, you look at your position in the class. Layer normalization is like checking how lopsided your own grades are: line up all your subjects and see which are relatively strong and weak. The first needs the whole class’s scores; the second only needs your own report card."
           }
         },
         {
           "quiz": {
-            "q": "Why doesn't batch normalization work with batch size 1, while layer normalization does?",
+            "q": "Why does batch normalization fail at batch size 1 while layer normalization still works?",
             "options": [
-              "Layer normalization does not need to compute the standard deviation",
-              "Batch normalization computes variance across the samples in the batch, and a single sample has variance 0; layer normalization computes across all neurons in the same sample, independent of batch size",
-              "Layer normalization is only used at test time",
-              "Batch normalization requires more memory"
+              "Layer normalization does not need to compute a standard deviation.",
+              "Batch normalization computes variance across samples in the batch; with one sample the variance is 0. Layer normalization computes across all neurons of the same sample, so it is independent of batch size",
+              "Layer normalization is only used at test time.",
+              "Batch normalization needs more memory."
             ],
             "answer": 1,
-            "why": "Batch normalization computes statistics for each neuron across examples; with only one example, the variance is 0 and cannot be divided by. Layer normalization computes statistics for each example across neurons; as long as a layer has more than one neuron, it can be computed."
+            "why": "Batch normalization computes statistics for each neuron across samples, so with one sample the variance is 0 and there is nothing to divide by. Layer normalization computes statistics for each sample across neurons, so it works as long as the layer has more than one neuron."
           }
         }
       ]
     },
     {
-      "h": "In RNNs: compute once at each time step",
+      "h": "Using layer normalization in RNNs: compute once at each time step",
       "blocks": [
         {
-          "p": "At each step, an RNN's input is made from the previous hidden state and the current input: a_{t} = W_{hh} · h_{t−1} + W_{xh} · x_{t}. Layer normalization applies directly:"
+          "p": "At each step, an RNN’s input is formed from the previous hidden state and the current input: a_{t} = W_{hh} · h_{t−1} + W_{xh} · x_{t}. Layer normalization applies directly:"
         },
         {
           "formula": {
@@ -223,77 +232,81 @@
             "parts": [
               {
                 "sym": "μ_{t}, σ_{t}",
-                "desc": "computed using only the inputs to this layer at the current time step, so sentence length doesn't matter"
+                "desc": "Computed from the current step and current layer only, so the sequence length does not matter."
               },
               {
                 "sym": "g, b",
-                "desc": "gain and bias, shared by all time steps"
+                "desc": "Gain and bias, shared across all time steps."
               },
               {
                 "sym": "⊙",
-                "desc": "element-wise multiplication"
+                "desc": "Element-wise multiplication"
               }
             ]
+          },
+          "plain": {
+            "title": "Every step resets the volume to normal",
+            "text": "As an RNN processes a sequence step by step, the signal tends to keep growing or shrinking. That is exactly the source of exploding and vanishing gradients. Layer normalization pulls all of the current step’s inputs back to “mean 0, variation 1” at every step, like turning the volume back to a standard setting at each stop. The signal never grows too loud or too quiet."
           }
         },
         {
-          "p": "The paper explains why this suits RNNs: in a standard RNN, the average magnitude of the summed inputs to the recurrent units tends to grow or shrink at every step, which is the source of exploding and vanishing gradients. With layer normalization, uniformly scaling all inputs to a layer does not change the output, so the hidden-state dynamics become much more stable."
+          "p": "The paper explains why this is especially suited to RNNs: in a standard RNN, the average magnitude of the inputs to a recurrent unit tends to grow or shrink at every step, and that is the source of exploding and vanishing gradients. After layer normalization, scaling all summed inputs of a layer up or down together does not change the output, so the hidden-state dynamics are much more stable."
         },
         {
-          "p": "The supplementary material gives the exact LSTM recipe: apply layer normalization separately to \"hidden state times weights\" and \"input times weights\" before adding them, and do another normalization on the memory cell c_{t} before the tanh."
+          "p": "The supplementary material gives a concrete LSTM recipe: apply layer normalization separately to the “hidden state times weights” and “input times weights” terms before adding them, and apply it once to the memory cell c_{t} before the tanh."
         }
       ]
     },
     {
-      "h": "Theory: what each normalization is insensitive to",
+      "h": "Theory: what each of the three normalization methods is insensitive to",
       "blocks": [
         {
-          "p": "The paper puts batch normalization, weight normalization (which divides by the length of the weight vector instead of the variance), and layer normalization into one framework: each subtracts μ, divides by σ, and then applies a gain and bias, with differences only in how μ and σ are computed. It then compares which transformations each is invariant to—transformations that leave the model's output completely unchanged."
+          "p": "The paper puts batch normalization, weight normalization (which divides by the length of the weight vector instead of the variance), and layer normalization into a single framework: in every case, subtract μ, divide by σ, then apply a learned gain and bias. The only difference is how μ and σ are computed. It then compares which transformations each method is “invariant” to—meaning transformations that leave the model output completely unchanged."
         },
         {
           "fig": {
             "type": "table",
             "title": "Invariance properties of the three normalization methods",
-            "subtitle": "From Table 1 of the paper. \"Invariant\" means the model output is unaffected by that transformation.",
+            "subtitle": "From Table 1 of the paper. “Invariant” means the transformation does not change the model output.",
             "columns": [
               "Transformation",
-              "Batch normalization",
-              "Weight normalization",
-              "Layer normalization"
+              "Batch norm",
+              "Weight norm",
+              "Layer norm"
             ],
             "rows": [
               [
-                "Weight matrix re-scaling",
+                "Scale the entire weight matrix by a constant",
                 "Invariant",
                 "Invariant",
                 "Invariant"
               ],
               [
-                "Weight matrix re-centering",
+                "Shift every row of the weight matrix by the same vector",
                 "No",
                 "No",
                 "Invariant"
               ],
               [
-                "Weight vector re-scaling",
+                "Scale a single neuron’s incoming weight vector",
                 "Invariant",
                 "Invariant",
                 "No"
               ],
               [
-                "Dataset re-scaling",
+                "Scale the entire dataset by a constant",
                 "Invariant",
                 "No",
                 "Invariant"
               ],
               [
-                "Dataset re-centering",
+                "Shift the entire dataset",
                 "Invariant",
                 "No",
                 "No"
               ],
               [
-                "Single training case re-scaling",
+                "Scale a single sample by a constant",
                 "No",
                 "No",
                 "Invariant"
@@ -302,33 +315,42 @@
             "highlight": {
               "col": 3
             },
-            "note": "The last row is unique to layer normalization: scaling a single sample does not change the prediction. That is the property behind Sample 1 and Sample 3 being identical in the worked example above."
+            "note": "The last row is unique to layer normalization: scaling one sample by any factor does not change the prediction. That is why samples 1 and 3 in the worked example above produce the same result."
           }
         },
         {
-          "p": "**Why scaling a single sample does not affect layer normalization**: when sample x is scaled by δ, all inputs to this layer are scaled by δ, μ and σ are also scaled by δ, and (a − μ) / σ is unchanged. Batch normalization cannot do this, because its μ and σ also depend on the other samples in the batch."
+          "p": "**Why layer normalization is insensitive to scaling a single sample**: if sample x is multiplied by δ, all inputs to the layer are multiplied by δ, and μ and σ are also multiplied by δ, so (a − μ) / σ is unchanged. Batch normalization cannot do this, because its μ and σ also depend on the other samples in the batch.",
+          "plain": {
+            "title": "Scaling everything up, the shape stays the same",
+            "pic": "ln-scale",
+            "text": "If all inputs of a sample are multiplied by 10 (red), the mean and spread are also multiplied by 10. After subtracting the mean and dividing by the spread, the resulting shape is exactly the same. That is why layer normalization is insensitive to how large the sample is overall."
+          }
         },
         {
-          "p": "The paper also analyzes learning through the geometry of parameter space (the Fisher information matrix), reaching two intuitive conclusions:"
+          "p": "The paper also analyzes learning through the geometry of the parameter space (the Fisher information matrix) and reaches two intuitive conclusions:"
         },
         {
           "list": [
-            "**Longer weights learn more slowly**: after normalization, if the whole weight vector becomes longer, the model's output stays the same, but σ also grows. A given update size then has less effect on the output. In effect, the weight length automatically lowers its own learning rate, providing an implicit early-stopping effect and making training more stable near convergence.",
-            "**The gain is easier to learn**: in a normalized model, the \"size\" of the weight is handled by the gain parameter alone. The paper derives that, when learning the gain, the effect of a parameter change on the output depends only on the size of the prediction error—not on the input scale as in ordinary models. It is therefore more robust to rescaling of inputs and parameters."
-          ]
+            "**Longer weights learn more slowly**: after normalization, making a weight vector longer does not change the model output, but σ becomes larger too, so an update of the same absolute size has less effect on the output. In effect, the weight vector’s length automatically lowers its own learning rate. This acts as an implicit early-stopping effect, making training more stable near convergence.",
+            "**The gain is easier to learn**: in a normalized model, the “size” of a weight is handled separately by the gain parameter. The paper derives that, when learning the gain, a parameter change affects the output only through the size of the prediction error, not through the input scale as in ordinary models. This makes it more robust to scaling of inputs and parameters."
+          ],
+          "plain": {
+            "title": "The bigger the steering wheel, the less it turns for the same force",
+            "text": "After normalization, making the whole weight vector longer does not change the output, but the same-sized update becomes smaller relative to its length. This is equivalent to the learning rate automatically shrinking. The longer the weights, the smaller each update, and training naturally becomes more stable."
+          }
         }
       ]
     },
     {
-      "h": "Experiments: six task families, with RNNs in focus",
+      "h": "Experiments: six kinds of tasks, with RNNs at the center",
       "blocks": [
         {
-          "p": "Unless stated otherwise, the gain is initialized to 1 and the bias to 0."
+          "p": "Unless noted otherwise, the gain is initialized to 1 and the bias to 0 in the experiments."
         },
         {
           "fig": {
             "type": "table",
-            "title": "The paper's experiments",
+            "title": "The paper’s experiments",
             "subtitle": "Compiled from Section 6 of the paper",
             "columns": [
               "Task",
@@ -337,19 +359,19 @@
             ],
             "rows": [
               [
-                "Image-text retrieval",
-                "COCO dataset, GRU sentence encoder; evaluate on validation set every 300 steps",
-                "Reaches best validation result in 60% of the baseline's time; all test-set metrics improve"
+                "Image–caption retrieval",
+                "COCO dataset, GRU sentence encoder; validation evaluated every 300 steps",
+                "Reaches the best validation result in 60% of the baseline’s time; all test metrics improve"
               ],
               [
-                "Reading comprehension (cloze-style QA)",
-                "CNN news corpus, unidirectional LSTM; compares against recurrent batch normalization",
-                "Trains faster and ends with better results than baseline and two batch normalization variants"
+                "Reading comprehension (cloze-style question answering)",
+                "CNN news corpus, unidirectional LSTM, compared with recurrent batch normalization",
+                "Trains faster and reaches better final results than both the baseline and the two batch normalization variants"
               ],
               [
                 "Sentence representation (Skip-Thought)",
-                "BookCorpus, 2400-dimensional sentence encoder, trained for 1 million iterations",
-                "Trains faster; final results better on all 5 downstream tasks"
+                "BookCorpus, 2,400-dimensional sentence encoder, trained for 1 million iterations",
+                "Trains faster; final results improve on all five downstream tasks"
               ],
               [
                 "Image generation (DRAW)",
@@ -358,11 +380,11 @@
               ],
               [
                 "Handwriting generation",
-                "IAM handwriting dataset, 221 writers, 12,179 pen traces, average length about 700; batch size 8",
-                "Final likelihood similar, but converges much faster"
+                "IAM handwriting dataset, 221 writers, 12,179 strokes, average length about 700; batch size 8",
+                "Final likelihood is comparable, but convergence is much faster"
               ],
               [
-                "MNIST classification (feed-forward network)",
+                "MNIST classification (feedforward network)",
                 "784-1000-1000-10 fully connected network, batch sizes 128 and 4",
                 "Robust to batch size; converges faster than batch normalization"
               ]
@@ -372,8 +394,8 @@
         {
           "fig": {
             "type": "table",
-            "title": "Image-text retrieval: layer normalization improves every metric",
-            "subtitle": "From Table 2 of the paper, averaged across 5 COCO test splits. R@K: percentage of test cases where the correct answer is in the top K results (%, higher is better); mean rank is lower-is-better.",
+            "title": "Image–caption retrieval: layer normalization improves every metric",
+            "subtitle": "From Table 2 of the paper, averaged across 5 COCO test splits. R@K: the percentage of cases where the correct answer is in the top K (%, higher is better); mean rank is lower-is-better.",
             "columns": [
               "Model",
               "Caption retrieval R@1",
@@ -384,7 +406,7 @@
             ],
             "rows": [
               [
-                "Order-embedding (reproduction)",
+                "Order-embedding (reproduced)",
                 "46.6",
                 "89.1",
                 "37.8",
@@ -408,8 +430,8 @@
         {
           "fig": {
             "type": "table",
-            "title": "Sentence representation: gains on all five downstream tasks",
-            "subtitle": "From Table 3 of the paper. SICK is correlation coefficient; the rest are classification accuracy (%), all higher is better. Model trained for 1 million iterations.",
+            "title": "Sentence representations: gains on all five downstream tasks",
+            "subtitle": "From Table 3 of the paper. SICK is a correlation coefficient; the rest are classification accuracies (%), all higher-is-better. The model was trained for 1 million iterations.",
             "columns": [
               "Model",
               "SICK (Pearson)",
@@ -420,7 +442,7 @@
             ],
             "rows": [
               [
-                "Skip-Thought (reproduction)",
+                "Skip-Thought (reproduced)",
                 "0.842",
                 "77.3",
                 "81.8",
@@ -439,138 +461,143 @@
             "highlight": {
               "row": 1
             },
-            "note": "The paper also trained the layer-normalized model for a month (about 1.7 million iterations); all tasks except one (MR) improved further."
+            "note": "The paper also trained the layer-normalized model for a month (about 1.7 million iterations), and every task except one (MR) improved further."
           }
         },
         {
-          "p": "**One detail that differs from batch normalization.** The authors of recurrent batch normalization found the initial gain had to be chosen carefully, and set it to 0.1. The paper tries 1.0 and 0.1 for layer normalization and finds 1.0 clearly better, indicating layer normalization is not as sensitive to the initial scale as recurrent batch normalization."
+          "p": "**A detail where layer normalization differs from batch normalization.** The authors of recurrent batch normalization found that the gain’s initial value must be chosen carefully; they set it to 0.1. This paper tried initial gain values of 1.0 and 0.1 for layer normalization and found that 1.0 was clearly better, suggesting that layer normalization is not as sensitive to the initial scale as recurrent batch normalization."
         },
         {
-          "p": "**Convolutional networks are a weak spot.** The paper's preliminary experiments show layer normalization is faster than no normalization, but batch normalization is better. Its explanation: in fully connected layers, different neurons contribute roughly equally to the final prediction, so standardizing them together is fine. In convolutional networks, neurons whose receptive fields lie on the image edge are rarely activated, and their statistics differ greatly from the rest of the layer, so pooling them into a single mean is not appropriate. In the MNIST experiment, the paper also deliberately does not normalize the final softmax layer, because its output scale determines how confident the prediction is."
+          "p": "**Convolutional networks are the weak spot.** The paper’s preliminary experiments show that layer normalization is faster than no normalization, but batch normalization is better. The explanation: in fully connected layers, neurons contribute roughly equally to the final prediction, so normalizing them together is fine. In convolutional networks, neurons whose receptive fields lie at image edges are rarely active, and their statistics differ sharply from other neurons in the same layer, so forcing them into one average is not appropriate. In the MNIST experiment, the authors also deliberately did not normalize the final softmax layer, because its output scale determines the model’s confidence."
         },
         {
           "callout": {
             "kind": "myth",
-            "title": "\"Layer normalization completely replaced batch normalization\"",
-            "text": "Not really. On convolutional networks and image tasks, batch normalization remains common today, and the paper itself admits layer normalization is worse there. Layer normalization became the standard in sequence models—RNNs and later Transformers—where sentences vary in length, batches cannot be too large, and training and inference must be consistent. Those are exactly batch normalization's weak points."
+            "title": "“Layer normalization has completely replaced batch normalization”",
+            "text": "Not really. On convolutional networks and image tasks, batch normalization is still widely used, and the paper itself admits that layer normalization is worse there. Layer normalization became a standard mainly in sequence models such as RNNs and, later, Transformers: variable-length sentences, limited batch sizes, and the need for consistent training and inference are exactly where batch normalization is weak."
           }
         }
       ]
     },
     {
-      "h": "A few details worth flagging",
+      "h": "A few details worth noting",
       "blocks": [
         {
           "list": [
-            "**The supplementary material swaps the gain and bias.** In equation (15) of the supplementary material, α multiplies the normalized value (the gain) and β is added (the bias), but the text below calls α and β \"additive and multiplicative parameters, respectively\" and says α is initialized to 0 and β to 1. If the gain α really were initialized to 0, the layer's output would initially be all zeros. Given Section 6's statement that \"gain is initialized to 1 and bias to 0,\" the supplementary text likely swapped the two.",
-            "**The \"curvature becomes one-half\" claim may have missed a square.** Section 5.2.2 says when the weight length doubles, σ also doubles, so the curvature along this direction becomes one-half of its original value. By the paper's own equation (13), the Fisher information block in this direction is proportional to 1 / σ^{2}, so after doubling it should be one-quarter. This does not change the conclusion that longer weights learn more slowly.",
-            "**The covariate-shift explanation was later challenged.** The paper follows the batch normalization paper in arguing that normalization works because it reduces covariate shift. A 2018 study by Santurkar et al. argues batch normalization mainly smooths the loss landscape, with little connection to covariate shift. Why normalization helps is still debated.",
-            "**Direct comparisons with batch normalization are limited.** The only head-to-head results are on MNIST classification and reading comprehension (where the batch normalization numbers come from another paper); for convolutional networks the paper gives only a description, no data."
+            "**The supplementary material swaps the gain and bias.** In equation (15) of the supplementary material, α multiplies the normalized value (the gain) and β is added (the bias). But the text below says α and β \"are the additive and multiplicative parameters, respectively,\" and that α is initialized to 0 and β to 1. If the gain α were really initialized to 0, the layer's output would start out as all zeros. Since Section 6 of the main paper says \"gain initialized to 1, bias initialized to 0,\" the supplementary text appears to have the two reversed.",
+            "**\"Curvature becomes one half\" may be missing a square.** Section 5.2.2 says that when the weight length doubles, σ also doubles, so the curvature along this direction becomes half its original value. But by the paper's own equation (13), the Fisher information block along this direction is proportional to 1 / σ^{2}, so after doubling it should be one quarter. This does not affect the conclusion that longer weights learn more slowly.",
+            "**The \"covariate shift\" explanation was later questioned.** The paper follows the batch normalization paper in saying that normalization works because it reduces \"covariate shift.\" A 2018 study by Santurkar et al. argues that batch normalization mainly smooths the loss landscape and has little to do with covariate shift. Why normalization works is still debated.",
+            "**Direct comparisons with batch normalization are limited.** The paper only compares directly against batch normalization on MNIST classification and reading comprehension, where the batch normalization results are cited from other work. For convolutional networks it gives only a qualitative description, no numbers."
           ]
         }
       ]
     },
     {
-      "h": "What came next: a Transformer staple, reworked twice",
+      "h": "Afterward: a Transformer staple, and two major changes",
       "blocks": [
         {
-          "p": "One year later, the Transformer placed layer normalization in every layer: each sublayer (attention or feed-forward network) is wrapped in a residual connection and then normalized, producing LayerNorm(x + Sublayer(x)) (see the Transformer close reading). From then on, it formed the backbone of the Transformer along with the residual connection. It later went through two major redesigns:"
+          "p": "A year later, the Transformer put layer normalization into every layer: each sublayer (attention or feedforward network) is wrapped in a residual connection, then layer normalization is applied, giving `LayerNorm(x + Sublayer(x))` (see the Transformer close reading). From then on, it and the residual connection together formed the backbone of the Transformer. It later went through two important changes:"
         },
         {
           "fig": {
             "type": "table",
-            "title": "How layer normalization moved around in major models",
-            "subtitle": "From the architecture sections of each paper.",
+            "title": "How layer normalization's placement changed across the main-line models",
+            "subtitle": "From the model architecture sections of the respective papers",
             "columns": [
               "Model",
-              "Where normalization is placed",
-              "Normalization type"
+              "Where normalization goes",
+              "Which normalization"
             ],
             "rows": [
               [
                 "Transformer (2017)",
-                "After the sublayer: LayerNorm(x + Sublayer(x))",
+                "After the sublayer: `LayerNorm(x + Sublayer(x))`",
                 "Layer normalization"
               ],
               [
                 "GPT-2 (2019)",
-                "Moved to the input of each sublayer, plus one final layer at the end",
+                "Moved to each sublayer's input, with one more at the end",
                 "Layer normalization"
               ],
               [
                 "LLaMA (2023)",
-                "At the input of each sublayer",
+                "Input of each sublayer",
                 "RMSNorm"
               ]
             ],
-            "note": "The GPT-2 paper says this arrangement resembles \"pre-activation\" residual networks. The LLaMA paper says placing normalization at the input improves training stability."
+            "note": "The GPT-2 paper says this placement is similar to a \"pre-activation\" residual network. The LLaMA paper says normalization is placed at the input to improve training stability."
           }
         },
         {
           "list": [
-            "**Moved to the input (Pre-LN):** the original Transformer adds first, then normalizes. GPT-2 changed the order: normalize the sublayer input, compute the sublayer, then add back the residual. That leaves the residual path free of any normalization, so signal and gradients flow straight through and very deep models train more easily.",
-            "**Dropping the mean (RMSNorm):** in 2019, Zhang and Sennrich proposed dividing only by the root mean square, without subtracting the mean; performance is similar but computation is cheaper. LLaMA adopted it, and many open-source large models have followed since."
-          ]
+            "**Moved to the input (Pre-LN).** The original Transformer adds first, then normalizes; GPT-2 normalizes the sublayer input first, then computes the sublayer, then adds the residual. This leaves the residual \"main path\" clear of any normalization, so both signal and gradient can pass straight through, making much deeper models easier to train.",
+            "**Dropping the mean (RMSNorm).** In 2019, Zhang and Sennrich proposed dividing by the root mean square only, without subtracting the mean; it performs comparably but is cheaper to compute. LLaMA adopted it, and many open-source large models have followed suit since."
+          ],
+          "plain": {
+            "title": "Before the sublayer or after it?",
+            "pic": "ln-preln",
+            "text": "The original Transformer computes the sublayer, adds the input back, then normalizes (Post-LN). Later models, GPT-2 and LLaMA, normalize first, compute the sublayer, then add the input back (Pre-LN). This leaves the residual shortcut—the path that copies the input straight through—with nothing in the way, making models with dozens or hundreds of layers easier to train."
+          }
         },
         {
-          "p": "The next article on this route shifts focus: the model sees tokens, not characters. **BPE subword tokenization** decides what a token is."
+          "p": "The next article in this line changes direction: the model sees tokens, not characters. **BPE subword tokenization** decides what counts as one token."
         }
       ]
     },
     {
-      "h": "Check yourself: did you get it?",
+      "h": "Check yourself: did you really get it?",
       "blocks": [
         {
           "quiz": {
-            "q": "If you multiply all the inputs of a single training example by 10, what happens to a layer-normalized network's prediction for that example?",
+            "q": "If you multiply all the inputs of a single training sample by 10, what happens to the layer-normalized network's prediction for it?",
             "options": [
               "The prediction is also multiplied by 10.",
-              "Unchanged: the layer's inputs, μ, and σ are all multiplied by 10, so the standardized values are the same.",
-              "It depends on the other examples in the batch.",
-              "The network reports an error."
+              "It stays the same: the layer's inputs, μ, and σ all scale by 10, so the normalized values are identical.",
+              "It depends on the other samples in the batch.",
+              "The network errors out."
             ],
             "answer": 1,
-            "why": "This is layer normalization's unique \"single training case re-scaling\" invariance (the last row in Table 1 of the paper). Batch normalization cannot match it, because its statistics also depend on the other examples in the batch."
+            "why": "This is layer normalization's unique \"single-sample scale invariance\" (the last row of Table 1 in the paper). Batch normalization cannot do this, because its statistics also depend on the other samples in the batch."
           }
         },
         {
           "quiz": {
-            "q": "Why is layer normalization worse than batch normalization on convolutional networks?",
+            "q": "Why is layer normalization not as good as batch normalization on convolutional networks?",
             "options": [
               "Convolutional networks are too deep.",
-              "In convolutional layers, neurons at different positions have very different statistical properties, for example those near image edges are rarely activated, so computing one mean and variance across all of them is a poor fit.",
+              "Different positions in a convolutional layer have very different statistics—for example, neurons at image edges are rarely activated—so it is inappropriate to average them together.",
               "Convolutional networks cannot use Adam.",
-              "Layer normalization cannot handle images."
+              "Layer normalization cannot process images."
             ],
             "answer": 1,
-            "why": "Layer normalization assumes the neurons in a layer are roughly comparable and can be standardized together. Fully connected layers mostly satisfy this; convolutional layers do not. The paper says this needs further study."
+            "why": "Layer normalization assumes the neurons in a layer are roughly comparable and can be standardized together. Fully connected layers mostly satisfy this; convolutional layers do not. The paper says this deserves further study."
           }
         },
         {
           "quiz": {
-            "q": "What two changes did layer normalization undergo between the original Transformer and LLaMA?",
+            "q": "From the original Transformer to LLaMA, what two changes did layer normalization go through?",
             "options": [
               "It switched back from layer normalization to batch normalization.",
-              "Its position moved from after the sublayer to before the sublayer input, and the normalization itself was simplified to RMSNorm, which divides only by the root mean square.",
+              "Its position moved from after the sublayer to the sublayer input, and it was simplified to RMSNorm, which divides only by the root mean square.",
               "The gain parameter was removed.",
-              "It is used only in the last layer."
+              "It is only used in the last layer."
             ],
             "answer": 1,
-            "why": "GPT-2 moved it to the input of each sublayer, and LLaMA later switched to RMSNorm. Both changes make very deep models more stable to train and cheaper to compute."
+            "why": "GPT-2 moved it to the input of every sublayer, and LLaMA further switched to RMSNorm. Both changes were made to make very deep models more stable to train and cheaper to compute."
           }
         },
         {
-          "p": "After reading this piece, you should be able to answer these questions:"
+          "p": "After reading this, you should be able to answer these questions:"
         },
         {
           "list": [
-            "In which direction do batch normalization and layer normalization each compute the mean and variance?",
+            "In which direction do batch normalization and layer normalization compute their mean and variance?",
             "What are the limitations of batch normalization, and how does layer normalization avoid them?",
-            "Why is layer normalization especially well-suited to RNNs?",
-            "What are the gain and bias for, and why are they applied after normalization?",
+            "Why is layer normalization particularly well suited to RNNs?",
+            "What are the gain and bias for? Why add them after normalization?",
             "Which transformations is layer normalization invariant to, and which is it not?",
-            "Why are longer weights said to automatically lower the learning rate?",
-            "How did the position of layer normalization in the Transformer change later?"
+            "Why does making the weights longer automatically lower the learning rate?",
+            "How did layer normalization's position in the Transformer change later?"
           ]
         }
       ]
@@ -583,7 +610,7 @@
       "date": "2016-07-21",
       "url": "https://arxiv.org/abs/1607.06450"
     },
-    "note": "This article is based on the paper's arXiv v1 (July 2016). Tables marked \"Illustrative\" were made by this site and computed according to the paper's formulas. The normalization schemes for Transformer, GPT-2, and LLaMA are taken from their respective papers; RMSNorm comes from Zhang and Sennrich's 2019 paper, and Santurkar et al.'s challenge to covariate shift comes from their 2018 paper. None of those are in the paper this article follows."
+    "note": "This article is based on the arXiv first version of the paper (July 2016). Tables marked \"Illustrative\" were created by this site and computed from the paper's formulas. The normalization details for Transformer, GPT-2, and LLaMA are taken from their respective papers; RMSNorm comes from Zhang and Sennrich's 2019 paper, and Santurkar et al.'s criticism of the covariate shift explanation is from their 2018 paper—neither is part of the paper this article is based on."
   },
   "claims": [
     {
@@ -605,7 +632,7 @@
       "value": "almost twice",
       "source_url": "https://arxiv.org/abs/1607.06450",
       "quote": "converges almost twice as fast",
-      "as_written": "nearly twice as fast"
+      "as_written": "nearly twice"
     },
     {
       "text": "82.36 / 82.09 nats",
@@ -629,7 +656,7 @@
       "as_written": "1 million"
     },
     {
-      "text": "about 1.7 million iterations in a month",
+      "text": "About 1.7 million over one month",
       "value": "1.7M",
       "source_url": "https://arxiv.org/abs/1607.06450",
       "quote": "approximately 1.7M iterations",
@@ -643,7 +670,7 @@
       "as_written": "221"
     },
     {
-      "text": "12,179 traces",
+      "text": "12,179 strokes",
       "value": "12179",
       "source_url": "https://arxiv.org/abs/1607.06450",
       "quote": "12179",
@@ -664,7 +691,7 @@
       "as_written": "8"
     },
     {
-      "text": "2400-dimensional",
+      "text": "2,400 dimensions",
       "value": "2400",
       "source_url": "https://arxiv.org/abs/1607.06450",
       "quote": "2400-dimensional",
@@ -794,10 +821,10 @@
       "value": "moved to the input",
       "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
       "quote": "Layer normalization (Ba et al., 2016) was moved to the input of each sub-block",
-      "as_written": "moved to the input of each sublayer"
+      "as_written": "moved to the input of every sublayer"
     },
     {
-      "text": "LLaMA: input normalization, RMSNorm",
+      "text": "LLaMA: normalization at the input, RMSNorm",
       "value": "RMSNorm",
       "source_url": "https://arxiv.org/abs/2302.13971",
       "quote": "we normalize the input of each transformer sub-layer, instead of normalizing the output. We use the RMSNorm normalizing function",
@@ -807,5 +834,5 @@
   "status": "published",
   "verified": false,
   "lang": "en",
-  "translated_from": "b12acc66862258b8"
+  "translated_from": "2b2174c4a00b33af"
 }
