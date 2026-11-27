@@ -1,0 +1,1012 @@
+{
+  "slug": "self-instruct-aligning-language-models-with-self-generated-instructions",
+  "category": "paper",
+  "publisher": "华盛顿大学等",
+  "date": "2022-12-20",
+  "title": "精读《Self-Instruct》：175 道样题起步，让 GPT-3 自己编出 5 万条指令数据",
+  "summary": "Self-Instruct 只用 175 个人写的种子任务，让原版 GPT-3 自己生成 5.2 万条指令数据再微调自己，接近 InstructGPT001。我们手算 ROUGE-L 过滤，拆开“先定答案再出题”的设计，讲清只有 54% 数据完全正确为何仍然有效，以及它和 Alpaca 的关系。",
+  "ai_summary": "《Self-Instruct: Aligning Language Models with Self-Generated Instructions》（Wang 等，华盛顿大学等，ACL 2023）提出让预训练语言模型自己生成指令微调数据：从 175 个人写种子任务出发，原版 GPT-3 迭代生成新指令、判断是否分类任务、生成输入输出样例，并用 ROUGE-L 等规则过滤，得到约 5.2 万条指令和 8.2 万个样例。用其微调 GPT-3 后，SuperNI 上 ROUGE-L 提高 33.1 分，接近 InstructGPT001；在 252 条用户指令的人工评估中只落后约 5 个百分点。",
+  "brief": [
+    "问题：指令微调依赖人写的数据，又贵又单调；InstructGPT 的数据不公开。",
+    "方法：175 个种子任务；原版 GPT-3 迭代生成指令和样例，分类任务先定标签再编输入；ROUGE-L ≥ 0.7 的重复指令被过滤。",
+    "结果：5.2 万条指令、8.2 万个样例，花费约 600 美元；微调后 SuperNI 提高 33.1 分，人工评估接近 InstructGPT001。",
+    "局限：只有 54% 的数据完全正确；评判者是作者本人；可能放大偏见、依赖大模型；加 SuperNI 后在用户指令上反而变差。"
+  ],
+  "paper": {
+    "title": "Self-Instruct: Aligning Language Models with Self-Generated Instructions",
+    "authors": "Yizhong Wang, Yeganeh Kordi, Swaroop Mishra, Alisa Liu, Noah A. Smith, Daniel Khashabi, Hannaneh Hajishirzi",
+    "org": "华盛顿大学、德黑兰理工大学、亚利桑那州立大学、约翰斯·霍普金斯大学、艾伦人工智能研究所",
+    "venue": "ACL 2023",
+    "year": 2022,
+    "arxiv": "2212.10560",
+    "url": "https://arxiv.org/abs/2212.10560"
+  },
+  "cover": {
+    "headline": "Self-Instruct 精读",
+    "highlight": "模型自己出题",
+    "glyph": {
+      "kind": "flow",
+      "nodes": [
+        {
+          "label": "175 道样题"
+        },
+        {
+          "label": "GPT-3 自己出题",
+          "tone": "hi"
+        },
+        {
+          "label": "5.2 万条微调"
+        }
+      ]
+    }
+  },
+  "sections": [
+    {
+      "h": "先说结论：这篇论文到底做了什么",
+      "blocks": [
+        {
+          "p": "2022 年 12 月，华盛顿大学的 Yizhong Wang、Hannaneh Hajishirzi 等七人（合作者还来自亚利桑那州立大学、约翰斯·霍普金斯大学和艾伦人工智能研究所）发表了这篇论文，后来发表在 ACL 2023 上。它回答了一个很实际的问题：**指令微调需要大量“指令 → 回答”的数据，如果没钱请人写，能不能让模型自己写？**"
+        },
+        {
+          "p": "上一篇 FLAN 的指令数据，是人手写模板、改造 62 个现成数据集得来的；InstructGPT 的数据来自付费标注员和真实用户，而且不公开。Self-Instruct 的做法是："
+        },
+        {
+          "list": [
+            "人只写 **175 个种子任务**，每个任务一条指令、一个示例。",
+            "让**没经过任何指令微调**的原版 GPT-3 看几个种子，模仿着写出新的指令，再给新指令配上输入和输出。",
+            "用几条简单的规则过滤掉重复的、低质量的，把剩下的放回任务池，循环往复。",
+            "最后得到约 5.2 万条指令、8.2 万个样例，再拿去微调 GPT-3 自己。"
+          ]
+        },
+        {
+          "p": "结果：微调后的 GPT-3 在 SuperNI 基准上比原版高了 33.1 分（ROUGE-L），几乎追平 OpenAI 用私有用户数据和人工标注训练的 InstructGPT001；在作者新写的 252 条面向真实用户的指令上，人工评估只落后 InstructGPT001 约 5 个百分点。整个数据集的生成只花了大约 600 美元的 API 费用。"
+        },
+        {
+          "callout": {
+            "kind": "takeaway",
+            "title": "一句话版本",
+            "text": "只要有 175 个人写的种子任务，原版 GPT-3 就能“自举”出 5 万多条多样的指令数据；即使其中将近一半的样例有错，用它们微调 GPT-3 也能大幅提升听指令的能力，接近同期的商业模型。这条“用模型生成训练数据”的路，后来被 Alpaca 等大量开源模型沿用。"
+          }
+        },
+        {
+          "callout": {
+            "kind": "prereq",
+            "title": "读这篇需要的三个小概念",
+            "text": "不懂也没关系，这三条够用了：",
+            "list": [
+              "**指令微调**：用“指令 → 回答”的数据微调预训练模型，让它学会听指令（见《FLAN》精读）。",
+              "**原版 GPT-3**：只做过预训练、只会续写的 GPT-3（OpenAI 的“davinci”），区别于经过指令微调和 RLHF 的 InstructGPT（见《GPT-3》《InstructGPT》精读）。",
+              "**ROUGE-L**：按两段文字的“最长公共子序列”算相似度的指标，0 到 1 之间，越大越像（摘要评估里常用，见《从人类反馈中学习摘要》精读）。"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "问题：人写的指令数据又贵又单调",
+      "blocks": [
+        {
+          "p": "论文指出，指令微调模型的成功靠两样东西：大型预训练模型，和人写的指令数据（比如 PromptSource、SuperNI）。但人写的指令数据有两个毛病：**贵**，而且**单调**。标注员想到的往往是那些常见的 NLP 任务（分类、问答、摘要），覆盖不了真实用户五花八门的用法。InstructGPT 虽然效果很好，但它的数据来自私有的用户请求，构建过程不透明，学界很难研究“数据”到底起了什么作用。"
+        },
+        {
+          "p": "让人来造指令数据，难在两件事：要有**创造力**，想出新颖的任务；要有**专业能力**，给每个任务写出正确的答案。Self-Instruct 的思路是：这两件事，预训练语言模型其实都能做个大概，只是需要一点引导。",
+          "plain": {
+            "title": "让学生自己出题",
+            "text": "老师只出了 175 道样题。然后让学生看几道样题，模仿着出一道新题，再自己写答案；出得太像旧题的扔掉，剩下的放进题库。题库越滚越大，最后拿这本学生自己编的练习册，再去训练这个学生。",
+            "pic": "si-loop"
+          }
+        }
+      ]
+    },
+    {
+      "h": "指令数据长什么样",
+      "blocks": [
+        {
+          "p": "论文要生成的每条数据由三部分组成：**指令**（用自然语言描述一个任务）、**输入**（可选）、**输出**。指令和输入之间并没有严格的界线，比如“写一篇关于校园安全的文章”可以整个当指令、输入为空；也可以把“写一篇关于下面这个话题的文章”当指令，“校园安全”当输入。为了让格式多样，作者允许输入为空。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "GPT-3 自己生成的几条指令数据",
+            "subtitle": "来自论文图 1（中文为本站翻译，输出有删节）",
+            "columns": [
+              "指令",
+              "输入",
+              "输出"
+            ],
+            "rows": [
+              [
+                "给定地址和城市，写出邮政编码。",
+                "地址：123 Main Street，城市：San Francisco",
+                "94105"
+              ],
+              [
+                "我在找工作，需要填一张申请表，你能帮我填吗？",
+                "申请表：姓名、年龄、性别、电话、邮箱、学历……",
+                "姓名：John Doe　年龄：25　性别：男……"
+              ],
+              [
+                "怎样写代码把华氏度转换成摄氏度？",
+                "（空）",
+                "def convert_fahrenheit_to_celsius(fahr): celsius ＝ (fahr − 32) × 5 ⁄ 9 ……"
+              ],
+              [
+                "以一只猫的口吻写一封信。",
+                "（空）",
+                "亲爱的［主人］：我写信给你，是因为我遇到了一个问题……"
+              ]
+            ],
+            "note": "这些任务明显不同于传统的 NLP 数据集，更像真实用户会提的请求。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "四步流程：生成指令、判断类型、生成样例、过滤",
+      "blocks": [
+        {
+          "p": "**第一步：生成指令。**任务池一开始只有 175 个种子任务（作者和实验室同事写的，其中 25 个分类任务、150 个非分类任务，没有参考现有数据集）。每次从池子里随机抽 8 条指令当示例：6 条来自人写的种子，2 条来自之前模型生成的，以增加多样性。把它们排成一个编号列表，让 GPT-3 接着往下写第 9 条，就得到一条新指令。"
+        },
+        {
+          "p": "**第二步：判断是不是分类任务。**分类任务（输出只有几个固定的标签，比如“正面 ／ 负面”）和其他任务要用不同的方法生成样例，所以先让 GPT-3 判断新指令属于哪类。提示里给了种子中的 12 条分类指令和 19 条非分类指令当例子。"
+        },
+        {
+          "p": "**第三步：生成样例。**对每条新指令，让 GPT-3 写出输入和输出。这一步最难，模型要从指令里理解任务、想出需要什么输入、再把任务做出来。论文发现，只要在提示里给几个其他任务的“指令 → 输入 → 输出”示例，预训练模型就能做个大概。"
+        },
+        {
+          "p": "这里有个巧妙的设计。最自然的做法是**先输入后输出**：先编一个输入，再写出对应的答案。但论文发现，这样生成分类任务时，输入会偏向某一个标签。比如“判断句子有没有语法错误”，模型编出来的句子大多是语法正确的。所以对分类任务，作者改成**先输出后输入**：先列出所有可能的标签，再针对每个标签分别编一个输入。",
+          "plain": {
+            "title": "先定答案，再出题",
+            "text": "让人出“判断真假”的题，他编的大多是真命题，因为编假命题更费脑子。如果先规定“这道出个‘真’的，那道出个‘假’的”，再去编题目，真假就均衡了。先输出后输入，就是先定好每道题的标准答案，再倒推题目。",
+            "pic": "si-outfirst"
+          }
+        },
+        {
+          "p": "**第四步：过滤。**一条新指令只有在和任务池里**所有**已有指令的 ROUGE-L 相似度都低于 0.7 时，才会被加进池子；含有“image”“picture”“graph”这类语言模型处理不了的词的指令也被排除。样例层面，完全重复的、输入相同但输出不同的都去掉；再用一些启发式规则去掉明显无效的，比如指令太长或太短、输出只是重复了输入。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "手算：ROUGE-L 怎样判断两条指令“太像了”",
+            "subtitle": "示意：以已有指令“Write a poem about the sea”（6 个词）为参照，另外三条是本站编的；按最长公共子序列算精确率、召回率和 F 值",
+            "columns": [
+              "新指令",
+              "最长公共子序列",
+              "精确率",
+              "召回率",
+              "F 值",
+              "加入任务池？"
+            ],
+            "rows": [
+              [
+                "Write a short poem about the ocean（7 词）",
+                "write a poem about the（5 词）",
+                "5 ÷ 7 ≈ 0.71",
+                "5 ÷ 6 ≈ 0.83",
+                "≈ 0.77",
+                "否：≥ 0.7，太像"
+              ],
+              [
+                "Write a story about a dog（6 词）",
+                "write a about（3 词）",
+                "3 ÷ 6 ＝ 0.5",
+                "3 ÷ 6 ＝ 0.5",
+                "0.5",
+                "是"
+              ],
+              [
+                "Translate this sentence into French（5 词）",
+                "无",
+                "0",
+                "0",
+                "0",
+                "是"
+              ]
+            ],
+            "highlight": {
+              "col": 4
+            },
+            "note": "F 值 ＝ 2 × 精确率 × 召回率 ÷ (精确率 ＋ 召回率)。第一条只是把“sea”换成了“ocean”、加了一个“short”，被判定为重复；第二条虽然开头一样，讲的已经是另一件事了。"
+          },
+          "plain": {
+            "title": "论文查重，查的是“按顺序重合了多少词”",
+            "text": "ROUGE-L 像一个查重软件：把两句话里按先后顺序都出现过的词挑出来，看占了各自多大比例。只把 sea 换成 ocean、再加个 short，重合度还有七成多，算抄袭，退回；开头几个词一样但写的是另一件事，重合度只有一半，放行。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "生成出来的数据：多，杂，但不全对",
+      "blocks": [
+        {
+          "p": "作者用最大的原版 GPT-3（“davinci”）跑完这套流程，过滤后得到："
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Self-Instruct 生成的数据",
+            "subtitle": "来自论文表 1",
+            "columns": [
+              "统计项",
+              "数量"
+            ],
+            "rows": [
+              [
+                "指令",
+                "52445"
+              ],
+              [
+                "　其中分类任务",
+                "11584"
+              ],
+              [
+                "　其中非分类任务",
+                "40861"
+              ],
+              [
+                "样例",
+                "82439"
+              ],
+              [
+                "　其中输入为空的",
+                "35878"
+              ],
+              [
+                "指令平均长度（词）",
+                "15.9"
+              ],
+              [
+                "非空输入平均长度（词）",
+                "12.7"
+              ],
+              [
+                "输出平均长度（词）",
+                "18.9"
+              ]
+            ],
+            "note": "按论文附录，按当时每千 token 0.02 美元的价格，生成整个数据集大约花了 600 美元；用它微调 GPT-3 又花了 338 美元。"
+          }
+        },
+        {
+          "p": "**多样性**。作者用句法分析器提取每条指令里最靠近句子核心的动词和它的第一个宾语名词。52445 条里只有 26559 条有这种简单的“动词 ＋ 名词”结构（其余是更复杂的从句或问句）；最常见的 20 个动词加上它们最常见的 4 个宾语，只覆盖了全部指令的 14%，说明意图和格式都相当分散。和种子指令相比，大部分新指令的 ROUGE-L 重合度都不高，确实生成了很多新任务。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "随机抽 200 条，有多少是对的",
+            "subtitle": "来自论文表 2，由一位作者人工检查",
+            "columns": [
+              "检查的问题",
+              "回答“是”的比例"
+            ],
+            "rows": [
+              [
+                "指令描述的是一个有效的任务吗？",
+                "92%"
+              ],
+              [
+                "输入和指令匹配吗？",
+                "79%"
+              ],
+              [
+                "输出是正确、可接受的回答吗？",
+                "58%"
+              ],
+              [
+                "三项全部有效",
+                "54%"
+              ]
+            ],
+            "highlight": {
+              "row": 3
+            },
+            "note": "指令本身大多有意义，但样例的噪声不小：只有一半多一点的数据完全正确。作者认为，即使有错，大多数数据的格式是对的或部分正确，仍然能教会模型“怎样回应指令”。"
+          },
+          "plain": {
+            "title": "错题不少的练习册也有用",
+            "text": "这本学生自己编的练习册，九成的题目是像样的，但答案只有一半多一点完全正确。听起来很糟，可练习册教给学生的主要不是具体答案，而是“看到这样的要求，该用什么格式、往什么方向去答”。这一点，带错的答案也能教。",
+            "pic": "si-quality"
+          }
+        }
+      ]
+    },
+    {
+      "h": "微调和对照组",
+      "blocks": [
+        {
+          "p": "作者用 OpenAI 的微调接口，在这批数据上微调同一个原版 GPT-3，得到 **GPT3_{SELF-INST}**。指令和输入拼成提示，模型学着生成输出；为了让模型适应不同格式，拼接时随机使用多种模板（加不加“Task:”“Input:”前缀、换几行等）。超参数用接口的默认值，只把提示部分的损失权重设为 0，训练 2 轮。由于这个接口不公开细节（更新了哪些参数、用什么优化器），论文所有 GPT-3 的微调都用同样的默认设置，以保证可比。"
+        },
+        {
+          "list": [
+            "**原版模型**：T5-LM（110 亿参数）和原版 GPT-3（1750 亿参数）。",
+            "**公开的指令微调模型**：T0 和 Tk-INSTRUCT，都是 110 亿参数、从 T5 微调来的。",
+            "**OpenAI 的 InstructGPT**：主要对比 text-davinci-001。论文解释说，它最接近本文的设置（用人工示范做监督微调），而更新的版本用了更多数据（代码、最新的用户请求）或 PPO 等算法，难以公平比较，还可能已经见过 SuperNI 的测试集。",
+            "**用公开数据微调的 GPT-3**：分别用 T0 的训练数据（PromptSource）和 SuperNI 的训练数据微调 GPT-3，各抽 5 万个样例，和 Self-Instruct 的数据量相当。这是最关键的对照：同一个模型、同样多的数据，只比数据来源。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "实验一：在传统 NLP 任务上",
+      "blocks": [
+        {
+          "p": "第一个测试用 SuperNI 的评估集：119 个任务、每个 100 个样例，零样本（只给任务定义，不给示例），用 ROUGE-L 和参考答案比较打分。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "SuperNI 上没见过的任务",
+            "subtitle": "来自论文表 3，ROUGE-L 分数",
+            "columns": [
+              "模型",
+              "参数量",
+              "ROUGE-L"
+            ],
+            "rows": [
+              [
+                "T5-LM（原版）",
+                "110 亿",
+                "25.7"
+              ],
+              [
+                "GPT-3（原版）",
+                "1750 亿",
+                "6.8"
+              ],
+              [
+                "T0",
+                "110 亿",
+                "33.1"
+              ],
+              [
+                "GPT-3 ＋ T0 训练数据",
+                "1750 亿",
+                "37.9"
+              ],
+              [
+                "GPT-3 ＋ Self-Instruct（本文）",
+                "1750 亿",
+                "39.9"
+              ],
+              [
+                "InstructGPT001",
+                "1750 亿",
+                "40.8"
+              ],
+              [
+                "Tk-INSTRUCT（用 SuperNI 训练过）",
+                "110 亿",
+                "46.0"
+              ],
+              [
+                "GPT-3 ＋ SuperNI 训练数据",
+                "1750 亿",
+                "49.5"
+              ],
+              [
+                "GPT-3 ＋ Self-Instruct ＋ SuperNI",
+                "1750 亿",
+                "51.6"
+              ]
+            ],
+            "highlight": {
+              "row": 4
+            },
+            "note": "分割线在第 6 行之后：后三行的模型都用 SuperNI 自己的训练数据训练过，指令风格和格式与测试集相同，分数自然更高。但即使如此，在 SuperNI 训练数据之外再加上 Self-Instruct 的数据，还能从 49.5 提高到 51.6。"
+          }
+        },
+        {
+          "p": "原版 GPT-3 只有 6.8 分，原因很简单：论文观察到它常常输出不相关、重复的文字，**不知道什么时候该停下来**。微调后的 GPT3_{SELF-INST} 提高到 39.9，超过了 T0 和用 T0 数据微调的 GPT-3，几乎追平 InstructGPT001 的 40.8。摘要里说的“绝对提升 33%”，就是 39.9 − 6.8 ＝ 33.1，注意这是 ROUGE-L 的分数差，而不是“好了三分之一”。",
+          "plain": {
+            "title": "答完了，还不肯停笔",
+            "text": "原版 GPT-3 像一个只会续写的学生：你问“这句话是正面还是负面？”，它可能先答一句“正面”，然后接着编下一道题、再编一段无关的话，一直写下去。按和标准答案的重合度打分，多写的部分全是扣分项。指令微调最先教会它的，就是答完就停。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "实验二：在真实用户会提的指令上",
+      "blocks": [
+        {
+          "p": "SuperNI 的任务大多是传统的学术任务。为了更贴近实际用途，作者从写邮件、社交媒体、生产力工具、娱乐、编程等场景出发，**新写了 252 条面向用户的指令**，每条一个样例，输入输出的格式也很多样（列表、表格、代码、公式等）。"
+        },
+        {
+          "p": "这些任务很难自动打分，很多连普通众包人员都判断不了（比如写程序、把一阶逻辑翻成自然语言），所以由写这些指令的作者本人来评判。每份回答被评为四级：**A** 有效且令人满意；**B** 可以接受，但有小错误或瑕疵；**C** 回应了指令，但内容有重大错误；**D** 不相关或完全无效。两位评判者都看不到回答来自哪个模型。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "252 条用户指令的人工评级",
+            "subtitle": "来自论文图 6，单位是条数",
+            "columns": [
+              "模型",
+              "A",
+              "B",
+              "C",
+              "D",
+              "A ＋ B 的比例"
+            ],
+            "rows": [
+              [
+                "原版 GPT-3",
+                "1",
+                "0",
+                "64",
+                "187",
+                "0.4%"
+              ],
+              [
+                "GPT-3 ＋ T0 训练数据",
+                "44",
+                "31",
+                "59",
+                "118",
+                "29.8%"
+              ],
+              [
+                "GPT-3 ＋ SuperNI 训练数据",
+                "74",
+                "30",
+                "80",
+                "68",
+                "41.3%"
+              ],
+              [
+                "GPT-3 ＋ Self-Instruct ＋ SuperNI",
+                "83",
+                "54",
+                "84",
+                "31",
+                "54.4%"
+              ],
+              [
+                "GPT-3 ＋ Self-Instruct（本文）",
+                "112",
+                "49",
+                "66",
+                "25",
+                "63.9%"
+              ],
+              [
+                "InstructGPT001",
+                "128",
+                "45",
+                "61",
+                "18",
+                "68.7%"
+              ],
+              [
+                "InstructGPT002",
+                "168",
+                "40",
+                "34",
+                "10",
+                "82.5%"
+              ],
+              [
+                "InstructGPT003",
+                "192",
+                "30",
+                "28",
+                "2",
+                "88.1%"
+              ]
+            ],
+            "highlight": {
+              "row": 4
+            },
+            "note": "最后一列由本站按条数计算。把 B 也算作有效，Self-Instruct 是 63.9%，InstructGPT001 是 68.7%，相差 4.8 个百分点，和论文说的“只落后 5%”一致。值得注意：加上 SuperNI 数据后，模型在这批用户指令上反而变差了（A 从 112 降到 83），论文没有讨论这一点。"
+          }
+        },
+        {
+          "p": "原版 GPT-3 几乎完全不会回应这些指令；所有指令微调过的模型都好得多，而 Self-Instruct 大幅领先用 T0、SuperNI 公开数据微调的版本。论文也承认，InstructGPT002 和 003 强得多；作者推测，如果用人工标注或奖励模型挑选更好的生成数据（类似 InstructGPT 的做法），还能大幅提升。"
+        }
+      ]
+    },
+    {
+      "h": "数据越多越好吗？质量更重要",
+      "blocks": [
+        {
+          "p": "**数据量**。作者从生成的数据里抽不同数量的指令来微调，再用同样的人工评估测试（论文图 7）。只用 175 条种子任务时，A 级回答占 31.0%；随着数据增加，一路提升到使用全部数据时的 44.4%，但在大约 1.6 万条之后就几乎不再提高了。有意思的是，在 SuperNI 上，提升在几百条指令时就饱和了，作者认为这是因为生成的数据和 SuperNI 的传统任务差别很大。",
+          "plain": {
+            "title": "边际收益递减",
+            "text": "练习册从 175 道题加到一千多道，进步很明显；加到一万多道之后，再加几万道，成绩也只涨了一点点。这时候，与其继续加量，不如把已有的题目答案改对。",
+            "pic": "si-scale"
+          }
+        },
+        {
+          "p": "**数据质量**。作者用当时最强的 InstructGPT003，把所有样例的输出重新生成一遍（指令和输入不变），再拿去微调 GPT-3。A 级回答从 44.4% 提高到 54.4%，多了 10 个百分点。论文称之为“对 InstructGPT003 的蒸馏”，并认为这说明：先用本文的流程生成初始数据，再用人工或更强的模型改进质量，还有很大空间。"
+        },
+        {
+          "callout": {
+            "kind": "note",
+            "title": "这一步的意义比看上去大",
+            "list": [
+              "前面的流程只用原版 GPT-3，完全不依赖任何指令微调过的模型，这是论文强调的“自己教自己”。",
+              "而这个改进实验，等于把 InstructGPT003 当老师。几个月后的 Alpaca 正是这样做的：用 text-davinci-003 按 Self-Instruct 的流程生成 5.2 万条数据，微调开源的 LLaMA 70 亿参数模型。",
+              "“用强模型生成数据、训练弱模型”从此成了开源社区最常见的做法，也引来了关于它能学到多少真本事的争论（见文末）。"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "局限和作者的担忧",
+      "blocks": [
+        {
+          "list": [
+            "**长尾问题**：Self-Instruct 依赖语言模型本身的知识，收益很可能集中在预训练语料里常见的任务上，对罕见的、有创意的指令可能很脆弱。",
+            "**依赖大模型**：它可能只在大模型上效果好，这会给算力有限的人设置门槛。论文提醒，人工标注的指令微调也有类似问题（FLAN 发现小模型做指令微调反而有害）。",
+            "**放大偏见**：作者担心这种迭代算法会放大模型原有的社会偏见（关于性别、种族等的刻板印象或侮辱性语言）。他们观察到的一个相关问题是，算法很难生成标签均衡的数据，这反映了模型原有的偏好。",
+            "**数据有错**：抽查显示只有 54% 的数据完全正确。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "之后：合成数据的时代",
+      "blocks": [
+        {
+          "list": [
+            "**同期工作**：Meta 的 Unnatural Instructions（Honovich 等，2022）也用 GPT-3 大规模生成指令数据。论文指出两者的区别：对方用 SuperNI 的任务当种子，并用已经指令微调过的 InstructGPT002 来生成，相当于从一个已经会听指令的模型那里蒸馏；Self-Instruct 只用原版 GPT-3。",
+            "**Alpaca（2023 年 3 月）**：斯坦福用 Self-Instruct 的流程和 text-davinci-003 生成了 5.2 万条数据，微调 LLaMA 7B，花费很低就得到了一个像样的对话模型，掀起了开源指令模型的热潮。",
+            "**模仿的局限**：后来伯克利的一项研究（Gudibande 等，2023，《模仿闭源大模型的虚假承诺》）发现，靠模仿强模型输出训练出来的开源模型，学到的主要是回答的风格，而不是事实准确性和推理能力；人工评估容易被流畅的风格骗过。这和本文“只有 54% 的数据完全正确”的发现是同一个问题的两面。",
+            "**主线三下一篇**：《宪法 AI》。它把“让模型自己生成训练信号”的思路用在了安全上：不靠人标注有害内容，而是让模型按一套原则自我批评、自我修改。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "几处值得留意的细节",
+      "blocks": [
+        {
+          "list": [
+            "**“33%”是分数差**：摘要说比原版 GPT-3“绝对提升 33%”，正文写“＋33.1%”，实际是 ROUGE-L 从 6.8 到 39.9 的分数差。原版 GPT-3 分数极低，主要因为它不知道什么时候停止输出。",
+            "**评估者一致性的两个数**：正文第 4.4 节说两位评判者的一致性 κ ＝ 0.57，附录 B.2 写的是 κ ＝ 0.58。附录还给了更宽松口径下的一致性：只区分“可接受（A 或 B）”和“不可接受（C 或 D）”时，κ ＝ 0.75。",
+            "**评判者是作者本人**：252 条用户指令由作者编写，也由其中两位作者评判；论文报告的是其中一位的结果，说另一位的趋势相同。评判时模型身份是隐藏的，但评判者既是题目作者又是论文作者，这一点值得留意。",
+            "**加了 SuperNI 反而变差**：在用户指令上，“Self-Instruct ＋ SuperNI”的 A 级回答（83 条）明显少于只用 Self-Instruct（112 条），A ＋ B 的比例也从 63.9% 降到 54.4%。论文在 SuperNI 实验里强调两种数据可以互补，却没有讨论这个反方向的结果。",
+            "**种子和测试集的重合**：附录计算了种子指令和测试指令的相似度：和 SuperNI 平均 ROUGE-L 是 0.21，和 252 条用户指令是 0.34，后者明显更高；其中有一条完全相同（“answer the following question”），作者说后面跟的问题完全不同。用户指令和种子出自同一批作者，风格更接近，这可能对 Self-Instruct 有利。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "检验一下：你吃透了吗",
+      "blocks": [
+        {
+          "quiz": {
+            "q": "Self-Instruct 用什么模型来生成指令数据？",
+            "options": [
+              "InstructGPT003",
+              "没有经过指令微调的原版 GPT-3（davinci）",
+              "人工标注员",
+              "T5"
+            ],
+            "answer": 1,
+            "why": "论文强调只用原版 GPT-3，自己教自己；用 InstructGPT003 改进输出只是后面的一个额外实验。"
+          }
+        },
+        {
+          "quiz": {
+            "q": "为什么分类任务要“先输出后输入”？",
+            "options": [
+              "速度更快",
+              "先编输入会让输入偏向某个标签（比如编出的句子大多没有语法错误），先定标签再编输入能让各类均衡",
+              "为了节省 API 费用",
+              "分类任务没有输入"
+            ],
+            "answer": 1,
+            "why": "这是论文针对标签不均衡问题提出的改进。"
+          }
+        },
+        {
+          "quiz": {
+            "q": "新指令在什么情况下会被加入任务池？",
+            "options": [
+              "和任意一条已有指令的 ROUGE-L 相似度高于 0.7",
+              "和任务池中所有已有指令的 ROUGE-L 相似度都低于 0.7，且不含 image、picture 等词",
+              "长度超过 100 个词",
+              "被人工审核通过"
+            ],
+            "answer": 1,
+            "why": "这个过滤是保证多样性的关键。"
+          }
+        },
+        {
+          "quiz": {
+            "q": "随机抽查 200 条生成数据，完全正确的比例大约是多少？",
+            "options": [
+              "92%",
+              "79%",
+              "54%",
+              "100%"
+            ],
+            "answer": 2,
+            "why": "指令本身大多有效（92%），但三项都有效的只有 54%。"
+          }
+        },
+        {
+          "p": "读完这篇，你应该能回答下面这些问题："
+        },
+        {
+          "list": [
+            "为什么人写的指令数据不够用？",
+            "Self-Instruct 的四个步骤分别做什么？每次生成新指令时，示例怎样选？",
+            "ROUGE-L 过滤怎么算？为什么阈值设在 0.7？",
+            "数据只有一半多完全正确，为什么还能有效？",
+            "SuperNI 和 252 条用户指令这两个测试，各说明了什么？",
+            "数据量和数据质量，哪个更重要？",
+            "从 Self-Instruct 到 Alpaca，“用模型生成数据”的路线有什么隐患？"
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Self-Instruct: Aligning Language Models with Self-Generated Instructions（arXiv:2212.10560 第 2 版）",
+      "publisher": "华盛顿大学等",
+      "date": "2023-05-25",
+      "url": "https://arxiv.org/abs/2212.10560"
+    },
+    "note": "本文依据论文 arXiv 第 2 版，首版发布于 2022 年 12 月。标注「示意」的表格由本站设定例子并按 ROUGE-L 的定义计算；图 6、图 7 的数值由本站从 PDF 页面图像读出，“A ＋ B 的比例”由本站按条数计算。Alpaca、Unnatural Instructions 的细节以及 Gudibande 等人的研究来自其他公开资料，不在本文里。"
+  },
+  "claims": [
+    {
+      "text": "arXiv 第 2 版",
+      "value": "2212.10560v2",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "arXiv:2212.10560v2",
+      "as_written": "arXiv"
+    },
+    {
+      "text": "175 个种子任务",
+      "value": "175 tasks",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "We initiate the task pool with 175 tasks",
+      "as_written": "175"
+    },
+    {
+      "text": "25 分类 + 150 非分类",
+      "value": "25 classification tasks and 150 non-classification tasks",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "there are 25 classification tasks and 150 non-classification tasks",
+      "as_written": "150"
+    },
+    {
+      "text": "8 条示例（6 人写 2 生成）",
+      "value": "8 task instructions",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "we sample 8 task instructions from this pool",
+      "as_written": "8 条"
+    },
+    {
+      "text": "12 和 19 条",
+      "value": "12 classification instructions",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "using 12 classification instructions and 19 non-classification instructions",
+      "as_written": "19"
+    },
+    {
+      "text": "约 5.2 万条指令",
+      "value": "52K",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "a large synthetic dataset of 52K instructions",
+      "as_written": "5.2 万"
+    },
+    {
+      "text": "约 8.2 万样例",
+      "value": "82K",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "about 82K instance inputs and target outputs",
+      "as_written": "8.2 万"
+    },
+    {
+      "text": "52445",
+      "value": "52,445",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "52,445",
+      "as_written": "52445"
+    },
+    {
+      "text": "11584",
+      "value": "11,584",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "11,584",
+      "as_written": "11584"
+    },
+    {
+      "text": "40861",
+      "value": "40,861",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "40,861",
+      "as_written": "40861"
+    },
+    {
+      "text": "82439",
+      "value": "82,439",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "82,439",
+      "as_written": "82439"
+    },
+    {
+      "text": "35878",
+      "value": "35,878",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "35,878",
+      "as_written": "35878"
+    },
+    {
+      "text": "26559",
+      "value": "26,559",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "26,559 out of the 52,445 instructions",
+      "as_written": "26559"
+    },
+    {
+      "text": "14%",
+      "value": "14%",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "account for 14% of the entire set",
+      "as_written": "14%"
+    },
+    {
+      "text": "ROUGE-L 阈值 0.7",
+      "value": "0.7",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "ing instruction is less than 0.7",
+      "as_written": "0.7"
+    },
+    {
+      "text": "92% / 79% / 58% / 54%",
+      "value": "92%",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "92%",
+      "as_written": "92%"
+    },
+    {
+      "text": "79%",
+      "value": "79%",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "79%",
+      "as_written": "79%"
+    },
+    {
+      "text": "58%",
+      "value": "58%",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "58%",
+      "as_written": "58%"
+    },
+    {
+      "text": "54%",
+      "value": "54%",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "54%",
+      "as_written": "54%"
+    },
+    {
+      "text": "200 条抽查",
+      "value": "200 instructions",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "we randomly sample 200 instructions",
+      "as_written": "200"
+    },
+    {
+      "text": "约 600 美元",
+      "value": "$600",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "cost around $600",
+      "as_written": "600 美元"
+    },
+    {
+      "text": "338 美元",
+      "value": "$338",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "cost $338",
+      "as_written": "338 美元"
+    },
+    {
+      "text": "0.02 美元每千 token",
+      "value": "$0.02",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "OpenAI charges $0.02 per 1000 tokens",
+      "as_written": "0.02 美元"
+    },
+    {
+      "text": "+33.1",
+      "value": "+33.1%",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "by a large margin (+33.1%)",
+      "as_written": "33.1"
+    },
+    {
+      "text": "33%",
+      "value": "33%",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "a 33% absolute improvement",
+      "as_written": "33%"
+    },
+    {
+      "text": "5% 差距",
+      "value": "5%",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "leaving only a 5% absolute gap",
+      "as_written": "5"
+    },
+    {
+      "text": "SuperNI 119 任务 100 样例",
+      "value": "119 tasks",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "which consists of 119 tasks with 100 in",
+      "as_written": "119"
+    },
+    {
+      "text": "252 条",
+      "value": "252",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "In total, we create 252 instructions",
+      "as_written": "252"
+    },
+    {
+      "text": "5 万个样例",
+      "value": "50K instances",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "sampled 50K instances",
+      "as_written": "5 万"
+    },
+    {
+      "text": "110 亿",
+      "value": "11B",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "their largest version with 11B parameters",
+      "as_written": "110 亿"
+    },
+    {
+      "text": "1750 亿",
+      "value": "175B",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "175B",
+      "as_written": "1750 亿"
+    },
+    {
+      "text": "κ 0.57",
+      "value": "0.57",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "𝜅 = 0.57",
+      "as_written": "0.57"
+    },
+    {
+      "text": "κ 0.58",
+      "value": "0.58",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "a 𝜅 of 0.58",
+      "as_written": "0.58"
+    },
+    {
+      "text": "κ 0.75",
+      "value": "0.75",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "a final 𝜅 of 0.75",
+      "as_written": "0.75"
+    },
+    {
+      "text": "约 1.6 万条后饱和",
+      "value": "16K",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "almost plateaus after 16K",
+      "as_written": "1.6 万"
+    },
+    {
+      "text": "31.0% / 44.4% / 54.4%",
+      "value": "31.0%",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "31.0%",
+      "as_written": "31.0%"
+    },
+    {
+      "text": "44.4%",
+      "value": "44.4%",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "44.4%",
+      "as_written": "44.4%"
+    },
+    {
+      "text": "54.4%",
+      "value": "54.4%",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "54.4%",
+      "as_written": "54.4%"
+    },
+    {
+      "text": "提升 10%",
+      "value": "10%",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "by 10%",
+      "as_written": "10 个百分点"
+    },
+    {
+      "text": "相似度 0.21 / 0.34",
+      "value": "0.21",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "SUPERNI as 0.21",
+      "as_written": "0.21"
+    },
+    {
+      "text": "0.34",
+      "value": "0.34",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "user-oriented instructions as 0.34",
+      "as_written": "0.34"
+    },
+    {
+      "text": "表 3 数字",
+      "value": "39.9",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "39.9",
+      "as_written": "39.9"
+    },
+    {
+      "text": "40.8",
+      "value": "40.8",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "40.8",
+      "as_written": "40.8"
+    },
+    {
+      "text": "6.8",
+      "value": "6.8",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "6.8",
+      "as_written": "6.8"
+    },
+    {
+      "text": "51.6",
+      "value": "51.6",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "51.6",
+      "as_written": "51.6"
+    },
+    {
+      "text": "49.5",
+      "value": "49.5",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "49.5",
+      "as_written": "49.5"
+    },
+    {
+      "text": "本站计算：A+B 63.9% vs 68.7%（图 6 条数）",
+      "value": "5%",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "only 5% behind",
+      "as_written": "63.9%"
+    },
+    {
+      "text": "68.7%",
+      "value": "5%",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "only 5% behind",
+      "as_written": "68.7%"
+    },
+    {
+      "text": "4.8 个百分点",
+      "value": "5%",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "only 5% behind",
+      "as_written": "4.8"
+    },
+    {
+      "text": "LLaMA 70 亿（Alpaca，公开资料）",
+      "value": "Yizhong Wang",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "Yizhong Wang",
+      "as_written": "70 亿"
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "tier": "primary",
+    "writer": "论文精读"
+  }
+}
