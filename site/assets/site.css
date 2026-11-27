@@ -744,3 +744,13 @@ a.chip{text-decoration:none;color:inherit}
 .pn-row i{font-style:normal;font-size:11px;color:var(--ink-3)}
 .pn-row .pn-end{border-style:dashed}
 @media (max-width:520px){.pn-row{grid-template-columns:1fr}.pn-row .pn-none{display:none}.pn-row .pn-next{text-align:left;align-items:flex-start}}
+
+/* 标志：玉雕书页横标（2026-11-27 起），浅色 / 深色各一张 */
+.logo-lockup{gap:0}
+.logo-lockup img{display:block;height:46px;width:auto}
+.side-head .logo-lockup img{height:44px}
+.foot .logo-lockup img{height:58px}
+.logo-lockup .lk-d{display:none}
+html.dark .logo-lockup .lk-l{display:none}
+html.dark .logo-lockup .lk-d{display:block}
+.ava-img{background:none;border-radius:0;object-fit:contain}

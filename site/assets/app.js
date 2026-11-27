@@ -206,7 +206,7 @@ function renderStatic(){
     TOPICS.map(x=>`<a class="chip" href="${HOME}t/${x.k}.html" aria-pressed="${TOPIC?.k===x.k}">${esc(x.name)}<span>${x.n}</span></a>`).join("")+`</div>`;
   // 侧栏
   $("#sideNav").innerHTML=NAV.map(n=>n.g?`<div class="side-group">${t(n.g)}</div>`:
-    `<a href="${n.href?(n.root?BASE:HOME)+n.href:HOME+"index.html"}" class="${(n.on&&LIST&&!TOPIC&&!SECTION)||(n.sec&&n.sec===SECTION)?"on":""}" ${n.href?"":"data-home"}>${n.ava?`<span class="ava">玉</span>`:icon(n.i)}<span>${t(n.t)}</span></a>`+
+    `<a href="${n.href?(n.root?BASE:HOME)+n.href:HOME+"index.html"}" class="${(n.on&&LIST&&!TOPIC&&!SECTION)||(n.sec&&n.sec===SECTION)?"on":""}" ${n.href?"":"data-home"}>${n.ava?`<img class="ava ava-img" src="${BASE}assets/brand/lyra-jade-emblem-160.webp" alt="">`:icon(n.i)}<span>${t(n.t)}</span></a>`+
     (n.t==="nRss"&&TOPICS.length?`<div class="side-group">${t("topicsLabel")}</div>`+TOPICS.map(x=>`<a href="${HOME}t/${x.k}.html" class="side-tp ${TOPIC?.k===x.k?"on":""}"><span class="tp-mark">${esc(x.name.slice(0,1))}</span><span>${esc(x.name)}</span><small>${x.n||""}</small></a>`).join(""):"")).join("")+
     `<div class="sub-card"><strong>${t("subTitle")}</strong><p>${t("subText")}</p><a class="btn btn-light btn-block" href="${HOME}rss.xml">${t("subBtn")}</a></div>`;
   // 页脚

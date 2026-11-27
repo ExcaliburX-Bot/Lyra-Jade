@@ -125,8 +125,8 @@ body,.cover{font-family:"Noto Sans CJK SC","Noto Sans SC","Source Han Sans SC","
 .og .cbig2 span{font-size:3.6em}
 .og-foot{position:absolute;left:72px;right:72px;bottom:44px;display:flex;align-items:center;justify-content:space-between;font-size:22px;font-weight:600;color:${cv.light ? "rgba(0,0,0,.62)" : "rgba(255,255,255,.72)"}}
 .og-foot b{display:flex;align-items:center;gap:12px}
-.og-foot i{display:grid;place-items:center;width:34px;height:34px;border-radius:9px;background:#128a66;color:#fff;font-style:normal;font-size:20px}
+.og-foot img{width:44px;height:44px;display:block}
 .og-foot span{font-weight:500;opacity:.8}
 </style></head><body><div class="og"><div class="cover cv cv-${cv.layout}${cv.light ? " light" : ""}" style="--cbg:${c.bg};--cacc:${c.acc};--cglow:${c.glow}">${cv.html}</div>
-<div class="og-foot"><b><i>玉</i>${brand}</b><span>${tag}</span></div></div></body></html>`;
+<div class="og-foot"><b><img src="${css.replace(/site\.css$/, "brand/lyra-jade-emblem-160.webp")}" alt="">${brand}</b><span>${tag}</span></div></div></body></html>`;
 }
