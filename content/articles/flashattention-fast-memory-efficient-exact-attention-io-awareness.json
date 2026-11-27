@@ -1,0 +1,901 @@
+{
+  "slug": "flashattention-fast-memory-efficient-exact-attention-io-awareness",
+  "category": "paper",
+  "publisher": "Dao 等 · 斯坦福大学",
+  "date": "2022-05-27",
+  "title": "精读《FlashAttention》：注意力慢在搬数据，分块算完再写回，结果一模一样",
+  "summary": "FlashAttention 不改变注意力的结果，只改变它在显卡上的算法：把计算切成能放进芯片缓存的小块，用在线 softmax 拼出精确结果，N × N 矩阵从不写进显存。我们手算分块 softmax，梳理它为何计算更多却更快，以及训练加速和长上下文的实验。",
+  "ai_summary": "《FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness》（Dao 等，斯坦福大学，2022）指出注意力在 GPU 上主要受显存读写限制，提出 IO 感知的精确注意力算法：将 Q、K、V 分块载入片上 SRAM，用在线 softmax 逐块合并出精确结果，反向传播时重算而不存储注意力矩阵，并融合为一个 CUDA 内核，显存访问量可证明地减少。实验中 BERT-large 训练比 MLPerf 1.1 纪录快 15%，GPT-2 端到端最多快 3 倍，内存随序列长度线性增长，使 Transformer 首次在 Path-X、Path-256 上超过随机水平。",
+  "brief": [
+    "问题：注意力受显存读写限制，标准实现反复读写 N × N 的大矩阵；近似注意力省了计算却常常不快。",
+    "方法：分块载入芯片缓存，在线 softmax 拼出精确结果，反向时重算而不存储，全部融合进一个内核。",
+    "结果：GPT-2 注意力快 7.6 倍、端到端最多快 3 倍，BERT 比 MLPerf 纪录快 15%，内存线性增长，支持 16K–64K 序列。",
+    "局限：每种注意力变体都要手写 CUDA；只考虑单卡；部分加速数字前后表述不一。"
+  ],
+  "paper": {
+    "title": "FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness",
+    "authors": "Tri Dao, Daniel Y. Fu, Stefano Ermon, Atri Rudra, Christopher Ré",
+    "org": "斯坦福大学、布法罗大学",
+    "venue": "arXiv 2022",
+    "year": 2022,
+    "arxiv": "2205.14135",
+    "url": "https://arxiv.org/abs/2205.14135"
+  },
+  "cover": {
+    "headline": "FlashAttention 精读",
+    "highlight": "慢在搬数据，不在算",
+    "glyph": {
+      "kind": "flow",
+      "nodes": [
+        {
+          "label": "分块搬进 SRAM"
+        },
+        {
+          "label": "在线 softmax",
+          "tone": "hi"
+        },
+        {
+          "label": "只写回 O"
+        }
+      ]
+    }
+  },
+  "sections": [
+    {
+      "h": "先说结论：这篇论文到底做了什么",
+      "blocks": [
+        {
+          "p": "2022 年 5 月，斯坦福大学的 Tri Dao、Daniel Y. Fu、Stefano Ermon、Christopher Ré 和布法罗大学的 Atri Rudra 发布了这篇论文。它没有发明新的注意力，算出来的结果和原版注意力**一模一样**；它改的是“怎么在显卡上算”。"
+        },
+        {
+          "p": "出发点是一个被忽视的事实：在现代 GPU 上，注意力慢，主要不是因为乘法做得多，而是因为数据在显卡的大内存（HBM）和芯片上的小缓存（SRAM）之间**来回搬**得太多。标准实现会把 N × N 的注意力矩阵整个写回显存，再读出来做 softmax，再写回去，再读出来乘 V。序列一长，这个矩阵就变成了最大的负担。"
+        },
+        {
+          "p": "FlashAttention 的办法是**分块**：把 Q、K、V 切成小块搬进 SRAM，在芯片上一口气算完一块的注意力，再用一个小技巧把各块的 softmax 拼成正确的整体结果。N × N 的矩阵从头到尾不写进显存。反向传播时也不存它，而是用保存下来的两个小统计量当场重算。"
+        },
+        {
+          "p": "结果是：计算量反而略多，读写显存却少得多，所以更快、更省内存。论文的数字：GPT-2 的注意力计算快 7.6 倍；BERT-large 训练比 MLPerf 1.1 的纪录快 15%；GPT-2 端到端训练比 Hugging Face 实现最多快 3 倍；内存随序列长度线性增长，而不是平方增长，让 Transformer 第一次在 16K、64K 长度的 Path-X、Path-256 任务上超过随机猜测。"
+        },
+        {
+          "callout": {
+            "kind": "takeaway",
+            "title": "一句话版本",
+            "text": "注意力的瓶颈在搬数据，不在算。把计算切成能放进芯片缓存的小块，在缓存里算完再写回，并用“随时修正的 softmax”把各块拼成精确结果：一样的答案，少得多的显存读写。"
+          }
+        },
+        {
+          "callout": {
+            "kind": "prereq",
+            "title": "读这篇需要的三个小概念",
+            "text": "不懂也没关系，这三条够用了：",
+            "list": [
+              "**注意力的三步**：S ＝ QK^{⊺} 算两两相似度，P ＝ softmax(S) 把每一行变成加起来等于 1 的权重，O ＝ PV 按权重加权求和。详见《Transformer》精读。",
+              "**softmax**：把一行数变成概率：每个数取指数，再除以这一行所有指数的和。关键在于：要知道“这一行的和”，就得先看完整行。",
+              "**HBM 和 SRAM**：GPU 有两种主要的存储。HBM 是显存，大但相对慢；SRAM 是芯片上的缓存，快得多但很小。"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "瓶颈不在算，而在搬",
+      "blocks": [
+        {
+          "p": "论文以 A100 显卡为例：它有 40–80GB 的 HBM，带宽 1.5–2.0TB/s；108 个计算单元各带 192KB 的 SRAM，带宽估计约 19TB/s。SRAM 快一个数量级，但总共只有约 20MB，比 HBM 小上千倍。"
+        },
+        {
+          "callout": {
+            "kind": "intuition",
+            "title": "像仓库和工作台",
+            "text": "HBM 是仓库，什么都放得下，但每次取货都要走一趟；SRAM 是手边的工作台，拿东西极快，但只放得下几样。厨师（计算单元）切菜极快，真正浪费时间的是在仓库和工作台之间来回跑。"
+          }
+        },
+        {
+          "p": "论文把 GPU 上的操作分成两类：**计算受限**的（大矩阵乘法），时间取决于算了多少；**访存受限**的（逐元素操作、softmax、dropout、各种归一化），时间取决于读写了多少。注意力里，两次矩阵乘法之间夹着 softmax、遮盖、dropout 这些访存受限的步骤，而它们的输入输出都是 N × N 的大矩阵。"
+        },
+        {
+          "p": "标准实现（论文算法 0）是这样的："
+        },
+        {
+          "list": [
+            "从 HBM 读 Q、K，算出 S ＝ QK^{⊺}，**把 S 写回 HBM**。",
+            "从 HBM 读 S，算出 P ＝ softmax(S)，**把 P 写回 HBM**。",
+            "从 HBM 读 P 和 V，算出 O ＝ PV，写回 HBM。"
+          ]
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "序列越长，注意力矩阵越压倒一切",
+            "subtitle": "示意：一个注意力头，头维度 d ＝ 64。数字由本站按矩阵大小计算",
+            "columns": [
+              "序列长度 N",
+              "Q、K、V、O 共多少个数（4 × N × d）",
+              "S、P 共多少个数（2 × N × N）",
+              "后者是前者的几倍（N ÷ 2d）"
+            ],
+            "rows": [
+              [
+                "512",
+                "131,072",
+                "524,288",
+                "4"
+              ],
+              [
+                "1,024",
+                "262,144",
+                "2,097,152",
+                "8"
+              ],
+              [
+                "4,096",
+                "1,048,576",
+                "33,554,432",
+                "32"
+              ],
+              [
+                "16,384",
+                "4,194,304",
+                "536,870,912",
+                "128"
+              ]
+            ],
+            "highlight": {
+              "row": 1
+            },
+            "note": "GPT-2 的 N ＝ 1024、d ＝ 64，正是第二行。真正需要的输入和输出都和 N 成正比，但标准实现要把和 N² 成正比的中间矩阵写进去、读出来好几遍。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "难点：softmax 要看完整行，怎么分块算",
+      "blocks": [
+        {
+          "p": "分块的想法很自然，难点在 softmax：一行的每个权重都要除以“整行指数之和”，可一块里只看得到一部分。论文用了一个已有的技巧（在线 softmax）：每处理一块，就记下两个小数字，算到后面发现前面的“最大值”不对了，就把之前的结果按比例修正。"
+        },
+        {
+          "formula": {
+            "expr": "m(x) ＝ max_{i} x_{i}，f(x) ＝ ( e^{x_{1} − m(x)}, …, e^{x_{B} − m(x)} )，ℓ(x) ＝ Σ_{i} f(x)_{i}\n两块拼接 x ＝ [x^{(1)}, x^{(2)}]：m ＝ max( m(x^{(1)}), m(x^{(2)}) )\nℓ ＝ e^{m(x^{(1)}) − m} · ℓ(x^{(1)}) ＋ e^{m(x^{(2)}) − m} · ℓ(x^{(2)})",
+            "parts": [
+              {
+                "sym": "m",
+                "desc": "目前见过的最大值。减去它再取指数，是为了防止数值溢出"
+              },
+              {
+                "sym": "ℓ",
+                "desc": "目前的指数和（以 m 为基准）"
+              },
+              {
+                "sym": "e^{m(x^{(1)}) − m}",
+                "desc": "修正系数：最大值变了，之前按旧基准算的和就整体乘上这个数"
+              }
+            ],
+            "note": "所以只要随身带着 (m, ℓ) 这两个数，就能一块一块地算 softmax，最后的结果和一次看完整行完全相同。输出 O 也用同样的系数一起修正。"
+          }
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "手算：分两块算，结果和一次算完一模一样",
+            "subtitle": "示意：一行注意力分数 [1, 3, 2, 5]，对应的值 v ＝ [10, 20, 30, 40]，切成两块。数字由本站按论文第 3.1 节的公式计算",
+            "columns": [
+              "步骤",
+              "看到的分数",
+              "最大值 m",
+              "指数和 ℓ",
+              "当前输出 o"
+            ],
+            "rows": [
+              [
+                "第 1 块",
+                "1, 3",
+                "3",
+                "1.1353",
+                "18.81"
+              ],
+              [
+                "第 2 块（单独）",
+                "2, 5",
+                "5",
+                "1.0498",
+                "39.53"
+              ],
+              [
+                "合并：第 1 块乘 e^{3−5} ＝ 0.1353 再相加",
+                "—",
+                "5",
+                "0.1353 × 1.1353 ＋ 1.0498 ＝ 1.2034",
+                "36.88"
+              ],
+              [
+                "对照：一次看完整行",
+                "1, 3, 2, 5",
+                "5",
+                "1.2034",
+                "36.88"
+              ]
+            ],
+            "highlight": {
+              "row": 2
+            },
+            "note": "合并后的输出 o ＝ (0.1353 × 1.1353 × 18.81 ＋ 1.0498 × 39.53) ÷ 1.2034 ＝ 36.88，与直接计算一致。这就是“精确注意力”的含义：不是近似，只是换了计算顺序。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "算法：分块、融合、重算",
+      "blocks": [
+        {
+          "p": "有了在线 softmax，整个算法（论文算法 1）就是两层循环："
+        },
+        {
+          "list": [
+            "**外层**：把 K、V 切成大小为 B_{c} 的块，一次把一块 K_{j}、V_{j} 搬进 SRAM。",
+            "**内层**：把 Q 切成大小为 B_{r} 的块，一块块搬进 SRAM，在芯片上算 S_{ij} ＝ Q_{i} K_{j}^{⊺}、这一块的行最大值和指数和，再按上面的修正公式更新输出 O_{i} 和统计量 (m_{i}, ℓ_{i})，写回 HBM。",
+            "**块的大小**由 SRAM 容量 M 决定：B_{c} 约为 M ÷ 4d，保证这些块同时放得进芯片。",
+            "**一个内核**：矩阵乘法、softmax、遮盖、dropout、再乘 V，全部在同一个 GPU 程序里完成，中间结果不落地。"
+          ]
+        },
+        {
+          "p": "**反向传播怎么办？**求梯度通常要用到 S 和 P 这两个 N × N 的矩阵。FlashAttention 不存它们，只存输出 O、每行的 (m, ℓ)，以及 dropout 用的随机数生成器状态。反向时从 Q、K、V 的小块在芯片上把 S、P 重新算一遍。重算多做了乘法，但省下了读写巨大矩阵的时间，反向反而更快。"
+        },
+        {
+          "callout": {
+            "kind": "myth",
+            "title": "“计算量越少，程序就越快”",
+            "text": "这篇论文的图 2 恰好是反例。在 GPT-2 medium（序列长度 1024）上，标准注意力的计算量是 66.6 GFLOPs，FlashAttention 因为要重算，多到 75.2 GFLOPs；但显存读写从 40.3GB 降到 4.4GB，运行时间从 41.7 毫秒降到 7.3 毫秒。当操作受限于访存时，少搬数据比少算更重要。"
+          }
+        },
+        {
+          "p": "论文还从理论上分析了显存访问量（IO 复杂度）："
+        },
+        {
+          "formula": {
+            "expr": "标准注意力：Θ( N d ＋ N^{2} ) 次 HBM 访问\nFlashAttention：Θ( N^{2} d^{2} ／ M ) 次 HBM 访问",
+            "parts": [
+              {
+                "sym": "N、d",
+                "desc": "序列长度、每个头的维度"
+              },
+              {
+                "sym": "M",
+                "desc": "SRAM 的大小。常见的 d 是 64–128，M 约 100KB，d² 比 M 小很多倍，所以 FlashAttention 的访问量少很多倍"
+              },
+              {
+                "sym": "下界",
+                "desc": "论文还证明：没有任何精确注意力算法能在所有 M 的取值下，渐进地比这更少"
+              }
+            ],
+            "note": "直觉：K、V 每次能搬进 Θ(M) 大小的一块，对每一块都要把整个 Q 扫一遍；SRAM 越大，扫的遍数越少。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "顺手的扩展：块稀疏 FlashAttention",
+      "blocks": [
+        {
+          "p": "很多“近似注意力”方法只让每个词看一部分位置，理论上更省，但实际往往不快，因为同样被访存拖累。论文在 FlashAttention 上加了一个块状的遮罩：遮掉的块直接跳过，不读也不算。"
+        },
+        {
+          "list": [
+            "访存量再乘上一个比例 s（非零块所占的比例），运行时间随稀疏程度成比例下降。",
+            "比 FlashAttention 本身还快 2–4 倍，能把序列长度推到 64K。",
+            "在长程基准 LRA 上，它比标准注意力快 2.8 倍，准确率相当。",
+            "注意：这一部分是近似注意力，不再“与原版完全相同”。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "实验：更快的训练，更长的上下文",
+      "blocks": [
+        {
+          "p": "**BERT-large**：在 8 块 A100 上，从 MLPerf 提供的同一初始化训练到掩码语言模型准确率 72.0%，10 次平均："
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "BERT-large：比 MLPerf 1.1 的纪录快 15%",
+            "subtitle": "来自论文表 1，训练时间（分钟），10 次的平均值 ± 标准差",
+            "columns": [
+              "实现",
+              "训练时间（分钟）"
+            ],
+            "rows": [
+              [
+                "英伟达 MLPerf 1.1",
+                "20.0 ± 1.5"
+              ],
+              [
+                "FlashAttention",
+                "17.4 ± 1.4"
+              ]
+            ],
+            "highlight": {
+              "row": 1
+            }
+          }
+        },
+        {
+          "p": "**GPT-2**：在 OpenWebText 上训练，困惑度相同（模型定义没变，论文附录的验证曲线也重合），时间大幅缩短："
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "GPT-2：同样的模型，训练时间缩短一半以上",
+            "subtitle": "来自论文表 2，8 块 A100。括号里是相对 Hugging Face 实现的加速倍数",
+            "columns": [
+              "模型和实现",
+              "困惑度",
+              "训练时间"
+            ],
+            "rows": [
+              [
+                "GPT-2 small · Hugging Face",
+                "18.2",
+                "9.5 天（1.0×）"
+              ],
+              [
+                "GPT-2 small · Megatron-LM",
+                "18.2",
+                "4.7 天（2.0×）"
+              ],
+              [
+                "GPT-2 small · FlashAttention",
+                "18.2",
+                "2.7 天（3.5×）"
+              ],
+              [
+                "GPT-2 medium · Hugging Face",
+                "14.2",
+                "21.0 天（1.0×）"
+              ],
+              [
+                "GPT-2 medium · Megatron-LM",
+                "14.3",
+                "11.5 天（1.8×）"
+              ],
+              [
+                "GPT-2 medium · FlashAttention",
+                "14.3",
+                "6.9 天（3.0×）"
+              ]
+            ],
+            "highlight": {
+              "row": 2
+            }
+          }
+        },
+        {
+          "p": "**更长的上下文**：省下来的时间和内存可以换成更长的序列。GPT-2 small 用 FlashAttention 把上下文从 1K 加到 4K，训练时间 3.6 天，仍比 Megatron 的 1K 版本（4.7 天）快约 30%，困惑度从 18.2 降到 17.5。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "长文档分类：读得更长，分数更高（但不是越长越好）",
+            "subtitle": "来自论文表 5，微平均 F1，越高越好。列是序列长度",
+            "columns": [
+              "数据集",
+              "512",
+              "1024",
+              "2048",
+              "4096",
+              "8192",
+              "16384"
+            ],
+            "rows": [
+              [
+                "MIMIC-III（病历）",
+                "52.8",
+                "50.7",
+                "51.7",
+                "54.6",
+                "56.4",
+                "57.1"
+              ],
+              [
+                "ECtHR（欧洲人权法院判例）",
+                "72.2",
+                "74.3",
+                "77.1",
+                "78.6",
+                "80.7",
+                "79.2"
+              ]
+            ],
+            "note": "MIMIC 上 16K 比 512 高 4.3 分，ECtHR 上 8K 比 512 高 8.5 分。摘要里的“提升 6.4 分”是这两个数的平均。MIMIC 在 1024、2048 时反而低于 512，ECtHR 在 16K 时低于 8K，论文推测和文档长度分布的差异有关。"
+          }
+        },
+        {
+          "p": "**Path-X 和 Path-256**：判断一张 128×128（或 256×256）黑白图里两个点是否相连，图片一个像素一个像素地喂给模型，序列长 16K 和 64K。此前的 Transformer 要么内存不够，要么只能做到抛硬币式的随机猜测。FlashAttention 在 Path-X 上做到 61.4%，块稀疏版本在 Path-256 上做到 63.1%。"
+        },
+        {
+          "p": "**基准测试**：在序列长度 128 到 2K 的常见范围内，FlashAttention 比 PyTorch 标准实现快到 3 倍；内存最多省 20 倍，且随长度线性增长。近似注意力方法在 512 到 1024 之间开始反超它，而块稀疏版本在所有长度上都比已知的实现快。和当时为短序列专门优化的 Apex FMHA 相比，它在长度 128 时慢约 4%，256 和 512 时快 8% 和 5%。"
+        }
+      ]
+    },
+    {
+      "h": "局限，以及几处值得留意的细节",
+      "blocks": [
+        {
+          "p": "论文自己列出的局限："
+        },
+        {
+          "list": [
+            "**要手写 CUDA**：每种新的注意力变体都要写一个新的底层内核，工程量大，还未必能直接搬到别的显卡架构上。论文希望将来能从 PyTorch 这样的高级语言自动编译出这类实现。",
+            "**只考虑单卡**：多卡之间的数据传输是另一层 IO，论文没有处理。"
+          ]
+        },
+        {
+          "p": "读原文时我们注意到的几处："
+        },
+        {
+          "list": [
+            "**对 Megatron 的加速倍数前后不一**：第 4 节开头说 GPT-2 比 Megatron 快 1.8 倍，表 2 的说明和正文都说 1.7 倍。按表 2 的天数算，small 是 4.7 ÷ 2.7 ≈ 1.7，medium 是 11.5 ÷ 6.9 ≈ 1.7。",
+            "**“最多 3 倍”比表里的数小**：摘要和表 2 说明都说比 Hugging Face 最多快 3 倍，但表 2 里 GPT-2 small 一行写的是 3.5×（9.5 天对 2.7 天）。",
+            "**Path-X 的 61.4% 里有额外微调的功劳**：附录写明，对 Path-X 最好的检查点又多微调了 200 轮，这一步给 FlashAttention 带来约 4 个百分点。",
+            "**“提升 6.4 分”是平均数**：两个数据集分别是 4.3 和 8.5，而且分数并不随长度单调上升（见上表）。",
+            "**算法 1 的一处下标笔误**：第 4 行把输出分块写成 O_{i}, …, O_{T_{r}}，开头应是 O_{1}；ℓ 的分块同样如此。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "之后：几乎成了注意力的默认实现",
+      "blocks": [
+        {
+          "list": [
+            "**FlashAttention-2、-3**：作者后来继续针对更新的显卡改进并行方式和硬件特性，速度进一步提升。",
+            "**进入主流框架**：这类“分块、融合、不落地”的注意力实现，后来被主流的训练和推理框架广泛采用，很多时候用户不用改代码就已经在用它了。",
+            "**长上下文的地基**：内存随长度线性增长，是后来模型上下文从几千扩展到几十万 token 的工程前提之一；配合上一篇的 RoPE 外推方法，长上下文才真正可用。",
+            "**IO 感知的思路**：论文强调的“先算清楚数据怎么搬”，影响了后来大量推理优化工作，比如本站书单里管理 KV 缓存的 PagedAttention。",
+            "**同一个作者，另一条路**：第一作者 Tri Dao 后来也是 Mamba 的作者之一，那篇论文要从结构上绕开注意力的平方复杂度，是本路线的第 11 篇。"
+          ]
+        },
+        {
+          "p": "下一篇讲推理时的另一处瓶颈：**GQA 分组查询注意力**。它让多个注意力头共用同一组键和值，把推理时要反复读取的 KV 缓存砍掉一大截。"
+        }
+      ]
+    },
+    {
+      "h": "检验一下：你吃透了吗",
+      "blocks": [
+        {
+          "quiz": {
+            "q": "FlashAttention 算出来的注意力结果，和标准注意力相比怎样？",
+            "options": [
+              "是近似结果，误差很小",
+              "完全相同，只是计算顺序和显存读写方式不同",
+              "更准确，因为用了更高精度",
+              "只在短序列上相同"
+            ],
+            "answer": 1,
+            "why": "FlashAttention 是精确注意力：分块加在线 softmax 修正后，数学上与一次算完相同。只有块稀疏版本才是近似。"
+          }
+        },
+        {
+          "quiz": {
+            "q": "FlashAttention 的计算量比标准注意力还多一些，为什么反而更快？",
+            "options": [
+              "因为它用了更快的显卡",
+              "因为注意力是访存受限的：它把 N × N 矩阵留在芯片缓存里，显存读写少了约 9 倍",
+              "因为它跳过了 softmax",
+              "因为它降低了数值精度"
+            ],
+            "answer": 1,
+            "why": "论文图 2：GFLOPs 从 66.6 增加到 75.2，但显存读写从 40.3GB 降到 4.4GB，时间从 41.7 毫秒降到 7.3 毫秒。"
+          }
+        },
+        {
+          "quiz": {
+            "q": "分块计算 softmax 时，为什么要随身记录每一行的最大值 m 和指数和 ℓ？",
+            "options": [
+              "为了做梯度裁剪",
+              "因为后面的块可能出现更大的值，需要用这两个数把之前的部分结果按比例修正",
+              "为了压缩存储",
+              "为了随机丢弃一部分注意力"
+            ],
+            "answer": 1,
+            "why": "softmax 的分母是整行的指数和。只要记住 (m, ℓ)，新块到来时把旧结果乘上 e^{旧 m − 新 m} 就能修正，最终和一次看完整行完全一致。"
+          }
+        },
+        {
+          "p": "读完这篇，你应该能回答下面这些问题："
+        },
+        {
+          "list": [
+            "为什么说注意力的瓶颈在“搬数据”而不是“算”？HBM 和 SRAM 有什么区别？",
+            "标准注意力在显存里写了哪些大矩阵？它们为什么随序列长度平方增长？",
+            "在线 softmax 是怎样把分块的结果拼成精确结果的？",
+            "反向传播时，FlashAttention 为什么宁可重算也不存注意力矩阵？",
+            "论文里的加速数字，哪些是端到端训练，哪些只是注意力本身？"
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness（arXiv:2205.14135 第 2 版）",
+      "publisher": "Dao、Fu、Ermon、Rudra、Ré · 斯坦福大学、布法罗大学",
+      "date": "2022-06-23",
+      "url": "https://arxiv.org/abs/2205.14135"
+    },
+    "note": "本文依据论文 arXiv 第 2 版，首版发布于 2022 年 5 月。标注「示意」的表格由本站设定数字并按论文公式计算。FlashAttention-2、-3 和框架采用情况来自公开资料，不在本论文里。"
+  },
+  "claims": [
+    {
+      "text": "arXiv 第 2 版",
+      "value": "2205.14135v2",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "arXiv:2205.14135v2",
+      "as_written": "arXiv"
+    },
+    {
+      "text": "注意力快 7.6 倍",
+      "value": "7.6×",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "resulting in an 7.6×",
+      "as_written": "7.6 倍"
+    },
+    {
+      "text": "BERT 快 15%",
+      "value": "15%",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "Our implementation is 15% faster",
+      "as_written": "15%"
+    },
+    {
+      "text": "GPT-2 最多快 3 倍",
+      "value": "3×",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "up to 3× speed up compared to Huggingface",
+      "as_written": "3 倍"
+    },
+    {
+      "text": "A100 HBM",
+      "value": "40-80GB",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "40-80GB of high bandwidth memory",
+      "as_written": "40–80GB"
+    },
+    {
+      "text": "HBM 带宽",
+      "value": "1.5-2.0TB/s",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "bandwidth 1.5-2.0TB/s",
+      "as_written": "1.5–2.0TB/s"
+    },
+    {
+      "text": "SRAM 192KB × 108",
+      "value": "192KB",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "192KB of on-chip SRAM",
+      "as_written": "192KB"
+    },
+    {
+      "text": "108 个计算单元",
+      "value": "108",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "108 streaming multiprocessors",
+      "as_written": "108 个"
+    },
+    {
+      "text": "SRAM 19TB/s",
+      "value": "19TB/s",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "around 19TB/s",
+      "as_written": "19TB/s"
+    },
+    {
+      "text": "约 20MB（图 1）",
+      "value": "20 MB",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "(20 MB)",
+      "as_written": "20MB"
+    },
+    {
+      "text": "GFLOPs 66.6 → 75.2",
+      "value": "75.2",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "75.2",
+      "as_written": "75.2"
+    },
+    {
+      "text": "66.6",
+      "value": "66.6",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "66.6",
+      "as_written": "66.6"
+    },
+    {
+      "text": "HBM 40.3 → 4.4GB",
+      "value": "40.3",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "40.3",
+      "as_written": "40.3GB"
+    },
+    {
+      "text": "4.4",
+      "value": "4.4",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "4.4",
+      "as_written": "4.4GB"
+    },
+    {
+      "text": "41.7 → 7.3 ms",
+      "value": "41.7",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "41.7",
+      "as_written": "41.7"
+    },
+    {
+      "text": "7.3",
+      "value": "7.3",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "7.3",
+      "as_written": "7.3"
+    },
+    {
+      "text": "最多少 9 倍",
+      "value": "9×",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "up to 9× fewer",
+      "as_written": "9 倍"
+    },
+    {
+      "text": "约 100KB",
+      "value": "100KB",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "around 100KB",
+      "as_written": "100KB"
+    },
+    {
+      "text": "块稀疏快 2–4 倍",
+      "value": "2-4×",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "2-4× faster than",
+      "as_written": "2–4 倍"
+    },
+    {
+      "text": "LRA 2.8 倍",
+      "value": "2.8×",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "achieves 2.8× speedup",
+      "as_written": "2.8 倍"
+    },
+    {
+      "text": "72.0%",
+      "value": "72.0%",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "target accuracy of 72.0%",
+      "as_written": "72.0%"
+    },
+    {
+      "text": "表 1",
+      "value": "17.4 ± 1.4",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "17.4 ± 1.4",
+      "as_written": "17.4 ± 1.4"
+    },
+    {
+      "text": "20.0 ± 1.5",
+      "value": "20.0 ± 1.5",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "20.0 ± 1.5",
+      "as_written": "20.0 ± 1.5"
+    },
+    {
+      "text": "表 2 small",
+      "value": "9.5 days",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "9.5 days",
+      "as_written": "9.5 天"
+    },
+    {
+      "text": "2.7 days",
+      "value": "2.7 days",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "2.7 days",
+      "as_written": "2.7 天"
+    },
+    {
+      "text": "3.5×",
+      "value": "3.5×",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "3.5×",
+      "as_written": "3.5×"
+    },
+    {
+      "text": "表 2 medium",
+      "value": "21.0 days",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "21.0 days",
+      "as_written": "21.0 天"
+    },
+    {
+      "text": "6.9 days",
+      "value": "6.9 days",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "6.9 days",
+      "as_written": "6.9 天"
+    },
+    {
+      "text": "11.5 days",
+      "value": "11.5 days",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "11.5 days",
+      "as_written": "11.5 天"
+    },
+    {
+      "text": "4.7 days",
+      "value": "4.7 days",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "4.7 days",
+      "as_written": "4.7 天"
+    },
+    {
+      "text": "1.8×",
+      "value": "1.8×",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "(1.8×)",
+      "as_written": "1.8×"
+    },
+    {
+      "text": "3.0×",
+      "value": "3.0×",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "(3.0×)",
+      "as_written": "3.0×"
+    },
+    {
+      "text": "2.0×",
+      "value": "2.0×",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "(2.0×)",
+      "as_written": "2.0×"
+    },
+    {
+      "text": "1.0×",
+      "value": "1.0×",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "(1.0×)",
+      "as_written": "1.0×"
+    },
+    {
+      "text": "4K 仍快 30%",
+      "value": "30%",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "still 30% faster",
+      "as_written": "30%"
+    },
+    {
+      "text": "3.6 days",
+      "value": "3.6 days",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "3.6 days",
+      "as_written": "3.6 天"
+    },
+    {
+      "text": "17.5",
+      "value": "17.5",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "17.5",
+      "as_written": "17.5"
+    },
+    {
+      "text": "MIMIC +4.3",
+      "value": "4.3 points",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "4.3 points on MIMIC",
+      "as_written": "4.3"
+    },
+    {
+      "text": "ECtHR +8.5",
+      "value": "8.5 points",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "8.5 points on ECtHR",
+      "as_written": "8.5"
+    },
+    {
+      "text": "6.4 分",
+      "value": "6.4 points",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "6.4 points of lift",
+      "as_written": "6.4"
+    },
+    {
+      "text": "Path-X 61.4",
+      "value": "61.4",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "achieves 61.4 accuracy on Path-X",
+      "as_written": "61.4%"
+    },
+    {
+      "text": "Path-256 63.1",
+      "value": "63.1",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "63.1 accuracy",
+      "as_written": "63.1%"
+    },
+    {
+      "text": "内存最多省 20 倍",
+      "value": "20×",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "up to 20× more memory efficient",
+      "as_written": "20 倍"
+    },
+    {
+      "text": "交叉点 512 到 1024",
+      "value": "between 512 and 1024",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "between 512 and 1024",
+      "as_written": "512 到 1024"
+    },
+    {
+      "text": "FMHA：128 慢 4%",
+      "value": "4%",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "about 4% slower",
+      "as_written": "4%"
+    },
+    {
+      "text": "8%",
+      "value": "8%",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "8% faster",
+      "as_written": "8%"
+    },
+    {
+      "text": "5%",
+      "value": "5%",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "5% faster for sequence length 512",
+      "as_written": "5%"
+    },
+    {
+      "text": "1.8 倍（第 4 节）",
+      "value": "1.8×",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "1.8× over Megatron",
+      "as_written": "1.8 倍"
+    },
+    {
+      "text": "1.7 倍（表 2）",
+      "value": "1.7×",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "1.7× speedup compared to Megatron-LM",
+      "as_written": "1.7 倍"
+    },
+    {
+      "text": "Path-X 额外微调约 4 点",
+      "value": "roughly 4",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "this adds roughly 4",
+      "as_written": "4 个百分点"
+    },
+    {
+      "text": "64K",
+      "value": "64K",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "sequence length of 64k",
+      "as_written": "64K"
+    },
+    {
+      "text": "16K",
+      "value": "16K",
+      "source_url": "https://arxiv.org/abs/2205.14135",
+      "quote": "(sequence length 16K)",
+      "as_written": "16K"
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "tier": "primary",
+    "writer": "论文精读"
+  }
+}
