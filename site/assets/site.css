@@ -776,3 +776,13 @@ html.dark .logo-lockup .lk-d{display:block}
   .pl-wrap>.plain{float:left;clear:left;width:236px;margin:4px 0 16px -296px;font-size:13.5px}
 }
 @media (min-width:1720px){.pl-wrap>.plain{width:280px;margin-left:-340px}.plain img{max-width:280px}}
+.pl-link{display:none}
+@media (min-width:1560px){
+  .pl-wrap{position:relative}
+  .pl-link{display:block;position:absolute;overflow:visible;pointer-events:none;z-index:1}
+  .pl-link path{fill:none;stroke:var(--rose);stroke-width:1.6;stroke-dasharray:4 4;opacity:.55;transition:opacity .2s}
+  .pl-link circle{fill:var(--rose);opacity:.7}
+  .pl-wrap>.plain{transition:border-color .2s,box-shadow .2s}
+  .pl-wrap:hover>.plain{border-style:solid;border-color:var(--rose);box-shadow:0 0 0 3px var(--rose-soft)}
+  .pl-wrap:hover>.pl-link path{opacity:1;stroke-dasharray:none}
+}

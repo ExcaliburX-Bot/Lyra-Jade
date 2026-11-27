@@ -388,3 +388,29 @@ addEventListener("scroll",()=>$("#toTop").classList.toggle("show",scrollY>900),{
 applyTheme();
 applyStyle();
 renderAll();
+
+/* 小白版的连接线：宽屏时旁注在左侧空白，画一条线连到它解释的那一块；旁注被上一条挤下去时，线会斜着连回原处 */
+(function(){
+  const wraps=$$(".pl-wrap");if(!wraps.length)return;
+  const mq=matchMedia("(min-width:1560px)"),NS="http://www.w3.org/2000/svg";
+  function draw(){
+    wraps.forEach(w=>{
+      w.querySelector(":scope>.pl-link")?.remove();
+      if(!mq.matches)return;
+      const note=w.querySelector(":scope>.plain"),blk=[...w.children].find(x=>!x.matches(".plain,.pl-link"));if(!note||!blk)return;
+      const W=w.getBoundingClientRect(),N=note.getBoundingClientRect(),B=blk.getBoundingClientRect();
+      const x1=N.right-W.left,y1=N.top-W.top+22,x2=B.left-W.left,y2=B.top-W.top+Math.min(26,B.height/2);
+      const top=Math.min(y1,y2)-6,h=Math.abs(y2-y1)+12,wd=x2-x1;if(wd<8)return;
+      const s=document.createElementNS(NS,"svg");s.setAttribute("class","pl-link");s.setAttribute("aria-hidden","true");
+      s.setAttribute("width",wd);s.setAttribute("height",h);s.style.left=x1+"px";s.style.top=top+"px";
+      const a=y1-top,b=y2-top;
+      s.innerHTML=`<path d="M0 ${a} C${wd*.55} ${a} ${wd*.45} ${b} ${wd-4} ${b}"/><circle cx="3" cy="${a}" r="3"/><circle cx="${wd-4}" cy="${b}" r="4"/>`;
+      w.appendChild(s);
+    });
+  }
+  let t;const later=()=>{clearTimeout(t);t=setTimeout(draw,60)};
+  draw();addEventListener("resize",later);mq.addEventListener?.("change",later);
+  $$(".pl-wrap img").forEach(i=>i.complete||i.addEventListener("load",later));
+  document.fonts?.ready.then(later);
+  if(window.ResizeObserver){const r=$("#reader");r&&new ResizeObserver(later).observe(r)}
+})();
