@@ -1,0 +1,11 @@
+[
+  {
+    "title": "开源 lemo-animi 定格动画Skill。一句话，让 Codex 做一支定格动画短片",
+    "url": "https://x.com/lemomo_ai/status/2123038832815907084",
+    "publisher": "@lemomo_ai",
+    "tier": "discovery",
+    "source": "bot:x",
+    "published": "2026-11-18T13:01:16.554Z",
+    "summary": "https://t.co/joZ1Vp7NLg\n\n开源 lemo-animi 定格动画Skill。一句话，让 Codex 做一支定格动画短片\n做一支 40 秒的黏土定格动画：小企鹅学做煎饼。\n就这一句话。agent 自己写故事和镜头表，用生图模型做出角色，布景和动作表，然后在代码里一格一格地让它们动起来；再用真实乐器采样配乐、加拟音，最后打开一个本地审片台修改，直到成片。\n这是我今天新发布的开源项目 lemo-animi。是一个Codex和Claude都可以使用的定格动画插件。\n下面八种材质、八支样片，每一支都是它自己从一句话开始做出来的。\n \n \n一、"
+  }
+]

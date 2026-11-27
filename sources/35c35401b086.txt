@@ -1,0 +1,35 @@
+URL: https://x.com/perplexity_ai/status/2123449395882701224
+FETCHED: 2026-11-27T09:49:46.388Z
+NOTE: X 帖子原文（含作者自己的整串），由 Grok Bot 在 X 上读取
+
+Computer's personalized self-improvement agent, Brain, now automatically creates self-improving agent skills for you.
+
+Brain learns how you work from past sessions and memory, then writes and updates personalized skills for future tasks. https://t.co/6SUi3AakVi
+
+Skills are reusable instructions that guide Computer through recurring tasks. They capture workflow-specific preferences that a general-purpose model can't know in advance.
+
+Brain already maintains a knowledge wiki about each user's work. Skills extend it to procedural memory. https://t.co/sSdxq9lSmN
+
+Brain improves skills in a four-stage loop. It finds evidence in past sessions, an improvement agent studies it and proposes a change, checks verify the proposal, and the change is applied. https://t.co/ZrHCD32iyw
+
+The improvement agent reads the full record of a session instead of judging from the outcome or a short summary.
+
+It creates a personal skill after observing and identifying recurring patterns, and makes no change when the evidence doesn't support one. https://t.co/RT942ttJpM
+
+Verification depends on whether a change reaches everyone or one user.
+
+A built-in revision must pass every test scenario, the original must fail at least one, and an engineer must approve it.
+
+Personal skill proposals pass deterministic checks, and an LLM judge audits a sample. https://t.co/aDmfxWogag
+
+Autonomous skill configuration removes friction and improves results.
+
+In an 8-week randomized test on production traffic, 72.9% of users gained at least one new personal skill with autonomous skill configuration. In the control group, only 6.5% added one manually. https://t.co/V8dphJ76ai
+
+In the same test, the tool call failure rate dropped by 11% across all Computer activity, and by about 7% excluding the system's own background runs.
+
+Medium- and high-dissatisfaction threads per user dropped by 7.6%. Cost and response time didn't measurably change.
+
+Personal skill improvement is now available to all consumer and enterprise subscribers in the US. It's on by default for eligible users and can be turned off in your settings.
+
+Read more: https://t.co/7yalWGQ0q7

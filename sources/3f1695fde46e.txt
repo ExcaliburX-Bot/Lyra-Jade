@@ -1,0 +1,75 @@
+URL: https://x.com/jandisufg/status/2123530059310850353
+FETCHED: 2026-11-27T09:49:46.315Z
+NOTE: X 帖子原文（含作者自己的整串），由 Grok Bot 在 X 上读取
+
+Você é assinante do Google AI (Plus, Pro ou Ultra) e não tá usando VPS com ~12GB de RAM e ~8 vCPU de graça? Tá deixando dinheiro na mesa. 
+
+Nesse post vou explicar como usar o Google Colab com os créditose ter uma VM poderosa de graça por horas. https://t.co/YlltILEchc
+
+Como usar o Google Colab
+O Google Colab não é só notebook. Com o CLI oficial do Google, o google-colab-cli, dá para abrir um terminal SSH numa máquina do Colab, com ou sem GPU, direto do seu terminal, do VS Code ou de qualquer editor que fale SSH.
+Neste artigo: instalar o CLI, configurar o ~/.ssh/config, fazer o primeiro login, conectar e desligar sem queimar unidades de computação à toa.
+O que você precisa
+Uma conta Google com acesso ao Colab (Assinatura Google AI - Plus, Pro ou Ultra)
+Python 3 com uv ou pip
+OpenSSH, que já vem no Linux, no macOS e no Windows 10/11
+Uma chave SSH ed25519
+1. Instale o CLI do Colab
+O pacote oficial se chama google-colab-cli e instala o comando colab.
+uv tool install google-colab-cli
+# ou: pip install google-colab-cli
+colab version
+2. Tenha uma chave SSH
+Na hora de conectar, o colab envia a sua chave pública para a máquina. Por padrão ele procura ~/.ssh/id_ed25519.pub ou id_ecdsa.pub. Ainda não tem uma?
+ssh-keygen -t ed25519
+Usa uma chave com outro nome? Tudo bem: você aponta para ela no próximo passo, com o -i.
+3. Adicione o host no ~/.ssh/config
+Abra (ou crie) o arquivo ~/.ssh/config e cole este bloco:
+Host colab
+  User root
+  ProxyCommand colab ssh --proxy-mode -s colab -i ~/.ssh/id_ed25519.pub
+  StrictHostKeyChecking no
+  UserKnownHostsFile /dev/null
+O que cada linha faz:
+Host colab: o apelido. Depois disso, é só digitar ssh colab.
+ProxyCommand: em vez de abrir conexão para um IP, o SSH conversa com o colab ssh --proxy-mode, que faz a ponte até a máquina do Colab. O -s colab é o nome da sessão: se ela não existir, o CLI cria.
+StrictHostKeyChecking no e UserKnownHostsFile /dev/null: cada sessão é uma máquina nova, com chave de host nova. Sem isso, o SSH reclama a cada conexão.
+Duas pegadinhas que me custaram tempo:
+Se o seu config tem um bloco Host *, coloque o colab antes dele. No SSH, o primeiro valor encontrado é o que vale: um StrictHostKeyChecking no Host * de cima anula o do colab.
+No Windows, use o caminho absoluto da chave no -i (C:/Users/voce/.ssh/id_ed25519.pub). O ~ dentro do ProxyCommand não é expandido.
+4. Faça o primeiro login num terminal de verdade
+Na primeira vez, o CLI pede autorização da sua conta Google: mostra um link, você aprova no navegador e cola de volta o código que o Google exibe.
+colab new -s colab
+Atenção: faça esse primeiro login num terminal interativo (PowerShell, Terminal, iTerm). Se o primeiro ssh colab sair de algo sem teclado, como um agente de IA, um script ou um comando disparado de dentro de um chat, o CLI não tem onde ler o código e o login falha com "Malformed auth code". Depois que o login fica salvo, qualquer lugar serve.
+Quer GPU? Crie a sessão já com ela: colab new -s colab --gpu T4. Também aceita L4, A100 e H100, e --high-mem para mais RAM.
+5. Conecte
+ssh colab
+Você cai como root em /content, num Ubuntu 24.04. A sessão sem GPU do print tem 2 vCPUs, 12 GB de RAM e uns 226 GB de disco.
+Também dá para rodar um comando só, sem abrir o shell:
+ssh colab "nvidia-smi"
+E como é SSH comum, o VS Code (Remote - SSH), o scp, o rsync e qualquer editor com máquina remota enxergam o host colab sem nenhuma configuração extra.
+6. Desligue quando terminar
+A sessão gasta unidades de computação enquanto estiver ligada, mesmo parada. Terminou? Desligue e confira:
+colab stop -s colab
+colab sessions
+colab usage
+Para não depender da memória, o CLI tem o --rm, que desliga a sessão quando o SSH fecha. É só acrescentar no ProxyCommand:
+ProxyCommand colab ssh --proxy-mode -s colab --rm -i ~/.ssh/id_ed25519.pub
+Quanto dura e quanto custa
+Cada tipo de máquina consome unidades num ritmo próprio. Sem GPU é quase nada; a T4 gira em torno de 1,8 por hora, a L4 de 4,8 e a A100 de 11 a 13. Os valores mudam: confira com colab usage, com a sessão ligada.
+Sessões têm teto de tempo (até cerca de 24 h no Pro) e caem por inatividade.
+O disco é descartável. Quando a sessão acaba, tudo some. Dê git push ou copie seus arquivos antes (scp, rsync ou colab download), ou monte o Google Drive com colab drivemount.
+Comandos do CLI que valem decorar
+colab sessions: lista as sessões ativas
+colab status: estado da sessão
+colab usage: saldo e taxa de uso
+colab upload / colab download: manda e traz arquivos
+colab drivemount: monta o Google Drive na máquina
+colab stop -s <nome>: desliga a sessão
+Pronto: o Colab vira só mais um host no seu ~/.ssh/config. Um ssh colab e você está numa máquina Linux com GPU, pagando só pelo tempo em que ela fica ligada.
+
+Usem como máquina remota no https://t.co/zkiyt0lksV e rodem seus agents no colab de graça
+
+Veja um pouco do meu fluxo de trabalho:
+
+https://t.co/ry16lXUjmU
