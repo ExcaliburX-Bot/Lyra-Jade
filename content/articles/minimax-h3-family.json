@@ -1,0 +1,708 @@
+{
+  "slug": "minimax-h3-family",
+  "category": "product",
+  "date": "2026-11-26",
+  "publisher": "MiniMax",
+  "title": "MiniMax H3 开源 100 天：社区衍生 1,472 个模型，下载超 1.48 亿次",
+  "summary": "想拍一条广告片、一段带货视频或一首歌的 MV，现在可以在 MiniMax 的 H3 家族里按需挑档：要画质选 H3，要批量选 H3-Highspeed，要省钱试方向选 H3-Lite。这篇文章把官方旗舰和社区延伸模型的价格、速度、适用场景一次讲清。",
+  "ai_summary": "MiniMax 在 H3 开源满 100 天时，把这一代视频与图像模型打包成「H3 家族」。100 天里，社区把 1 个 H3 做出了 1,472 个衍生模型，累计下载超 1.48 亿次，平均每秒 17 次以上。家族分两层：官方旗舰有画质优先的 H3（每秒 0.08 美元起）、速度成本平衡的 H3-Highspeed（0.04 美元起）、便宜试错的 H3-Lite（0.025 美元起），以及 H3-Image（每百万 token 3.80 美元）和 4K 高速版（7.60 美元）；社区延伸模型覆盖音乐视频、电商广告、短剧、换人等专门场景。这篇博客没给各档上线时间，也没说价格是否含优惠。",
+  "brief": [
+    "开源 100 天：社区把 1 个 H3 发展成 1,472 个衍生模型，累计下载超 1.48 亿次。",
+    "官方视频三档起步价：H3 每秒 0.08 美元、H3-Highspeed 0.04 美元、H3-Lite 0.025 美元。",
+    "H3-Image 支持最多 16 张参考图；高速版最快 4K 出图不到 10 秒，价格每百万 token 7.60 美元。",
+    "社区延伸模型覆盖音乐视频、电商广告、短剧、换人等场景，都通过 MiniMax Open Platform API 提供。"
+  ],
+  "readMinutes": 7,
+  "sections": [
+    {
+      "h": "这是什么？一句话说清「H3 家族」",
+      "blocks": [
+        {
+          "p": "H3 是 MiniMax 的视频生成模型。100 天前，MiniMax 把它开源；100 天后，官方用这篇博客把它从「一个模型」升级成「一个家族」。所谓家族，就是在同一个 H3 底座上长出来的两类成员：官方自己维护的旗舰模型（视频三档、图像两档），以及社区和合作伙伴基于 H3 训练的延伸模型。"
+        },
+        {
+          "p": "这次发布更像生态盘点加官方定价公布，不是突然扔出一个全新模型。你要真正关心的，是这一大家子里每一档分别干什么、多少钱、多快，以及社区已经替你做好了哪些细分工具。"
+        },
+        {
+          "fig": {
+            "type": "illustration",
+            "title": "H3 是根，家族成员从它长出来",
+            "subtitle": "示意：琥珀色是作为起点的 H3；蓝色是官方直供的旗舰档",
+            "glyph": {
+              "kind": "hub",
+              "center": {
+                "label": "MiniMax H3",
+                "tone": "hi"
+              },
+              "nodes": [
+                {
+                  "label": "官方视频档",
+                  "tone": "def"
+                },
+                {
+                  "label": "官方图像档",
+                  "tone": "def"
+                },
+                {
+                  "label": "平台衍生",
+                  "tone": "base"
+                },
+                {
+                  "label": "大厂定制",
+                  "tone": "base"
+                },
+                {
+                  "label": "研究团队",
+                  "tone": "ref"
+                }
+              ]
+            },
+            "legend": [
+              {
+                "tone": "hi",
+                "label": "起点 H3"
+              },
+              {
+                "tone": "def",
+                "label": "官方旗舰"
+              },
+              {
+                "tone": "base",
+                "label": "社区/大厂"
+              },
+              {
+                "tone": "ref",
+                "label": "研究团队"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "100 天里，一个 H3 长出了多少东西？",
+      "blocks": [
+        {
+          "p": "为什么 MiniMax 要强调「100 天」？因为开源模型的真正价值，是看有多少人拿它去做二次开发。原文给出一组数字：1 个 H3 变成了 1,472 个衍生模型，累计下载超过 1.48 亿次，平均每秒超过 17 次，而且新模型还在继续出现。"
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "100 天：一个 H3 变成了 1,472 个衍生模型",
+            "subtitle": "来源：MiniMax 官方博客，2026-11-26；下载数是「超过」值",
+            "items": [
+              {
+                "value": 1472,
+                "unit": "个",
+                "label": "衍生模型",
+                "note": "原文 1,472"
+              },
+              {
+                "value": 148,
+                "unit": "百万次",
+                "label": "累计下载",
+                "note": "原文 more than 148 million"
+              },
+              {
+                "value": 17,
+                "unit": "次/秒",
+                "label": "平均下载速度",
+                "note": "原文 over 17"
+              },
+              {
+                "value": 10,
+                "unit": "家以上",
+                "label": "授权合作公司",
+                "note": "原文 more than ten"
+              }
+            ]
+          }
+        },
+        {
+          "p": "参与方不只有个人开发者。原文点名了 NVIDIA、腾讯、阿里这些科技公司训练了自己的 H3 版本；fal、Suno、HeyGen、Pika、Creatify 这些应用和平台公司做了衍生模型；MIT、新加坡国立大学、香港理工大学等研究团队也参与进来。全球还有超过 10 家公司与 MiniMax 签了授权合作，把 H3 用在电商、游戏、影视、动画漫画、短剧、工业设计等工作流里。"
+        },
+        {
+          "callout": {
+            "kind": "note",
+            "title": "口径提醒",
+            "text": "这组数字是 MiniMax 自己发布、面向社区的口径，不是第三方审计。它们能说明的是：H3 已经从单个模型变成一个有人共同维护和扩展的生态起点。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "三档官方视频模型怎么选？",
+      "blocks": [
+        {
+          "p": "官方旗舰里的视频模型分三档，逻辑很清楚：画质、速度、价格，三选二。"
+        },
+        {
+          "p": "第一档 MiniMax H3，画质优先。输出最高 2K，也有 768P 档；起步价每秒 0.08 美元。它面向高端商片，强在「理解氛围」：你能给它一个还很模糊的感觉——广告里的极简高级感、电影里的神秘宿命感、动画里的传统中式美学——它能把这种感觉落成画面。它还擅长精确修改：换人、换衣服、换物体，或者只改画面某一部分的光影，其他部分保持不动。"
+        },
+        {
+          "p": "第二档 MiniMax H3-Highspeed，日常商用首选。输出 768P 或 480P，起步价每秒 0.04 美元，是 H3 的一半。速度上，一条 5 秒的片段平均约 11 秒生成；15 秒以内的片子，从输入提示词到出片不超过 1 分钟；最长支持 30 秒。可以把它理解成「日常可依赖的同事」，而 H3 更像「拍大片请的外援」。"
+        },
+        {
+          "p": "第三档 MiniMax H3-Lite，用来试错。输出 768P 或 480P，起步价每秒 0.025 美元。在部分硬件上，一条 5 秒 768P 片段约 8 秒生成，这条片子大约花 0.20 美元，大批量使用还有更低价格。适合项目早期同时试几个方向，或者批量生成几十条同款产品、不同场景的重复素材。"
+        },
+        {
+          "fig": {
+            "type": "columns",
+            "title": "视频三档起步价：画质、速度、成本各让一步",
+            "subtitle": "单位：美元/秒起步价；琥珀色是旗舰 H3，蓝色是日常商用首选档",
+            "items": [
+              {
+                "label": "H3",
+                "sub": "2K 或 768P",
+                "value": 0.08,
+                "display": "$0.08",
+                "tone": "hi"
+              },
+              {
+                "label": "H3-Highspeed",
+                "sub": "768P 或 480P",
+                "value": 0.04,
+                "display": "$0.04",
+                "tone": "def"
+              },
+              {
+                "label": "H3-Lite",
+                "sub": "768P 或 480P",
+                "value": 0.025,
+                "display": "$0.025",
+                "tone": "base"
+              }
+            ]
+          }
+        },
+        {
+          "callout": {
+            "kind": "note",
+            "title": "读数字前先看限定词",
+            "text": "三档的起步价是「starting at」，实际账单还要看分辨率、片长和用量；H3-Lite 的 8 秒是「部分硬件」上的速度，不是所有环境都能达到。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "图片模型：普通版和高速版差在哪？",
+      "blocks": [
+        {
+          "p": "图像这边有两档，计价单位换成「每百万 token」，和视频的「每秒」不同。一张图具体多少钱，取决于生成它消耗了多少 token。"
+        },
+        {
+          "p": "普通版 H3-Image，输出每百万 token 3.80 美元。它支持最多 16 张参考图，官方称指令跟随比其他开源模型更贴（这是厂商自己的说法，对照对象没有点名）。官方还称它性价比不错：生成速度是主流模型的 150% 到 200%，价格是主流模型的 50% 到 70%。注意这里的「主流模型」具体指谁，原文没说。"
+        },
+        {
+          "p": "高速版 H3-Image Highspeed，输出每百万 token 7.60 美元，正好是普通版的 2 倍（7.60 ÷ 3.80）。换来的是速度：最快情况下，一张 4K 图不到 10 秒就能出；官方称它比同档主流模型快 3 到 4 倍，让 4K 出图进入日常使用。这里的「不到 10 秒」是「at its fastest」，指最快情况，不是每次都这样。"
+        }
+      ]
+    },
+    {
+      "h": "社区延伸模型：各有各的绝活",
+      "blocks": [
+        {
+          "p": "延伸模型这一层最能体现「家族」的意思：不同团队把 H3 朝自己的领域掰。先看几个和工作最相关的。"
+        },
+        {
+          "fig": {
+            "type": "cards",
+            "title": "社区延伸模型：每个都专攻一个细分场景",
+            "subtitle": "按原文介绍整理；琥珀色是 fal 的 H3 Max（5 秒 768P 不到 3 秒出）",
+            "items": [
+              {
+                "icon": "video",
+                "title": "fal：H3 Max",
+                "desc": "5 秒 768P 片段 3 秒内生成，训练重点抓指令跟随。",
+                "tags": [
+                  "不到 3 秒"
+                ],
+                "tone": "hi"
+              },
+              {
+                "icon": "audio",
+                "title": "Suno：H3 Move",
+                "desc": "给歌曲配 MV，口型对齐歌词，风格有优雅、离奇、空灵、现代。",
+                "tags": [
+                  "音乐视频"
+                ],
+                "tone": "base"
+              },
+              {
+                "icon": "user",
+                "title": "HeyGen：Video 1",
+                "desc": "最长 30 秒视频一次生成，含画面、对白、音效，主打电商数字人。",
+                "tags": [
+                  "最长 30 秒"
+                ],
+                "tone": "base"
+              },
+              {
+                "icon": "money",
+                "title": "Creatify：Boreal-H3",
+                "desc": "专练电商广告，盯产品、使用场景和出镜模特的外貌口音。",
+                "tags": [
+                  "电商广告"
+                ],
+                "tone": "base"
+              },
+              {
+                "icon": "video",
+                "title": "Pika：H3 Flex",
+                "desc": "6 步生成，精细控制镜头运动、动作和音效，适合广告或短片。",
+                "tags": [
+                  "6 步"
+                ],
+                "tone": "base"
+              },
+              {
+                "icon": "image",
+                "title": "Akatz Labs：Character Swap V1.5",
+                "desc": "只换画面里的一个人，保留原动作表情，其余场景不变。",
+                "tags": [
+                  "换人"
+                ],
+                "tone": "base"
+              }
+            ]
+          }
+        },
+        {
+          "p": "其余几家也各有定位："
+        },
+        {
+          "list": [
+            "fal 还有 H3-Max Turbo：比 H3 Max 再快 1 倍，官方设想用于实时互动、虚拟试穿、连续直播、推理游戏。",
+            "MachGen 的 MiniMax H3：预览更快，还能用自己的 LoRA 控制画风。",
+            "Nunchux AI 的 MiniMax-H3-Fast：15 秒 768P 片段约 6.5 秒生成，适合要反复改的创意工作。",
+            "RunningHub 的 MiniMax H3 RH：强在连续性，长镜头里角色、场景、故事保持一致，适合短剧、动画漫画、电商。",
+            "Utopai Studios 的 Utopai X：在电影片场里为电影人开发，灯光和运动更讲物理。",
+            "LightX2V / ModelTC 的 MiniMax-H3 Turbo：把生成压到 4 步或 8 步，能本地跑，适合有自己部署环境、想缩短等待的专业团队。"
+          ]
+        },
+        {
+          "p": "所有这些第三方模型，都通过 MiniMax Open Platform API 提供。"
+        }
+      ]
+    },
+    {
+      "h": "价格怎么算？视频按秒、图片按 token",
+      "blocks": [
+        {
+          "p": "H3 家族有两套计价单位，别混：视频按「每秒」收，图片按「每百万 token」收。把官方旗舰的起步价和关键速度放一张表里，方便对比。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "官方旗舰价格速查：视频按秒，图片按 token",
+            "subtitle": "价格为起步价/输出价，来自 MiniMax 官方博客",
+            "columns": [
+              "模型",
+              "输出",
+              "价格",
+              "关键速度或限制"
+            ],
+            "rows": [
+              [
+                "H3",
+                "2K 或 768P",
+                "$0.08/秒",
+                "可局部精确修改"
+              ],
+              [
+                "H3-Highspeed",
+                "768P 或 480P",
+                "$0.04/秒",
+                "5 秒片段约 11 秒；最长 30 秒"
+              ],
+              [
+                "H3-Lite",
+                "768P 或 480P",
+                "$0.025/秒",
+                "5 秒 768P 约 8 秒（部分硬件）"
+              ],
+              [
+                "H3-Image",
+                "图像",
+                "$3.80/百万 token",
+                "最多 16 张参考图"
+              ],
+              [
+                "H3-Image Highspeed",
+                "4K 图像",
+                "$7.60/百万 token",
+                "最快 4K 不到 10 秒"
+              ]
+            ],
+            "highlight": {
+              "col": 2
+            }
+          }
+        },
+        {
+          "p": "视频三档起步价里，最贵的 H3（0.08 美元）和最便宜的 H3-Lite（0.025 美元）差约 3.2 倍（0.08 ÷ 0.025）。图片两档里，高速版 7.60 美元正好是普通版 3.80 美元的 2 倍。起步价只是门槛，实际花费还会被分辨率、片长、token 消耗和批量折扣改变。"
+        }
+      ]
+    },
+    {
+      "h": "官方还没说的",
+      "blocks": [
+        {
+          "p": "这篇博客是发布和盘点，不是一份完整的技术说明书。下面这些读者最关心的事，原文都没有写。"
+        },
+        {
+          "list": [
+            "各档的正式上线时间：博客说「今天发布」，但没写每个模型是现在就能用，还是分批开放。",
+            "延伸模型各自的单价：只说了通过 MiniMax Open Platform API 提供，具体价格要去看各家页面。",
+            "「主流模型」是谁：H3-Image 的 150% 到 200% 速度、50% 到 70% 价格，对照对象没有点名。",
+            "H3-Lite 的批量折扣：原文只说「大批量价格更低」，没有给数字。",
+            "授权合作条款：超过 10 家公司的合作，金额、分成、排他性都没写。",
+            "H3 在 2K 下的出片速度，以及图片单张实际 token 消耗，原文也没给。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "适合谁",
+      "blocks": [
+        {
+          "p": "价值很直接：从 0.025 美元每秒的试错档，到 0.08 美元每秒的画质档，再到一堆社区细分模型，你几乎总能找到一个和预算、场景匹配的起点。而且 H3 开源，社区已经替你做好了不少专门化版本。"
+        },
+        {
+          "p": "代价是：视频按秒、图片按 token 计费，真正花多少要先估量；「主流模型」的对照对象没点名，宣传数字只能当相对参考；第三方延伸模型的画质和稳定性，官方博客也没有给横评。"
+        },
+        {
+          "list": [
+            "如果你做电商批量素材、直播切片或日常广告，先看 H3-Highspeed：0.04 美元每秒，5 秒片段约 11 秒出，节奏合适。",
+            "如果你预算紧、还在找方向，用 H3-Lite 试几条：5 秒 768P 片段约 0.20 美元一条。",
+            "如果你要高端商片、能接受更高价，用 H3 拿最高 2K，以及更细的氛围理解和局部修改。",
+            "如果你的需求很具体——音乐视频找 Suno 的 H3 Move、电商广告找 Creatify 的 Boreal-H3、换人找 Akatz Labs 的 Character Swap V1.5——直接去对应延伸模型，比自己从头调更省事。",
+            "如果你是开发团队、有自己的部署环境，看 LightX2V / ModelTC 的 MiniMax-H3 Turbo（4 步或 8 步，可本地跑）。"
+          ]
+        },
+        {
+          "fig": {
+            "type": "quote",
+            "title": "博客结尾借万维网发明者的话点题",
+            "text": "What you create is limited only by your imagination.",
+            "zh": "你能创造什么，只受限于你的想象力。",
+            "who": "Tim Berners-Lee",
+            "role": "万维网发明者，MiniMax 在博客中引用其万维网 25 周年时的说法",
+            "source_url": "https://www.minimax.io/blog/minimax-h3-family"
+          }
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "The H3 Family: Models, Community, and What's Next - MiniMax Research | MiniMax",
+      "publisher": "MiniMax",
+      "date": "2026-11-26",
+      "url": "https://www.minimax.io/blog/minimax-h3-family"
+    },
+    "note": "本文只有 MiniMax 官方博客一个来源；文中图表均按原文数字整理（标注处注明），非官方原图；「起步价」「最快」「部分硬件」等限定词已随数字一并说明。"
+  },
+  "claims": [
+    {
+      "text": "H3 开源满 100 天",
+      "value": "100",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "100 天",
+      "quote": "In the 100 days since we open-sourced MiniMax H3, developers have turned one H3 into 1,472 derivative models for 1,472 distinct needs and uses."
+    },
+    {
+      "text": "社区把 1 个 H3 做成了 1,472 个衍生模型",
+      "value": "1,472",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "1,472 个",
+      "quote": "In the 100 days since we open-sourced MiniMax H3, developers have turned one H3 into 1,472 derivative models for 1,472 distinct needs and uses."
+    },
+    {
+      "text": "衍生模型累计下载超过 1.48 亿次",
+      "value": "148 million",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "1.48 亿次",
+      "quote": "Together, these models have been downloaded more than 148 million times, an average of over 17 downloads a second."
+    },
+    {
+      "text": "平均下载速度超过每秒 17 次",
+      "value": "17",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "17 次/秒",
+      "quote": "Together, these models have been downloaded more than 148 million times, an average of over 17 downloads a second."
+    },
+    {
+      "text": "全球超过 10 家公司与 MiniMax 签授权合作",
+      "value": "more than ten",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "超过 10 家",
+      "quote": "More than ten leading companies worldwide now have licensing partnerships with MiniMax."
+    },
+    {
+      "text": "H3 输出 2K 或 768P",
+      "value": "2K",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "2K",
+      "quote": "2K or 768P output, starting at $0.08 per second"
+    },
+    {
+      "text": "H3 输出 2K 或 768P",
+      "value": "768P",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "768P",
+      "quote": "2K or 768P output, starting at $0.08 per second"
+    },
+    {
+      "text": "H3 起步价每秒 0.08 美元",
+      "value": "$0.08",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "0.08 美元",
+      "quote": "2K or 768P output, starting at $0.08 per second"
+    },
+    {
+      "text": "H3-Highspeed 输出 768P 或 480P",
+      "value": "768P",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "768P",
+      "quote": "768P or 480P output, starting at $0.04 per second"
+    },
+    {
+      "text": "H3-Highspeed 输出 768P 或 480P",
+      "value": "480P",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "480P",
+      "quote": "768P or 480P output, starting at $0.04 per second"
+    },
+    {
+      "text": "H3-Highspeed 起步价每秒 0.04 美元",
+      "value": "$0.04",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "0.04 美元",
+      "quote": "768P or 480P output, starting at $0.04 per second"
+    },
+    {
+      "text": "官方用 5 秒片段作为多个模型的速度基准",
+      "value": "5",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "5 秒",
+      "quote": "A five-second clip takes about 11 seconds to generate on average."
+    },
+    {
+      "text": "H3-Highspeed 生成 5 秒片段平均约 11 秒",
+      "value": "11 seconds",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "约 11 秒",
+      "quote": "A five-second clip takes about 11 seconds to generate on average."
+    },
+    {
+      "text": "H3-Highspeed 对 15 秒以内片段，从提示词到出片不超过 1 分钟",
+      "value": "15 seconds",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "15 秒",
+      "quote": "For clips up to 15 seconds long, it takes no more than a minute to go from prompt to finished video."
+    },
+    {
+      "text": "H3-Highspeed 对 15 秒以内片段出片不超过 1 分钟",
+      "value": "a minute",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "1 分钟",
+      "quote": "For clips up to 15 seconds long, it takes no more than a minute to go from prompt to finished video."
+    },
+    {
+      "text": "H3-Highspeed 支持最长 30 秒片段",
+      "value": "30 seconds",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "30 秒",
+      "quote": "The model supports clips up to 30 seconds long."
+    },
+    {
+      "text": "H3-Lite 输出 768P 或 480P",
+      "value": "768P",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "768P",
+      "quote": "768P or 480P output, starting at $0.025 per second"
+    },
+    {
+      "text": "H3-Lite 输出 768P 或 480P",
+      "value": "480P",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "480P",
+      "quote": "768P or 480P output, starting at $0.025 per second"
+    },
+    {
+      "text": "H3-Lite 起步价每秒 0.025 美元",
+      "value": "$0.025",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "0.025 美元",
+      "quote": "768P or 480P output, starting at $0.025 per second"
+    },
+    {
+      "text": "部分硬件上 H3-Lite 生成 5 秒 768P 片段约 8 秒",
+      "value": "eight seconds",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "约 8 秒",
+      "quote": "On some hardware, H3-Lite generates a five-second 768P clip in about eight seconds."
+    },
+    {
+      "text": "H3-Lite 生成那条 5 秒 768P 片段约花 0.20 美元",
+      "value": "$0.20",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "0.20 美元",
+      "quote": "Video output for that clip costs about $0.20, with lower rates for high-volume use."
+    },
+    {
+      "text": "H3-Image 输出每百万 token 3.80 美元",
+      "value": "$3.80",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "3.80 美元",
+      "quote": "Image output costs $3.80 per million tokens"
+    },
+    {
+      "text": "H3-Image 支持最多 16 张参考图",
+      "value": "16",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "16 张",
+      "quote": "It follows instructions more closely than any other open-source model and supports up to 16 reference images."
+    },
+    {
+      "text": "H3-Image 生成速度是主流模型的 150% 到 200%",
+      "value": "150% to 200%",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "150% 到 200%",
+      "quote": "It also offers good value, generating images at 150% to 200% of the speed of mainstream models for 50% to 70% of the price."
+    },
+    {
+      "text": "H3-Image 价格是主流模型的 50% 到 70%",
+      "value": "50% to 70%",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "50% 到 70%",
+      "quote": "It also offers good value, generating images at 150% to 200% of the speed of mainstream models for 50% to 70% of the price."
+    },
+    {
+      "text": "H3-Image Highspeed 输出每百万 token 7.60 美元",
+      "value": "$7.60",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "7.60 美元",
+      "quote": "Image output costs $7.60 per million tokens"
+    },
+    {
+      "text": "H3-Image Highspeed 最快 4K 出图不到 10 秒",
+      "value": "under 10 seconds",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "不到 10 秒",
+      "quote": "At its fastest, H3-Image in Highspeed mode can generate a 4K image in under 10 seconds."
+    },
+    {
+      "text": "H3-Image Highspeed 可生成 4K 图像",
+      "value": "4K",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "4K",
+      "quote": "At its fastest, H3-Image in Highspeed mode can generate a 4K image in under 10 seconds."
+    },
+    {
+      "text": "H3-Image Highspeed 比同档主流模型快 3 到 4 倍",
+      "value": "3 to 4 times",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "3 到 4 倍",
+      "quote": "It runs 3 to 4 times as fast as mainstream models in the same tier, making 4K practical for everyday work."
+    },
+    {
+      "text": "fal 的 H3 Max 生成 5 秒 768P 片段不到 3 秒",
+      "value": "under three seconds",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "不到 3 秒",
+      "quote": "H3 Max generates a five-second 768P clip in under three seconds."
+    },
+    {
+      "text": "fal 的 H3-Max Turbo 生成视频比 H3 Max 快 1 倍",
+      "value": "twice as fast",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "再快 1 倍",
+      "quote": "H3-Max Turbo generates video twice as fast as H3 Max."
+    },
+    {
+      "text": "Nunchux AI 的 MiniMax-H3-Fast 生成 15 秒 768P 片段约 6.5 秒",
+      "value": "6.5 seconds",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "约 6.5 秒",
+      "quote": "It generates a 15-second 768P clip in about 6.5 seconds, making it well suited to creative work that takes several attempts and revisions."
+    },
+    {
+      "text": "HeyGen 的 Video 1 一次生成最长 30 秒视频",
+      "value": "30 seconds",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "30 秒",
+      "quote": "Video 1 can generate a complete video up to 30 seconds long in one pass, including visuals, dialogue, and sound effects."
+    },
+    {
+      "text": "Pika 的 H3 Flex 用 6 步生成视频",
+      "value": "six steps",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "6 步",
+      "quote": "Pika H3 Flex generates video in six steps and gives creators fine control over camera movement, action, and sound effects."
+    },
+    {
+      "text": "LightX2V / ModelTC 的 MiniMax-H3 Turbo 把生成压到 4 步或 8 步",
+      "value": "four or eight steps",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "4 步或 8 步",
+      "quote": "MiniMax-H3 Turbo reduces video generation to four or eight steps and can run locally."
+    },
+    {
+      "text": "万维网 25 周年",
+      "value": "25th anniversary",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "25 周年",
+      "quote": "On the 25th anniversary of the World Wide Web"
+    },
+    {
+      "text": "H3 最高渲染到 2K",
+      "value": "up to 2K",
+      "source_url": "https://www.minimax.io/blog/minimax-h3-family",
+      "as_written": "最高 2K",
+      "quote": "It can carry the story forward in a way that fits the characters and render it at up to 2K."
+    }
+  ],
+  "cover": {
+    "headline": "MiniMax H3 家族发布",
+    "highlight": "1 个模型衍生 1,472 个",
+    "big": {
+      "value": "1,472",
+      "unit": "个",
+      "label": "100 天衍生模型"
+    },
+    "glyph": {
+      "kind": "hub",
+      "center": {
+        "label": "H3",
+        "tone": "hi"
+      },
+      "nodes": [
+        {
+          "label": "视频档",
+          "tone": "def"
+        },
+        {
+          "label": "图像档",
+          "tone": "def"
+        },
+        {
+          "label": "社区模型",
+          "tone": "base"
+        }
+      ]
+    }
+  },
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "origin": "auto",
+    "candidate": "1c544e6e22",
+    "tier": "official",
+    "via": null,
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "generated_at": "2026-11-27T08:20:39.675Z"
+  }
+}
