@@ -1,10 +1,7 @@
-# 候选清单（2026-11-27 14:06 UTC）
+# 候选清单（2026-11-27 22:49 UTC）
 
 | 分数 | 标题 | 发布方 | 层级 | 相关报道 |
 | --- | --- | --- | --- | --- |
-| 4.6 | [让AI 能掌握电影大师的配色画面：迪金斯、王家卫、韦斯·安德森 15 位大师 5 种配色思路（附调色 Skill）](https://x.com/TuyetloanP81840/status/2125857648683933907) | @TuyetloanP81840 | official | 0 |
-| 4 | [已经订阅了 Google AI服务的 免费领取一台Google Colab云电脑 上手指南：一条 SSH 连进 12 GB 内存 Ubuntu](https://x.com/jandisufg/status/2123530059310850353) | @jandisufg | official | 1 |
-| 4 | [Skill lemo-animi：一句话让 Codex 做出带配乐和拟音的定格短片](https://x.com/lemomo_ai/status/2123038832815907084) | @lemomo_ai | official | 1 |
 | 3.6 | [Taking Trainium3 to the Track: Generating Videos with LTX-2.5](https://huggingface.co/blog/video-trainium3) | Hugging Face | primary | 0 |
 | 3.6 | [Returning to the Neuron Basis for Interpretability, Part 1: Answering Three Objections](https://alignment.anthropic.com/2026/neuron-basis-theory/) | Anthropic | official | 1 |
 | 3.6 | [Zero data retention with Enterprise Frontier Safeguards is now in beta](https://claude.com/resources/articles/zero-data-retention-with-enterprise-frontier-safeguards) | Anthropic | official | 0 |
@@ -42,5 +39,8 @@
 | 3.3 | [NVIDIA DGX Spark Developer Kit Turns a Desk Into a Supercomputing Lab](https://blogs.nvidia.com/blog/dgx-spark-hpc-developer-kit-sc26/) | NVIDIA | official | 0 |
 | 3.3 | [How the World’s Most Advanced AI Infrastructure Supply Chain Invents the Future](https://blogs.nvidia.com/blog/ai-infrastructure-supply-chain/) | NVIDIA | official | 0 |
 | 3.3 | [Lambda Boosts AI Factory Resiliency and Efficiency With NVIDIA Photonics](https://blogs.nvidia.com/blog/lambda-photonics/) | NVIDIA | official | 0 |
+| 3.3 | [NVIDIA Expands Slurm to Bring Quantum Computing Into Supercomputing](https://blogs.nvidia.com/blog/slurm-quantum-computing-supercomputing/) | NVIDIA | official | 0 |
+| 3.3 | [NVIDIA Sweeps MLPerf Training and Endpoints as Vera Rubin Debuts With Leading Performance](https://blogs.nvidia.com/blog/mlperf-training-endpoints-vera-rubin/) | NVIDIA | official | 0 |
+| 3.3 | [CUDA at 20: How the Platform Transformed Scientific Computing](https://blogs.nvidia.com/blog/20-years-cuda/) | NVIDIA | official | 0 |
 
 **超过 30 天没有新内容的源**：Mistral 新闻、Kimi 博客

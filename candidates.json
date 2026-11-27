@@ -1,58 +1,5 @@
 [
   {
-    "id": "9bb998d7b6",
-    "title": "让AI 能掌握电影大师的配色画面：迪金斯、王家卫、韦斯·安德森 15 位大师 5 种配色思路（附调色 Skill）",
-    "url": "https://x.com/TuyetloanP81840/status/2125857648683933907",
-    "publisher": "@TuyetloanP81840",
-    "tier": "official",
-    "published": "2026-11-27T00:00:00.000Z",
-    "score": 4.6,
-    "category_hint": null,
-    "via": "https://xiaohu.ai/article/ai-master-color-grading/",
-    "discovered_by": "xiaohu",
-    "related": []
-  },
-  {
-    "id": "3f1695fde4",
-    "title": "已经订阅了 Google AI服务的 免费领取一台Google Colab云电脑 上手指南：一条 SSH 连进 12 GB 内存 Ubuntu",
-    "url": "https://x.com/jandisufg/status/2123530059310850353",
-    "publisher": "@jandisufg",
-    "tier": "official",
-    "published": "2026-11-21T00:00:00.000Z",
-    "score": 4,
-    "category_hint": null,
-    "via": "https://xiaohu.ai/article/google-colab-cli-ssh/",
-    "discovered_by": "xiaohu",
-    "related": [
-      {
-        "title": "Como usar o Google Colab",
-        "url": "https://x.com/jandisufg/status/2123530059310850353",
-        "publisher": "@jandisufg",
-        "tier": "discovery"
-      }
-    ]
-  },
-  {
-    "id": "5aa3a24a55",
-    "title": "Skill lemo-animi：一句话让 Codex 做出带配乐和拟音的定格短片",
-    "url": "https://x.com/lemomo_ai/status/2123038832815907084",
-    "publisher": "@lemomo_ai",
-    "tier": "official",
-    "published": "2026-11-20T00:00:00.000Z",
-    "score": 4,
-    "category_hint": null,
-    "via": "https://xiaohu.ai/article/lemo-animi-stop-motion/",
-    "discovered_by": "xiaohu",
-    "related": [
-      {
-        "title": "开源 lemo-animi 定格动画Skill。一句话，让 Codex 做一支定格动画短片",
-        "url": "https://x.com/lemomo_ai/status/2123038832815907084",
-        "publisher": "@lemomo_ai",
-        "tier": "discovery"
-      }
-    ]
-  },
-  {
     "id": "2d7f8b4f84",
     "title": "Taking Trainium3 to the Track: Generating Videos with LTX-2.5",
     "url": "https://huggingface.co/blog/video-trainium3",
@@ -504,6 +451,39 @@
     "publisher": "NVIDIA",
     "tier": "official",
     "published": "2026-11-16T16:00:51.000Z",
+    "score": 3.3,
+    "category_hint": null,
+    "related": []
+  },
+  {
+    "id": "0be2ab6226",
+    "title": "NVIDIA Expands Slurm to Bring Quantum Computing Into Supercomputing",
+    "url": "https://blogs.nvidia.com/blog/slurm-quantum-computing-supercomputing/",
+    "publisher": "NVIDIA",
+    "tier": "official",
+    "published": "2026-11-16T16:00:47.000Z",
+    "score": 3.3,
+    "category_hint": null,
+    "related": []
+  },
+  {
+    "id": "0f2a855bc6",
+    "title": "NVIDIA Sweeps MLPerf Training and Endpoints as Vera Rubin Debuts With Leading Performance",
+    "url": "https://blogs.nvidia.com/blog/mlperf-training-endpoints-vera-rubin/",
+    "publisher": "NVIDIA",
+    "tier": "official",
+    "published": "2026-11-16T16:00:25.000Z",
+    "score": 3.3,
+    "category_hint": null,
+    "related": []
+  },
+  {
+    "id": "f96db6736b",
+    "title": "CUDA at 20: How the Platform Transformed Scientific Computing",
+    "url": "https://blogs.nvidia.com/blog/20-years-cuda/",
+    "publisher": "NVIDIA",
+    "tier": "official",
+    "published": "2026-11-16T16:00:11.000Z",
     "score": 3.3,
     "category_hint": null,
     "related": []
