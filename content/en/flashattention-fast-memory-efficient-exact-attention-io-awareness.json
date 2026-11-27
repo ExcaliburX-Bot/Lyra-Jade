@@ -1,16 +1,16 @@
 {
   "slug": "flashattention-fast-memory-efficient-exact-attention-io-awareness",
   "category": "paper",
-  "publisher": "Dao et al. · Stanford University",
+  "publisher": "Tri Dao et al. · Stanford University",
   "date": "2022-05-27",
-  "title": "FlashAttention explained: attention is slow because of data movement; tile, compute, write back, same answer",
-  "summary": "FlashAttention doesn't change attention's output; it changes how attention runs on a GPU: split the computation into blocks small enough for on-chip cache, stitch them together with online softmax to get exact results, and never write the N × N matrix to GPU memory. We work through the blockwise softmax by hand, explain why doing more arithmetic makes it faster, and examine the training and long-context experiments.",
-  "ai_summary": "FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness (Dao et al., Stanford University, 2022) argues that attention on GPUs is limited mainly by memory reads and writes, and proposes an IO-aware exact attention algorithm: load Q, K, and V into on-chip SRAM in tiles, merge the tiles with online softmax to get exact results, recompute rather than store the attention matrix during backpropagation, and fuse everything into a single CUDA kernel that provably reduces memory traffic. In experiments, BERT-large training is 15% faster than the MLPerf 1.1 record, GPT-2 end-to-end training is up to 3× faster, and memory grows linearly with sequence length, letting Transformers beat random guessing on Path-X and Path-256 for the first time.",
+  "title": "FlashAttention: attention is slow because of data movement, not math; tiling keeps the exact result",
+  "summary": "FlashAttention doesn't change what attention computes, only how it runs on the GPU: it splits the computation into blocks that fit in on-chip SRAM, uses online softmax to recover the exact result, and never writes the N × N matrix to HBM. We hand-run the block softmax, unpack why doing more arithmetic can be faster, and walk through the training speedups and long-context experiments.",
+  "ai_summary": "FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness (Dao et al., Stanford University, 2022) shows that attention on GPUs is limited mainly by HBM reads and writes. It proposes an IO-aware exact attention algorithm: Q, K, and V are loaded into on-chip SRAM in blocks, online softmax merges the blocks into the exact result, and the backward pass recomputes instead of storing the attention matrix—all fused into a single CUDA kernel with provably fewer HBM accesses. In experiments, BERT-large trains 15% faster than the MLPerf 1.1 record, GPT-2 end-to-end is up to 3× faster, and memory grows linearly with sequence length, letting Transformers beat chance on Path-X and Path-256 for the first time.",
   "brief": [
-    "Problem: attention is limited by memory traffic; the standard implementation repeatedly reads and writes the N × N matrix, while approximate attention saves computation but is often not faster.",
-    "Method: load tiles into on-chip cache, combine them with online softmax for exact results, recompute instead of storing during backpropagation, and fuse everything into one kernel.",
-    "Results: GPT-2 attention is 7.6× faster and end-to-end training up to 3× faster, BERT-large is 15% faster than the MLPerf record, memory grows linearly, and 16K–64K sequences become practical.",
-    "Limitations: every attention variant needs hand-written CUDA; only a single GPU is considered; some speedup figures are stated inconsistently."
+    "Problem: attention is bottlenecked by HBM reads and writes; standard implementations repeatedly read and write a large N × N matrix. Approximate attention saves compute but is often not much faster.",
+    "Method: tile blocks into on-chip SRAM, use online softmax to assemble the exact result, recompute instead of storing in the backward pass, and fuse everything into one kernel.",
+    "Results: GPT-2 attention is 7.6× faster and end-to-end up to 3× faster; BERT is 15% faster than the MLPerf record; memory grows linearly; supports 16K–64K sequences.",
+    "Limitations: every attention variant needs its own hand-written CUDA kernel; single-GPU only; some speedup numbers are inconsistent across sections."
   ],
   "paper": {
     "title": "FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness",
@@ -22,76 +22,81 @@
     "url": "https://arxiv.org/abs/2205.14135"
   },
   "cover": {
-    "headline": "FlashAttention in depth",
-    "highlight": "Slow at data movement, not compute",
+    "headline": "FlashAttention explained",
+    "highlight": "Slow from data movement, not math",
     "glyph": {
       "kind": "flow",
       "nodes": [
         {
-          "label": "Tiling into SRAM"
+          "label": "Tile into SRAM"
         },
         {
           "label": "Online softmax",
           "tone": "hi"
         },
         {
-          "label": "Only O is written back"
+          "label": "Write back only O"
         }
       ]
     }
   },
   "sections": [
     {
-      "h": "Bottom line: what this paper actually does",
+      "h": "The bottom line: what this paper actually does",
       "blocks": [
         {
-          "p": "In May 2022, Tri Dao, Daniel Y. Fu, Stefano Ermon, and Christopher Ré of Stanford University, along with Atri Rudra of the University at Buffalo, released this paper. It doesn't invent a new kind of attention; the result is **exactly the same** as standard attention. What it changes is *how attention runs on a GPU*."
+          "p": "In May 2022, Tri Dao, Daniel Y. Fu, Stefano Ermon, and Christopher Ré of Stanford, along with Atri Rudra of the University at Buffalo, released this paper. It does not invent a new kind of attention—the output is **exactly the same** as standard attention. What it changes is how that computation runs on a GPU."
         },
         {
-          "p": "The starting point is an overlooked fact: on modern GPUs, attention is slow not because there are too many multiplications, but because data is **shuttled back and forth** too much between the GPU's large memory (HBM) and its small on-chip cache (SRAM). The standard implementation writes the whole N × N attention matrix back to device memory, reads it again for softmax, writes it back again, then reads it once more to multiply by V. As sequences grow, this matrix becomes the biggest burden."
+          "p": "The starting point is an overlooked fact: on modern GPUs, attention is slow not mainly because of all the multiplications, but because data moves back and forth too much between the GPU's large main memory (HBM) and the chip's small on-chip cache (SRAM). Standard implementations write the entire N × N attention matrix back to HBM, read it again to apply softmax, write it again, then read it again to multiply by V. Once sequences get long, that matrix becomes the dominant cost."
         },
         {
-          "p": "FlashAttention's approach is **tiling**: cut Q, K, and V into small pieces, move each into SRAM, compute a full tile of attention on-chip in one go, then use a small trick to stitch the per-tile softmax back into a correct global result. The N × N matrix is never written to device memory. Backpropagation doesn't store it either; instead, it recomputes it on the spot from two saved statistics."
+          "p": "FlashAttention's approach is **tiling**: split Q, K, and V into small blocks, load them into SRAM, compute one block of attention entirely on-chip, then use a small trick to assemble the per-block softmax into the correct global result. The N × N matrix never gets written to HBM. The backward pass doesn't store it either; it recomputes it on the fly from two small saved statistics."
         },
         {
-          "p": "The result: it does slightly more arithmetic, but reads and writes far less memory, so it's faster and uses less memory. The paper's numbers: GPT-2 attention is 7.6× faster; BERT-large training is 15% faster than the MLPerf 1.1 record; GPT-2 end-to-end training is up to 3× faster than the Hugging Face implementation; and memory grows linearly with sequence length instead of quadratically, letting Transformers beat random guessing on the Path-X and Path-256 tasks at 16K and 64K lengths for the first time."
+          "p": "The result: slightly more arithmetic, but far fewer HBM reads and writes, so it runs faster and uses less memory. The paper's numbers: GPT-2 attention computation is 7.6× faster; BERT-large training is 15% faster than the MLPerf 1.1 record; GPT-2 end-to-end training is up to 3× faster than the Hugging Face implementation; memory grows linearly with sequence length instead of quadratically, allowing Transformers to beat random guessing for the first time on Path-X (16K) and Path-256 (64K)."
         },
         {
           "callout": {
             "kind": "takeaway",
-            "title": "The one-sentence version",
-            "text": "Attention is bottlenecked by data movement, not arithmetic. Cut the computation into tiles that fit in on-chip cache, compute each tile there before writing it back, and use online softmax to merge the tiles into an exact result: same answer, far less GPU memory traffic."
+            "title": "One-sentence version",
+            "text": "Attention's bottleneck is moving data, not doing math. Cut the computation into blocks that fit in on-chip memory, compute each block in cache and write back only the result, then use a self-correcting softmax to assemble the blocks into an exact answer: same result, far fewer HBM accesses."
           }
         },
         {
           "callout": {
             "kind": "prereq",
-            "title": "Three small concepts you need",
-            "text": "Don't worry if they're unfamiliar; these three are enough:",
+            "title": "Three small ideas you need before reading",
+            "text": "Don't worry if you're unfamiliar with them; these three are enough:",
             "list": [
-              "**Attention in three steps**: S = QK^{⊺} computes pairwise similarity, P = softmax(S) turns each row into weights that sum to 1, and O = PV produces a weighted sum of values. See our close read on the Transformer for details.",
-              "**softmax** turns a row of numbers into probabilities: exponentiate each number, then divide by the sum of all the exponentiated numbers in the row. The catch: to know the row's sum, you need to see the whole row first.",
-              "**HBM and SRAM**: GPUs have two main kinds of memory. HBM is the GPU's main memory: large but relatively slow. SRAM is on-chip cache: much faster but very small."
+              "**The three attention steps**: S = QK^{⊺} computes pairwise similarity, P = softmax(S) turns each row into weights that sum to 1, and O = PV computes a weighted average. See our Transformer explainer for details.",
+              "**softmax**: turns a row of numbers into probabilities: exponentiate each number, then divide by the sum of all exponentials in that row. The key difficulty: to know the sum for the row, you need the whole row.",
+              "**HBM and SRAM**: a GPU has two main kinds of memory. HBM is the large but relatively slow main memory; SRAM is the much faster but very small on-chip memory."
             ]
           }
         }
       ]
     },
     {
-      "h": "The bottleneck is data movement, not compute",
+      "h": "The bottleneck is moving data, not computing",
       "blocks": [
         {
-          "p": "The paper uses the A100 as an example: it has 40–80GB of HBM with 1.5–2.0TB/s of bandwidth, and 108 streaming multiprocessors, each with 192KB of SRAM and an estimated ~19TB/s of bandwidth. SRAM is an order of magnitude faster but only totals about 20MB, making it more than a thousand times smaller than HBM."
+          "p": "The paper uses the A100 GPU as an example: it has 40–80GB of HBM at 1.5–2.0TB/s, and 108 streaming multiprocessors each with 192KB of SRAM, with estimated bandwidth around 19TB/s. SRAM is an order of magnitude faster, but only about 20MB total—thousands of times smaller than HBM."
         },
         {
           "callout": {
             "kind": "intuition",
             "title": "A warehouse and a workbench",
-            "text": "HBM is the warehouse: it holds everything, but every fetch means a round trip. SRAM is the workbench by your side: grabbing things is instant, but it only holds a few items at a time. The chef (the compute unit) chops extremely fast; the real time sink is running back and forth between the warehouse and the workbench."
+            "text": "HBM is the warehouse: plenty of room for everything, but every trip to fetch something costs time. SRAM is the workbench: instant access, but only a few items fit. The chef (a compute unit) can slice extremely fast; the real time is wasted running between warehouse and workbench."
           }
         },
         {
-          "p": "The paper splits GPU work into two categories: **compute-bound** operations (large matrix multiplications), whose time depends on how much arithmetic is done, and **memory-bound** operations (elementwise ops, softmax, dropout, normalizations), whose time depends on how much data is read and written. In attention, the two matrix multiplications are separated by softmax, masking, and dropout—memory-bound steps whose inputs and outputs are the large N × N matrix."
+          "p": "The paper splits GPU operations into two classes: **compute-bound** ones such as large matrix multiplications, where time depends on how much math is done, and **memory-bound** ones such as elementwise operations, softmax, dropout, and normalization, where time depends on how much data is moved. In attention, the two matrix multiplications are separated by memory-bound steps—softmax, masking, dropout—and all of their inputs and outputs are large N × N matrices.",
+          "plain": {
+            "title": "Fast chef, slow errands",
+            "pic": "flash-bound",
+            "text": "Some jobs spend most of their time computing, such as multiplying two large matrices (top bar, mostly green). Others spend most of their time moving data, such as softmax: each number needs only a little arithmetic, but it must be fetched from HBM and written back afterward (bottom bar, mostly orange). Attention turns out to be dominated by the second kind."
+          }
         },
         {
           "p": "The standard implementation (Algorithm 0 in the paper) looks like this:"
@@ -101,17 +106,22 @@
             "Read Q and K from HBM, compute S = QK^{⊺}, and **write S back to HBM**.",
             "Read S from HBM, compute P = softmax(S), and **write P back to HBM**.",
             "Read P and V from HBM, compute O = PV, and write O back to HBM."
-          ]
+          ],
+          "plain": {
+            "title": "Don't keep running to the warehouse while cooking",
+            "pic": "flash-trips",
+            "text": "A is the standard approach: after each step, you haul the intermediate S and P back to the warehouse (HBM) and carry them out again for the next step. B is FlashAttention: ingredients are brought to the workbench (on-chip SRAM) in batches, the whole dish is prepared there, and only the finished O goes back to the warehouse. Same dish, much less walking."
+          }
         },
         {
           "fig": {
             "type": "table",
-            "title": "As sequence length grows, the attention matrix dominates",
+            "title": "The longer the sequence, the more the attention matrix dominates",
             "subtitle": "Illustrative: one attention head with head dimension d = 64. Numbers computed by Lyra-Jade from matrix sizes.",
             "columns": [
               "Sequence length N",
-              "Number of entries in Q, K, V, O (4 × N × d)",
-              "Number of entries in S, P (2 × N × N)",
+              "Total entries in Q, K, V, O (4 × N × d)",
+              "Total entries in S, P (2 × N × N)",
               "How many times larger the latter is (N ÷ 2d)"
             ],
             "rows": [
@@ -143,20 +153,25 @@
             "highlight": {
               "row": 1
             },
-            "note": "GPT-2's N = 1024 and d = 64 are exactly the second row. The inputs and outputs you actually need all scale with N, but the standard implementation writes and reads the intermediate matrix—which scales with N²—several times."
+            "note": "GPT-2 with N = 1024 and d = 64 corresponds to the second row. The inputs and outputs you actually need all grow with N, but the standard implementation writes and reads the N²-sized intermediate matrices several times over."
+          },
+          "plain": {
+            "title": "A handshake table is much bigger than a name list",
+            "pic": "flash-handshake",
+            "text": "With a class of 4, the list has 4 rows, but the \"who shook hands with whom\" table has 4 × 4 = 16 cells. Double the class to 8 and the list only doubles, but the table becomes 64 cells. The attention matrix is the handshake table: every token is paired with every other token."
           }
         }
       ]
     },
     {
-      "h": "The hard part: softmax needs the whole row, so how do we tile it?",
+      "h": "The hard part: softmax needs the whole row—how do you compute it in blocks?",
       "blocks": [
         {
-          "p": "Tiling sounds natural. The hard part is softmax: each weight in a row has to be divided by the sum of the exponentials for the entire row, but a tile only gives you part of the row. The paper uses a known trick, online softmax: with each tile, keep two small numbers, and when later tiles reveal that the previous “maximum” was wrong, rescale past results proportionally."
+          "p": "Tiling is the natural idea; the hard part is softmax. Every weight in a row has to be divided by the sum of exponentials for the whole row, but inside one block you can see only part of it. The paper uses an existing trick called online softmax: as each block is processed, keep two small numbers; when a later block reveals a larger maximum, rescale the previous result accordingly."
         },
         {
           "formula": {
-            "expr": "m(x) = max_{i} x_{i}, f(x) = ( e^{x_{1} − m(x)}, …, e^{x_{B} − m(x)} ), ℓ(x) = Σ_{i} f(x)_{i}. For a two-block concatenation x = [x^{(1)}, x^{(2)}]: m = max( m(x^{(1)}), m(x^{(2)}) ), ℓ = e^{m(x^{(1)}) − m} · ℓ(x^{(1)}) + e^{m(x^{(2)}) − m} · ℓ(x^{(2)})",
+            "expr": "m(x) = max_{i} x_{i}, f(x) = ( e^{x_{1} − m(x)}, ..., e^{x_{B} − m(x)} ), ℓ(x) = Σ_{i} f(x)_{i}. For two blocks x = [x^{(1)}, x^{(2)}]: m = max( m(x^{(1)}), m(x^{(2)}) ), ℓ = e^{m(x^{(1)}) − m} · ℓ(x^{(1)}) + e^{m(x^{(2)}) − m} · ℓ(x^{(2)}).",
             "parts": [
               {
                 "sym": "m",
@@ -164,21 +179,26 @@
               },
               {
                 "sym": "ℓ",
-                "desc": "The current sum of exponentials, anchored at m"
+                "desc": "The running sum of exponentials, relative to m."
               },
               {
                 "sym": "e^{m(x^{(1)}) − m}",
-                "desc": "A correction factor: when the maximum changes, multiply the old sum by this to rebase it."
+                "desc": "Rescaling factor: when the maximum changes, multiply the previous sum by this to switch to the new reference."
               }
             ],
-            "note": "So if you carry just two numbers, (m, ℓ), you can compute softmax tile by tile and end up with exactly the result you would get by seeing the whole row at once. Output O is corrected with the same factors."
+            "note": "So carrying just two numbers, (m, ℓ), is enough to compute softmax block by block, and the final result is exactly the same as if the whole row had been seen at once. Output O is corrected with the same factors."
+          },
+          "plain": {
+            "title": "Batch accounting, converted on the fly",
+            "pic": "flash-ledger",
+            "text": "Softmax is like cutting a cake according to scores: to know each person's share, you first need the total number of shares. The list arrives in batches: the first batch has a maximum of 3, so you record 1.14 total shares. The second batch reveals a 5, changing the reference, so you multiply the old total by 0.135 to convert it, then add the new batch's 1.05. The final total is 1.20—exactly what you'd get by seeing the whole list at once."
           }
         },
         {
           "fig": {
             "type": "table",
-            "title": "A hand calculation: two tiles, same result as one pass",
-            "subtitle": "Illustrative: one row of attention scores [1, 3, 2, 5] with values v = [10, 20, 30, 40], split into two tiles. Numbers computed by Lyra-Jade using the formulas in Section 3.1.",
+            "title": "Worked by hand: two blocks produce exactly the same result as one pass",
+            "subtitle": "Illustrative: one row of attention scores [1, 3, 2, 5] and corresponding values v = [10, 20, 30, 40], split into two blocks. Numbers computed by Lyra-Jade using the formulas in Section 3.1 of the paper.",
             "columns": [
               "Step",
               "Scores seen",
@@ -188,28 +208,28 @@
             ],
             "rows": [
               [
-                "Tile 1",
+                "Block 1",
                 "1, 3",
                 "3",
                 "1.1353",
                 "18.81"
               ],
               [
-                "Tile 2 (on its own)",
+                "Block 2 (alone)",
                 "2, 5",
                 "5",
                 "1.0498",
                 "39.53"
               ],
               [
-                "Merge: multiply the tile-1 terms by e^{3−5} = 0.1353 and add.",
+                "Merge: multiply block 1 by e^{3−5} = 0.1353, then add",
                 "—",
                 "5",
                 "0.1353 × 1.1353 + 1.0498 = 1.2034",
                 "36.88"
               ],
               [
-                "Reference: seeing the whole row at once",
+                "Check: seeing the whole row at once",
                 "1, 3, 2, 5",
                 "5",
                 "1.2034",
@@ -219,7 +239,7 @@
             "highlight": {
               "row": 2
             },
-            "note": "The merged output is o = (0.1353 × 1.1353 × 18.81 + 1.0498 × 39.53) ÷ 1.2034 = 36.88, matching a direct calculation. This is what “exact attention” means: not an approximation, only a different order of computation."
+            "note": "After merging, o = (0.1353 × 1.1353 × 18.81 + 1.0498 × 39.53) ÷ 1.2034 = 36.88, matching the direct computation. That's what exact attention means: not an approximation, just a different order of computation."
           }
         }
       ]
@@ -228,64 +248,84 @@
       "h": "The algorithm: tile, fuse, recompute",
       "blocks": [
         {
-          "p": "Given online softmax, the whole algorithm (Algorithm 1 in the paper) becomes two nested loops:"
+          "p": "With online softmax in hand, the whole algorithm (Algorithm 1 in the paper) is two nested loops:"
         },
         {
           "list": [
-            "**Outer loop**: split K and V into tiles of size B_{c} and load one tile K_{j}, V_{j} into SRAM at a time.",
-            "**Inner loop**: split Q into tiles of size B_{r}, load them into SRAM one by one, compute S_{ij} = Q_{i} K_{j}^{⊺} on-chip along with the row maximums and exponential sums for that tile, then update outputs O_{i} and the statistics (m_{i}, ℓ_{i}) using the correction formulas above and write them back to HBM.",
-            "**Tile sizes** are determined by SRAM capacity M: B_{c} ≈ M ÷ 4d, so that these tiles can all fit on-chip at once.",
-            "**One kernel**: the matrix multiplication, softmax, masking, dropout, and multiplication by V all happen in the same GPU program, with no intermediate results written out."
-          ]
+            "**Outer loop**: split K and V into blocks of size B_{c} and load one K_{j}, V_{j} pair into SRAM at a time.",
+            "**Inner loop**: split Q into blocks of size B_{r}, load one block into SRAM, compute S_{ij} = Q_{i} K_{j}^{⊺} together with that block's row maxima and exponential sums, then update the output O_{i} and the statistics (m_{i}, ℓ_{i}) using the correction formulas above and write them back to HBM.",
+            "**Block sizes** are set by SRAM capacity M: B_{c} is about M ÷ 4d, ensuring the blocks fit on-chip at the same time.",
+            "**One kernel**: matrix multiplication, softmax, masking, dropout, and the final multiplication by V all happen inside a single GPU program, with no intermediate results materialized in HBM."
+          ],
+          "plain": {
+            "title": "Lay one brick at a time",
+            "pic": "flash-loops",
+            "text": "Think of the N × N attention matrix as a wall you need to tile. The outer loop brings the K and V for one column of bricks (top arrow); the inner loop pushes blocks of Q across (left arrow). The workbench holds only the current block (dark green). Each time a block is finished, the corresponding output O on the right is updated (gold). The whole wall never has to be laid out at once."
+          }
         },
         {
-          "p": "**What about backpropagation?** Computing gradients usually requires the two N × N matrices S and P. FlashAttention doesn't store them; it stores only the output O, the per-row (m, ℓ), and the random number generator state needed for dropout. During the backward pass, it recomputes S and P from small tiles of Q, K, and V on-chip. The recomputation repeats some multiplications, but skipping the huge read/write cycle makes the backward pass faster."
+          "p": "**What about backprop?** Computing gradients normally needs the two N × N matrices, S and P. FlashAttention doesn't store them. It stores only the output O, the per-row (m, ℓ) statistics, and the state of the random number generator used for dropout. During the backward pass, it recomputes S and P from blocks of Q, K, V on-chip. This adds multiplications, but it eliminates reads and writes of huge matrices, so the backward pass is actually faster.",
+          "plain": {
+            "title": "Recomputing beats digging through a filing cabinet",
+            "pic": "flash-recompute",
+            "text": "Backprop needs earlier large matrices. The standard approach (A) stores them in a distant filing cabinet (HBM) and runs over to look them up when needed. FlashAttention (B) keeps just two small numbers m and ℓ on hand, and recomputes from them on the spot. Pressing a few calculator buttons is much faster than a trip to the archive room."
+          }
         },
         {
           "callout": {
             "kind": "myth",
-            "title": "“Less computation, faster program”",
-            "text": "Figure 2 of the paper is exactly a counterexample. On GPT-2 medium with sequence length 1024, standard attention performs 66.6 GFLOPs, while FlashAttention rises to 75.2 GFLOPs because of recomputation. Yet memory traffic falls from 40.3GB to 4.4GB, and runtime falls from 41.7ms to 7.3ms. When an operation is memory-bound, moving less data matters more than doing fewer operations."
+            "title": "\"Less math means faster code\"",
+            "text": "Figure 2 of the paper is a direct counterexample. On GPT-2 medium with sequence length 1024, standard attention uses 66.6 GFLOPs; FlashAttention actually uses more—75.2 GFLOPs—because of recomputation. Yet HBM reads and writes drop from 40.3GB to 4.4GB, and runtime drops from 41.7 ms to 7.3 ms. When an operation is memory-bound, moving less data matters more than doing fewer operations."
           }
         },
         {
-          "p": "The paper also analyzes memory traffic (IO complexity) theoretically:"
+          "p": "The paper also analyzes HBM access volume, or IO complexity, theoretically:"
         },
         {
           "formula": {
-            "expr": "Standard attention: Θ(N d + N^{2}) HBM accesses; FlashAttention: Θ(N^{2} d^{2} / M) HBM accesses",
+            "expr": "Standard attention: Θ( N d + N^{2} ) HBM accesses; FlashAttention: Θ( N^{2} d^{2} / M ) HBM accesses.",
             "parts": [
               {
                 "sym": "N, d",
-                "desc": "Sequence length and per-head dimension"
+                "desc": "Sequence length, head dimension"
               },
               {
                 "sym": "M",
-                "desc": "SRAM size. Typical d is 64–128 and M is about 100KB; d² is many times smaller than M, so FlashAttention's access count is many times lower."
+                "desc": "SRAM size. Common d is 64–128 and M is about 100KB, so d² is many times smaller than M, meaning FlashAttention uses many times fewer HBM accesses."
               },
               {
                 "sym": "Lower bound",
-                "desc": "The paper also proves that no exact attention algorithm can asymptotically beat this for all values of M."
+                "desc": "The paper also proves that no exact attention algorithm can asymptotically do better for all SRAM sizes M."
               }
             ],
-            "note": "Intuition: each K, V tile can be at most Θ(M) in size, and every tile requires a full pass over Q; larger SRAM means fewer passes."
+            "note": "Intuition: each trip can move a Θ(M)-sized block of K and V into SRAM, and for every such block you must sweep over all of Q. The larger the SRAM, the fewer sweeps you need."
+          },
+          "plain": {
+            "title": "The bigger the cart, the fewer the trips",
+            "pic": "flash-cart",
+            "text": "All of Q must be pushed across the workbench again and again. The bigger the workbench (cache M), the more K and V blocks fit in each trip, so fewer trips are needed: for the same job, a small cart makes 6 trips while a big cart makes 2. A larger d² makes each block take up more space, so fewer fit per trip. The paper also proves that no exact algorithm can beat this for every possible workbench size."
           }
         }
       ]
     },
     {
-      "h": "An easy extension: block-sparse FlashAttention",
+      "h": "A natural extension: block-sparse FlashAttention",
       "blocks": [
         {
-          "p": "Many “approximate attention” methods let each token look at only part of the sequence, which should save work in theory but is often not faster in practice because they're also memory-bound. The paper adds a block-level mask to FlashAttention: masked-out blocks are skipped entirely—neither loaded nor computed."
+          "p": "Many approximate attention methods let each token look at only some positions. They should save compute, but in practice they are often not much faster because they are also held back by memory traffic. The paper adds a block mask to FlashAttention: masked-out blocks are skipped entirely—not read, not computed."
         },
         {
           "list": [
-            "Memory traffic is multiplied by a factor s (the fraction of non-zero blocks), and runtime drops proportionally with sparsity.",
-            "It's 2–4× faster than FlashAttention itself and can push sequence length to 64K.",
-            "On the Long-Range Arena benchmark, it's 2.8× faster than standard attention with comparable accuracy.",
-            "Note: this variant is approximate attention; it's no longer “exactly the same as the original”."
-          ]
+            "HBM accesses scale by s, the fraction of nonzero blocks, and runtime falls proportionally with sparsity.",
+            "It is 2–4× faster than FlashAttention itself and scales to 64K sequence length.",
+            "On the Long Range Arena benchmark, it is 2.8× faster than standard attention with comparable accuracy.",
+            "Note: this variant is approximate attention; it is no longer exactly the same as the original."
+          ],
+          "plain": {
+            "title": "Lay only the bricks you need",
+            "pic": "flash-sparse",
+            "text": "If you decide in advance that many positions don't need to attend to each other, only part of the wall needs brick. On the left, all 36 blocks are laid; on the right, only the 18 dark-green blocks are. The empty cells don't even have material moved into them, so trips and time shrink proportionally. The tradeoff: the result is no longer exactly the same as standard attention."
+          }
         }
       ]
     },
@@ -293,16 +333,16 @@
       "h": "Experiments: faster training, longer context",
       "blocks": [
         {
-          "p": "**BERT-large**: on 8 A100s, trained from the same initialization provided by MLPerf to 72.0% masked-language-model accuracy, averaged over 10 runs:"
+          "p": "**BERT-large**: trained on 8 A100 GPUs from the same initialization provided by MLPerf to 72.0% masked-language-model accuracy, averaged over 10 runs:"
         },
         {
           "fig": {
             "type": "table",
             "title": "BERT-large: 15% faster than the MLPerf 1.1 record",
-            "subtitle": "From Table 1 of the paper: training time in minutes, mean ± standard deviation over 10 runs.",
+            "subtitle": "From Table 1 of the paper, training time in minutes, mean ± standard deviation over 10 runs.",
             "columns": [
               "Implementation",
-              "Training time (minutes)"
+              "Training time (min)"
             ],
             "rows": [
               [
@@ -320,13 +360,13 @@
           }
         },
         {
-          "p": "**GPT-2**: trained on OpenWebText with the same perplexity (the model definition is unchanged, and validation curves in the appendix overlap), while training time drops substantially:"
+          "p": "**GPT-2**: trained on OpenWebText, with the same perplexity (the model definition is unchanged, and the validation curves in the appendix line up) and much shorter training time:"
         },
         {
           "fig": {
             "type": "table",
             "title": "GPT-2: same model, training time cut by more than half",
-            "subtitle": "From Table 2 of the paper, 8 A100s. Parentheses show speedup relative to the Hugging Face implementation.",
+            "subtitle": "From Table 2 of the paper, 8 A100 GPUs. Parentheses show speedup over the Hugging Face implementation.",
             "columns": [
               "Model and implementation",
               "Perplexity",
@@ -370,13 +410,13 @@
           }
         },
         {
-          "p": "**Longer context**: the saved time and memory can buy longer sequences. With FlashAttention, GPT-2 small can grow context from 1K to 4K and train in 3.6 days—still about 30% faster than Megatron's 1K version (4.7 days)—while perplexity falls from 18.2 to 17.5."
+          "p": "**Longer context**: the time and memory saved can be traded for longer sequences. GPT-2 small used FlashAttention to extend context from 1K to 4K and trained in 3.6 days—still about 30% faster than Megatron's 1K baseline (4.7 days)—while perplexity dropped from 18.2 to 17.5."
         },
         {
           "fig": {
             "type": "table",
-            "title": "Long-document classification: longer context scores higher (but not always)",
-            "subtitle": "From Table 5 of the paper: micro-averaged F1, higher is better. Columns are sequence lengths.",
+            "title": "Long-document classification: longer context, higher scores (but only up to a point)",
+            "subtitle": "From Table 5 of the paper. Micro-averaged F1; higher is better. Columns are sequence lengths.",
             "columns": [
               "Dataset",
               "512",
@@ -406,14 +446,14 @@
                 "79.2"
               ]
             ],
-            "note": "On MIMIC, 16K scores 4.3 points above 512; on ECtHR, 8K scores 8.5 points above 512. The “6.4-point gain” in the abstract is the average of these two deltas. MIMIC is actually lower at 1024 and 2048 than at 512, and ECtHR is lower at 16K than at 8K; the paper suggests this may relate to differences in document length distributions."
+            "note": "On MIMIC, 16K is 4.3 points above 512; on ECtHR, 8K is 8.5 points above 512. The “6.4-point lift” in the abstract is the average of these two numbers. MIMIC scores are actually lower at 1024 and 2048 than at 512, and ECtHR at 16K is lower than at 8K; the paper attributes this to differences in document-length distributions."
           }
         },
         {
-          "p": "**Path-X and Path-256**: the task is to decide whether two points are connected in a 128×128 (or 256×256) black-and-white image, which is fed to the model pixel by pixel, yielding sequences of 16K and 64K tokens. Previous Transformers either ran out of memory or could only manage coin-flip-level random guessing. FlashAttention reaches 61.4% on Path-X, and the block-sparse version reaches 63.1% on Path-256."
+          "p": "**Path-X and Path-256**: determine whether two points in a 128×128 (or 256×256) black-and-white image are connected, feeding the image to the model pixel by pixel, giving sequence lengths of 16K and 64K. Previous Transformers either ran out of memory or could only manage coin-flip random guessing. FlashAttention reaches 61.4% on Path-X, and the block-sparse version reaches 63.1% on Path-256."
         },
         {
-          "p": "**Benchmarks**: for typical sequence lengths from 128 to 2K, FlashAttention is up to 3× faster than PyTorch's standard implementation and uses up to 20× less memory, which grows linearly with length. Approximate attention methods begin to overtake it between 512 and 1024, while the block-sparse version is faster than all known implementations at every length. Compared with Apex FMHA, which was specially optimized for short sequences at the time, it's about 4% slower at length 128 and 8% and 5% faster at 256 and 512."
+          "p": "**Benchmarks**: across common sequence lengths from 128 to 2K, FlashAttention is up to 3× faster than the standard PyTorch implementation and uses up to 20× less memory, with memory footprint growing linearly in sequence length. Approximate attention methods start to overtake it between 512 and 1024, while the block-sparse version is faster than all known implementations at every length. Compared with Apex FMHA, then optimized for short sequences, it is about 4% slower at length 128 and 8% and 5% faster at 256 and 512."
         }
       ]
     },
@@ -421,24 +461,24 @@
       "h": "Limitations, and a few details worth noting",
       "blocks": [
         {
-          "p": "The paper lists these limitations:"
+          "p": "The limitations the paper lists itself:"
         },
         {
           "list": [
-            "**Hand-written CUDA**: each new attention variant needs a new low-level kernel, which is a lot of engineering and may not transfer directly to other GPU architectures. The paper hopes such implementations can eventually be compiled automatically from high-level languages like PyTorch.",
-            "**Single GPU only**: data transfer between multiple GPUs is another layer of IO, which the paper doesn't address."
+            "**Requires hand-written CUDA**: each new attention variant needs a new low-level kernel—a lot of engineering—and it may not port directly to other GPU architectures. The paper hopes such implementations can eventually be compiled automatically from a high-level language like PyTorch.",
+            "**Single-GPU only**: moving data between GPUs is another layer of IO, which the paper does not address."
           ]
         },
         {
-          "p": "A few things we noticed while reading the paper:"
+          "p": "A few things we noticed reading the original:"
         },
         {
           "list": [
-            "**Inconsistent speedup vs. Megatron**: the start of Section 4 says GPT-2 is 1.8× faster than Megatron, while the Table 2 notes and main text say 1.7×. Working from Table 2's days, small gives 4.7 ÷ 2.7 ≈ 1.7 and medium gives 11.5 ÷ 6.9 ≈ 1.7.",
-            "**The “up to 3×” claim is lower than the table shows**: the abstract and the Table 2 notes both say it is up to 3× faster than the Hugging Face implementation, but the GPT-2 small row in Table 2 lists 3.5× (9.5 days vs. 2.7 days).",
-            "**Path-X's 61.4% owes something to extra fine-tuning**: the appendix notes that the best Path-X checkpoint was fine-tuned for another 200 epochs, which added about 4 percentage points for FlashAttention.",
-            "**The “6.4-point gain” is an average**: the two datasets are 4.3 and 8.5 points respectively, and the scores do not rise monotonically with length (see the table above).",
-            "**A subscript typo in Algorithm 1**: line 4 writes the output tiles as O_{i}, ..., O_{T_{r}}, but the first should be O_{1}; the ℓ tiles have the same issue."
+            "**Inconsistent speedup over Megatron**: the beginning of Section 4 says GPT-2 is 1.8× faster than Megatron, while the Table 2 caption and the main text say 1.7×. Calculated from the days in Table 2, small is 4.7 ÷ 2.7 ≈ 1.7 and medium is 11.5 ÷ 6.9 ≈ 1.7.",
+            "**“Up to 3×” is smaller than the number in the table**: the abstract and the Table 2 caption say up to 3× over Hugging Face, but the GPT-2 small row in Table 2 shows 3.5× (9.5 days vs. 2.7 days).",
+            "**Path-X's 61.4% includes the effect of extra fine-tuning**: the appendix notes that the best Path-X checkpoint was fine-tuned for another 200 epochs, which gave FlashAttention about 4 percentage points.",
+            "**The “6.4-point lift” is an average**: the two datasets are 4.3 and 8.5 points, and scores do not rise monotonically with length (see the table above).",
+            "**A subscript typo in Algorithm 1**: line 4 writes the output blocks as O_{i}, ..., O_{T_{r}}, but the first one should be O_{1}; the same issue appears in the ℓ blocks."
           ]
         }
       ]
@@ -448,70 +488,70 @@
       "blocks": [
         {
           "list": [
-            "**FlashAttention-2 and -3**: the authors later kept improving parallelism and hardware-specific optimizations for newer GPUs, further increasing speed.",
-            "**Adopted into mainstream frameworks**: this kind of tiled, fused, never-materialized attention implementation was later widely adopted by mainstream training and inference frameworks; in many cases, users get it without changing any code.",
-            "**A foundation for long context**: memory growing linearly with length is one of the engineering prerequisites that later made it possible to scale context from thousands to hundreds of thousands of tokens; combined with the RoPE extrapolation method covered in the previous article, long contexts became truly usable.",
-            "**The IO-aware mindset**: the paper's emphasis on “figure out how data moves first” influenced much later inference-optimization work, including PagedAttention in this site's reading list, which manages the KV cache.",
-            "**Same author, another path**: lead author Tri Dao later became one of the authors of Mamba, a paper that sidesteps attention's quadratic complexity by changing the architecture; it is the 11th article in this series."
+            "**FlashAttention-2 and -3**: the authors later kept improving parallelization and hardware-specific optimizations for newer GPUs, making it faster still.",
+            "**Adoption by mainstream frameworks**: this kind of tiled, fused, never-materialized attention implementation was later widely adopted by mainstream training and inference frameworks, and in many cases users are already using it without changing any code.",
+            "**The foundation for long context**: linear memory growth was one of the engineering prerequisites that let model context grow from a few thousand to hundreds of thousands of tokens. Paired with the RoPE extrapolation method from the previous article, long context became truly usable.",
+            "**The IO-aware mindset**: the paper's emphasis on figuring out how data moves before optimizing influenced a great deal of later inference optimization work, such as PagedAttention in this site's reading list, which manages the KV cache.",
+            "**Same author, another path**: first author Tri Dao later became one of the authors of Mamba, which tries to bypass attention's quadratic complexity structurally; it is the 11th article in this series."
           ]
         },
         {
-          "p": "Next up: another inference bottleneck—**GQA, grouped-query attention**. It lets multiple attention heads share one set of keys and values, shrinking the KV cache that inference reads over and over."
+          "p": "The next article looks at another inference bottleneck: **GQA, grouped-query attention**. It lets several attention heads share the same keys and values, cutting a large chunk of the KV cache that inference must repeatedly read."
         }
       ]
     },
     {
-      "h": "Check yourself: did you get it?",
+      "h": "Quiz: did you get it?",
       "blocks": [
         {
           "quiz": {
-            "q": "How does the attention result computed by FlashAttention compare with standard attention?",
+            "q": "How does FlashAttention's output compare with standard attention?",
             "options": [
-              "It is an approximate result, with very small error.",
-              "It is exactly the same; only the order of computation and the way GPU memory is read and written differ.",
+              "It is approximate, with very small error.",
+              "Exactly the same; only the order of computation and the pattern of HBM reads and writes differ.",
               "More accurate, because it uses higher precision.",
-              "It is identical only for short sequences."
+              "Identical only for short sequences."
             ],
             "answer": 1,
-            "why": "FlashAttention is exact attention: after tiling plus online softmax correction, it is mathematically identical to computing attention in one pass. Only the block-sparse variant is approximate."
+            "why": "FlashAttention is exact attention: after tiling and online-softmax correction, it is mathematically identical to computing it in one shot. Only the block-sparse version is approximate."
           }
         },
         {
           "quiz": {
-            "q": "FlashAttention does slightly more computation than standard attention—why is it faster?",
+            "q": "FlashAttention actually does a bit more computation than standard attention—why is it faster?",
             "options": [
-              "Because it uses faster GPUs.",
-              "Because attention is memory-bound: it keeps the N × N matrix in on-chip cache, reducing GPU memory traffic by about 9×.",
+              "Because it runs on a faster GPU.",
+              "Because attention is memory-bound: it keeps the N × N matrix in on-chip cache and reduces HBM reads and writes by about 9×.",
               "Because it skips softmax.",
-              "Because it reduces numerical precision."
+              "Because it uses lower numerical precision."
             ],
             "answer": 1,
-            "why": "Figure 2 of the paper: GFLOPs rise from 66.6 to 75.2, but memory traffic falls from 40.3GB to 4.4GB and runtime falls from 41.7ms to 7.3ms."
+            "why": "Figure 2 of the paper: GFLOPs rise from 66.6 to 75.2, but HBM reads and writes drop from 40.3GB to 4.4GB and time drops from 41.7 ms to 7.3 ms."
           }
         },
         {
           "quiz": {
-            "q": "When computing softmax in tiles, why do you need to keep track of each row's maximum m and exponential sum ℓ?",
+            "q": "Why do you need to keep track of each row's maximum m and exponential sum ℓ when computing softmax block by block?",
             "options": [
-              "For gradient clipping.",
-              "Because later tiles may contain larger values, and you need these two numbers to rescale previous partial results proportionally.",
-              "To save memory.",
-              "To randomly drop part of the attention."
+              "To perform gradient clipping.",
+              "Because a later block may contain a larger value, and these two numbers let you rescale the previous partial result accordingly.",
+              "To compress storage.",
+              "To randomly drop some attention."
             ],
             "answer": 1,
-            "why": "The softmax denominator is the sum of exponentials for the whole row. As long as you keep (m, ℓ), when a new tile arrives you multiply the old result by e^{old m - new m} to correct it, and the final result is exactly the same as seeing the whole row at once."
+            "why": "The denominator of softmax is the exponential sum for the entire row. As long as you remember (m, ℓ), when a new block arrives you can multiply the old result by e^{old m - new m} to correct it, ending up exactly as if you had seen the whole row at once."
           }
         },
         {
-          "p": "After reading this, you should be able to answer these questions:"
+          "p": "After reading this piece, you should be able to answer these questions:"
         },
         {
           "list": [
-            "Why is attention said to be bottlenecked by “data movement” rather than “compute”? What is the difference between HBM and SRAM?",
-            "Which large matrices does standard attention write to GPU memory, and why do they grow quadratically with sequence length?",
-            "How does online softmax stitch tiled results into an exact result?",
-            "During backpropagation, why does FlashAttention choose recomputation over storing the attention matrix?",
-            "Among the paper's speedup numbers, which refer to end-to-end training and which refer only to attention itself?"
+            "Why is attention's bottleneck data movement rather than computation? How do HBM and SRAM differ?",
+            "Which large matrices does standard attention write to HBM, and why do they grow quadratically with sequence length?",
+            "How does online softmax assemble the block results into the exact result?",
+            "In the backward pass, why does FlashAttention prefer recomputation over storing the attention matrix?",
+            "Among the paper's speedup numbers, which refer to end-to-end training and which refer to attention alone?"
           ]
         }
       ]
@@ -519,12 +559,12 @@
   ],
   "sources": {
     "main": {
-      "title": "FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness (arXiv:2205.14135 v2)",
+      "title": "FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness (arXiv:2205.14135, v2)",
       "publisher": "Dao, Fu, Ermon, Rudra, Ré · Stanford University, University at Buffalo",
       "date": "2022-06-23",
       "url": "https://arxiv.org/abs/2205.14135"
     },
-    "note": "This article is based on arXiv v2 of the paper; the first version was released in May 2022. Tables marked “Illustrative” use numbers chosen by Lyra-Jade and computed with the paper's formulas; FlashAttention-2, FlashAttention-3, and framework adoption details come from public sources, not from this paper."
+    "note": "This article is based on v2 of the paper on arXiv, first released in May 2022. Tables marked “Illustrative” were created by Lyra-Jade with numbers computed from the paper's formulas. FlashAttention-2, -3, and framework adoption come from public sources and are not in the paper."
   },
   "claims": [
     {
@@ -542,14 +582,14 @@
       "as_written": "7.6×"
     },
     {
-      "text": "BERT-large is 15% faster",
+      "text": "BERT is 15% faster",
       "value": "15%",
       "source_url": "https://arxiv.org/abs/2205.14135",
       "quote": "Our implementation is 15% faster",
       "as_written": "15%"
     },
     {
-      "text": "GPT-2 up to 3× faster",
+      "text": "GPT-2 is up to 3× faster",
       "value": "3×",
       "source_url": "https://arxiv.org/abs/2205.14135",
       "quote": "up to 3× speed up compared to Huggingface",
@@ -577,7 +617,7 @@
       "as_written": "192KB"
     },
     {
-      "text": "108 compute units",
+      "text": "108 streaming multiprocessors",
       "value": "108",
       "source_url": "https://arxiv.org/abs/2205.14135",
       "quote": "108 streaming multiprocessors",
@@ -591,7 +631,7 @@
       "as_written": "19TB/s"
     },
     {
-      "text": "About 20MB (Figure 1)",
+      "text": "about 20MB (Fig. 1)",
       "value": "20 MB",
       "source_url": "https://arxiv.org/abs/2205.14135",
       "quote": "(20 MB)",
@@ -640,28 +680,28 @@
       "as_written": "7.3"
     },
     {
-      "text": "Up to 9× less memory traffic",
+      "text": "up to 9× fewer HBM accesses",
       "value": "9×",
       "source_url": "https://arxiv.org/abs/2205.14135",
       "quote": "up to 9× fewer",
       "as_written": "9×"
     },
     {
-      "text": "About 100KB",
+      "text": "about 100KB",
       "value": "100KB",
       "source_url": "https://arxiv.org/abs/2205.14135",
       "quote": "around 100KB",
       "as_written": "100KB"
     },
     {
-      "text": "Block-sparse is 2–4× faster",
+      "text": "block-sparse is 2–4× faster",
       "value": "2-4×",
       "source_url": "https://arxiv.org/abs/2205.14135",
       "quote": "2-4× faster than",
       "as_written": "2–4×"
     },
     {
-      "text": "LRA 2.8× faster",
+      "text": "LRA 2.8×",
       "value": "2.8×",
       "source_url": "https://arxiv.org/abs/2205.14135",
       "quote": "achieves 2.8× speedup",
@@ -689,7 +729,7 @@
       "as_written": "20.0 ± 1.5"
     },
     {
-      "text": "Table 2, small",
+      "text": "Table 2 (small)",
       "value": "9.5 days",
       "source_url": "https://arxiv.org/abs/2205.14135",
       "quote": "9.5 days",
@@ -710,7 +750,7 @@
       "as_written": "3.5×"
     },
     {
-      "text": "Table 2, medium",
+      "text": "Table 2 (medium)",
       "value": "21.0 days",
       "source_url": "https://arxiv.org/abs/2205.14135",
       "quote": "21.0 days",
@@ -766,7 +806,7 @@
       "as_written": "1.0×"
     },
     {
-      "text": "At 4K, still 30% faster",
+      "text": "4K, still 30% faster",
       "value": "30%",
       "source_url": "https://arxiv.org/abs/2205.14135",
       "quote": "still 30% faster",
@@ -822,14 +862,14 @@
       "as_written": "63.1%"
     },
     {
-      "text": "Up to 20× less memory",
+      "text": "up to 20× less memory",
       "value": "20×",
       "source_url": "https://arxiv.org/abs/2205.14135",
       "quote": "up to 20× more memory efficient",
       "as_written": "20×"
     },
     {
-      "text": "Crossover from 512 to 1024",
+      "text": "crossover between 512 and 1024",
       "value": "between 512 and 1024",
       "source_url": "https://arxiv.org/abs/2205.14135",
       "quote": "between 512 and 1024",
@@ -871,7 +911,7 @@
       "as_written": "1.7×"
     },
     {
-      "text": "Path-X: about 4 points from extra fine-tuning",
+      "text": "Path-X extra fine-tuning: about 4 points",
       "value": "roughly 4",
       "source_url": "https://arxiv.org/abs/2205.14135",
       "quote": "this adds roughly 4",
@@ -895,5 +935,5 @@
   "status": "published",
   "verified": false,
   "lang": "en",
-  "translated_from": "21b459789d2fb1ec"
+  "translated_from": "f25c08ffea1bb89f"
 }

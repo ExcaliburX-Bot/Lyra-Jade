@@ -1,0 +1,1167 @@
+{
+  "slug": "learning-to-summarize-from-human-feedback",
+  "category": "paper",
+  "publisher": "OpenAI",
+  "date": "2020-09-02",
+  "title": "Learning to Summarize from Human Feedback: 1.3B Model Beats a 10× Larger One by Asking Humans",
+  "summary": "OpenAI’s first serious application of human comparisons → reward model → PPO to large language models: on Reddit summarization, a 1.3B human-feedback model beats a 13B supervised model. We unpack the KL penalty, the reward-model overoptimization curve, and several numbers in the main text and appendix that don’t agree.",
+  "ai_summary": "The paper Learning to Summarize from Human Feedback (Stiennon et al., OpenAI, 2020) argues that supervised fine-tuning and ROUGE are both rough proxies for summary quality. The authors collect 64,832 human comparisons on Reddit TL;DR, train a reward model, and use PPO with a KL penalty to optimize a summarization policy. A 1.3B-parameter human-feedback model beats a supervised model about 10 times larger in human evaluations; a 6.7B model’s summaries are preferred over reference summaries, and it transfers to CNN/DM news. The paper also finds that over-optimizing the reward model makes summaries worse, and that the reward model predicts human preferences much better than ROUGE.",
+  "brief": [
+    "Problem: supervised fine-tuning only imitates reference examples, and ROUGE only counts word overlap; neither captures whether a summary is actually good.",
+    "Method: carefully manage labeling quality, collect 64,832 summary comparisons; train a reward model; optimize with PPO, subtracting a KL penalty toward the supervised model from the reward.",
+    "Result: the 1.3B human-feedback model is preferred over reference summaries 61% of the time, versus 43% for the 13B supervised model; it transfers to news; the reward model is far more accurate than ROUGE.",
+    "Limitations: expensive (roughly 320 GPU-days for RL on the 6.7B model); over-optimizing backfires; no demonstration baseline matched for cost; several numbers disagree between the main text and appendix."
+  ],
+  "paper": {
+    "title": "Learning to summarize from human feedback",
+    "authors": "Nisan Stiennon, Long Ouyang, Jeff Wu, Daniel M. Ziegler, Ryan Lowe, Chelsea Voss, Alec Radford, Dario Amodei, Paul Christiano",
+    "org": "OpenAI",
+    "venue": "NeurIPS 2020",
+    "year": 2020,
+    "arxiv": "2009.01325",
+    "url": "https://arxiv.org/abs/2009.01325"
+  },
+  "cover": {
+    "headline": "Close read: the RLHF summarization paper",
+    "highlight": "1.3B beats 13B",
+    "glyph": {
+      "kind": "flow",
+      "nodes": [
+        {
+          "label": "A human compares two summaries"
+        },
+        {
+          "label": "Reward model + KL",
+          "tone": "hi"
+        },
+        {
+          "label": "PPO optimization"
+        }
+      ]
+    }
+  },
+  "sections": [
+    {
+      "h": "The short version: what this paper actually did",
+      "blocks": [
+        {
+          "p": "In September 2020, OpenAI’s Reflection team (Nisan Stiennon, Long Ouyang, Jeff Wu, Daniel Ziegler, Ryan Lowe, Chelsea Voss, Alec Radford, Dario Amodei, Paul Christiano) published this paper. It was the first serious application of the recipe from our previous close read — **human comparison → reward model → reinforcement learning** — to large language models, for summarizing Reddit posts."
+        },
+        {
+          "p": "The starting point is a simple observation: supervised fine-tuning for language models aims to make outputs resemble human-written examples, and summarization is evaluated with ROUGE, which counts how many words match a reference. Both are rough proxies for “is this summary good?” The authors instead optimize directly against human preferences:"
+        },
+        {
+          "list": [
+            "**Collect comparisons**: for each post, sample several summaries from different models, pair them up for labelers, and ask which one is better. They ultimately released 64,832 comparisons.",
+            "**Train a reward model**: teach a GPT-style model to predict which summary a human will choose.",
+            "**Reinforcement learning**: use PPO to maximize the reward model’s score while a KL penalty keeps the policy from drifting too far from the original supervised model."
+          ]
+        },
+        {
+          "p": "The results are striking: a 1.3B-parameter human-feedback model beats a supervised-only model roughly 10 times its size; summaries from the 6.7B version are preferred over the poster’s own TL;DR about 70% of the time. It was never trained on news, yet produces CNN/DM news summaries close to the quality of reference summaries. The paper is also the first to clearly show what happens when a reward model is over-optimized."
+        },
+        {
+          "callout": {
+            "kind": "takeaway",
+            "title": "The one-sentence version",
+            "text": "Instead of training a model to imitate human examples and scoring it by word overlap, ask humans which summary is better, train a reward model, and optimize with PPO plus a KL penalty. With good labeling quality, a small model can beat a supervised model ten times larger, and even beat human reference summaries. But over-optimize, and the reward model’s score and real human preferences move in opposite directions. A year and a half later, this recipe was used directly in InstructGPT."
+          }
+        },
+        {
+          "callout": {
+            "kind": "prereq",
+            "title": "Three concepts to know before reading",
+            "text": "Don’t worry if they’re unfamiliar; these three are enough:",
+            "list": [
+              "**Supervised fine-tuning (SFT)**: continue training a pretrained model on human-written “input → ideal output” examples so it learns a specific task.",
+              "**Reward model and preference comparisons**: learn a scoring model from human pairwise comparisons; the principle is covered in our previous close read of Deep Reinforcement Learning from Human Preferences.",
+              "**PPO**: a stable reinforcement-learning algorithm that keeps policy changes small on each update; see our close read of PPO."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "The problem: imitating examples and counting word overlap don’t mean good writing",
+      "blocks": [
+        {
+          "p": "The paper opens with three problems with supervised fine-tuning. First, the maximum-likelihood objective **doesn’t distinguish serious mistakes from minor ones**: making up a fact and swapping in a synonym can have similar loss. Second, it encourages the model to spread probability **across all reference examples**, including badly written ones. Third, during generation the model must continue from its own output, a distribution different from what it saw in training, so quality degrades."
+        },
+        {
+          "p": "Evaluation has its own problem. ROUGE, the most common automatic summarization metric, measures **word overlap** between a generated summary and a reference. Earlier work has already criticized its poor correlation with human judgment: a summary that copies many of the same words but gets the meaning backwards can score higher than one that is correct but uses different wording.",
+          "plain": {
+            "title": "A grader who counts matching words",
+            "text": "Imagine a grader who only counts “how many words match the answer key”: a student can copy most of the answer but insert a single “not” at the key point and still get a high score, while another student gets the meaning exactly right but uses different wording and receives a low score. The small table below is exactly this kind of example."
+          }
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Worked example: word overlap alone can score a meaning-reversed summary higher",
+            "subtitle": "Illustrative: the reference and two candidates were written by us; each candidate is scored by how many words from the reference appear in it, equivalent to the simplest ROUGE-1 recall.",
+            "columns": [
+              "",
+              "Content (split into words)",
+              "Words overlapping with reference",
+              "Overlap ratio",
+              "Meaning correct?"
+            ],
+            "rows": [
+              [
+                "Reference summary",
+                "first / date / go / beach / ask / advice",
+                "—",
+                "—",
+                "—"
+              ],
+              [
+                "Candidate A",
+                "first / date / go / beach / not / need / advice",
+                "5",
+                "5 ÷ 6 ≈ 0.83",
+                "Wrong: it says no advice is needed"
+              ],
+              [
+                "Candidate B",
+                "first time / date / to / seaside / want / hear / opinion",
+                "1 (date)",
+                "1 ÷ 6 ≈ 0.17",
+                "Correct"
+              ]
+            ],
+            "highlight": {
+              "row": 2
+            },
+            "note": "Real ROUGE also counts adjacent pairs, longest common subsequences, and so on, but the core issue — surface overlap only — is the same. Later, the paper uses data to show that as models improve, ROUGE gets worse at judging them."
+          }
+        },
+        {
+          "p": "So the authors want the training objective to be closer to what we actually care about. They chose summarization because it has a long research history and is subjective enough that quality is hard to measure without asking humans."
+        }
+      ]
+    },
+    {
+      "h": "Data and task: why Reddit, not news",
+      "blocks": [
+        {
+          "p": "The paper uses the **Reddit TL;DR dataset**: roughly 3 million Reddit posts, each with a “too long; didn’t read” (TL;DR) written by the original poster. The authors filter to subreddits a general audience can understand and keep only posts whose TL;DR is between 24 and 48 tokens, to reduce the effect of length on quality judgments. That leaves 123,169 posts, with about 5% held out as a validation set."
+        },
+        {
+          "p": "Why not use the more common CNN/DM news summarization dataset? Because on news, simple extractive methods are already strong. The authors found that labelers even prefer “take the first three sentences of the article” (lead-3) over the dataset’s reference summaries; a supervised T5 model with low-temperature sampling also beats the reference summaries, largely by copying long passages verbatim. On Reddit posts, copying works poorly and the model has to genuinely understand and abstract. News is used only to test transfer."
+        },
+        {
+          "p": "The task is to write a summary of **fewer than 48 tokens**, judged by how accurately a reader who **only reads the summary, not the original post**, understands what the post says."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "One post, three summaries",
+            "subtitle": "From Table 1 of the paper. The post, in short: a 20-year-old man is going on his first real date; he’ll cycle to the beach, is nervous, and asks for advice.",
+            "columns": [
+              "Source",
+              "Summary"
+            ],
+            "rows": [
+              [
+                "The poster’s TL;DR",
+                "First date after 3 years in a relationship, going to the beach, terrified. What to bring with me, what to do?"
+              ],
+              [
+                "6.7B supervised model",
+                "Going on a date with a girl I met a few days ago, going to the beach. What should I bring, what should we do?"
+              ],
+              [
+                "6.7B human-feedback model",
+                "Going on my first ever date tomorrow, cycling to the beach. Would like some tips on what to do and bring. I’m a bit nervous and excited. Thanks!"
+              ]
+            ],
+            "highlight": {
+              "row": 2
+            },
+            "note": "The paper says this example was chosen to be particularly short. Note that the poster’s own TL;DR misses the key point that this is his first date ever — the original post says he had a girlfriend for three years but never actually dated — so it reads more like “first date after ending a three-year relationship.”"
+          }
+        }
+      ]
+    },
+    {
+      "h": "Human feedback: getting labelers and researchers on the same page",
+      "blocks": [
+        {
+          "p": "The paper spends a great deal of space on **how to collect high-quality human feedback**, which is its biggest difference from earlier work. The previous year, Ziegler et al. tried something similar and reported that labelers were actually judging something different from what researchers wanted: labelers liked summaries that copied long passages from the source, while researchers saw them as poor."
+        },
+        {
+          "p": "This time the authors made two changes. First, they moved from online to **batch** collection: send a large batch of comparisons to labelers, retrain models on all accumulated data, then sample the next batch. Second, they maintained a **close working relationship** with labelers: detailed onboarding, a shared chat room for questions, regular performance feedback, occasional one-on-one video calls for disagreements, and firing the worst-performing labelers. Labelers came from the freelancing platform Upwork and two labeling companies, Scale and Lionbridge, and were paid hourly."
+        },
+        {
+          "p": "The comparison process itself is also deliberate. Before comparing two summaries, labelers first read **only the summaries, not the original post**, and write down their “naive understanding” of them. This exposes ambiguities in the summaries; if they read the original post first, those ambiguities would be easy to fill in from prior knowledge. Then labelers rate, on a 9-point scale, how confident they are that A is better than B (or vice versa).",
+          "plain": {
+            "title": "Read blind first, then check the answer",
+            "text": "It’s like checking meeting minutes: have someone who wasn’t at the meeting read only the minutes and explain what they understand, then compare that against the recording. That’s how you catch places where the minutes are misleading. The people who attended often can’t see the problem, because they already know the answer."
+          }
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Labeling quality: labeler–researcher agreement",
+            "subtitle": "From paper Section 3.3 and Appendix C.2. Random guessing would agree 50% of the time.",
+            "columns": [
+              "Comparison",
+              "Agreement rate",
+              "Notes"
+            ],
+            "rows": [
+              [
+                "Labelers vs researchers",
+                "77% ± 2%",
+                "On summaries from the 1.3B supervised model"
+              ],
+              [
+                "Researchers vs researchers",
+                "73% ± 4%",
+                "Same data. Researchers often disagree with each other, too."
+              ],
+              [
+                "Labelers vs labelers",
+                "72%",
+                "Whole training set"
+              ],
+              [
+                "3-labeler vote vs researchers",
+                "77%",
+                "Single labeler: 72%; improves with majority vote"
+              ]
+            ],
+            "highlight": {
+              "row": 0
+            },
+            "note": "Labeler–researcher agreement is even slightly higher than researcher–researcher agreement. The authors attribute the remaining disagreement mostly to the task being hard and subjective: the hardest comparisons (two high-temperature samples from the same RL model) had only about 65% agreement, though researchers reached about 95% after discussion. To collect more data, most comparisons went to a single labeler."
+          }
+        }
+      ]
+    },
+    {
+      "h": "Three-step pipeline and reward model",
+      "blocks": [
+        {
+          "p": "The method has three steps and can be iterated repeatedly (in practice, the authors kept adjusting it over the project and didn’t follow rigorous rounds):"
+        },
+        {
+          "list": [
+            "**Collect comparisons**: for each post, sample summaries from the current policy, the initial policy, reference summaries, and various baselines; send pairs to labelers to choose the better one.",
+            "**Train a reward model**: given a post and a summary, predict the log odds that this is the better summary.",
+            "**Optimize the policy with PPO**: treat the reward model’s output as the reward and train the summarization model with reinforcement learning."
+          ]
+        },
+        {
+          "p": "The reward model is initialized from the supervised fine-tuned model and gets a randomly initialized linear head that outputs a scalar score. If the human preferred y_{i}, the loss is:"
+        },
+        {
+          "formula": {
+            "expr": "loss(r_{θ}) = − E_{(x, y_{0}, y_{1}, i) ∼ D}[ log σ( r_{θ}(x, y_{i}) − r_{θ}(x, y_{1−i}) ) ]",
+            "parts": [
+              {
+                "sym": "x",
+                "desc": "A Reddit post"
+              },
+              {
+                "sym": "y_{0}, y_{1}",
+                "desc": "Two summaries of the same post; y_{i} is the one the human preferred."
+              },
+              {
+                "sym": "r_{θ}(x, y)",
+                "desc": "The reward model’s score for that summary."
+              },
+              {
+                "sym": "σ",
+                "desc": "The sigmoid function, which turns the score difference into a probability between 0 and 1 of choosing it."
+              },
+              {
+                "sym": "D",
+                "desc": "The dataset of all human comparisons."
+              }
+            ],
+            "note": "This is the Bradley–Terry model from the previous close read: the chosen summary should score higher than the unchosen one, and the larger the gap, the smaller the loss. After training, the authors shift all scores so the reference summaries in the dataset average 0."
+          },
+          "plain": {
+            "title": "A judge in the ring",
+            "text": "The reward model is like a referee scoring two contestants (two summaries). If the human says the left one wins, the referee should give the left one a higher score. The larger the score gap, the more certain the referee is about the left one winning; if the referee gets the score backwards, it takes a heavy penalty and corrects next time.",
+            "pic": "sum-rm"
+          }
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Worked example: how a score difference becomes loss",
+            "subtitle": "Illustrative: numbers chosen by us; loss uses the natural logarithm.",
+            "columns": [
+              "Score of human-preferred summary",
+              "Score of unchosen summary",
+              "Score difference",
+              "σ(score difference)",
+              "Loss −log σ"
+            ],
+            "rows": [
+              [
+                "1.2",
+                "0.4",
+                "0.8",
+                "0.690",
+                "0.371"
+              ],
+              [
+                "1.2",
+                "1.2",
+                "0",
+                "0.500",
+                "0.693"
+              ],
+              [
+                "0.4",
+                "1.2",
+                "−0.8",
+                "0.310",
+                "1.171"
+              ]
+            ],
+            "highlight": {
+              "col": 4
+            },
+            "note": "The third row is the reward model getting the call backwards: the human-preferred summary has the lower score, so loss is largest, and the gradient pushes it to separate the two scores and flip the direction."
+          }
+        },
+        {
+          "p": "The appendix also mentions an easy-to-miss detail: the authors train the reward model with 3 to 10 random seeds and pick the best on the validation set, because data order and output-head initialization both affect results."
+        }
+      ]
+    },
+    {
+      "h": "PPO plus a KL penalty: tethering the kite",
+      "blocks": [
+        {
+          "p": "With a reward model, we can train the summarization model (policy) with reinforcement learning. The policy is initialized from the supervised fine-tuned model; each generated BPE token is one step. The reward model gives a single score only after the whole summary is complete (the end-of-sequence token), with discount factor γ = 1. A key design choice is subtracting a KL penalty from the reward:"
+        },
+        {
+          "formula": {
+            "expr": "R(x, y) = r_{θ}(x, y) − β · log[ π_{φ}^{RL}(y | x) / π^{SFT}(y | x) ]",
+            "parts": [
+              {
+                "sym": "r_{θ}(x, y)",
+                "desc": "The reward model’s score for this summary."
+              },
+              {
+                "sym": "π_{φ}^{RL}",
+                "desc": "The policy being trained with RL."
+              },
+              {
+                "sym": "π^{SFT}",
+                "desc": "The original supervised fine-tuned model, held fixed throughout training."
+              },
+              {
+                "sym": "log[ π^{RL} ⁄ π^{SFT} ]",
+                "desc": "How much more likely this summary is under the new policy than under the original model, in log space. Averaged over all possible summaries, this is the KL divergence between them."
+              },
+              {
+                "sym": "β",
+                "desc": "The penalty coefficient; the paper’s main experiment uses 0.05."
+              }
+            ],
+            "note": "The paper gives this term two roles: it acts like an entropy bonus, encouraging exploration and keeping the policy from collapsing to a single summary style; and it keeps the policy’s outputs from drifting too far from what the reward model saw during training."
+          },
+          "plain": {
+            "title": "Tether the kite",
+            "text": "Reinforcement learning is like wind trying to push the kite (the model) toward the highest reward. The line is anchored to the supervised model: the farther it flies, the tighter the line pulls (the larger the penalty). Without the line, the kite gets blown into regions the reward model has never seen, where its scores are no longer trustworthy.",
+            "pic": "sum-kite"
+          }
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Worked example: how the KL penalty changes which summary is worth more",
+            "subtitle": "Illustrative: numbers for the two candidates are chosen by us; β = 0.05 (the paper’s value).",
+            "columns": [
+              "Candidate",
+              "Reward model score r",
+              "log π^{RL}(y|x)",
+              "log π^{SFT}(y|x)",
+              "Log ratio",
+              "Penalty β × log ratio",
+              "Final reward R"
+            ],
+            "rows": [
+              [
+                "A: higher score, but the original model would almost never write this.",
+                "2.0",
+                "−20",
+                "−30",
+                "10",
+                "0.5",
+                "1.5"
+              ],
+              [
+                "B: slightly lower score, but the original model would also write this.",
+                "1.7",
+                "−24",
+                "−26",
+                "2",
+                "0.1",
+                "1.6"
+              ]
+            ],
+            "highlight": {
+              "col": 6
+            },
+            "note": "Looking only at the reward model, A is better; with the KL penalty, B becomes the better deal. A is likely exploiting a hole in the reward model: it writes a summary the original model almost never writes and the reward model has rarely seen."
+          }
+        },
+        {
+          "callout": {
+            "kind": "note",
+            "title": "Don’t mix up the two KLs",
+            "list": [
+              "This KL penalty is measured against the **fixed supervised model** π^{SFT}. It lives inside the reward and exists to prevent drift and reward-model exploitation.",
+              "PPO’s internal clipping (or KL penalty) is measured against the **previous policy** and exists to keep each update from being too large. (See our close read of PPO.)",
+              "This KL penalty toward the initial model is not new in this paper; the authors cite Jaques et al.’s 2019 work on dialogue models. InstructGPT later adopted it unchanged."
+            ]
+          }
+        },
+        {
+          "p": "Another design choice: PPO’s **value function uses a completely separate Transformer**, with no shared parameters with the policy, initialized from the reward model. The ablation in Appendix G.1 shows the separate network is clearly better, at the cost of more training memory. The authors explain that with shared parameters, value-function updates partially damage the pretrained policy early in training."
+        },
+        {
+          "p": "Other hyperparameters: GAE λ = 0.95, 4 optimization epochs per sampled batch, batch size 512 for the 1.3B model and 256 for the 6.7B model, 1M total episodes. The appendix also owns up to a wrinkle: the supervised baselines ran with fp16 weights, while the RL runs used the better fp32. The authors \"forgot\" to control for this in the human evaluations, but estimate the effect is equivalent to shrinking the supervised model by less than 20% — far smaller than the performance gap in the paper."
+        }
+      ]
+    },
+    {
+      "h": "Results: a small model beats a 10× larger one — and beats human-written summaries",
+      "blocks": [
+        {
+          "p": "The primary evaluation pits a model’s summaries against the TL;DRs the original posters wrote in the dataset, and counts how often humans prefer the model’s version."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Fraction preferred over human-written TL;DR",
+            "subtitle": "The 1.3B human-feedback and supervised model numbers come from Section 4.1 of the paper; the rest are approximate values we read from Figure 1. 50% means exactly as good as human-written.",
+            "columns": [
+              "Model",
+              "Size",
+              "Preferred over human-written"
+            ],
+            "rows": [
+              [
+                "Pretraining only (few-shot examples)",
+                "1.3B → 13B",
+                "about 20% → just under 40%"
+              ],
+              [
+                "Supervised fine-tuning",
+                "1.3B → 13B",
+                "about 40% → 43%"
+              ],
+              [
+                "Human feedback (PPO)",
+                "1.3B",
+                "61%"
+              ],
+              [
+                "Human feedback (PPO)",
+                "6.7B",
+                "about 70%"
+              ]
+            ],
+            "highlight": {
+              "row": 2
+            },
+            "note": "The 1.3B human-feedback model (61%) beats a supervised 13B model roughly 10× larger (43%). The human-feedback model also improves from 1.3B to 6.7B, showing that this training method benefits from scale as well."
+          },
+          "plain": {
+            "title": "What crossing the 50% line means",
+            "text": "Figure 1 has a dashed 50% line: above it, the model is \"better than the poster’s own summary.\" Supervised models of any size stay below that line; the human-feedback models jump above it starting at 1.3B parameters.",
+            "pic": "sum-fig1"
+          }
+        },
+        {
+          "p": "**Length is a confounder**. The human-feedback model learned to write longer summaries within the 48-token limit, and longer summaries usually carry more information. After controlling for length with logistic regression, the human-feedback model’s preference rate against reference summaries drops by about 5 percentage points, and the 6.7B model is still preferred about 65% of the time. Figure 1’s caption also notes that at 6.7B, roughly a third of the gap between human-feedback and supervised models can be explained by length."
+        },
+        {
+          "p": "**What’s better?** The authors also had labelers rate summaries on coverage, accuracy, coherence, and overall quality using a 7-point scale. Human-feedback models beat supervised models on every dimension, with the largest edge in **coverage**. 45% of the 6.7B PPO model’s summaries earned a perfect 7 for overall quality, compared with 20% for the same-size supervised model and 23% for human-written reference summaries."
+        }
+      ]
+    },
+    {
+      "h": "Transfer: never trained on news, but still summarizes news",
+      "blocks": [
+        {
+          "p": "With no additional training whatsoever, the Reddit-trained human-feedback model was used directly to summarize CNN/DM news. It was clearly better than the Reddit supervised model, and nearly matched a same-size model fine-tuned specifically on CNN/DM, even though its summaries were much shorter."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Average length and overall quality on CNN/DM news",
+            "subtitle": "From paper Appendix Table 14. Quality is on a 1–7 scale; length is in characters.",
+            "columns": [
+              "Model",
+              "Average length",
+              "Overall quality"
+            ],
+            "rows": [
+              [
+                "6.7B Reddit supervised model (transfer)",
+                "127",
+                "4.41"
+              ],
+              [
+                "6.7B Reddit human-feedback model (transfer)",
+                "175",
+                "5.25"
+              ],
+              [
+                "6.7B CNN/DM supervised model",
+                "300",
+                "5.4"
+              ],
+              [
+                "News reference summaries",
+                "314",
+                "5.54"
+              ],
+              [
+                "T5 (fine-tuned on CNN/DM)",
+                "316",
+                "5.92"
+              ],
+              [
+                "lead-3 (first three sentences)",
+                "475",
+                "6.23"
+              ]
+            ],
+            "highlight": {
+              "row": 1
+            },
+            "note": "The human-feedback model’s summaries are only about half as long as the dedicated model’s, but its quality score is already close. The paper also regresses on length: each additional 100 characters raises its quality score by about 0.87 on average (the table header says “quality % / 100 characters” and the unit is not spelled out), suggesting it might do better if allowed to write longer. The last row also confirms the earlier point: on news, lead-3 earns the highest quality score."
+          }
+        }
+      ]
+    },
+    {
+      "h": "What happens when the reward model is optimized too hard",
+      "blocks": [
+        {
+          "p": "This is the most forward-looking part of the paper. A reward model is ultimately just a **proxy** for human preferences: it has limited capacity, and it has only seen a small slice of the distribution. So how far can you optimize against it before it becomes unreliable?"
+        },
+        {
+          "p": "The authors used an earlier version of the reward model to train a series of policies with different optimization strengths — by varying the KL penalty coefficient β so the policy’s KL from the supervised model ranged from 0 to 250 — then had labelers compare their summaries with reference summaries. The result (Figure 5): **light optimization genuinely improves summaries**, but as optimization continues, real human preference starts to fall below the reward model’s prediction, and eventually the two **fully diverge**: the reward model predicts these summaries are almost always better than the reference, while humans almost never think so. The over-optimized samples in the appendix are long and strange, full of odd idioms, and only barely recognizable as being about the original post.",
+          "plain": {
+            "title": "When a metric becomes a target, it stops being a good metric",
+            "text": "This is Goodhart’s law. The reward model’s score (dashed line) rises all the way; real human evaluation (solid line) rises and then falls. It is like students frantically gaming an examiner’s preferences: at first the writing genuinely improves, but if they keep gaming it, they end up pandering to the examiner’s quirks and drifting further from actual good writing.",
+            "pic": "sum-goodhart"
+          }
+        },
+        {
+          "p": "The authors are careful to note that this over-optimization is not unique to reward models: optimizing against ROUGE shows the same phenomenon, and it has been observed with reward functions learned in robotics. This is the language-model version of Pong’s “never-ending rally” from our previous close read, and the reason the KL penalty exists. Two years later, OpenAI published a paper specifically on the scaling laws of reward-model over-optimization."
+        }
+      ]
+    },
+    {
+      "h": "What the reward model learns, and why it beats ROUGE",
+      "blocks": [
+        {
+          "p": "**Scale**. The authors trained seven reward models from 160M to 13B parameters, using 8,000 to 64,000 comparisons. The findings: doubling training data improves validation accuracy by about 1.1%; doubling model size improves it by about 1.8%. The 6.7B model trained on all the data begins to approach the accuracy of a single human labeler."
+        },
+        {
+          "p": "**Generalization**. On CNN/DM news summaries it was never trained on, the 6.7B reward model agrees with labelers 66.5% of the time, nearly matching labeler-labeler agreement of 66.9%."
+        },
+        {
+          "p": "**Sensitivity to details**. The authors asked labelers to make small improvements to summaries and checked whether the reward model could distinguish the improved version; they also swapped the roles of people in a summary — for example, exchanging “I” and “my boyfriend” — to see if it could recognize the original. They also tested some deliberately designed traps:"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Reward model strengths and weaknesses",
+            "subtitle": "From paper Appendix Tables 17 and 18. In each row, the first item is the one that “should” be preferred.",
+            "columns": [
+              "Test",
+              "1.3B reward model",
+              "6.7B reward model",
+              "Human"
+            ],
+            "rows": [
+              [
+                "Improved summary vs original (average)",
+                "81.2%",
+                "83.7%",
+                "85.6%"
+              ],
+              [
+                "Shortened improved version vs original",
+                "63.6%",
+                "66.0%",
+                "76.2%"
+              ],
+              [
+                "Original vs role-swapped",
+                "93.1%",
+                "97.4%",
+                "—"
+              ],
+              [
+                "Post title vs title repeated twice",
+                "84.6%",
+                "58.4%",
+                "—"
+              ],
+              [
+                "Reference summary vs reference summary plus “What should I do?” (r/tifu only)",
+                "34.3%",
+                "74.5%",
+                "—"
+              ]
+            ],
+            "note": "The reward model favors longer summaries: when the improvement consists of shortening a summary, it recognizes it only about two-thirds of the time, versus three-quarters for humans. The last two rows are traps: the larger model mostly did not fall for “title repeated twice,” but was still fooled more than 40% of the time. r/tifu is for embarrassing stories, not advice, yet the 1.3B model preferred the version with an added “What should I do?” about two-thirds of the time."
+          }
+        },
+        {
+          "p": "**Compared with automatic metrics**. The authors compared several “metrics” for predicting human preferences: the reward model, ROUGE, summary length, copy ratio, and the supervised model’s log probability. The reward model wins everywhere, including on CNN/DM data it never trained on. More striking: on summaries from the supervised model, ROUGE agrees with humans about 57% of the time; on summaries from the human-feedback model, **it drops to about 50% — coin-flip territory**. Log probability also falls below 50% on human-feedback summaries, while the reward model still gets 62%. In other words, as models get better, traditional metrics get worse at telling which summary is better."
+        },
+        {
+          "p": "**Which metric should you optimize directly?** The authors compared a simple optimization method: generate N summaries and pick the best according to the metric — best-of-N — with N up to 2048. Optimizing against ROUGE improves quality earlier but plateaus at a much lower level; optimizing against the reward model improves quality far more. The appendix also notes that at the same average reward, best-of-N and PPO produce similar quality, but PPO ends up farther from the supervised model (higher KL)."
+        }
+      ]
+    },
+    {
+      "h": "Costs, limitations, and the authors’ concerns",
+      "blocks": [
+        {
+          "list": [
+            "**Expensive**: RL fine-tuning of the 6.7B model took about 320 GPU-days; the training data cost thousands of hours of labeler time, plus a great deal of researcher time spent ensuring quality.",
+            "**A missing key comparison**: because of cost, the authors could not collect equally expensive high-quality human demonstrations to train a stronger supervised baseline. So the claim that “human feedback beats demonstrations” still lacks a fair comparison.",
+            "**Data collection was not systematic**: Appendix C.6 admits there was no systematic plan for which models to sample each batch from — just “whatever seemed best at the time.” The authors believe a simpler, more systematic process could also reproduce the results.",
+            "**Labeler representativeness**: surveys show labelers came from diverse backgrounds, but were more likely to be white and American. The authors stress that for tasks with more complex goals and more disagreement among people, the groups affected by the technology should take part in defining “what good behavior is,” rather than relying only on researchers’ judgment.",
+            "**Problems with the data itself**: Reddit posts are lightly moderated and often contain offensive content and bias; models can also produce biased summaries."
+          ]
+        },
+        {
+          "p": "The paper’s “Broader Impacts” section lists several further worries: the same technology could be used to make models more persuasive and to manipulate people’s beliefs, to induce dependence on technology, or to generate large amounts of harmful content aimed at specific individuals; it could also accelerate the automation of some jobs. The authors admit there are “almost no obvious solutions” to these problems."
+        }
+      ]
+    },
+    {
+      "h": "Afterward: from summarization to ChatGPT",
+      "blocks": [
+        {
+          "list": [
+            "**InstructGPT (2022)**: Long Ouyang, one of this paper’s authors, is the first author of InstructGPT. InstructGPT reused this pipeline almost unchanged — supervised fine-tuning, reward model, PPO with a KL penalty toward the supervised model — only changing the task from “summarize” to “follow any instruction,” and having labelers rank 4 to 9 responses at a time (see our close read of InstructGPT).",
+            "**DPO (2023)**: DPO showed that the same preference data can directly train a policy without a reward model or reinforcement learning. One of its experiments was exactly this paper’s TL;DR summarization task (see our close read of DPO).",
+            "**Reward over-optimization**: the phenomenon revealed in Figure 5 later became one of the core research topics in RLHF.",
+            "**Next in main thread 3**: FLAN and Self-Instruct take another route. Instead of human preferences, they use large amounts of “instruction → response” data to teach models to follow instructions."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "A few details worth noticing",
+      "blocks": [
+        {
+          "p": "While cross-checking the main text against appendix tables, we found several places where the numbers do not match:"
+        },
+        {
+          "list": [
+            "**CNN/DM agreement rates**: the main text says the 1.3B and 6.7B reward models agree with labelers 62.4% and 66.5%. But the only CNN/DM agreement table in the appendix (Table 23) shows 64.8% for the 1.3B reward model; 62.4% is the labeler agreement for “summary length,” a simple metric, in the adjacent column of the same row. The main text probably copied the wrong column.",
+            "**Improved-version test**: the main text says the reward model chose the improved version 79.4% of the time for 1.3B and 82.8% for 6.7B, with humans at 84.1%; Appendix Table 17 instead gives 81.2%, 83.7%, and 85.6%.",
+            "**Role-swap test**: the main text gives 92.9% and 97.2%, while Appendix Table 18 gives 93.1% and 97.4%.",
+            "**Length preference**: the main text says the 6.7B reward model recognized the “shortened improved version” only 62.6% of the time, with humans at 76.4%; Appendix Table 17 gives 66.0% and 76.2%. These differences may come from different reward model versions or data, but the paper does not say. Our tables use the appendix numbers.",
+            "**Missing minus sign in Figure 2’s loss**: the flow diagram writes `loss = log(σ(r_{j} − r_{k}))`. Minimizing that expression would push the scores in the wrong direction. The formula in Section 3.4 has the minus sign, and is correct.",
+            "**Figure 5’s x-axis**: the main text says Figure 5 shows results for “different KL penalty coefficients β,” but the x-axis is actually the KL distance between the policy and the supervised model, from 0 to 250. The two are related, but not the same thing."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Check yourself: did you get it?",
+      "blocks": [
+        {
+          "quiz": {
+            "q": "Why does the paper say ROUGE is not a good training and evaluation target?",
+            "options": [
+              "It is too slow to compute.",
+              "It only counts word overlap with a reference summary and correlates poorly with human judgment; the better the model, the worse ROUGE is at judging it — on human-feedback model summaries, agreement with humans drops to about 50%.",
+              "It only works for English.",
+              "It requires human labeling."
+            ],
+            "answer": 1,
+            "why": "A summary that copies exact words but reverses the meaning can get a higher ROUGE score."
+          }
+        },
+        {
+          "quiz": {
+            "q": "The KL penalty β · log(π^{RL} / π^{SFT}) subtracted from the reward is measured against which model?",
+            "options": [
+              "The policy from the previous update.",
+              "The fixed supervised fine-tuned model.",
+              "The reward model.",
+              "The human-written reference summary."
+            ],
+            "answer": 1,
+            "why": "It keeps the policy from drifting too far from the supervised model: it encourages exploration while preventing outputs the reward model has never seen and cannot score reliably."
+          }
+        },
+        {
+          "quiz": {
+            "q": "According to Figure 5, what happens as optimization against the reward model is pushed harder?",
+            "options": [
+              "Human evaluation keeps rising.",
+              "Human evaluation rises then falls, eventually diverging from the reward model’s predictions.",
+              "The reward model’s score falls.",
+              "Nothing changes."
+            ],
+            "answer": 1,
+            "why": "This is reward-model over-optimization, also called Goodhart’s law."
+          }
+        },
+        {
+          "quiz": {
+            "q": "In the paper, what supports the claim that “the 1.3B human-feedback model beats a supervised model roughly 10× larger”?",
+            "options": [
+              "ROUGE score.",
+              "The fraction of time humans preferred its summaries over reference summaries: 61% vs. 43%.",
+              "The reward model’s score.",
+              "Training loss."
+            ],
+            "answer": 1,
+            "why": "The evaluation uses direct human comparisons, not any automatic metric."
+          }
+        },
+        {
+          "p": "After reading this, you should be able to answer:"
+        },
+        {
+          "list": [
+            "What are the limitations of supervised fine-tuning and ROUGE?",
+            "Why Reddit TL;DR rather than CNN/DM?",
+            "What did the authors do to ensure labeling quality? What is the “naive understanding” step for?",
+            "What is the reward model’s loss function doing?",
+            "What are the two roles of the KL penalty? How does it differ from PPO’s internal clipping?",
+            "What happens when the reward model is over-optimized?",
+            "What known biases does the reward model have?"
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Learning to summarize from human feedback (arXiv:2009.01325 v3)",
+      "publisher": "OpenAI",
+      "date": "2022-02-15",
+      "url": "https://arxiv.org/abs/2009.01325"
+    },
+    "note": "This article is based on version 3 of the paper on arXiv; the first version was released in September 2020. Tables marked “Illustrative” use numbers we chose and apply the paper’s formulas; some values in Figure 1 were read by us from PDF page images and are approximate. Information about InstructGPT, DPO, and later work on reward over-optimization comes from other public papers, not from this paper."
+  },
+  "claims": [
+    {
+      "text": "arXiv v3",
+      "value": "2009.01325v3",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "arXiv:2009.01325v3",
+      "as_written": "arXiv"
+    },
+    {
+      "text": "64,832 comparisons",
+      "value": "64,832",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "64,832 summary comparisons",
+      "as_written": "64832"
+    },
+    {
+      "text": "~3M posts",
+      "value": "~3 million",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "~3 million posts",
+      "as_written": "3 million"
+    },
+    {
+      "text": "123,169 posts",
+      "value": "123,169",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "123,169 posts",
+      "as_written": "123169"
+    },
+    {
+      "text": "~5% validation",
+      "value": "~5%",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "we hold out ~5% as a validation set",
+      "as_written": "5%"
+    },
+    {
+      "text": "61% vs 43%",
+      "value": "61% versus 43%",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "61% versus 43% raw preference score",
+      "as_written": "61%"
+    },
+    {
+      "text": "43%",
+      "value": "43%",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "61% versus 43%",
+      "as_written": "43%"
+    },
+    {
+      "text": "10× larger",
+      "value": "10×",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "a supervised model 10× its size",
+      "as_written": "10×"
+    },
+    {
+      "text": "After length control, down about 5%",
+      "value": "~5%",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "drops by ~5%",
+      "as_written": "5 percentage points"
+    },
+    {
+      "text": "about 65%",
+      "value": "~65%",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "~65% of the time",
+      "as_written": "65%"
+    },
+    {
+      "text": "Perfect score 45% / 20% / 23%",
+      "value": "45%",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "achieve a 7/7 overall score 45% of the time",
+      "as_written": "45%"
+    },
+    {
+      "text": "20%",
+      "value": "20%",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "compared to 20% and 23%",
+      "as_written": "20%"
+    },
+    {
+      "text": "23%",
+      "value": "23%",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "compared to 20% and 23%",
+      "as_written": "23%"
+    },
+    {
+      "text": "Agreement 77±2",
+      "value": "77% ± 2%",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "labelers agree with researchers 77% ± 2% of the time",
+      "as_written": "77%"
+    },
+    {
+      "text": "73±4",
+      "value": "73% ± 4%",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "researchers agree with each other 73% ± 4% of the time",
+      "as_written": "73%"
+    },
+    {
+      "text": "72%",
+      "value": "72%",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "Labelers agree with each other 72% of the time",
+      "as_written": "72%"
+    },
+    {
+      "text": "Random 50%",
+      "value": "50%",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "a random labeler would get 50% agreement",
+      "as_written": "50%"
+    },
+    {
+      "text": "Hardest about 65%",
+      "value": "about 65%",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "about 65% for the least proficient labelers",
+      "as_written": "about 65%"
+    },
+    {
+      "text": "about 95%",
+      "value": "about 95%",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "about 95% in cases where we discussed",
+      "as_written": "95%"
+    },
+    {
+      "text": "Doubling data +1.1%",
+      "value": "~1.1%",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "leads to a ~1.1% increase",
+      "as_written": "1.1%"
+    },
+    {
+      "text": "Doubling model size +1.8%",
+      "value": "~1.8%",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "leads to a ~1.8% increase",
+      "as_written": "1.8%"
+    },
+    {
+      "text": "160M to 13B",
+      "value": "160M to 13B",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "ranging from 160M to 13B parameters",
+      "as_written": "160M"
+    },
+    {
+      "text": "13B",
+      "value": "13B",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "ranging from 160M to 13B parameters",
+      "as_written": "13B"
+    },
+    {
+      "text": "1.3B",
+      "value": "1.3 billion",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "1.3 billion (1.3B)",
+      "as_written": "1.3B"
+    },
+    {
+      "text": "6.7B",
+      "value": "6.7 billion",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "6.7 billion (6.7B) parameters",
+      "as_written": "6.7B"
+    },
+    {
+      "text": "66.5%",
+      "value": "66.5%",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "62.4% and 66.5% of the time",
+      "as_written": "66.5%"
+    },
+    {
+      "text": "66.9%",
+      "value": "66.9%",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "inter-labeler agreement value of 66.9%",
+      "as_written": "66.9%"
+    },
+    {
+      "text": "62.4%",
+      "value": "62.4%",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "62.4% and 66.5%",
+      "as_written": "62.4%"
+    },
+    {
+      "text": "Table 23 64.8%",
+      "value": "64.8%",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "64.8%",
+      "as_written": "64.8%"
+    },
+    {
+      "text": "79.4% / 82.8% / 84.1%",
+      "value": "79.4%",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "79.4% for 1.3B and 82.8% for 6.7B",
+      "as_written": "79.4%"
+    },
+    {
+      "text": "82.8%",
+      "value": "82.8%",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "82.8% for 6.7B",
+      "as_written": "82.8%"
+    },
+    {
+      "text": "84.1%",
+      "value": "84.1%",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "(84.1%)",
+      "as_written": "84.1%"
+    },
+    {
+      "text": "92.9% / 97.2%",
+      "value": "92.9%",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "92.9% of the time for 1.3B, 97.2% for 6.7B",
+      "as_written": "92.9%"
+    },
+    {
+      "text": "97.2%",
+      "value": "97.2%",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "97.2% for 6.7B",
+      "as_written": "97.2%"
+    },
+    {
+      "text": "62.6% vs 76.4%",
+      "value": "62.6%",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "only 62.6% of the time (vs. 76.4% for humans)",
+      "as_written": "62.6%"
+    },
+    {
+      "text": "76.4%",
+      "value": "76.4%",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "(vs. 76.4% for humans)",
+      "as_written": "76.4%"
+    },
+    {
+      "text": "Table 17 81.2%",
+      "value": "81.2%",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "81.2%",
+      "as_written": "81.2%"
+    },
+    {
+      "text": "83.7%",
+      "value": "83.7%",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "83.7%",
+      "as_written": "83.7%"
+    },
+    {
+      "text": "85.6%",
+      "value": "85.6%",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "85.6%",
+      "as_written": "85.6%"
+    },
+    {
+      "text": "63.6%",
+      "value": "63.6%",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "63.6%",
+      "as_written": "63.6%"
+    },
+    {
+      "text": "66.0%",
+      "value": "66.0%",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "66.0%",
+      "as_written": "66.0%"
+    },
+    {
+      "text": "76.2%",
+      "value": "76.2%",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "76.2%",
+      "as_written": "76.2%"
+    },
+    {
+      "text": "Table 18 93.1%",
+      "value": "93.1%",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "93.1%",
+      "as_written": "93.1%"
+    },
+    {
+      "text": "97.4%",
+      "value": "97.4%",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "97.4%",
+      "as_written": "97.4%"
+    },
+    {
+      "text": "84.6%",
+      "value": "84.6%",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "84.6%",
+      "as_written": "84.6%"
+    },
+    {
+      "text": "58.4%",
+      "value": "58.4%",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "58.4%",
+      "as_written": "58.4%"
+    },
+    {
+      "text": "34.3%",
+      "value": "34.3 %",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "34.3 %",
+      "as_written": "34.3%"
+    },
+    {
+      "text": "74.5%",
+      "value": "74.5%",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "74.5%",
+      "as_written": "74.5%"
+    },
+    {
+      "text": "ROUGE ~57% → 50%",
+      "value": "~57%",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "ROUGE has ~57% agreement with labelers",
+      "as_written": "57%"
+    },
+    {
+      "text": "Log probability ≤50%, reward model 62%",
+      "value": "(62%)",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "while our RMs still perform above chance (62%)",
+      "as_written": "62%"
+    },
+    {
+      "text": "320 GPU-days",
+      "value": "320 GPU-days",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "approximately 320 GPU-days",
+      "as_written": "320"
+    },
+    {
+      "text": "fp16, under 20%",
+      "value": "20%",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "by less than 20%",
+      "as_written": "under 20%"
+    },
+    {
+      "text": "1M episodes",
+      "value": "1 million episodes",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "run for 1 million episodes",
+      "as_written": "1M"
+    },
+    {
+      "text": "β = 0.05",
+      "value": "0.05",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "We used a KL coefficient of 0.05",
+      "as_written": "0.05"
+    },
+    {
+      "text": "best-of-2048",
+      "value": "best-of-2048",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "up to best-of-2048",
+      "as_written": "2048"
+    },
+    {
+      "text": "Table 14 0.87",
+      "value": "0.87",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "0.87",
+      "as_written": "0.87"
+    },
+    {
+      "text": "8,000 to 64,000",
+      "value": "8k to 64k",
+      "source_url": "https://arxiv.org/abs/2009.01325",
+      "quote": "on 8k to 64k human comparisons",
+      "as_written": "64000"
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "2af5bad27152dad3"
+}

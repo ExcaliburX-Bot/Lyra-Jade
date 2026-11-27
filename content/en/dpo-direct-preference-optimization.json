@@ -1,16 +1,16 @@
 {
   "slug": "dpo-direct-preference-optimization",
   "category": "paper",
-  "publisher": "Rafailov et al. · Stanford University",
+  "publisher": "Rafailov et al., Stanford University",
   "date": "2023-05-29",
-  "title": "DPO, explained: no reward model, no reinforcement learning—just one classification loss for RLHF",
-  "summary": "RLHF requires training a reward model and then using PPO reinforcement learning, which is complex and unstable. DPO observes that the optimal model has a closed-form solution; after a change of variables, the reward model disappears from the loss, leaving a binary classification loss. We derive the equations step by step, compute the optimal model and DPO loss by hand, then compare its experiments with PPO and examine the problems with using GPT-4 as a judge.",
-  "ai_summary": "Direct Preference Optimization (Stanford University, 2023) points out that the RLHF objective “maximize reward minus β times KL” has a closed-form optimal solution: the reference model reweighted by exp(reward / β). Conversely, reward can be written as β · log(π / π_ref) plus a constant that depends only on the prompt. Substituting into the Bradley-Terry preference model cancels the constant, producing a binary classification loss that contains only the language model—no reward model, no reinforcement learning, and no sampling during training. On sentiment control, DPO’s reward–KL frontier dominates PPO; on summarization, GPT-4 win rate is about 61%, above PPO’s 57%; on single-turn dialogue it is comparable to Best of 128. The largest experiments use 6B parameters.",
+  "title": "DPO explained: no reward model, no RL — one classification loss is all RLHF needs",
+  "summary": "RLHF requires training a reward model and then optimizing with PPO: powerful but complex and unstable. DPO shows the optimal policy has a closed form; after a change of variables, the reward model cancels out and only a binary classification loss remains. We work through the derivation, compute the optimal policy and DPO loss by hand, then compare experiments with PPO and unpack the problems with using GPT-4 as a judge.",
+  "ai_summary": "Direct Preference Optimization (Stanford University, 2023) shows that the RLHF objective of maximizing reward minus β times the KL penalty has a closed-form optimum: the reference model reweighted by exp(reward / β). Inverting this, the reward can be written as β · log(π / π_ref) plus a prompt-only constant; substituting into the Bradley-Terry preference model cancels the constant and leaves a binary classification loss that depends only on the language model — no reward model, no reinforcement learning, no sampling during training. On sentiment control, DPO's reward–KL frontier dominates PPO; on summarization, GPT-4 win rate is about 61%, above PPO's 57%; on single-turn dialogue it matches Best of 128. The largest experiments use up to 6 billion parameters.",
   "brief": [
-    "Problem: RLHF requires training a reward model, running PPO reinforcement learning, and sampling continuously during training—complex, expensive, and unstable.",
-    "Method: exploit the closed-form optimal solution of the “reward minus KL” objective, change variables so reward becomes the log probability ratio between the model and the reference model, and obtain a binary classification loss.",
-    "Results: it optimizes the same objective as RLHF; on sentiment control its frontier beats PPO, on summarization the win rate is about 61% vs 57%, and on dialogue it matches Best of 128.",
-    "Limitations: only validated up to 6B parameters, depends on offline preference data, GPT-4 judgments are prompt-sensitive; in the reasoning-model era, reinforcement learning is back at center stage."
+    "Problem: RLHF requires training a reward model, optimizing with PPO, and sampling responses during training — complex, expensive, and unstable.",
+    "Method: invert the closed-form optimum of the reward-minus-KL objective to express the reward as the log probability ratio between the policy and the reference model, yielding a binary classification loss.",
+    "Result: it optimizes the same objective as RLHF; DPO's frontier beats PPO on sentiment control, wins summarization about 61% to 57%, and matches Best of 128 on dialogue.",
+    "Limitations: tested only up to 6 billion parameters, relies on offline preference data, and GPT-4 judging is prompt-sensitive; in the reasoning-model era, reinforcement learning is back at center stage."
   ],
   "paper": {
     "title": "Direct Preference Optimization: Your Language Model is Secretly a Reward Model",
@@ -22,7 +22,7 @@
     "url": "https://arxiv.org/abs/2305.18290"
   },
   "cover": {
-    "headline": "A close read of the DPO paper",
+    "headline": "A close read of the original DPO paper",
     "highlight": "Your language model is secretly a reward model",
     "glyph": {
       "kind": "flow",
@@ -42,55 +42,55 @@
   },
   "sections": [
     {
-      "h": "Bottom line first: what this paper actually does",
+      "h": "The short version: what this paper actually does",
       "blocks": [
         {
-          "p": "In May 2023, Rafael Rafailov, Archit Sharma, Eric Mitchell, Stefano Ermon, Christopher Manning, and Chelsea Finn at Stanford released this paper, later published at NeurIPS 2023. Its subtitle is memorable: **Your language model is secretly a reward model**."
+          "p": "In May 2023, Stanford's Rafael Rafailov, Archit Sharma, Eric Mitchell, Stefano Ermon, Christopher Manning, and Chelsea Finn released this paper, later published at NeurIPS 2023. Its subtitle is provocative: **your language model is secretly a reward model**."
         },
         {
-          "p": "It aims to simplify RLHF, covered earlier in this series (see the InstructGPT close read). RLHF first trains a reward model on human preference data, then uses the PPO reinforcement-learning algorithm to push the language model toward high scores while a KL penalty holds it back. That pipeline keeps several models in play at once and repeatedly generates responses during training—expensive and unstable."
+          "p": "It aims to simplify RLHF, which we covered earlier in this series (see our close read of InstructGPT). RLHF first trains a reward model on human preference data, then uses PPO to push the language model toward high scores while a KL penalty holds it back. The pipeline requires keeping several models in sync and continuously generating responses during training — expensive and unstable."
         },
         {
-          "p": "DPO (Direct Preference Optimization) finds that the “optimal model” RLHF wants can be written directly as a mathematical formula; substituting that formula back into the preference model makes the reward model disappear from the loss, leaving only the language model. The whole RLHF pipeline can then be replaced with a simple classification loss: for each preferred/dispreferred pair, make the model prefer the chosen response relative to the reference model. No separate reward model, no reinforcement learning, and no generating responses during training."
+          "p": "DPO (Direct Preference Optimization) is built on the insight that the 'optimal model' RLHF is looking for can be written down directly as a mathematical formula. Substitute that formula back into the preference model, and the reward model drops out of the loss function, leaving only the language model itself. The whole of RLHF can then be replaced by a simple classification loss: for each preferred/dispreferred pair, make the model favor the preferred response over the dispreferred one, relative to the reference model. No separate reward model, no reinforcement learning, and no generating responses during training."
         },
         {
-          "p": "In experiments, DPO balances reward and KL better than PPO on sentiment control; on summarization, its GPT-4-judged win rate is about 61%, above PPO’s best 57%; on single-turn dialogue, it is the only computationally practical method that also beats the “chosen response” in the dataset. It requires almost no hyperparameter tuning."
+          "p": "Experimentally, DPO balances reward and KL better than PPO on sentiment control. On summarization, GPT-4 judges its win rate at about 61%, above PPO's best 57%. On single-turn dialogue, it is the only computationally cheap method that also beats the dataset's chosen responses. It needs almost no hyperparameter tuning."
         },
         {
           "callout": {
             "kind": "takeaway",
-            "title": "The one-sentence version",
-            "text": "DPO = write down the RLHF optimum in closed form + change variables to make the reward model disappear + one binary classification loss: −log σ(β · [log(π / π_ref)(good) − log(π / π_ref)(bad)]). It optimizes the same objective as RLHF, but only needs to train one model, like ordinary fine-tuning."
+            "title": "One-sentence version",
+            "text": "DPO = write RLHF's optimal policy in closed form + change variables to make the reward model disappear + a binary classification loss: -log σ(β · [log(π / π_{ref})(preferred) - log(π / π_{ref})(dispreferred)]). It optimizes the same objective as RLHF, but works like ordinary fine-tuning of a single model."
           }
         },
         {
           "callout": {
             "kind": "prereq",
-            "title": "Four small concepts needed for this paper",
-            "text": "Don’t worry if they’re unfamiliar; these four are enough:",
+            "title": "Four concepts you need before reading",
+            "text": "If these are unfamiliar, don't worry; these four are enough:",
             "list": [
-              "**The three RLHF stages**: supervised fine-tuning → train a reward model on human preferences → use reinforcement learning (PPO) to chase high rewards. See the InstructGPT close read.",
-              "**Bradley-Terry model**: the larger the reward gap between two responses, the more likely a person chooses the higher-scoring one; the probability is σ(r_{1} − r_{2}).",
-              "**KL divergence**: measures how far apart two probability distributions are. RLHF uses it to penalize a model for drifting too far from the reference model.",
-              "**Reference model π_{ref}**: the model at the start of training—usually the supervised-fine-tuned model—held fixed during training."
+              "**The three RLHF steps**: supervised fine-tuning → train a reward model on human preferences → optimize with reinforcement learning (PPO). See our close read of InstructGPT.",
+              "**Bradley-Terry model**: the larger the reward gap between two responses, the more likely a human picks the higher-reward one. That probability is σ(r_{1} - r_{2}).",
+              "**KL divergence**: measures how far apart two probability distributions are. RLHF uses it to penalize moving too far from the reference model.",
+              "**Reference model π_{ref}**: the model at the start of training, usually the supervised-fine-tuned one. It is held fixed during training."
             ]
           }
         }
       ]
     },
     {
-      "h": "Problem: RLHF works, but it is too complex",
+      "h": "The problem: RLHF works, but it's too complicated",
       "blocks": [
         {
-          "p": "The paper opens by explaining why preference learning is needed: large models are trained on vast human-written data generated with wildly different goals and skill levels. For example, we want a coding assistant to know common programming mistakes so it can correct them, but we want its own code to favor the rare high-quality style in its training data; we want the model to know a misconception that 50% of people believe, but we certainly do not want it asserting that misconception in 50% of answers. Choosing the behaviors we want from the model’s broad knowledge is the key to making AI safe, useful, and controllable."
+          "p": "The paper opens by explaining why preference learning matters. Large models are trained on vast amounts of human-written data, produced by people with very different goals and skill levels. We might want a coding assistant to understand common bugs so it can correct them, but to favor rare high-quality code when writing its own; we might want a model to know about a misconception that 50% of people believe, but never to state it as fact in 50% of its answers. **Selecting the behaviors we want from the model's broad knowledge** is key to making AI safe, useful, and controllable."
         },
         {
-          "p": "RLHF was the most successful approach at the time, but the pipeline is far more complex than supervised learning: it trains multiple language models (policy, reward model, value function, plus a reference model), continuously samples responses from the policy inside the training loop, incurs heavy compute, and PPO is notoriously unstable and sensitive to hyperparameters."
+          "p": "RLHF was the most successful approach at the time, but the pipeline is far more complicated than supervised learning: it requires training multiple language models (policy, reward model, value function, plus a reference model) and constantly sampling responses from the policy inside the training loop. This is computationally expensive, and PPO is notoriously unstable and hyperparameter-sensitive."
         },
         {
           "fig": {
             "type": "table",
-            "title": "RLHF and DPO: same objective, different paths",
+            "title": "RLHF and DPO: same objective, different routes",
             "subtitle": "Based on Sections 3 and 4 of the paper",
             "columns": [
               "",
@@ -105,27 +105,27 @@
               ],
               [
                 "Reward model",
-                "Train a separate one",
+                "Trained separately",
                 "Not needed (implicit in the language model)"
               ],
               [
                 "Generate responses during training?",
-                "Yes: sample from the policy at every step",
-                "No: only compute probabilities on existing data"
+                "Yes, sampled from the policy at every step",
+                "No, only compute probabilities on existing data"
               ],
               [
-                "Models in play at once",
+                "Models in play",
                 "Policy, reference model, reward model, value function",
                 "Policy, reference model"
               ],
               [
                 "Loss function",
                 "Reinforcement-learning objective, optimized with PPO",
-                "One binary cross-entropy loss"
+                "A single binary cross-entropy loss"
               ],
               [
                 "Objective optimized",
-                "Maximize reward − β · KL",
+                "Maximize reward - β · KL",
                 "Same (theoretically equivalent)"
               ]
             ]
@@ -134,31 +134,36 @@
       ]
     },
     {
-      "h": "Review: what RLHF is actually optimizing",
+      "h": "Recap: what RLHF actually optimizes",
       "blocks": [
         {
-          "p": "Let’s write RLHF precisely. Preference data is human-labeled: given a prompt x, among two responses people prefer y_{w} (w for win) and like y_{l} less (l for lose). Assume people have a hidden “true reward” r^{*} and choose according to the Bradley-Terry model:"
+          "p": "First, let's write RLHF out clearly. Preference data is labeled by humans: given a prompt x and two responses, they prefer y_{w} (w for win) over y_{l} (l for lose). Assume there is a hidden 'true reward' r^{*} in each human's mind, and choices follow the Bradley-Terry model:"
         },
         {
           "formula": {
-            "expr": "p^{*}(y_{1} ≻ y_{2} | x) = exp(r^{*}(x, y_{1})) / [ exp(r^{*}(x, y_{1})) + exp(r^{*}(x, y_{2})) ] = σ( r^{*}(x, y_{1}) − r^{*}(x, y_{2}) )",
+            "expr": "p^{*}(y_{1} ≻ y_{2} | x) = exp(r^{*}(x, y_{1})) / [ exp(r^{*}(x, y_{1})) + exp(r^{*}(x, y_{2})) ] = σ( r^{*}(x, y_{1}) - r^{*}(x, y_{2}) )",
             "parts": [
               {
                 "sym": "y_{1} ≻ y_{2}",
-                "desc": "People consider y_{1} better than y_{2}"
+                "desc": "Probability that a human considers y_{1} better than y_{2}"
               },
               {
                 "sym": "σ",
-                "desc": "Sigmoid function that maps the reward difference to a probability between 0 and 1"
+                "desc": "The sigmoid function, which turns a reward difference into a probability between 0 and 1"
               }
             ]
+          },
+          "plain": {
+            "title": "Like chess ratings",
+            "pic": "dpo-bt",
+            "text": "Two responses are like two chess players, each with a hidden rating (the reward). The chance of winning depends only on the rating gap: a gap of 0 gives a 50-50 chance; a gap of 2 means the higher-rated player wins about nine times in ten. σ is the S-shaped curve that turns rating gap into win probability."
           }
         },
         {
-          "p": "**Step 1: train a reward model r_{φ}**: make it assign higher scores to the responses people chose. The loss is −log σ(r_{φ}(x, y_{w}) − r_{φ}(x, y_{l})). This is exactly the reward-model loss in InstructGPT."
+          "p": "**Step one: train a reward model r_{φ}.** Make it assign higher scores to human-chosen responses. The loss is -log σ(r_{φ}(x, y_{w}) - r_{φ}(x, y_{l})), exactly the reward-model loss in InstructGPT."
         },
         {
-          "p": "**Step 2: reinforcement learning**: make the language model π_{θ} produce high-reward responses, but not drift too far from the reference model π_{ref}:"
+          "p": "**Step two: reinforcement learning.** Let the language model π_{θ} generate high-reward responses, but not drift too far from the reference model π_{ref}:"
         },
         {
           "formula": {
@@ -166,18 +171,23 @@
             "parts": [
               {
                 "sym": "E[r_{φ}]",
-                "desc": "Expected reward of responses generated by the model"
+                "desc": "The average reward earned by responses the model generates"
               },
               {
                 "sym": "D_{KL}",
-                "desc": "How far the model’s distribution is from the reference model. This “leash” keeps the model from gaming the reward model and preserves response diversity."
+                "desc": "How far the model's distribution is from the reference model. This 'leash' stops the model from gaming the reward model and preserves response diversity."
               },
               {
                 "sym": "β",
-                "desc": "How tight the leash is: the larger β, the less deviation from the reference model is allowed."
+                "desc": "How tight the leash is: larger β means the model may deviate less from the reference model"
               }
             ],
-            "note": "Language is discrete, so this objective cannot be differentiated directly; that is why RLHF uses reinforcement-learning algorithms such as PPO. This is the source of the complexity and instability."
+            "note": "Language is discrete, so this objective cannot be differentiated directly. RLHF therefore needs reinforcement-learning algorithms such as PPO. That is the source of the complexity and instability."
+          },
+          "plain": {
+            "title": "Chasing reward, but on a leash",
+            "pic": "dpo-leash",
+            "text": "The language model is like a dog; the reward is a star ahead it wants to run toward, and the reference model is the handler holding the leash. β · KL is the leash: the farther the model runs from the reference model, the harder it is pulled back. A larger β is a shorter leash — the model is less willing to wander."
           }
         }
       ]
@@ -186,7 +196,7 @@
       "h": "The key step: the optimal model can be written down directly",
       "blocks": [
         {
-          "p": "The paper’s starting point is a known result: the “reward minus KL” objective above has a closed-form optimal solution (derivation in Appendix A.1):"
+          "p": "The paper starts from a long-known result: for the objective above — maximizing reward minus KL — the **optimum has a closed form** (derived in Appendix A.1):"
         },
         {
           "formula": {
@@ -194,38 +204,43 @@
             "parts": [
               {
                 "sym": "π_{ref}(y | x)",
-                "desc": "Probability the reference model originally assigned to this response"
+                "desc": "The probability the reference model originally assigned to this response"
               },
               {
                 "sym": "exp(r / β)",
-                "desc": "Reward-based amplification factor: more reward means more amplification."
+                "desc": "A reward-based amplification factor: the higher the reward, the more it is amplified"
               },
               {
                 "sym": "Z(x)",
-                "desc": "Normalizing constant that sums probabilities over all responses to make them total 1. It has to sum over every possible response, so it cannot actually be computed."
+                "desc": "Partition function: sums over all possible responses so probabilities add to 1. It requires summing over every possible response, so it cannot actually be computed."
               },
               {
                 "sym": "β",
-                "desc": "Amplification “temperature”: smaller β amplifies the effect of reward, making the model greedier; larger β keeps it closer to the reference model."
+                "desc": "The scaling 'temperature': a small β amplifies the reward's influence and makes the model greedier; a large β keeps it closer to the reference model"
               }
             ]
+          },
+          "plain": {
+            "title": "Reweighting the original preferences by reward",
+            "pic": "dpo-reweight",
+            "text": "The reference model has its own prior preference among three responses (gray). The optimal model does something simple: multiply each response by a factor e^(r/β) that grows with reward, then rescale everything to sum to 1. High-reward responses are pushed up and low-reward ones pushed down (green)."
           }
         },
         {
           "callout": {
             "kind": "intuition",
             "title": "Optimal model = reference model reweighted by reward",
-            "text": "Think of it this way: the reference model has its own “tastes”. We multiply each response’s probability by a reward-based factor, then renormalize. Good responses get boosted and bad ones suppressed, but nothing appears that the reference model would never write. β controls how aggressive that boost and suppression is."
+            "text": "Think of it this way: the reference model has its own 'tastes', and the optimal model multiplies each response by a reward-based factor before renormalizing. Good responses become more likely, bad ones less likely, but the model never invents responses the reference model would never produce. β controls how aggressively the probabilities are pushed up and down."
           }
         },
         {
           "fig": {
             "type": "table",
-            "title": "Worked example: same rewards, smaller β is greedier",
-            "subtitle": "Illustrative: the three candidate responses, reference-model probabilities, and rewards are made up for this article; computed from π ∝ π_{ref} · exp(r / β).",
+            "title": "Working through the optimal model: same rewards, smaller β is greedier",
+            "subtitle": "Illustrative: three candidate responses with made-up reference probabilities and rewards; computed from π ∝ π_{ref} · exp(r / β).",
             "columns": [
               "Response",
-              "Reference probability",
+              "Reference model probability",
               "Reward r",
               "β = 0.5",
               "β = 1",
@@ -260,11 +275,11 @@
             "highlight": {
               "row": 2
             },
-            "note": "Response C has the highest reward, but the reference model gives it only 0.2 probability. At β = 0.5, the optimal model raises it to 0.80; at β = 5, it only rises to 0.26, almost unchanged from the reference model."
+            "note": "Response C has the highest reward, yet the reference model gives it only 0.2 probability. With β = 0.5 the optimal model raises it to 0.80; with β = 5 it rises only to 0.26, almost indistinguishable from the reference model."
           }
         },
         {
-          "p": "This formula isn’t directly usable because Z(x) can’t be computed. DPO’s trick is to invert it: take logs on both sides and rearrange to express reward in terms of the optimal model:"
+          "p": "The formula on its own isn't directly usable because Z(x) cannot be computed. DPO's insight is to **use it in reverse**: take logs on both sides, rearrange, and write the reward in terms of the optimal model:"
         },
         {
           "formula": {
@@ -276,10 +291,14 @@
               },
               {
                 "sym": "β · log Z(x)",
-                "desc": "A term that depends only on prompt x, not on response y"
+                "desc": "A term that depends only on the prompt x and not on the response y"
               }
             ],
-            "note": "This reverses the “reward → optimal model” mapping: any reward function corresponds to an optimal model; conversely, a model defines a reward."
+            "note": "This step reverses the mapping from reward to optimal model: every reward function corresponds to an optimal model, and conversely a model defines a reward."
+          },
+          "plain": {
+            "title": "Read in reverse: what a model prefers reveals what it scores highly",
+            "text": "Since 'optimal model = reference model × reward factor', we can read it backward: look at which response the optimal model prefers over the reference model, and by how much, and we can read off the reward inside it. There is no need to train a separate reward model; the reward is hidden in the probability ratio of the two models."
           }
         }
       ]
@@ -288,51 +307,56 @@
       "h": "Change of variables: the reward model disappears from the loss",
       "blocks": [
         {
-          "p": "Here is the crucial point: the Bradley-Terry model only cares about the reward difference between two responses. Substitute the above expression, and the uncomputable β · log Z(x) cancels in the subtraction. The human preference probability then depends only on the optimal model and the reference model."
+          "p": "Here is the crucial step. The Bradley-Terry model only cares about the **reward difference between two responses**. Substitute the expression above, and the impossible β · log Z(x) term cancels when the two responses are subtracted. The human preference probability then depends only on the optimal model and the reference model."
         },
         {
-          "p": "So we can fit a parameterized language model π_{θ} to the preference data by maximum likelihood, just like training a reward model. That gives the DPO loss:"
+          "p": "So we can fit a parameterized language model π_{θ} to the preference data by maximum likelihood, just as we would train a reward model. That yields the DPO loss:"
         },
         {
           "formula": {
-            "expr": "L_{DPO}(π_{θ}; π_{ref}) = − E_{(x, y_{w}, y_{l})∼D} [ log σ( β · log( π_{θ}(y_{w}|x) / π_{ref}(y_{w}|x) ) − β · log( π_{θ}(y_{l}|x) / π_{ref}(y_{l}|x) ) ) ]",
+            "expr": "L_{DPO}(π_{θ}; π_{ref}) = - E_{(x, y_{w}, y_{l})∼D} [ log σ( β · log( π_{θ}(y_{w}|x) / π_{ref}(y_{w}|x) ) - β · log( π_{θ}(y_{l}|x) / π_{ref}(y_{l}|x) ) ) ]",
             "parts": [
               {
                 "sym": "β · log(π_{θ} / π_{ref})",
-                "desc": "The paper calls this the “implicit reward” r̂_{θ} defined by the language model: how much more the model prefers this response than the reference model."
+                "desc": "The paper calls this the language model's **implicit reward** r̂_{θ}: how much more the model prefers this response over the reference model."
               },
               {
                 "sym": "r̂_{θ}(y_{w}) − r̂_{θ}(y_{l})",
-                "desc": "The difference between implicit rewards of the preferred and dispreferred responses"
+                "desc": "The difference in implicit reward between the preferred and dispreferred responses"
               },
               {
                 "sym": "− log σ(…)",
-                "desc": "Exactly like the reward-model loss: the larger the difference, the lower the loss"
+                "desc": "Exactly the same shape as the reward-model loss: the larger the difference, the lower the loss."
               }
             ],
-            "note": "For comparison: the reward-model loss is −log σ(r_{φ}(y_{w}) − r_{φ}(y_{l})). DPO merely replaces r_{φ} with β · log(π_{θ} / π_{ref}). That’s what the subtitle means: **Your language model is secretly a reward model**."
+            "note": "Compare the two: the reward-model loss is -log σ(r_{φ}(y_{w}) - r_{φ}(y_{l})); DPO simply replaces r_{φ} with β · log(π_{θ} / π_{ref}). That is the subtitle's meaning: **your language model is secretly a reward model**."
+          },
+          "plain": {
+            "title": "No judge: compare pairs directly",
+            "pic": "dpo-pair",
+            "text": "RLHF first trains a judge (the reward model) to score responses, then has the model chase those scores. DPO skips the judge: for each pair of responses, it pushes up the probability of the human-chosen one (y_w) and pushes down the rejected one (y_l), all relative to the reference model. The whole process becomes an ordinary classification loss."
           }
         },
         {
-          "p": "The PyTorch implementation in the appendix is only a few lines: compute the log probabilities of the policy model and the reference model on the preferred and dispreferred responses, subtract, multiply by β, then take −log sigmoid."
+          "p": "The PyTorch implementation in the paper's appendix is only a few lines: compute the policy's and reference model's log probabilities for the preferred and dispreferred responses, take the difference, multiply by β, and take the negative log sigmoid."
         },
         {
           "fig": {
             "type": "table",
-            "title": "Worked example: DPO loss—small when the ordering is right, large when it’s reversed, and the gradient weight is larger",
-            "subtitle": "Illustrative: numbers are made up for this article. β = 0.1; “log ratio” means log π_{θ} − log π_{ref}, the degree to which the model prefers this response over the reference model.",
+            "title": "Working through the DPO loss: correct rankings cost little, reversed rankings cost a lot — and carry a larger gradient weight",
+            "subtitle": "Illustrative: numbers made up by us. β = 0.1; 'log ratio' means log π_{θ} - log π_{ref}, or how much more the model prefers a response over the reference model.",
             "columns": [
               "Case",
-              "Log ratio for preferred response",
-              "Log ratio for dispreferred response",
-              "Implicit reward difference β × (preferred − dispreferred)",
+              "Preferred response log ratio",
+              "Dispreferred response log ratio",
+              "Implicit reward difference β × (difference between the two)",
               "σ(difference)",
-              "Loss −log σ",
-              "Gradient weight σ(−difference)"
+              "Loss -log σ",
+              "Gradient weight σ(-difference)"
             ],
             "rows": [
               [
-                "Slightly correct ordering",
+                "Ranked right, but only a little",
                 "+2",
                 "−1",
                 "0.3",
@@ -341,7 +365,7 @@
                 "0.426"
               ],
               [
-                "Reversed: dispreferred pushed higher",
+                "Ranked wrong: the dispreferred response is pushed higher",
                 "+1",
                 "+5",
                 "−0.4",
@@ -350,7 +374,7 @@
                 "0.599"
               ],
               [
-                "Already well ordered",
+                "Already ranked very well",
                 "+10",
                 "−5",
                 "1.5",
@@ -362,20 +386,20 @@
             "highlight": {
               "row": 1
             },
-            "note": "The gradient weight decides how hard a pair pushes the model. Pairs already ranked correctly barely push; reversed pairs push hardest. That’s why DPO doesn’t push too hard."
+            "note": "The gradient weight decides how hard each pair pushes the model. Pairs that are already ranked correctly barely push at all; reversed pairs push the hardest. This is why DPO doesn't 'overshoot'."
           }
         },
         {
           "quiz": {
-            "q": "In DPO’s derivation, how does the uncomputable normalizing constant Z(x) disappear?",
+            "q": "In DPO's derivation, how does the uncomputable partition function Z(x) disappear?",
             "options": [
-              "It is approximated as 1",
-              "The Bradley-Terry model only considers the reward difference between two responses, and β log Z(x) depends only on the prompt, so it cancels exactly when the two responses are subtracted.",
-              "It is estimated via Monte Carlo sampling",
-              "It is absorbed into the value function"
+              "It is approximated as 1.",
+              "The Bradley-Terry model only looks at the reward difference between two responses, and β log Z(x) depends only on the prompt, so subtracting the two responses cancels it.",
+              "It is estimated by Monte Carlo sampling.",
+              "It is absorbed into the value function."
             ],
             "answer": 1,
-            "why": "When comparing two responses under the same prompt x, β log Z(x) is identical for both, so subtraction removes it. This is the key to DPO: it sidesteps the most difficult term to compute in RLHF."
+            "why": "When comparing two responses under the same prompt x, β log Z(x) is identical for both, so subtraction removes it. This is the key that makes DPO possible: it sidesteps the most difficult term to compute in RLHF."
           }
         }
       ]
@@ -384,11 +408,11 @@
       "h": "What the DPO update actually does",
       "blocks": [
         {
-          "p": "The gradient makes it clearest. The gradient of the DPO loss with respect to model parameters can be written:"
+          "p": "The gradient makes this clearest. The gradient of the DPO loss with respect to the model parameters can be written as:"
         },
         {
           "formula": {
-            "expr": "∇_{θ} L_{DPO} = − β · E[ σ( r̂_{θ}(x, y_{l}) − r̂_{θ}(x, y_{w}) ) · ( ∇_{θ} log π(y_{w} | x) − ∇_{θ} log π(y_{l} | x) ) ]",
+            "expr": "∇_{θ} L_{DPO} = - β · E[ σ( r̂_{θ}(x, y_{l}) - r̂_{θ}(x, y_{w}) ) · ( ∇_{θ} log π(y_{w} | x) - ∇_{θ} log π(y_{l} | x) ) ]",
             "parts": [
               {
                 "sym": "∇ log π(y_{w})",
@@ -400,23 +424,28 @@
               },
               {
                 "sym": "σ(r̂(y_{l}) − r̂(y_{w}))",
-                "desc": "Per-example weight: the more wrong the implicit reward model ranks the pair (the dispreferred response scoring higher), the larger the weight."
+                "desc": "Per-example weight: the more wrong the implicit reward model's ranking of the pair — i.e., the dispreferred response scores higher — the larger the weight"
               }
             ]
+          },
+          "plain": {
+            "title": "A teacher only spends time on the problems you got wrong",
+            "pic": "dpo-weight",
+            "text": "The σ in front of the gradient is 'how wrong this example is.' When the model already ranks the preferred response above the dispreferred one (left), σ is small and it only nudges. When the ranking is reversed (right), σ is close to 1 and it corrects hard. The paper says removing this weight and pushing every pair equally causes the model to degenerate."
           }
         },
         {
-          "p": "The intuition is simple: **raise the probability of the preferred response and lower the probability of the dispreferred response**. The key is the weight. Pairs the model already ranks correctly get a small weight and barely push; pairs it ranks wrong get a large weight. The paper says that removing this weight and simply pushing preferred responses up and dispreferred responses down makes language models degenerate. The appendix shows summaries generated by Unlikelihood, a method that “just raises the good and lowers the bad”: page after page of repeated when when when."
+          "p": "Intuitively, the rule is simple: **increase the probability of the preferred response and decrease that of the dispreferred one.** The weight is the key. Samples the model already ranks correctly have a tiny weight and barely update it; samples that are misranked have a large weight. The paper says that if you drop this weight and simply push preferred responses up and dispreferred ones down, the language model degenerates. The appendix shows summaries from Unlikelihood, a method that does exactly this, full of repeated 'when when when'."
         },
         {
           "callout": {
             "kind": "myth",
-            "title": "“DPO doesn’t need a reward model, so it’s a different thing from RLHF.”",
-            "text": "DPO has no explicit reward model, but it optimizes exactly the same objective as RLHF: maximize reward minus β times KL. It merely reparameterizes the problem, embedding the reward in the probability ratio between the language model and the reference model. So DPO is just as limited by the quality of preference data as RLHF, and it can likewise “over-optimize.”"
+            "title": "\"DPO doesn't need a reward model, so it's a different thing from RLHF\"",
+            "text": "DPO has no **explicit** reward model, but it optimizes exactly the same objective as RLHF: maximize reward minus β times the KL divergence. It simply changes the parameterization, making the reward implicit in the probability ratio between the policy and the reference model. DPO is therefore just as constrained by preference-data quality as RLHF, and just as susceptible to over-optimization."
           }
         },
         {
-          "p": "**Choosing the reference model**. Preference data is usually generated by some supervised-fine-tuned model, and DPO uses that as π_{ref}. If that model isn’t available—say you use a public preference dataset directly—the paper’s approach is to first run maximum-likelihood fine-tuning on the “chosen” responses to obtain a reference model, reducing distribution mismatch."
+          "p": "**How to choose the reference model.** Preference data is usually generated with some supervised fine-tuned model, and DPO uses that model as π_{ref}. If that model is unavailable (for example, when you use a public preference dataset directly), the paper's approach is to first run maximum-likelihood fine-tuning on the preferred responses to obtain a reference model, reducing distribution mismatch."
         }
       ]
     },
@@ -424,42 +453,46 @@
       "h": "Theory: why this loses no generality",
       "blocks": [
         {
-          "p": "A natural question: does restricting reward to the form β · log(π / π_{ref}) miss some reward functions? Section 5.1 of the paper answers this."
+          "p": "A natural question: does restricting the reward to the form β · log(π / π_{ref}) miss some reward functions? Section 5.1 of the paper answers this."
         },
         {
           "list": [
-            "**Equivalence class**: two reward functions are equivalent if they differ only by a function that depends only on prompt x.",
-            "**Lemma 1**: reward functions in the same equivalence class produce exactly the same preference distribution under the Bradley-Terry model—and the more general Plackett-Luce model. This also shows that preference data alone can never distinguish them.",
-            "**Lemma 2**: reward functions in the same equivalence class produce the same optimal model for the KL-constrained reinforcement-learning problem.",
-            "**Theorem 1**: under mild assumptions, every equivalence class can be represented in the form β · log(π / π_{ref}). So DPO’s parameterization does not throw away anything learnable."
-          ]
+            "**Equivalence class.** Two reward functions are equivalent if they differ only by a function that depends on the prompt x.",
+            "**Lemma 1.** Reward functions in the same equivalence class produce exactly the same preference distribution under the Bradley-Terry model (and the more general Plackett-Luce model). This also means preference data alone can never distinguish them in the first place.",
+            "**Lemma 2.** Reward functions in the same equivalence class yield the same optimal policy under the KL-constrained reinforcement learning problem.",
+            "**Theorem 1.** Under mild assumptions, every equivalence class can be represented in the form β · log(π / π_{ref}). So DPO's parameterization does not throw away anything that could be learned."
+          ],
+          "plain": {
+            "title": "Scoring rubrics that differ by a constant count as the same",
+            "text": "Two teachers grade every question on the same exam, and one always gives 5 more points than the other. When you compare which paper is better, that fixed offset cancels out; the two grading scales are indistinguishable. The paper proves that any two reward functions differing only by a prompt-dependent constant yield the same preferences and the same optimal policy, so DPO's form misses nothing."
+          }
         },
         {
-          "p": "The paper also uses this framework to explain why PPO is unstable: the objective RLHF actually optimizes contains a normalization term tied to Z(x), a kind of “soft value function” of the reference model. It doesn’t affect the optimal solution, but without it policy-gradient variance can be large. PPO either learns a value function to estimate it or uses human-written responses as a rough baseline; DPO’s parameterization naturally needs no baseline at all."
+          "p": "The paper also uses this framework to explain why PPO is unstable: the objective RLHF actually optimizes contains a normalization term involving Z(x), which acts as a \"soft value function\" for the reference model. It does not affect the optimum, but without it the variance of the policy gradient can be large. PPO either learns a value function to estimate it or uses human-written responses as a rough baseline; DPO's parameterization naturally needs no baseline at all."
         },
         {
           "quiz": {
-            "q": "The paper says “reward functions in the same equivalence class produce the same preference distribution.” What does that mean?",
+            "q": "The paper says that reward functions in the same equivalence class produce the same preference distribution. What does that mean?",
             "options": [
               "Preference data can uniquely determine the reward function",
-              "Two reward functions that differ only by a constant independent of the response are indistinguishable from preference data, and DPO only needs to learn either one",
+              "Two reward functions that differ only by a constant independent of the response are indistinguishable from preference data; DPO only needs to learn either one.",
               "All reward functions are equivalent",
               "The Bradley-Terry model is wrong"
             ],
             "answer": 1,
-            "why": "Preferences depend only on reward differences. Adding the same number to every response under a prompt leaves preferences unchanged, and the optimal model unchanged. So learning either one is fine. DPO happens to pick the one that automatically normalizes the optimal model."
+            "why": "Because preferences depend only on reward differences, adding the same number to all responses under a prompt changes neither preferences nor the optimal policy. So learning either one is fine. DPO happens to choose the one that keeps the optimal policy automatically normalized."
           }
         }
       ]
     },
     {
-      "h": "Experiments: three tasks, up to 6B parameters",
+      "h": "Experiments: three tasks, up to 6 billion parameters",
       "blocks": [
         {
           "fig": {
             "type": "table",
             "title": "Three tasks, three base models",
-            "subtitle": "Based on Section 6 of the paper",
+            "subtitle": "Compiled from Section 6 of the paper",
             "columns": [
               "Task",
               "Data",
@@ -469,42 +502,42 @@
             "rows": [
               [
                 "Sentiment control",
-                "IMDb review openings; preferences generated by a sentiment classifier (more positive is preferred)",
+                "IMDb movie review openings; preferences generated by a sentiment classifier (more positive is preferred)",
                 "GPT-2-large",
-                "Ground-truth reward is available, so reward–KL curves can be plotted"
+                "True reward is available, so reward–KL curves can be drawn"
               ],
               [
                 "Summarization",
                 "Reddit TL;DR posts; human preferences from Stiennon et al.",
                 "GPT-J (6B parameters)",
-                "GPT-4 judge, compared with human-written summaries in the test set"
+                "GPT-4 judging, compared with human-written summaries from the test set"
               ],
               [
                 "Single-turn dialogue",
-                "Anthropic Helpful and Harmless dialogue dataset, about 170K dialogues",
+                "Anthropic Helpful and Harmless dialogue dataset, about 170,000 conversations",
                 "Pythia-2.8B",
-                "GPT-4 judge, compared with the chosen responses in the test set"
+                "GPT-4 judging, compared with the preferred responses in the test set"
               ]
             ]
           }
         },
         {
-          "p": "Baselines include: GPT-J zero-shot, Pythia-2.8B two-shot prompting, supervised fine-tuning (SFT), fine-tuning only on chosen responses (Preferred-FT), Unlikelihood, PPO (with a learned reward), PPO-GT (directly using the ground-truth reward, as an upper-bound reference), and Best of N (sample N responses from the SFT model and use the reward model to pick the best; strong, but it requires generating N times at inference, which is too expensive)."
+          "p": "Baselines include: GPT-J zero-shot, Pythia-2.8B with two-shot prompting, supervised fine-tuning (SFT), fine-tuning only on preferred responses (Preferred-FT), Unlikelihood, PPO (with the learned reward), PPO-GT (uses the true reward directly, as an upper-bound reference), and Best of N (sample N responses from the SFT model and use the reward model to pick the best; it works well but requires generating N times at inference, which is costly)."
         },
         {
-          "p": "**Result 1: DPO spends its KL budget better.** On the sentiment task, the true reward is known, so one can directly compare which method gets higher reward at the same KL. The paper ran 22 experiments with different hyperparameters in total, and DPO's reward–KL frontier was highest at every KL level. DPO and PPO optimize the same objective, yet DPO strictly dominates; it even beats PPO-GT, which can directly use the ground-truth reward."
+          "p": "**Result one: DPO spends KL better.** On the sentiment task, the true reward is known, so one can directly compare who gets more reward at the same KL. The paper ran 22 experiments with different hyperparameters, and DPO's reward–KL frontier was the highest at every KL level. DPO and PPO optimize the same objective, yet DPO strictly dominates; it even beats PPO-GT, which can use the true reward directly."
         },
         {
-          "p": "**Result 2: Summarization.** GPT-4-judged win rate (against human-written summaries in the test set): DPO at temperature 0 is about 61%, above PPO's 57% at its best temperature setting of 0, and above Best of N's best result. DPO is also far more robust to sampling temperature; PPO degrades to the base GPT-J level at high temperature. The paper also notes that β was barely tuned for DPO, so these results may underestimate it."
+          "p": "**Result two: summarization.** GPT-4 win rate against human-written summaries in the test set: DPO at temperature 0 is about 61%, above PPO's 57% at its best temperature, also 0, and above Best of N's best result. DPO is also much more robust to sampling temperature; at high temperatures PPO degrades to the level of the base GPT-J. The paper notes that DPO's β was barely tuned, so these results may understate it."
         },
         {
-          "p": "**Result 3: Single-turn dialogue.** DPO is the only computationally practical method that also beats the chosen responses in the dataset, and it is comparable to Best of 128, which requires sampling 128 times. The paper also tried a model from a well-known source that was trained with PPO on the same dataset, and found no prompt or temperature at which it beat the base Pythia-2.8B."
+          "p": "**Result three: single-turn dialogue.** DPO is the only computationally cheap method that also beats the preferred responses in the dataset, and it is on par with Best of 128, which requires sampling 128 responses. The paper also tried a well-known PPO model trained on the same dataset, but could find no prompt or temperature that made it beat the base Pythia-2.8B."
         },
         {
           "fig": {
             "type": "table",
-            "title": "A different distribution: DPO still clearly leads PPO on news summarization",
-            "subtitle": "GPT-4-judged win rates against human-written CNN / DailyMail summaries, from Table 1 of the paper. Models were trained on Reddit posts. Blue columns are temperature 0.",
+            "title": "On a different distribution: DPO still clearly beats PPO on news summarization",
+            "subtitle": "GPT-4-judged win rates against human-written CNN / DailyMail summaries, from Table 1 of the paper. The model was trained on Reddit posts. Blue columns are temperature 0.",
             "columns": [
               "Method",
               "Temperature 0",
@@ -525,25 +558,25 @@
             "highlight": {
               "col": 1
             },
-            "note": "The paper sees this as preliminary evidence that DPO's generalization is no worse than PPO's, even though PPO additionally used unlabeled Reddit prompts."
+            "note": "The paper sees this as preliminary evidence that DPO generalizes no worse than PPO, even though PPO also used unlabeled Reddit prompts."
           }
         },
         {
-          "p": "Training hyperparameters (Appendix B): default β = 0.1 (0.5 for summarization), batch size 64, RMSprop optimizer, learning rate 10^{−6}, linear warmup for the first 150 steps."
+          "p": "Training hyperparameters (Appendix B): default β = 0.1 (0.5 for summarization), batch size 64, RMSprop optimizer, learning rate 10^{-6}, linear warmup for the first 150 steps."
         }
       ]
     },
     {
-      "h": "Can GPT-4 be trusted as a judge?",
+      "h": "Is GPT-4 a reliable judge?",
       "blocks": [
         {
-          "p": "The main summarization and dialogue results rely on GPT-4 judgments. To validate this, the paper ran a small-scale human evaluation comparing GPT-4's judgments with human judgments. They found that with a simple prompt (asking only which summary better captures the important information), **GPT-4 favored longer, more verbose summaries**; so they wrote another prompt that also required considering conciseness, and used the latter for the main results."
+          "p": "The main summarization and dialogue results rely on GPT-4 judgments. To validate this, the paper ran a small human evaluation comparing whether GPT-4 agreed with humans. They found that with a simple prompt asking only which summary better captures the important information, **GPT-4 preferred longer, more verbose summaries**; so they wrote a second prompt that also asked it to consider conciseness, and used the latter for the main results."
         },
         {
           "fig": {
             "type": "table",
             "title": "GPT-4 agrees with humans about as often as humans agree with each other",
-            "subtitle": "TL;DR summaries; each column is a comparison against PPO at temperature 0, from Table 2 of the paper. Units: %. Amber is human-human agreement.",
+            "subtitle": "TL;DR summaries; each column compares against PPO at temperature 0, from Table 2 of the paper. Units: %. Amber marks human-human agreement.",
             "columns": [
               "",
               "DPO (temperature 0.25)",
@@ -552,25 +585,25 @@
             ],
             "rows": [
               [
-                "Participants",
+                "Human evaluators",
                 "272",
                 "122",
                 "199"
               ],
               [
-                "GPT-4 (simple prompt) win rate",
+                "Win rate judged by GPT-4 (simple prompt)",
                 "47",
                 "27",
                 "13"
               ],
               [
-                "GPT-4 (conciseness prompt) win rate",
+                "Win rate judged by GPT-4 (prompt asking for conciseness)",
                 "54",
                 "32",
                 "12"
               ],
               [
-                "Human-judged win rate",
+                "Win rate judged by humans",
                 "58",
                 "43",
                 "17"
@@ -597,14 +630,14 @@
             "highlight": {
               "row": 6
             },
-            "note": "In the DPO column, human-human agreement is only 65%, and GPT-4's agreement with humans is actually slightly higher. The paper takes this as evidence that GPT-4 is a reasonable substitute for human evaluation."
+            "note": "In the DPO column, humans agree with each other only 65% of the time, and GPT-4's agreement with humans is slightly higher. The paper takes this as evidence that GPT-4 is a reasonable substitute for human evaluation."
           }
         },
         {
           "callout": {
             "kind": "note",
-            "title": "Read these conclusions with care",
-            "text": "The human evaluation was small and only covered summarization. The paper itself writes in its limitations that GPT-4-computed win rates are prompt-sensitive, and that producing high-quality automatic judgments still requires research. Using large models as judges later became widespread, and their bias toward longer answers has been found repeatedly."
+            "title": "Read these conclusions with caution",
+            "text": "The human evaluation is small and was only done for summarization. The paper itself notes in its limitations that GPT-4's win rates are prompt-sensitive, and that producing high-quality judgments from automatic evaluators still needs research. Using large models as judges later became widespread, and their bias toward longer answers has been found repeatedly."
           }
         }
       ]
@@ -614,78 +647,78 @@
       "blocks": [
         {
           "list": [
-            "**The “remove the weight and it degenerates” example actually comes from a different method**: Section 4 says removing the gradient weight makes the model degenerate and points to Table 3 in the appendix; but Table 3 shows summaries generated by Unlikelihood, which is close to “DPO without the weight” but not exactly the same thing.",
-            "**A small equation-reference typo**: Section 5.2 says “π^{*} is the optimal policy derived from Equation 7,” but Equation 7 is the DPO loss function; the closed-form optimal policy is Equation 4.",
-            "**Limited scale**: summarization uses GPT-J at 6B parameters, dialogue uses Pythia at 2.8B parameters; the paper explicitly lists scaling to frontier models several orders of magnitude larger as future work.",
-            "**No fair PPO baseline for the dialogue task**: the paper could not find a properly working PPO model, so it could only use Best of 128 as a rough stand-in for the PPO level."
+            "**The \"removing the weight causes degeneration\" example actually comes from a different method.** Section 4 says that removing the gradient weight causes degeneration and points to Appendix Table 3; but Table 3 shows summaries generated by Unlikelihood, which is similar to DPO without the weight but not exactly the same thing.",
+            "**A small citation error in the formulas.** Section 5.2 says π^{*} is the optimal policy derived from Equation 7, but Equation 7 is the DPO loss; the closed-form optimal policy is Equation 4.",
+            "**Limited scale.** Summarization uses the 6B-parameter GPT-J, and dialogue uses the 2.8B-parameter Pythia. The paper explicitly lists scaling to frontier models several orders of magnitude larger as future work.",
+            "**No fair PPO baseline for dialogue.** The paper could not find a PPO model that behaved properly, so it used Best of 128 as a rough stand-in for PPO-level performance."
           ]
         }
       ]
     },
     {
-      "h": "Limitations, and what came after",
+      "h": "Limitations, and what came next",
       "blocks": [
         {
-          "p": "The open problems the paper itself lists:"
+          "p": "The paper's own open questions:"
         },
         {
           "list": [
-            "**Generalization**: compared with training with an explicit reward model, how does DPO perform out of distribution? Initial results are comparable, but more comprehensive study is needed. PPO can use unlabeled prompts; can DPO do the same through self-labeling?",
-            "**Overoptimization**: in direct preference optimization, what form does reward overoptimization take? The slight decline late in training on the right of Figure 3 may be an expression of it.",
-            "**Scale**: only validated up to 6B parameters.",
-            "**Evaluation**: GPT-4 judgments are prompt-sensitive."
+            "**Generalization.** How does DPO perform out of distribution compared with training with an explicit reward model? Preliminary results are comparable, but more comprehensive study is needed. PPO can use unlabeled prompts; can DPO do the same through self-labeling?",
+            "**Over-optimization.** In direct preference optimization, what form does reward over-optimization take? The slight dip late in training on the right side of Figure 3 may be exactly that.",
+            "**Scale.** Validated only up to 6 billion parameters.",
+            "**Evaluation.** GPT-4's judgments are prompt-sensitive."
           ]
         },
         {
-          "p": "**What came next.** Because DPO is simple, stable, and cheap, it quickly became the open-source community's default for preference alignment, and Meta's Llama 3 also used DPO in its post-training stage. A large number of variants then appeared, trying to address its overfitting, length preference, and other problems."
+          "p": "**What happened next.** DPO is simple, stable, and resource-efficient, so it quickly became the open-source community's default for preference alignment. Meta's Llama 3 also used DPO in its post-training stage. Many variants followed, attempting to fix its overfitting, length bias, and similar problems."
         },
         {
-          "p": "But reinforcement learning did not exit the stage. The next article—also the last in this main thread—DeepSeek-R1 (2025) brings reinforcement learning back to center stage: what trains reasoning ability is not human preferences but rewards that can be automatically checked for correctness (for example, whether a math answer is right). At that point, the model needs to keep trying during training and generate new solution attempts, which is exactly what offline-data-only methods like DPO cannot do."
+          "p": "But reinforcement learning did not leave the stage. The next article, the last in this first main line, DeepSeek-R1 (2025), brought reinforcement learning back to center stage. What trains reasoning there is not human preferences but rewards that can be automatically checked, such as whether a math answer is correct. At that point the model needs to keep trying and generate new solution traces during training, which is exactly what offline-data-only methods like DPO cannot do."
         }
       ]
     },
     {
-      "h": "Test yourself: have you truly absorbed it?",
+      "h": "Check yourself: did you really get it?",
       "blocks": [
         {
           "quiz": {
-            "q": "What is DPO's “implicit reward”?",
+            "q": "What is DPO's implicit reward?",
             "options": [
               "The reward model's output",
               "β · log(π_{θ}(y | x) / π_{ref}(y | x)): how much more the model prefers this response over the reference model",
-              "Human-labeled scores",
+              "Human-annotated scores",
               "Response length"
             ],
             "answer": 1,
-            "why": "This is DPO's core change of variables: the log probability ratio between the model and the reference model, multiplied by β, is a valid reward function (up to a prompt-dependent constant, which does not affect preferences or the optimal solution)."
+            "why": "This is DPO's core change of variables: the log probability ratio between the policy and the reference model, multiplied by β, is a valid reward function, up to a prompt-only constant, which does not affect preferences or the optimal policy."
           }
         },
         {
           "quiz": {
-            "q": "If you set DPO's β very large, what happens to the trained model?",
+            "q": "If you make DPO's β very large, what happens to the trained model?",
             "options": [
-              "It will favor preferred responses more aggressively",
-              "It will stay closer to the reference model and change very little",
-              "Training will diverge",
-              "It will be completely unaffected"
+              "It leans toward preferred responses more aggressively.",
+              "It stays closer to the reference model, with little change.",
+              "Training diverges.",
+              "It is completely unaffected."
             ],
             "answer": 1,
-            "why": "β corresponds to the strength of the KL penalty in RLHF. The larger β is, the closer the optimal model stays to the reference model (see the β = 5 column in the worked example). The smaller β is, the more “greedily” it chases preferences, but the easier it overfits the preference data."
+            "why": "β corresponds to the KL penalty strength in RLHF. The larger β is, the closer the optimal policy stays to the reference model, as in the β = 5 column of the hand-computed table. Smaller β chases the preference more greedily, but also overfits the preference data more easily."
           }
         },
         {
-          "p": "After reading this, you should be able to answer these questions:"
+          "p": "After reading, you should be able to answer these questions:"
         },
         {
           "list": [
             "What is RLHF's objective function? Why is reinforcement learning used to optimize it?",
-            "What does the optimal solution to the “reward minus KL” objective look like? What does β do?",
-            "How does DPO express reward through the model? Why can Z(x) cancel out?",
-            "What are the similarities and differences between the DPO loss and the reward-model loss?",
+            "What does the optimal policy of the reward-minus-KL objective look like? What role does β play?",
+            "How does DPO express reward in terms of the model? Why does Z(x) cancel out?",
+            "How is the DPO loss similar to the reward-model loss, and how is it different?",
             "Why is the weight in DPO's gradient important?",
             "Why is DPO's parameterization said to lose no generality?",
-            "In the three experiments, what did DPO compare against, and where did it win?",
-            "What problems are there with using GPT-4 as a judge, and how does the paper validate it?"
+            "In the three experiments, what does DPO compare against, and where does it win?",
+            "What problems arise when using GPT-4 as a judge? How does the paper validate it?"
           ]
         }
       ]
@@ -693,12 +726,12 @@
   ],
   "sources": {
     "main": {
-      "title": "Direct Preference Optimization: Your Language Model is Secretly a Reward Model (arXiv:2305.18290, v3)",
-      "publisher": "Rafailov et al. · Stanford University",
+      "title": "Direct Preference Optimization: Your Language Model is Secretly a Reward Model (arXiv:2305.18290 v3)",
+      "publisher": "Rafailov et al., Stanford University",
       "date": "2024-07-29",
       "url": "https://arxiv.org/abs/2305.18290"
     },
-    "note": "This article is based on version 3 of the arXiv paper (July 2024); the first version was released in May 2023. Tables marked “Illustrative” were created by this site to demonstrate the formulas. Points such as Llama 3 using DPO and large-model judges favoring long answers come from later public research and are not in this paper."
+    "note": "This article is based on version 3 of the arXiv paper (July 2024); the first version was released in May 2023. Tables marked Illustrative are our own, included to demonstrate formulas. The claims that Llama 3 uses DPO and that LLM judges favor long answers come from later public research, not from this paper."
   },
   "claims": [
     {
@@ -706,35 +739,35 @@
       "value": "2305.18290v3",
       "source_url": "https://arxiv.org/abs/2305.18290",
       "quote": "arXiv:2305.18290v3 [cs.LG] 29 Jul 2024",
-      "as_written": "v3"
+      "as_written": "Version 3"
     },
     {
-      "text": "Misconception believed by 50% of people",
+      "text": "A misconception that 50% of people believe",
       "value": "50%",
       "source_url": "https://arxiv.org/abs/2305.18290",
       "quote": "a common misconception believed by 50% of people",
       "as_written": "50%"
     },
     {
-      "text": "Up to 6B parameters",
+      "text": "Up to 6 billion parameters",
       "value": "6B",
       "source_url": "https://arxiv.org/abs/2305.18290",
       "quote": "using language models with up to 6B parameters",
       "as_written": "6B"
     },
     {
-      "text": "Anthropic HH, about 170K dialogues",
+      "text": "Anthropic HH, about 170,000 conversations",
       "value": "170k",
       "source_url": "https://arxiv.org/abs/2305.18290",
       "quote": "containing 170k dialogues between a human and an automated assistant",
-      "as_written": "170K"
+      "as_written": "170,000"
     },
     {
       "text": "22 experiments",
       "value": "22 runs",
       "source_url": "https://arxiv.org/abs/2305.18290",
       "quote": "This sweep includes 22 runs in total",
-      "as_written": "22"
+      "as_written": "22 experiments"
     },
     {
       "text": "Summarization: DPO about 61%, PPO 57%",
@@ -828,14 +861,14 @@
       "as_written": "150 steps"
     },
     {
-      "text": "Summarization β = 0.5",
+      "text": "Summarization: β = 0.5",
       "value": "β = 0.5",
       "source_url": "https://arxiv.org/abs/2305.18290",
       "quote": "For TL;DR summarization, we use β = 0.5",
       "as_written": "0.5"
     },
     {
-      "text": "Table 2: participants 272 / 122 / 199",
+      "text": "Table 2: evaluators 272 / 122 / 199",
       "value": "272",
       "source_url": "https://arxiv.org/abs/2305.18290",
       "quote": "272",
@@ -856,14 +889,14 @@
       "as_written": "199"
     },
     {
-      "text": "GPT-4 (simple) win rates 47 / 27 / 13",
+      "text": "GPT-4 S win rates 47 / 27 / 13",
       "value": "47",
       "source_url": "https://arxiv.org/abs/2305.18290",
       "quote": "47",
       "as_written": "47"
     },
     {
-      "text": "GPT-4 (conciseness) win rates 54 / 32 / 12",
+      "text": "GPT-4 C win rates 54 / 32 / 12",
       "value": "54",
       "source_url": "https://arxiv.org/abs/2305.18290",
       "quote": "54",
@@ -922,5 +955,5 @@
   "status": "published",
   "verified": false,
   "lang": "en",
-  "translated_from": "c6bffb7e2f27e71a"
+  "translated_from": "56d26b4c7a4515f1"
 }

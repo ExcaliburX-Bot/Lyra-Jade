@@ -1,0 +1,1010 @@
+{
+  "slug": "self-instruct-aligning-language-models-with-self-generated-instructions",
+  "category": "paper",
+  "publisher": "University of Washington et al.",
+  "date": "2022-12-20",
+  "title": "How Self-Instruct used 175 sample tasks to make GPT-3 write 50K instructions",
+  "summary": "Self-Instruct uses only 175 human-written seed tasks to have vanilla GPT-3 generate 52K instruction examples and then fine-tune itself, nearly matching InstructGPT001. We work through the ROUGE-L filter by hand, unpack the 'answers before questions' design, explain why data that is only 54% fully correct still works, and trace its link to Alpaca.",
+  "ai_summary": "Self-Instruct: Aligning Language Models with Self-Generated Instructions (Wang et al., University of Washington et al., ACL 2023) proposes having a pretrained language model generate its own instruction-tuning data. Starting from 175 human-written seed tasks, vanilla GPT-3 iteratively generates new instructions, decides whether each is a classification task, and writes input-output examples; ROUGE-L and other rules filter the results, yielding about 52K instructions and 82K examples. Fine-tuning GPT-3 on this data improves ROUGE-L on SuperNI by 33.1 points, nearly matching InstructGPT001, and leaves only about a 5-point gap behind InstructGPT001 in human evaluation on 252 user instructions.",
+  "brief": [
+    "The problem: instruction tuning depends on human-written data that is expensive and limited in variety, and InstructGPT's data is not public.",
+    "The method: 175 seed tasks; vanilla GPT-3 iteratively generates instructions and examples, with classification tasks fixing labels before inputs; instructions with ROUGE-L similarity of 0.7 or higher are filtered out as duplicates.",
+    "The result: 52K instructions and 82K examples for about $600; after fine-tuning, SuperNI improves by 33.1 points and human evaluation nearly matches InstructGPT001.",
+    "The limits: only 54% of the data is fully correct; the evaluators are the authors themselves; it may amplify bias and depends on large models; adding SuperNI makes user-instruction performance worse, not better."
+  ],
+  "paper": {
+    "title": "Self-Instruct: Aligning Language Models with Self-Generated Instructions",
+    "authors": "Yizhong Wang, Yeganeh Kordi, Swaroop Mishra, Alisa Liu, Noah A. Smith, Daniel Khashabi, Hannaneh Hajishirzi",
+    "org": "University of Washington, Tehran Polytechnic, Arizona State University, Johns Hopkins University, Allen Institute for AI",
+    "venue": "ACL 2023",
+    "year": 2022,
+    "arxiv": "2212.10560",
+    "url": "https://arxiv.org/abs/2212.10560"
+  },
+  "cover": {
+    "headline": "Self-Instruct, explained",
+    "highlight": "The model writes its own questions",
+    "glyph": {
+      "kind": "flow",
+      "nodes": [
+        {
+          "label": "175 sample tasks"
+        },
+        {
+          "label": "GPT-3 writes the questions",
+          "tone": "hi"
+        },
+        {
+          "label": "52K fine-tuning instructions"
+        }
+      ]
+    }
+  },
+  "sections": [
+    {
+      "h": "The short version: what this paper did",
+      "blocks": [
+        {
+          "p": "In December 2022, Yizhong Wang, Hannaneh Hajishirzi and five coauthors - based primarily at the University of Washington - published this paper, with collaborators from Arizona State University, Johns Hopkins University, and the Allen Institute for AI; it later appeared at ACL 2023. It asks a practical question: **instruction tuning needs lots of 'instruction -> answer' data, so if you can't afford to pay people to write it, can the model write it itself?**"
+        },
+        {
+          "p": "The FLAN paper covered earlier created instruction data by hand-writing templates and reshaping 62 existing datasets; InstructGPT's data came from paid annotators and real users, and was not made public. Self-Instruct's approach is:"
+        },
+        {
+          "list": [
+            "People write only **175 seed tasks**, each with one instruction and one example.",
+            "Show a few seeds to **vanilla GPT-3**, with no instruction tuning at all, have it imitate them to write new instructions, and then attach inputs and outputs to each new instruction.",
+            "Use a few simple rules to filter out duplicate and low-quality items, feed the survivors back into the task pool, and repeat.",
+            "End up with about 52K instructions and 82K examples, then use them to fine-tune GPT-3 itself."
+          ]
+        },
+        {
+          "p": "The result: fine-tuned GPT-3 scores 33.1 points higher than the original on the SuperNI benchmark (ROUGE-L), nearly matching InstructGPT001, which OpenAI trained on private user data and human annotations. On 252 instructions the authors wrote to reflect real-user requests, human evaluation puts it only about 5 percentage points behind InstructGPT001. Generating the whole dataset cost only about $600 in API fees."
+        },
+        {
+          "callout": {
+            "kind": "takeaway",
+            "title": "In one sentence",
+            "text": "With just 175 human-written seed tasks, vanilla GPT-3 can bootstrap more than 50K diverse instruction examples; even though nearly half of the examples contain mistakes, fine-tuning GPT-3 on them greatly improves instruction-following and nearly matches the commercial models of the time. This 'use a model to generate training data' recipe was later adopted by Alpaca and many other open-source models."
+          }
+        },
+        {
+          "callout": {
+            "kind": "prereq",
+            "title": "Three concepts you need",
+            "text": "Don't worry if they're new; these three are enough:",
+            "list": [
+              "**Instruction tuning**: fine-tuning a pretrained model on 'instruction -> answer' data so it learns to follow instructions (see our FLAN explainer).",
+              "**Vanilla GPT-3**: a GPT-3 that has only been pretrained and can only continue text (OpenAI's 'davinci'), as opposed to InstructGPT, which went through instruction tuning and RLHF (see our GPT-3 and InstructGPT explainers).",
+              "**ROUGE-L**: a similarity score between 0 and 1 based on the 'longest common subsequence' of two texts - the higher the score, the more similar the texts (common in summarization evaluation; see our Learning to Summarize from Human Feedback explainer)."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "The problem: human-written instruction data is expensive and lacks variety",
+      "blocks": [
+        {
+          "p": "The paper argues that instruction-tuned models succeed because of two things: large pretrained models and human-written instruction data (such as PromptSource and SuperNI). But human-written instruction data has two flaws: it is **expensive** and **not diverse enough**. Annotators tend to think of familiar NLP tasks - classification, question answering, summarization - and miss the many ways real users actually ask for things. InstructGPT works well, but its data comes from private user requests and its construction process is opaque, so researchers can hardly study what the data itself contributes."
+        },
+        {
+          "p": "Asking people to create instruction data is hard for two reasons: they need **creativity** to invent novel tasks and **expertise** to write correct answers for each one. Self-Instruct's insight is that pretrained language models can roughly do both - they just need a little prompting.",
+          "plain": {
+            "title": "Let the student write the questions",
+            "text": "The teacher writes only 175 sample questions. Then the student looks at a few samples, imitates them to write a new question, and writes the answer; anything too similar to an old question is thrown out, and the rest goes into the question bank. The bank grows and grows, and finally this student-made workbook is used to train the same student.",
+            "pic": "si-loop"
+          }
+        }
+      ]
+    },
+    {
+      "h": "What instruction data looks like",
+      "blocks": [
+        {
+          "p": "Each data point the paper wants to generate has three parts: an **instruction** (a natural-language description of a task), an optional **input**, and an **output**. There is no strict line between instruction and input. For example, 'write an essay about school safety' can be the whole instruction with an empty input; or 'write an essay about the following topic' can be the instruction and 'school safety' the input. To keep formats varied, the authors allow empty inputs."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "A few instruction examples generated by GPT-3",
+            "subtitle": "From Figure 1 of the paper; outputs abridged.",
+            "columns": [
+              "Instruction",
+              "Input",
+              "Output"
+            ],
+            "rows": [
+              [
+                "Given an address and city, come up with the zip code.",
+                "Address: 123 Main Street, City: San Francisco",
+                "94105"
+              ],
+              [
+                "I am looking for a job and need to fill out an application form. Can you please help me complete it?",
+                "Application form: name, age, sex, phone number, email, education ...",
+                "Name: John Doe  Age: 25  Sex: Male ..."
+              ],
+              [
+                "How do I write code to convert Fahrenheit to Celsius?",
+                "(empty)",
+                "def convert_fahrenheit_to_celsius(fahr): celsius = (fahr - 32) * 5 / 9 ..."
+              ],
+              [
+                "Write a letter from the perspective of a cat.",
+                "(empty)",
+                "Dear [Owner]: I am writing to you because I have a problem ..."
+              ]
+            ],
+            "note": "These tasks look very different from traditional NLP datasets and more like requests real users would make."
+          }
+        }
+      ]
+    },
+    {
+      "h": "The four-step pipeline: generate instructions, identify task type, generate examples, filter.",
+      "blocks": [
+        {
+          "p": "**Step 1: generate instructions.** The task pool starts with only 175 seed tasks (written by the authors and their labmates; 25 classification and 150 non-classification, with no reference to existing datasets). Each round samples 8 instructions from the pool as examples: 6 from human-written seeds and 2 from the model's earlier generations, to increase diversity. They are arranged as a numbered list, and GPT-3 is asked to continue with a ninth item - that becomes a new instruction."
+        },
+        {
+          "p": "**Step 2: decide whether it is a classification task.** Classification tasks (outputs are just a few fixed labels, like 'positive / negative') need a different way of generating examples than other tasks, so GPT-3 first decides which type each new instruction is. The prompt includes 12 classification instructions and 19 non-classification instructions from the seeds as examples."
+        },
+        {
+          "p": "**Step 3: generate examples.** For each new instruction, GPT-3 writes an input and an output. This is the hardest step: the model has to understand the task from the instruction, figure out what input fields are needed, and then do the task. The paper finds that pretrained models can do this reasonably well as long as the prompt includes a few 'instruction -> input -> output' examples from other tasks."
+        },
+        {
+          "p": "There is a neat design choice here. The natural approach is **input first, output second**: invent an input, then write the corresponding answer. But the paper finds that for classification tasks this biases the inputs toward one label. For example, for 'check whether a sentence has a grammar error,' the model mostly invents sentences that are grammatically correct. So for classification tasks the authors switch to **output first, input second**: first list all possible labels, then invent an input for each label.",
+          "plain": {
+            "title": "Pick the answer first, then write the question",
+            "text": "Ask a person to write 'true or false' questions, and most will be true statements, because inventing a false one takes more effort. If you stipulate in advance, 'this one is true, that one is false,' and then write the questions, true and false are balanced. Output-first is exactly that: fix the answer key first, then work backward to the question.",
+            "pic": "si-outfirst"
+          }
+        },
+        {
+          "p": "**Step 4: filter.** A new instruction is added to the pool only if its ROUGE-L similarity with **every** existing instruction is below 0.7. Instructions containing words like 'image,' 'picture,' or 'graph' - things language models can't process - are also excluded. At the example level, exact duplicates and cases with the same input but different outputs are dropped; heuristic rules then remove clearly invalid generations, such as instructions that are too long or too short, or outputs that merely repeat the input."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "By hand: how ROUGE-L decides two instructions are too similar",
+            "subtitle": "Illustrative example: with the existing instruction 'Write a poem about the sea' (6 words) as the reference and three made-up candidates, precision, recall, and F are computed from the longest common subsequence.",
+            "columns": [
+              "New instruction",
+              "Longest common subsequence",
+              "Precision",
+              "Recall",
+              "F",
+              "Add to pool?"
+            ],
+            "rows": [
+              [
+                "Write a short poem about the ocean (7 words)",
+                "write a poem about the (5 words)",
+                "5 ÷ 7 ≈ 0.71",
+                "5 ÷ 6 ≈ 0.83",
+                "≈ 0.77",
+                "No: >= 0.7, too similar"
+              ],
+              [
+                "Write a story about a dog (6 words)",
+                "write a about (3 words)",
+                "3 / 6 = 0.5",
+                "3 / 6 = 0.5",
+                "0.5",
+                "Yes"
+              ],
+              [
+                "Translate this sentence into French (5 words)",
+                "None",
+                "0",
+                "0",
+                "0",
+                "Yes"
+              ]
+            ],
+            "highlight": {
+              "col": 4
+            },
+            "note": "F = 2 * precision * recall / (precision + recall). The first candidate only swaps 'sea' for 'ocean' and adds 'short,' so it is treated as a duplicate; the second begins with the same words but is about something else."
+          },
+          "plain": {
+            "title": "The paper's duplicate check measures how many words overlap in order",
+            "text": "ROUGE-L works like plagiarism detection: it picks out the words that appear in the same order in both sentences and asks what share of each sentence they account for. Swap only 'sea' for 'ocean' and add 'short,' and overlap is still over 70% - treated as copied, so rejected. Share the first few words but write about something else, and overlap is only half - accepted."
+          }
+        }
+      ]
+    },
+    {
+      "h": "The generated data: plentiful, messy, and not entirely correct",
+      "blocks": [
+        {
+          "p": "The authors ran this pipeline with the largest vanilla GPT-3 ('davinci') and, after filtering, got:"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Data generated by Self-Instruct",
+            "subtitle": "From Table 1 of the paper",
+            "columns": [
+              "Statistic",
+              "Count"
+            ],
+            "rows": [
+              [
+                "Instructions",
+                "52445"
+              ],
+              [
+                "  of which classification",
+                "11584"
+              ],
+              [
+                "  of which non-classification",
+                "40861"
+              ],
+              [
+                "Instances",
+                "82439"
+              ],
+              [
+                "  with empty input",
+                "35878"
+              ],
+              [
+                "Average instruction length (words)",
+                "15.9"
+              ],
+              [
+                "Average non-empty input length (words)",
+                "12.7"
+              ],
+              [
+                "Average output length (words)",
+                "18.9"
+              ]
+            ],
+            "note": "According to the paper's appendix, at the then-current price of $0.02 per 1,000 tokens, generating the whole dataset cost about $600; fine-tuning GPT-3 on it cost another $338."
+          }
+        },
+        {
+          "p": "**Diversity.** The authors used a parser to extract, from each instruction, the verb closest to the sentence root and its first noun object. Only 26,559 of the 52,445 instructions have this simple 'verb + noun' structure; the rest are more complex clauses or questions. The top 20 verbs along with their top 4 objects cover only 14% of all instructions, suggesting that intents and formats are quite spread out. Compared with the seed instructions, most new instructions have low ROUGE-L overlap, so many genuinely new tasks were generated."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "A random sample of 200: how many are correct?",
+            "subtitle": "From Table 2 of the paper, manually checked by one author",
+            "columns": [
+              "Quality review question",
+              "Yes %"
+            ],
+            "rows": [
+              [
+                "Does the instruction describe a valid task?",
+                "92%"
+              ],
+              [
+                "Is the input appropriate for the instruction?",
+                "79%"
+              ],
+              [
+                "Is the output a correct and acceptable response to the instruction and input?",
+                "58%"
+              ],
+              [
+                "All fields are valid",
+                "54%"
+              ]
+            ],
+            "highlight": {
+              "row": 3
+            },
+            "note": "The instructions themselves are mostly meaningful, but the examples are noisy: only a little more than half of the data is fully correct. The authors argue that even when examples contain errors, most are formatted correctly or partially correct, and can still teach the model how to respond to instructions."
+          },
+          "plain": {
+            "title": "A workbook with many wrong answers still helps",
+            "text": "This student-made workbook has decent questions about 90% of the time, but only a little more than half of the answers are fully correct. That sounds bad, but the workbook's main lesson is not the specific answers - it is 'when you see a request like this, what format should you use and what direction should you go.' Wrong answers can still teach that.",
+            "pic": "si-quality"
+          }
+        }
+      ]
+    },
+    {
+      "h": "Fine-tuning and baselines",
+      "blocks": [
+        {
+          "p": "The authors used OpenAI's fine-tuning API to fine-tune the same vanilla GPT-3 on this data, producing **GPT3_{SELF-INST}**. The instruction and input are concatenated into a prompt, and the model learns to generate the output. To make the model robust to different formats, the concatenation randomly uses several templates (with or without 'Task:' and 'Input:' prefixes, line breaks, and so on). Hyperparameters are the API defaults, except that the prompt's loss weight is set to 0, and training runs for 2 epochs. Because the API does not disclose details such as which parameters are updated or which optimizer is used, all GPT-3 fine-tuning in the paper uses the same defaults to keep comparisons fair."
+        },
+        {
+          "list": [
+            "**Vanilla models**: T5-LM (11 billion parameters) and vanilla GPT-3 (175 billion parameters).",
+            "**Public instruction-tuned models**: T0 and Tk-INSTRUCT, both with 11 billion parameters and fine-tuned from T5.",
+            "**OpenAI's InstructGPT**: the main comparison is text-davinci-001. The paper explains that it is closest to this paper's setup - supervised fine-tuning on human demonstrations - while newer versions use more data (code, recent user requests) or algorithms such as PPO, making fair comparison hard, and may have already seen SuperNI's test set.",
+            "**GPT-3 fine-tuned on public data**: GPT-3 is fine-tuned separately on T0's training data (PromptSource) and SuperNI's training data, sampling 50K examples in each case to match the size of Self-Instruct. This is the key control: same model, same amount of data, different source."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Experiment 1: on traditional NLP tasks",
+      "blocks": [
+        {
+          "p": "The first test uses SuperNI's evaluation set: 119 tasks, 100 examples each, zero-shot (only the task definition is given, no examples), scored with ROUGE-L against reference answers."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Unseen SuperNI tasks",
+            "subtitle": "From Table 3 of the paper, ROUGE-L scores",
+            "columns": [
+              "Model",
+              "Parameters",
+              "ROUGE-L"
+            ],
+            "rows": [
+              [
+                "T5-LM (vanilla)",
+                "11B",
+                "25.7"
+              ],
+              [
+                "GPT-3 (vanilla)",
+                "175B",
+                "6.8"
+              ],
+              [
+                "T0",
+                "T0 (11B)",
+                "33.1"
+              ],
+              [
+                "GPT-3 + T0 training data",
+                "175B",
+                "37.9"
+              ],
+              [
+                "GPT-3 + Self-Instruct (this paper)",
+                "175B",
+                "39.9"
+              ],
+              [
+                "InstructGPT001",
+                "InstructGPT001 (175B)",
+                "40.8"
+              ],
+              [
+                "Tk-INSTRUCT (trained on SuperNI)",
+                "11B",
+                "46.0"
+              ],
+              [
+                "GPT-3 + SuperNI training data",
+                "175B",
+                "49.5"
+              ],
+              [
+                "GPT-3 + Self-Instruct + SuperNI",
+                "175B",
+                "51.6"
+              ]
+            ],
+            "highlight": {
+              "row": 4
+            },
+            "note": "The divider comes after the sixth row: the models in the last three rows were all trained on SuperNI's own training data, so their instruction style and format match the test set, which naturally boosts scores. Even so, adding Self-Instruct data on top of SuperNI training data lifts the score from 49.5 to 51.6."
+          }
+        },
+        {
+          "p": "Vanilla GPT-3 scores only 6.8, for a simple reason: the paper observes that it often outputs irrelevant, repetitive text and does not know when to stop. After fine-tuning, GPT3_{SELF-INST} rises to 39.9, ahead of T0 and GPT-3 fine-tuned on T0 data, and nearly matches InstructGPT001's 40.8. The abstract's \"absolute improvement of 33%\" is exactly 39.9 − 6.8 = 33.1; note that this is a difference in ROUGE-L scores, not \"a third better.\"",
+          "plain": {
+            "title": "It answers, then keeps writing",
+            "text": "Vanilla GPT-3 behaves like a student who only knows how to continue writing: ask \"Is this sentence positive or negative?\" and it may first answer \"positive,\" then invent the next question, then write an unrelated paragraph, and keep going. Under scoring based on overlap with the reference answer, everything it writes beyond the answer costs points. The first thing instruction tuning teaches it is to stop after answering."
+          }
+        }
+      ]
+    },
+    {
+      "h": "Experiment 2: instructions real users would actually ask",
+      "blocks": [
+        {
+          "p": "SuperNI's tasks are mostly traditional academic tasks. To get closer to real-world use, the authors **wrote 252 new user-oriented instructions** inspired by email, social media, productivity tools, entertainment, programming, and similar scenarios, with one example per instruction. The input and output formats are deliberately varied — lists, tables, code, formulas, and so on."
+        },
+        {
+          "p": "These tasks are hard to score automatically, and many are beyond ordinary crowd workers — writing a program, translating first-order logic into natural language — so the authors who wrote the instructions judged the answers themselves. Each response was rated on a four-point scale: **A** valid and satisfactory; **B** acceptable but with minor errors or flaws; **C** responds to the instruction but contains major errors; **D** irrelevant or completely invalid. Both raters were blind to which model produced each answer."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Human ratings for 252 user instructions",
+            "subtitle": "From Figure 6 of the paper; unit: number of responses",
+            "columns": [
+              "Model",
+              "A",
+              "B",
+              "C",
+              "D",
+              "A + B share"
+            ],
+            "rows": [
+              [
+                "Vanilla GPT-3",
+                "1",
+                "0",
+                "64",
+                "187",
+                "0.4%"
+              ],
+              [
+                "GPT-3 + T0 training data",
+                "44",
+                "31",
+                "59",
+                "118",
+                "29.8%"
+              ],
+              [
+                "GPT-3 + SuperNI training data",
+                "74",
+                "30",
+                "80",
+                "68",
+                "41.3%"
+              ],
+              [
+                "GPT-3 + Self-Instruct + SuperNI",
+                "83",
+                "54",
+                "84",
+                "31",
+                "54.4%"
+              ],
+              [
+                "GPT-3 + Self-Instruct (this paper)",
+                "112",
+                "49",
+                "66",
+                "25",
+                "63.9%"
+              ],
+              [
+                "InstructGPT001",
+                "128",
+                "45",
+                "61",
+                "18",
+                "68.7%"
+              ],
+              [
+                "InstructGPT002",
+                "168",
+                "40",
+                "34",
+                "10",
+                "82.5%"
+              ],
+              [
+                "InstructGPT003",
+                "192",
+                "30",
+                "28",
+                "2",
+                "88.1%"
+              ]
+            ],
+            "highlight": {
+              "row": 4
+            },
+            "note": "The last column is computed by us from the counts. Treating B as acceptable, Self-Instruct gets 63.9% and InstructGPT001 gets 68.7%, a gap of 4.8 percentage points — consistent with the paper's \"only 5% behind.\" Notably, adding SuperNI data makes the model worse on these user instructions (A drops from 112 to 83), and the paper does not discuss this."
+          }
+        },
+        {
+          "p": "Vanilla GPT-3 can barely respond to these instructions at all. All instruction-tuned models are far better, and Self-Instruct leads by a wide margin over versions fine-tuned on the public T0 and SuperNI datasets. The paper also concedes that InstructGPT002 and 003 are considerably stronger; the authors speculate that using human annotation or reward models to select better generated data — similar to InstructGPT — could bring further large gains."
+        }
+      ]
+    },
+    {
+      "h": "Is more data better? Quality matters more",
+      "blocks": [
+        {
+          "p": "**Data quantity.** The authors fine-tuned GPT-3 on different-sized subsets of the generated instructions and tested each with the same human evaluation (Figure 7 of the paper). With only the 175 seed tasks, 31.0% of answers were rated A; as data was added, this rose steadily to 44.4% with the full dataset, but gains nearly stopped after about 16K instructions. Interestingly, on SuperNI the improvement saturated after only a few hundred instructions, which the authors attribute to the generated data being very different from SuperNI's traditional tasks.",
+          "plain": {
+            "title": "Diminishing returns",
+            "text": "Growing the workbook from 175 exercises to a little over a thousand produces clear improvement; after about ten thousand, adding tens of thousands more barely moves the score. At that point, it is better to correct the answers you already have than to keep adding more exercises.",
+            "pic": "si-scale"
+          }
+        },
+        {
+          "p": "**Data quality.** The authors took InstructGPT003, the strongest model at the time, and regenerated the output of every example while keeping the instruction and input unchanged, then fine-tuned GPT-3 on the regenerated data. A-rated answers rose from 44.4% to 54.4%, a gain of 10 percentage points. The paper calls this \"distillation from InstructGPT003\" and argues it shows there is plenty of room to improve: first generate initial data with this pipeline, then improve its quality with human effort or a stronger model."
+        },
+        {
+          "callout": {
+            "kind": "note",
+            "title": "This step matters more than it looks",
+            "list": [
+              "The pipeline so far uses only vanilla GPT-3 and does not depend on any instruction-tuned model at all — the paper's \"teach yourself\" idea in a nutshell.",
+              "This improvement experiment, in effect, makes InstructGPT003 the teacher. That is exactly what Alpaca did a few months later: it used text-davinci-003 to generate 52K examples following the Self-Instruct pipeline, then fine-tuned the open-source 7-billion-parameter LLaMA model.",
+              "\"Generate data with a strong model, train a weak model\" has since become the open-source community's default recipe, and it has also sparked debate about how much real capability the weaker model actually learns (see the end of this piece)."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "Limitations and the authors' concerns",
+      "blocks": [
+        {
+          "list": [
+            "**The long tail.** Self-Instruct relies on the language model's own knowledge, so gains are likely concentrated on tasks that are common in the pretraining corpus; it may be fragile on rare, creative instructions.",
+            "**Dependence on large models.** It may work well only with large models, which creates a barrier for people with limited compute. The paper notes that instruction tuning on human-labeled data has a similar issue — FLAN found that instruction tuning can actually hurt small models.",
+            "**Amplifying bias.** The authors worry that this iterative algorithm can amplify the social biases already present in the model — stereotypes or offensive language about gender, race, and so on. A related problem they observed: the algorithm struggles to produce label-balanced data, which reflects the model's existing preferences.",
+            "**Errors in the data.** A spot check found only 54% of the data was fully correct."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Afterward: the era of synthetic data",
+      "blocks": [
+        {
+          "list": [
+            "**Concurrent work.** Meta's Unnatural Instructions (Honovich et al., 2022) also used GPT-3 to generate instruction data at scale. The paper highlights the difference: that work uses SuperNI tasks as seeds and generates examples with the already instruction-tuned InstructGPT002 — in effect distilling from a model that already follows instructions — while Self-Instruct uses only vanilla GPT-3.",
+            "**Alpaca (March 2023).** Stanford used the Self-Instruct pipeline and text-davinci-003 to generate 52K examples, then fine-tuned LLaMA 7B. For very little money, they got a passable chat model and sparked a wave of open-source instruction models.",
+            "**The limits of imitation.** A later Berkeley study (Gudibande et al., 2023, \"The False Promise of Imitating Proprietary LLMs\") found that open-source models trained by imitating a strong model's outputs mainly learn its style of answering, not factual accuracy or reasoning ability; human evaluation is easily fooled by fluent style. This is the other side of the same coin as this paper's finding that only 54% of the data is fully correct.",
+            "**Next up in thread three:** Constitutional AI. It applies the idea of \"let the model generate its own training signal\" to safety: instead of asking people to label harmful content, it has the model critique and revise its own outputs according to a set of principles."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "A few details worth noting",
+      "blocks": [
+        {
+          "list": [
+            "**\"33%\" is a score difference.** The abstract says \"33% absolute improvement\" over vanilla GPT-3, and the body says \"+33.1%\"; in reality it is the ROUGE-L score moving from 6.8 to 39.9. Vanilla GPT-3's score is so low mainly because it does not know when to stop outputting.",
+            "**Two different inter-annotator agreement numbers.** Section 4.4 reports κ = 0.57 for the two raters, while Appendix B.2 says κ = 0.58. The appendix also gives a looser version: when answers are collapsed into \"acceptable (A or B)\" versus \"unacceptable (C or D),\" κ = 0.75.",
+            "**The raters are the authors themselves.** The 252 user instructions were written by the authors, and two of them also judged the answers; the paper reports one rater's results and says the other's trends are the same. Model identities were hidden during judging, but the raters were both the question writers and the paper's authors — worth keeping in mind.",
+            "**Adding SuperNI made it worse.** On user instructions, \"Self-Instruct + SuperNI\" produced markedly fewer A-rated answers (83) than Self-Instruct alone (112), and the A + B share fell from 63.9% to 54.4%. The paper emphasizes in the SuperNI experiments that the two data sources complement each other but never discusses this result pointing the other way.",
+            "**Overlap between seeds and test sets.** The appendix computes the similarity between seed instructions and test instructions: average ROUGE-L with SuperNI is 0.21, and with the 252 user instructions 0.34 — clearly higher. One seed is exactly identical to a test instruction (\"answer the following question\"), though the authors say the follow-up questions are completely different. Since the user instructions and the seeds came from the same group of authors and are stylistically closer, this could work in Self-Instruct's favor."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Test yourself: did you get it?",
+      "blocks": [
+        {
+          "quiz": {
+            "q": "What model does Self-Instruct use to generate instruction data?",
+            "options": [
+              "InstructGPT003",
+              "Vanilla GPT-3 (davinci), with no instruction tuning",
+              "Human annotators",
+              "T5"
+            ],
+            "answer": 1,
+            "why": "The paper emphasizes that it uses only vanilla GPT-3, teaching itself; using InstructGPT003 to improve outputs is just an extra experiment later on."
+          }
+        },
+        {
+          "quiz": {
+            "q": "Why do classification tasks use \"output first, input second\"?",
+            "options": [
+              "It is faster",
+              "Input-first generation biases the inputs toward one label (for example, most generated sentences have no grammar errors); fixing the label first and then generating the input keeps classes balanced",
+              "To save on API costs",
+              "Classification tasks have no input"
+            ],
+            "answer": 1,
+            "why": "This is the paper's fix for label imbalance."
+          }
+        },
+        {
+          "quiz": {
+            "q": "When is a new instruction added to the task pool?",
+            "options": [
+              "When its ROUGE-L similarity to any existing instruction is above 0.7",
+              "When its ROUGE-L similarity to every existing instruction in the pool is below 0.7, and it does not contain words such as \"image\" or \"picture\"",
+              "When it is longer than 100 words",
+              "When it passes human review"
+            ],
+            "answer": 1,
+            "why": "This filter is the key to ensuring diversity."
+          }
+        },
+        {
+          "quiz": {
+            "q": "In a random sample of 200 generated examples, roughly what share is fully correct?",
+            "options": [
+              "92%",
+              "79%",
+              "54%",
+              "100%"
+            ],
+            "answer": 2,
+            "why": "The instructions themselves are mostly valid (92%), but only 54% of examples are valid on all three checks."
+          }
+        },
+        {
+          "p": "After reading this, you should be able to answer these questions:"
+        },
+        {
+          "list": [
+            "Why is human-written instruction data not enough?",
+            "What do the four steps of Self-Instruct do? When generating each new instruction, how are the examples chosen?",
+            "How does the ROUGE-L filter work? Why is the threshold set at 0.7?",
+            "Why does the data still work when only a little over half is fully correct?",
+            "What do the SuperNI test and the 252 user instructions test each show?",
+            "Which matters more: data quantity or data quality?",
+            "From Self-Instruct to Alpaca, what are the risks of the \"model-generated training data\" approach?"
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Self-Instruct: Aligning Language Models with Self-Generated Instructions (arXiv:2212.10560 v2)",
+      "publisher": "University of Washington et al.",
+      "date": "2023-05-25",
+      "url": "https://arxiv.org/abs/2212.10560"
+    },
+    "note": "This article is based on v2 of the arXiv paper; v1 was released in December 2022. Tables marked \"Illustrative\" use examples we created and were computed according to the definition of ROUGE-L. We read the values for Figures 6 and 7 from the PDF page images, and we computed the \"A + B share\" from the counts. Details about Alpaca, Unnatural Instructions, and the Gudibande et al. study come from other public sources and are not part of the paper."
+  },
+  "claims": [
+    {
+      "text": "arXiv v2",
+      "value": "2212.10560v2",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "arXiv:2212.10560v2",
+      "as_written": "arXiv"
+    },
+    {
+      "text": "175 seed tasks",
+      "value": "175 tasks",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "We initiate the task pool with 175 tasks",
+      "as_written": "175"
+    },
+    {
+      "text": "25 classification + 150 non-classification",
+      "value": "25 classification tasks and 150 non-classification tasks",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "there are 25 classification tasks and 150 non-classification tasks",
+      "as_written": "150"
+    },
+    {
+      "text": "8 examples (6 human-written, 2 model-generated)",
+      "value": "8 task instructions",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "we sample 8 task instructions from this pool",
+      "as_written": "8 examples"
+    },
+    {
+      "text": "12 classification and 19 non-classification examples",
+      "value": "12 classification instructions",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "using 12 classification instructions and 19 non-classification instructions",
+      "as_written": "19"
+    },
+    {
+      "text": "about 52K instructions",
+      "value": "52K",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "a large synthetic dataset of 52K instructions",
+      "as_written": "52K"
+    },
+    {
+      "text": "about 82K examples",
+      "value": "82K",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "about 82K instance inputs and target outputs",
+      "as_written": "82K"
+    },
+    {
+      "text": "52445",
+      "value": "52,445",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "52,445",
+      "as_written": "52445"
+    },
+    {
+      "text": "11584",
+      "value": "11,584",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "11,584",
+      "as_written": "11584"
+    },
+    {
+      "text": "40861",
+      "value": "40,861",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "40,861",
+      "as_written": "40861"
+    },
+    {
+      "text": "82439",
+      "value": "82,439",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "82,439",
+      "as_written": "82439"
+    },
+    {
+      "text": "35878",
+      "value": "35,878",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "35,878",
+      "as_written": "35878"
+    },
+    {
+      "text": "26559",
+      "value": "26,559",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "26,559 out of the 52,445 instructions",
+      "as_written": "26559"
+    },
+    {
+      "text": "14%",
+      "value": "14%",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "account for 14% of the entire set",
+      "as_written": "14%"
+    },
+    {
+      "text": "ROUGE-L threshold 0.7",
+      "value": "0.7",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "ing instruction is less than 0.7",
+      "as_written": "0.7"
+    },
+    {
+      "text": "92% / 79% / 58% / 54%",
+      "value": "92%",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "92%",
+      "as_written": "92%"
+    },
+    {
+      "text": "79%",
+      "value": "79%",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "79%",
+      "as_written": "79%"
+    },
+    {
+      "text": "58%",
+      "value": "58%",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "58%",
+      "as_written": "58%"
+    },
+    {
+      "text": "54%",
+      "value": "54%",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "54%",
+      "as_written": "54%"
+    },
+    {
+      "text": "200 examples spot-checked",
+      "value": "200 instructions",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "we randomly sample 200 instructions",
+      "as_written": "200"
+    },
+    {
+      "text": "about $600",
+      "value": "$600",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "cost around $600",
+      "as_written": "$600"
+    },
+    {
+      "text": "$338",
+      "value": "$338",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "cost $338",
+      "as_written": "$338"
+    },
+    {
+      "text": "$0.02 per 1,000 tokens",
+      "value": "$0.02",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "OpenAI charges $0.02 per 1000 tokens",
+      "as_written": "$0.02"
+    },
+    {
+      "text": "+33.1",
+      "value": "+33.1%",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "by a large margin (+33.1%)",
+      "as_written": "33.1"
+    },
+    {
+      "text": "33%",
+      "value": "33%",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "a 33% absolute improvement",
+      "as_written": "33%"
+    },
+    {
+      "text": "5-point gap",
+      "value": "5%",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "leaving only a 5% absolute gap",
+      "as_written": "5"
+    },
+    {
+      "text": "SuperNI: 119 tasks, 100 examples each",
+      "value": "119 tasks",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "which consists of 119 tasks with 100 in",
+      "as_written": "119"
+    },
+    {
+      "text": "252 instructions",
+      "value": "252",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "In total, we create 252 instructions",
+      "as_written": "252"
+    },
+    {
+      "text": "50K examples",
+      "value": "50K instances",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "sampled 50K instances",
+      "as_written": "50K"
+    },
+    {
+      "text": "11B parameters",
+      "value": "11B",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "their largest version with 11B parameters",
+      "as_written": "11B"
+    },
+    {
+      "text": "175B parameters",
+      "value": "175B",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "175B",
+      "as_written": "175B"
+    },
+    {
+      "text": "κ 0.57",
+      "value": "0.57",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "𝜅 = 0.57",
+      "as_written": "0.57"
+    },
+    {
+      "text": "κ 0.58",
+      "value": "0.58",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "a 𝜅 of 0.58",
+      "as_written": "0.58"
+    },
+    {
+      "text": "κ 0.75",
+      "value": "0.75",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "a final 𝜅 of 0.75",
+      "as_written": "0.75"
+    },
+    {
+      "text": "saturates after about 16K instructions",
+      "value": "16K",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "almost plateaus after 16K",
+      "as_written": "16K"
+    },
+    {
+      "text": "31.0% / 44.4% / 54.4%",
+      "value": "31.0%",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "31.0%",
+      "as_written": "31.0%"
+    },
+    {
+      "text": "44.4%",
+      "value": "44.4%",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "44.4%",
+      "as_written": "44.4%"
+    },
+    {
+      "text": "54.4%",
+      "value": "54.4%",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "54.4%",
+      "as_written": "54.4%"
+    },
+    {
+      "text": "10-point gain",
+      "value": "10%",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "by 10%",
+      "as_written": "10 percentage points"
+    },
+    {
+      "text": "similarity 0.21 / 0.34",
+      "value": "0.21",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "SUPERNI as 0.21",
+      "as_written": "0.21"
+    },
+    {
+      "text": "0.34",
+      "value": "0.34",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "user-oriented instructions as 0.34",
+      "as_written": "0.34"
+    },
+    {
+      "text": "Table 3 figures",
+      "value": "39.9",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "39.9",
+      "as_written": "39.9"
+    },
+    {
+      "text": "40.8",
+      "value": "40.8",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "40.8",
+      "as_written": "40.8"
+    },
+    {
+      "text": "6.8",
+      "value": "6.8",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "6.8",
+      "as_written": "6.8"
+    },
+    {
+      "text": "51.6",
+      "value": "51.6",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "51.6",
+      "as_written": "51.6"
+    },
+    {
+      "text": "49.5",
+      "value": "49.5",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "49.5",
+      "as_written": "49.5"
+    },
+    {
+      "text": "Our calculation: A+B 63.9% vs. 68.7% (from Figure 6 counts)",
+      "value": "5%",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "only 5% behind",
+      "as_written": "63.9%"
+    },
+    {
+      "text": "68.7%",
+      "value": "5%",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "only 5% behind",
+      "as_written": "68.7%"
+    },
+    {
+      "text": "4.8 percentage points",
+      "value": "5%",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "only 5% behind",
+      "as_written": "4.8"
+    },
+    {
+      "text": "LLaMA 7B (Alpaca; public sources)",
+      "value": "Yizhong Wang",
+      "source_url": "https://arxiv.org/abs/2212.10560",
+      "quote": "Yizhong Wang",
+      "as_written": "7B"
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "69d1678488f6d5a1"
+}

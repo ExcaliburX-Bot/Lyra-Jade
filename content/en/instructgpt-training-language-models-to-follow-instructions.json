@@ -3,14 +3,14 @@
   "category": "paper",
   "publisher": "Ouyang et al. · OpenAI",
   "date": "2022-03-04",
-  "title": "InstructGPT close read: Why 1.3B parameters beat 175B — the three RLHF steps",
-  "summary": "GPT-3 knows how to continue text but not how to follow instructions. InstructGPT uses human-written demonstrations, human rankings, and reinforcement learning to turn it into a model that does what it is told. We unpack supervised fine-tuning, the reward model loss function, the KL penalty, and the alignment tax, work through a few small examples by hand, and examine how the paper answers the honest question: aligned to whom?",
-  "ai_summary": "InstructGPT (OpenAI, 2022) turns GPT-3 into an instruction-following model in three steps: supervised fine-tuning on about 13,000 human-written demonstrations; training a 6B reward model on labeler rankings of 4–9 answers; then using PPO reinforcement learning to chase high scores, with a KL penalty to prevent gaming and pretraining data mixed in (PPO-ptx) to reduce the \"alignment tax.\" Labelers preferred the 1.3B-parameter InstructGPT over the 175B-parameter GPT-3; the 175B version beats GPT-3 85 ± 3% of the time, and fabrication drops from 41% to 21%. Bias did not improve, and the model is more toxic when asked to be. The paper stresses that it aligns to the preferences of specific labelers, researchers, and customers, not to \"human values.\"",
+  "title": "InstructGPT close read: why 1.3B parameters beat 175B — the three steps of RLHF",
+  "summary": "GPT-3 could keep the thread going but not do what it was told. InstructGPT uses human-written demonstrations, human rankings, and reinforcement learning to turn it into a model that follows instructions. We unpack supervised fine-tuning, the reward model's loss function, the KL penalty, and the alignment tax, work through a few small examples by hand, and examine how the paper honestly answers: aligned to whom, exactly?",
+  "ai_summary": "InstructGPT (OpenAI, 2022) turns GPT-3 into a model that follows instructions in three steps: supervised fine-tuning on about 13,000 human-written demonstrations; training a 6B reward model on labelers' rankings of 4–9 answers; then using PPO reinforcement learning to pursue high scores, with a KL penalty to prevent gaming and pretraining data mixed in (PPO-ptx) to reduce the 'alignment tax.' Labelers preferred the 1.3B-parameter InstructGPT over the 175B-parameter GPT-3; the 175B version beats GPT-3 85 ± 3% of the time, and the hallucination rate drops from 41% to 21%. Bias did not improve, and the model can be more toxic when asked to be. The paper stresses that it aligns with the preferences of specific labelers, researchers, and customers, not with 'human values.'",
   "brief": [
-    "Problem: GPT-3, trained only to predict the next token, does not reliably act on user intent — it fabricates and goes off task.",
-    "Method: supervised fine-tuning on human-written demonstrations, then ranking answers to train a reward model, then PPO to maximize reward with a KL penalty as a leash and pretraining data mixed in to reduce regressions.",
-    "Results: the 1.3B-parameter InstructGPT was preferred over the 175B GPT-3; it fabricates less, is less toxic when asked to be respectful, and costs only a fraction of GPT-3's pretraining compute.",
-    "Limitations: bias did not improve; it follows harmful instructions and goes along with false premises; it is aligned to a small specific group, not \"humanity.\""
+    "Problem: a GPT-3 trained to predict the next token does not necessarily follow the user's intent; it hallucinates and drifts off topic.",
+    "Method: human-written demonstrations for supervised fine-tuning → human rankings of answers to train a reward model → PPO to chase high scores, with a KL penalty to rein the model in and pretraining data mixed in to reduce capability regressions.",
+    "Result: the 1.3B-parameter InstructGPT was preferred over 175B GPT-3; it hallucinates less, is less toxic when asked to be respectful, and costs only a sliver of the pretraining compute.",
+    "Limits: bias did not improve; the model follows harmful instructions and goes along with false premises; it is aligned with a small, specific group of people, not 'humanity.'"
   ],
   "paper": {
     "title": "Training language models to follow instructions with human feedback",
@@ -22,7 +22,7 @@
     "url": "https://arxiv.org/abs/2203.02155"
   },
   "cover": {
-    "headline": "A close reading of the InstructGPT paper",
+    "headline": "A close read of the InstructGPT paper",
     "highlight": "1.3B parameters beat 175B",
     "glyph": {
       "kind": "flow",
@@ -42,72 +42,72 @@
   },
   "sections": [
     {
-      "h": "Bottom line: what this paper actually did",
+      "h": "The upshot: what this paper actually did",
       "blocks": [
         {
-          "p": "In March 2022, 20 authors from OpenAI's alignment team published this 68-page paper. The problem it tackles can be stated in one sentence: GPT-3 is great at **continuing text** but not at **doing what you ask**. Tell it to \"write a story about a frog\" and it may list a few similar writing prompts instead; ask it a question and it may invent a plausible-looking answer."
+          "p": "In March 2022, 20 authors from OpenAI's alignment team released this 68-page paper. The problem it solves can be stated in one line: GPT-3 is very good at **continuing text** but not very good at **doing what you ask**. Tell it to 'write a story about a frog' and it may list several similar writing prompts; ask it a question and it may fabricate an answer that looks plausible."
         },
         {
-          "p": "The paper's method is to have people teach the model: first, ask labelers to demonstrate what a good answer should look like; then have them rank several model answers and use those rankings to train a **reward model** that scores answers; finally, let the language model use reinforcement learning to pursue high scores. This pipeline is called **reinforcement learning from human feedback** (RLHF), and the resulting model is called InstructGPT."
+          "p": "The paper's answer is to have people teach it: first, labelers demonstrate what a good answer should look like; then they rank several model outputs, and those rankings train a scoring **reward model**; finally, a language model uses reinforcement learning to chase high scores. This pipeline is called **reinforcement learning from human feedback** (RLHF), and the resulting model is InstructGPT."
         },
         {
-          "p": "The results were surprising: on prompts from real users, labelers preferred answers from the 1.3B-parameter InstructGPT over those from the 175B-parameter GPT-3, which is more than 100 times larger. In head-to-head comparisons, the 175B InstructGPT was chosen over GPT-3 85 ± 3% of the time. Its fabrication rate fell from 41% to 21%, and the compute cost was less than one-sixtieth of what it took to train GPT-3."
+          "p": "The result was surprising: on real user prompts, labelers preferred answers from a 1.3B-parameter InstructGPT over a 175B-parameter GPT-3, even though the latter is more than 100 times larger. Head-to-head, the 175B InstructGPT beat GPT-3 85 ± 3% of the time. Its hallucination rate dropped from 41% to 21%, and the compute it cost was less than one sixtieth of training GPT-3."
         },
         {
-          "p": "ChatGPT, released eight months later, used this same method. Today nearly every chat model goes through some form of alignment training, and this paper is the first complete record of that pipeline working at real product scale."
+          "p": "ChatGPT, released eight months later, used the same recipe. Today nearly every chat model goes through some form of 'alignment' training, and this paper is the first complete account of that path working at real product scale."
         },
         {
           "callout": {
             "kind": "takeaway",
             "title": "The one-sentence version",
-            "text": "InstructGPT = GPT-3 + three training steps: (1) supervised fine-tuning (SFT) on human-written demonstrations; (2) train a reward model (RM) to score answers using human rankings of several model answers; (3) use the PPO reinforcement-learning algorithm to chase high scores while a \"leash\" (the KL penalty) keeps it from drifting too far just to game the score. The paper also shows that **making the model more obedient is a better deal than making it 100x larger**."
+            "text": "InstructGPT = GPT-3 + three training steps: (1) supervised fine-tuning on human-written demonstrations (SFT); (2) have people rank several model answers and train a reward model (RM) to score outputs; (3) use the PPO reinforcement-learning algorithm to chase high scores, while a 'leash' (the KL penalty) keeps it from drifting off course to game the score. The paper also shows that **making the model follow instructions better is worth more than making it 100 times larger**."
           }
         },
         {
           "callout": {
             "kind": "prereq",
-            "title": "Four concepts you need before reading",
-            "text": "Don't worry if you're new to this; these four are enough:",
+            "title": "Four small concepts you need for this paper",
+            "text": "Don't worry if you don't know them; these four are enough:",
             "list": [
-              "**GPT-3**: a 175B-parameter language model trained to predict the next token. For its uses and capabilities, see our GPT-3 close read.",
-              "**Fine-tuning**: taking a trained model and training it further on a new dataset, nudging its parameters toward a new objective.",
-              "**Reinforcement learning**: the model takes an action (here, writing an answer), receives a score (reward), then adjusts itself so actions that earn high scores become more likely. The model being trained is called the **policy**.",
-              "**The sigmoid function σ(z)**: squashes any number into the range 0 to 1: σ(0) = 0.5, the larger z the closer to 1, the smaller z the closer to 0. It is often used to turn a score difference into a probability."
+              "**GPT-3**: a 175B-parameter language model trained to predict the next token. For what it can do and how to use it, see our GPT-3 close read.",
+              "**Fine-tuning**: taking a trained model and training it further on new data, nudging its parameters toward a new objective.",
+              "**Reinforcement learning**: the model takes an action (here, writing a response), receives a score (the reward), then adjusts itself so actions that earn higher rewards happen more often. The model being trained is called the **policy**.",
+              "**Sigmoid function σ(z)**: squashes any number into the range 0 to 1: σ(0) = 0.5, and the larger z is, the closer to 1; the smaller z is, the closer to 0. It is often used to turn a score difference into a probability."
             ]
           }
         }
       ]
     },
     {
-      "h": "The problem: continuing text is not the same as following instructions",
+      "h": "Problem: continuing the thread is not the same as following instructions",
       "blocks": [
         {
-          "p": "GPT-3's training objective is: given a passage from the internet, predict the next token. That objective is not the same as what we actually want — answering helpfully and safely according to the user's intent. The paper calls this mismatch the model being **misaligned** with its users. The symptoms are fabricated facts, biased or toxic output, or simply not following instructions."
+          "p": "GPT-3's training objective is: given a passage from the internet, guess the next word. That objective is not the same as what we actually want — 'respond to the user's intent helpfully and safely.' The paper calls this mismatch a **misalignment** between the model and its users, and it shows up as fabricated facts, biased or toxic output, or simply not following instructions."
         },
         {
           "callout": {
             "kind": "intuition",
             "title": "Like an intern who has only memorized the internet",
-            "text": "You tell him, \"Help me write an apology letter.\" Instead of thinking about what you want, he thinks about what usually comes after that sentence on the internet. Online, that phrase is often followed by another request for help, a forum title, or even a whole list of writing prompts. He is not intentionally being difficult; nobody ever taught him that this is an instruction to carry out."
+            "text": "You tell him, 'Help me write an apology letter.' In his head he isn't thinking 'what does the boss want?' but 'what usually follows this sentence online?' On the internet, that sentence is usually followed by another request, a forum title, or a whole list of writing prompts. He isn't trying to be difficult — nobody ever taught him that this is an instruction and he should carry it out."
           }
         },
         {
-          "p": "Section 4.3 of the paper (Figure 8) gives a real example: in French, the model is asked to \"write a short story about a frog traveling to ancient Greece.\" GPT-3 175B does not write the story; instead, it continues with several similar French writing prompts. InstructGPT responds in French and tells the frog story."
+          "p": "Section 4.3 (Figure 8) gives a real example: the model was asked in French to 'write a short story about a frog that travels to ancient Greece.' GPT-3 175B did not write the story; it kept listing several similar French writing prompts. InstructGPT simply began telling the frog story in French."
         },
         {
-          "p": "So what does \"alignment\" actually mean? The paper adopts the framework from Askell et al.: an aligned model should be **helpful** (follow instructions and infer intent from a few examples or from a format like \"Q: … A: …\"), **honest**, and **harmless**. But honesty is hard to measure directly because we cannot know what the model \"believes,\" so the paper falls back on measuring **truthfulness**: whether what the model says matches the facts. Harmlessness is also hard to measure because whether the same text is harmful depends on how it is used: generating profanity is bad in a chatbot, but it could be useful for training a profanity detector."
+          "p": "So what does 'alignment' actually mean? The paper follows Askell et al.: an aligned model should be **helpful** (it should follow instructions and infer intent from a few examples or a 'Q: ... A: ...' format), **honest**, and **harmless**. But honesty is hard to test directly, because we cannot know what the model 'believes', so the paper settles for measuring **truthfulness**: whether what the model says matches the facts. Harmlessness is also hard to test, because whether a text is harmful depends on how it is used: producing profanity in a chatbot is bad, but it can be useful when training a profanity detector."
         },
         {
           "quiz": {
-            "q": "What does the paper say is the root cause of GPT-3 not following instructions?",
+            "q": "According to the paper, what is the root cause of GPT-3 not following instructions?",
             "options": [
               "Too few parameters",
-              "Its training objective is to predict the next token in internet text, not to act on user intent",
-              "The training data contained no instructions",
-              "It did not use a Transformer architecture"
+              "The training objective is to predict the next token in internet text, not to act on the user's intent",
+              "The training data contains no instructions",
+              "It does not use the Transformer architecture"
             ],
             "answer": 1,
-            "why": "The paper's diagnosis is objective mismatch: the language-model objective is only a proxy for what we actually want. Model size is not the cause — later we will see that a 1.3B-parameter InstructGPT with the same architecture is actually preferred. The internet certainly contains instructions; the problem is that the model learns what usually follows an instruction, not to carry it out."
+            "why": "The paper's diagnosis is objective mismatch: the language-modeling objective is only a proxy for what we actually want. Parameter count is not the reason — later we will see that a 1.3B InstructGPT with the same architecture is preferred over the 175B model. The internet certainly includes instructions; the problem is that the model learns what usually follows an instruction, rather than to carry it out."
           }
         }
       ]
@@ -116,28 +116,28 @@
       "h": "The overall method: demonstrate, score, practice — three steps",
       "blocks": [
         {
-          "p": "The method builds on OpenAI's earlier work in text continuation and summarization (Ziegler et al., 2019; Stiennon et al., 2020), applied here for the first time to a broad range of instructions. The starting point is three things: a pretrained GPT-3, a set of prompts the model should answer well, and a team of trained labelers."
+          "p": "The method follows OpenAI's earlier work on text continuation and summarization (Ziegler et al. 2019; Stiennon et al. 2020), and this is the first time it is applied to a broad mix of instructions. The starting point has three ingredients: a pretrained GPT-3, a pool of prompts the model should answer well, and a team of trained labelers."
         },
         {
           "fig": {
             "type": "steps",
-            "title": "InstructGPT's three steps: first imitate, then learn scoring, then practice against the score",
-            "subtitle": "Illustrative: adapted from Figure 2 and Section 3.1; dataset sizes from Section 3.2",
+            "title": "InstructGPT's three steps: first imitate, then learn to score, then train against the score",
+            "subtitle": "Schematic: adapted from Figure 2 and Section 3.1 of the paper; data sizes come from Section 3.2",
             "steps": [
               {
                 "name": "Supervised fine-tuning (SFT)",
                 "tool": "About 13,000 demonstrations",
-                "desc": "Labelers write ideal answers to prompts by hand; GPT-3 learns from these demonstrations."
+                "desc": "Labelers hand-write an ideal answer for each prompt, and GPT-3 learns from those demonstrations."
               },
               {
-                "name": "Train a reward model (RM)",
-                "tool": "Rankings for about 33,000 prompts",
-                "desc": "The model writes 4–9 answers per prompt; labelers rank them from best to worst; the reward model learns to score answers."
+                "name": "Training the reward model (RM)",
+                "tool": "Rankings on about 33,000 prompts",
+                "desc": "The model writes 4–9 answers to the same prompt, labelers rank them from best to worst, and the reward model learns to score answers."
               },
               {
                 "name": "Reinforcement learning (PPO)",
                 "tool": "About 31,000 prompts, no human labeling",
-                "desc": "The model writes an answer, the reward model scores it, and the model adjusts toward higher scores while staying tethered near the Step 1 model."
+                "desc": "The model writes answers, the reward model scores them, and the model updates toward higher scores while being kept close to the Step 1 model."
               }
             ]
           }
@@ -145,47 +145,47 @@
         {
           "callout": {
             "kind": "intuition",
-            "title": "Understanding it through learning to cook",
+            "title": "A cooking analogy",
             "list": [
-              "**Step 1 is like apprenticing with a master chef**: the chef personally makes hundreds of dishes for the apprentice to copy. The apprentice learns well, but the chef's time is limited, so the number of demonstrations stays small.",
-              "**Step 2 is like training a taster**: the apprentice makes several versions of a dish, and diners only need to rank which is better. Ranking is much cheaper than cooking. Use many rankings to train a taster who learns to predict the diners' preferences.",
-              "**Step 3 is like the apprentice practicing against the taster**: the taster never gets tired and scores every attempt, so the apprentice keeps adjusting to please him. But the taster has blind spots, so the apprentice is not allowed to stray too far from the chef's style — that is the KL penalty, explained later."
+              "**Step 1 is like apprenticing under a chef**: the chef personally cooks hundreds of dishes for the apprentice to observe, and the apprentice imitates them. This produces faithful imitation, but the chef's time is limited, so the total supply of demonstrations is never large.",
+              "**Step 2 is like training a taster**: the apprentice makes several versions of a dish, and the diners only have to rank which is better and which is worse. Ranking is much cheaper than cooking. A large set of ranking records trains a taster to predict the diners' taste.",
+              "**Step 3 is like the apprentice practicing against the taster over and over**: the taster never gets tired and can score dishes at any time; the apprentice keeps adjusting his cooking to please him. But the taster has blind spots, so the apprentice is required not to stray too far from the chef's own cooking — that is the KL penalty described later."
             ]
           }
         },
         {
-          "p": "Why not stop after Step 1? Because **judging is cheaper than creating**. Writing a good answer takes minutes or longer; comparing two answers takes seconds. And for many tasks, people struggle to write a good answer but can easily tell which one is better. Steps 2 and 3 turn human judgment into a steady stream of training signal."
+          "p": "Why not stop after Step 1? Because **judging is cheaper than creating**. Writing a good answer takes minutes or more, while comparing two answers takes seconds. And many things are easier for people to judge than to write well themselves. Steps 2 and 3 turn that human ability to judge into a steady stream of training signal."
         },
         {
-          "p": "Steps 2 and 3 can also be iterated: generate new answers with the current best model, collect new rankings, train a new reward model, then train a new policy. The paper notes that most of the collected comparison data came from SFT model outputs, with some from PPO models."
+          "p": "Steps 2 and 3 can also loop: use the current best model to generate new answers, collect new rankings, train a new reward model, then train a new policy. The paper says the comparison data it actually collected came mostly from SFT model outputs and partly from PPO model outputs."
         }
       ]
     },
     {
-      "h": "Data: real user prompts and forty labelers",
+      "h": "Data: real user prompts, 40 labelers",
       "blocks": [
         {
-          "p": "Prompts came mainly from the OpenAI API Playground, where users typed text while trying early versions of InstructGPT (users were repeatedly told their data might be used for training). Data from production API calls was **not** used. The data handling was careful:"
+          "p": "The prompts came mostly from the OpenAI API Playground: text users submitted while trying early versions of InstructGPT (users were repeatedly notified that their data could be used for training). API requests made in the production product were **not** used. The processing was deliberate:"
         },
         {
           "list": [
             "**Deduplication**: prompts with a long identical opening were treated as duplicates.",
-            "**At most 200 prompts per user**: to keep a few heavy users from dominating the data.",
-            "**Split by user**: train, validation, and test sets were split by user ID, so no user in the test set appeared in training. That way the test measures performance on new users.",
-            "**Filter out personal information**: prompts in the training set were filtered for personally identifiable information (PII)."
+            "**At most 200 prompts per user**: this prevents a few heavy users from dominating the data.",
+            "**Split by user**: the training, validation, and test sets are divided by user ID, so users in the test set have no examples in the training set. The test results therefore measure performance on new users.",
+            "**Filter personal information**: prompts in the training set were filtered to remove personally identifiable information (PII)."
           ]
         },
         {
-          "p": "At the start, however, there were no instruction-like prompts available: users rarely wrote direct instructions to plain GPT-3. So the researchers first asked labelers to write three kinds of prompts: open-ended diverse tasks, tasks with a few question-answer examples, and tasks based on the use cases in API waitlist applications. These were used to train the first InstructGPT, which was then put on the Playground to attract real user instructions."
+          "p": "But at the start of the project, instruction-like prompts were not yet available: users rarely wrote direct instructions to ordinary GPT-3. So the team first asked labelers to write three kinds of prompts: diverse tasks they came up with themselves, tasks with a few Q&A examples, and tasks based on the uses people described in API waitlist applications. These were used to train the first InstructGPT models, which were placed in Playground, which then produced real user instructions."
         },
         {
           "fig": {
             "type": "table",
-            "title": "Three datasets: SFT mostly from labelers, PPO entirely from real users",
-            "subtitle": "Unit: prompt count, training set. From paper Table 6; amber indicates PPO data, which requires no human labeling",
+            "title": "Three datasets: SFT is mostly labeler-written; PPO is all real users",
+            "subtitle": "Unit: prompts in the training set. From Table 6 of the paper; amber is PPO data, which requires no human labeling at all",
             "columns": [
               "Dataset",
-              "What it's used for",
+              "What it is used for",
               "Labeler-written prompts",
               "Customer-submitted prompts",
               "What humans do"
@@ -193,43 +193,43 @@
             "rows": [
               [
                 "SFT",
-                "Step ①: learn from demonstrations",
+                "Step 1: learn from demonstrations",
                 "11,295",
                 "1,430",
-                "Write an answer by hand for each prompt"
+                "Hand-write an answer for each prompt"
               ],
               [
                 "RM",
-                "Step ②: learn to score",
+                "Step 2: learn to score",
                 "6,623",
                 "26,584",
                 "Rank 4–9 answers"
               ],
               [
                 "PPO",
-                "Step ③: reinforcement learning",
+                "Step 3: reinforcement learning",
                 "0",
                 "31,144",
-                "No labeling needed"
+                "No labeling"
               ]
             ],
             "highlight": {
               "row": 2
             },
-            "note": "SFT has more labeler-written prompts because the early interface asked labelers to write an overall instruction plus a few examples; the paper sampled different combinations of examples from the same instruction to create multiple training examples."
+            "note": "SFT has more labeler-written prompts because the early interface asked labelers to write a general instruction plus a few examples; the paper then sampled different combinations of examples from the same instruction to create multiple training examples."
           }
         },
         {
-          "p": "Compared with the hundreds of billions of tokens used to pretrain GPT-3, this data is tiny: only about 13,000 demonstrations. As we will see, that small amount of high-quality human data changes model behavior. More than 96% of the data is in English."
+          "p": "Compared with the hundreds of billions of tokens used to pretrain GPT-3, this data is tiny: the demonstrations number just over 10,000. Later we will see that this small amount of high-quality human data changed the model's behavior. More than 96% of the data is English."
         },
         {
-          "p": "What did users actually want it to do? Labelers categorized the prompts in the RM dataset, and the distribution was very different from the academic benchmarks commonly used:"
+          "p": "What do users actually use it for? Labelers classified the prompts in the RM dataset, and the distribution is quite different from the benchmarks common in academia:"
         },
         {
           "fig": {
             "type": "columns",
-            "title": "What real users do with GPT-3: nearly half is generation, classification and QA are a small minority",
-            "subtitle": "Unit: %, use-case distribution of API prompts, as judged by labelers. From paper Table 1; amber indicates \"generation.\"",
+            "title": "What real users do with GPT-3: nearly half is generation; classification and QA are only a minority",
+            "subtitle": "Unit: %, use-case distribution of API prompts, as judged by labelers. From Table 1 of the paper; amber is generation",
             "items": [
               {
                 "label": "Generation",
@@ -283,59 +283,59 @@
                 "display": "1.9"
               }
             ],
-            "note": "\"Closed QA\" means answers should come only from the given material; \"open QA\" may use any knowledge."
+            "note": "Closed QA means the answer should come only from the given material; open QA may use any knowledge."
           }
         },
         {
-          "p": "The **labelers** were about 40 contractors hired through Upwork and ScaleAI. Because prompts might touch on sensitive topics, hiring included a screening test: could they spot potentially harmful output, were they sensitive to different groups, and did their labels agree with researchers? During the project, researchers answered questions in a shared chat room."
+          "p": "**Labelers** were about 40 contractors hired from Upwork and ScaleAI. Because prompts can involve sensitive topics, the hiring process included a screening test: could they recognize potentially harmful outputs, were they sensitive to different groups of people, and did their labels agree with the researchers' labels? During the project, researchers were available in a shared chat room to answer questions."
         },
         {
-          "p": "People's opinions differ, so first we need to know how reliable the \"ground truth\" is. Training labelers agreed with each other 72.6 ± 1.5% of the time; a separate set of \"held-out\" labelers, who produced no training data and took no screening test, agreed 77.3 ± 1.3% of the time. For reference, researchers in an earlier summarization task agreed 73 ± 4% of the time. In other words, about a quarter of comparisons are contested even by humans, so a reward model predicting human preferences can hardly be much more accurate than this."
+          "p": "People disagree with one another, so the team first measured how reliable the 'gold standard' labels were. Training labelers agreed with each other 72.6 ± 1.5% of the time; a separate held-out group that produced no training data and took no screening test agreed 77.3 ± 1.3%. For reference, researchers in an earlier summarization task agreed with each other 73 ± 4% of the time. In other words, roughly a quarter of comparisons are contested even among humans, so a reward model predicting human preferences can hardly be much more accurate than that."
         },
         {
           "callout": {
             "kind": "note",
-            "title": "Training and evaluation used different priorities",
-            "text": "Helping the user and avoiding harm sometimes conflict — for example, when a user asks for a potentially harmful answer. The paper's approach: **during training**, labelers were told to prioritize helpfulness to the user; **in final evaluation**, labelers were told to prioritize truthfulness and harmlessness. The paper acknowledges that how to handle this conflict during training is a difficult design decision left to future work."
+            "title": "Priorities differ between training and evaluation",
+            "text": "Helping the user and avoiding harm can conflict, for example when a user requests a potentially harmful answer. The paper's approach: during **training**, labelers were told to prioritize helpfulness to the user; during **final evaluation**, labelers were told to prioritize truthfulness and harmlessness. The paper acknowledges that handling this conflict during training requires difficult design decisions and leaves it for future work."
           }
         }
       ]
     },
     {
-      "h": "Step 1: supervised fine-tuning — learning that \"this is an instruction\"",
+      "h": "Step 1: supervised fine-tuning — first learn that this is an instruction",
       "blocks": [
         {
-          "p": "Step 1 is the most straightforward: take the labelers' demonstrations and fine-tune GPT-3 with ordinary supervised learning. The objective is still \"predict the next token,\" but now it predicts the next token in the **demonstration answers**. The model learns a key format: a prompt is a task, and it should be followed by an answer that completes that task."
+          "p": "Step 1 is the most direct: take labeler-written demonstrations and fine-tune GPT-3 with ordinary supervised learning. The objective is still 'predict the next token', but now it is predicting the next token of a **demonstration answer**. The model thereby learns one crucial format: the prompt is a task, and what follows should be an answer that completes it."
         },
         {
-          "p": "The paper trained for 16 epochs (one full pass over all demonstrations per epoch), using cosine learning-rate decay and a residual dropout of 0.2. There is a counterintuitive detail: after just 1 epoch, validation loss began to worsen, meaning the model was overfitting, but with continued training, both reward-model scores and human preference ratings kept improving."
+          "p": "The paper trains for 16 epochs (one full pass through all demonstrations per epoch), with cosine learning-rate decay and residual dropout of 0.2. There is a counterintuitive detail: **after only 1 epoch, validation loss starts to get worse** (overfitting); yet as training continues, both the reward-model score and human preference scores keep improving."
         },
         {
           "callout": {
             "kind": "myth",
-            "title": "Worse validation loss does not mean a worse model",
-            "text": "The paper doesn't explain why, but a common interpretation is: validation loss measures how much probability the model assigns to the labeler's particular demonstration. But there is more than one good answer. As the model becomes more confident in one good answer, it gives lower probability to other good answers, so loss rises while human readers are actually more satisfied. That is why the paper does **not** select a model by validation loss; it selects by the reward model's score on the validation set. It's a reminder that the numeric metric used in training can diverge from what we actually want."
+            "title": "Worse validation loss does not mean the model got worse",
+            "text": "The paper does not explain why, but one common reading is: validation loss measures how much probability the model puts on the labelers' particular demonstration. But there is more than one good answer. As the model becomes increasingly confident about one good answer, it assigns lower probability to other good answers, so loss rises even though human readers become more satisfied. That is why the paper does **not** select the model by validation loss, but by the reward model's score on the validation set. It is a reminder that the numerical metric we train on can diverge from what we actually want."
           }
         },
         {
-          "p": "One easy-to-miss detail (Appendix C.3): the SFT model used as the starting point for Step 3 is **not the same** as the 16-epoch SFT baseline above. The reinforcement-learning starting point was trained for only 2 epochs and included 10% pretraining data; the paper found this helped the later PPO training."
+          "p": "There is also an easy-to-miss detail (Appendix C.3): the SFT model that serves as the starting point for Step 3 is **not** the same model as the 16-epoch SFT baseline above. The reinforcement-learning starting point was trained for only 2 epochs and mixed in 10% pretraining data; the paper found this was more favorable to the PPO training that followed."
         }
       ]
     },
     {
-      "h": "Step 2: the reward model — turning \"which do people prefer?\" into a score",
+      "h": "Step 2: the reward model — turn which answer people prefer into a score",
       "blocks": [
         {
-          "p": "Reinforcement learning needs a referee that can score at any time, but you can't ask a human to judge every generated answer. So Step 2 trains a model to **score in place of a human**: it takes a prompt and an answer, and outputs a number where a higher score means a human is more likely to prefer it."
+          "p": "Reinforcement learning needs a referee that can score at any moment, but you cannot bring in a human to judge every generated answer. Step 2 therefore trains a model to **score in place of humans**: give it a prompt and an answer, and it outputs a single number; a higher score means a human is more likely to prefer that answer."
         },
         {
-          "p": "Its architecture is simple: take the SFT model, remove the final output layer that maps vectors to next-token probabilities, and replace it with a linear layer that outputs a single number. The paper used only a 6B-parameter reward model: the 175B version was unstable in training, and because the reward model would later initialize PPO's value function, a larger one would make compute blow up."
+          "p": "Its architecture is simple: take the SFT model, remove the final output layer that turns vectors into next-token probabilities, and replace it with a projection layer that outputs a single number. The paper uses only a 6B reward model: the 175B version was unstable to train, and because the reward model later initializes PPO's value function, a much larger model would make the compute balloon."
         },
         {
-          "p": "**Where the data comes from**: for a given prompt, the model generates K answers (K between 4 and 9), and labelers rank them from best to worst. Any two of the K answers form a \"which is better\" comparison, for C(K,2) = K(K−1)/2 pairs in total. A single ranking of 9 answers yields 36 pairs, far more efficient than asking one pair at a time."
+          "p": "**Where the data comes from**: for a given prompt, generate K answers (K is between 4 and 9), and labelers rank them from best to worst. Any two of the K answers can form a 'which is better' pair, giving C(K,2) = K(K−1)/2 pairs total. A single ranking of 9 answers yields 36 comparison pairs — much cheaper than asking pairwise questions one at a time."
         },
         {
-          "p": "**How to learn scores from comparisons**: the core assumption is simple: the larger the score gap between two answers, the more likely a human is to choose the higher-scoring one. This probability is represented by putting the score difference through the sigmoid function, which squashes it to 0–1. The training objective is to make the chosen answer's score as much higher than the rejected one's as possible:"
+          "p": "**How scores are learned from comparisons**: the core assumption is simple: the larger the score gap between two answers, the more likely a human is to choose the higher-scored one. That probability is modeled by passing the score difference through a sigmoid function, squashing it between 0 and 1. The training objective is to make the score of the answer the human chose as much higher as possible than the rejected answer:"
         },
         {
           "formula": {
@@ -343,7 +343,7 @@
             "parts": [
               {
                 "sym": "r_{θ}(x, y)",
-                "desc": "The reward model's score for \"answer y to prompt x\"; θ is the reward model's parameters"
+                "desc": "The score the reward model assigns to answer y for prompt x; θ is the reward model's parameters"
               },
               {
                 "sym": "y_{w}, y_{l}",
@@ -351,50 +351,55 @@
               },
               {
                 "sym": "σ(r_{w} − r_{l})",
-                "desc": "The probability, according to the model's scores, that a human would choose y_{w}. When the score difference is 0 it is 0.5; the larger the difference, the closer to 1."
+                "desc": "The probability, according to the model's scores, that a person would choose y_{w}. When the score gap is 0 the probability is 0.5; the larger the gap, the closer it is to 1."
               },
               {
                 "sym": "− log σ(…)",
-                "desc": "The loss for this pair: the more confident the model is that y_{w} is better, the closer the loss is to 0; if the model ranks the two backwards, the loss becomes very large."
+                "desc": "The loss for this pair: the more confident the model is that y_{w} is better, the closer the loss comes to 0; if it ranks the two the wrong way round, the loss becomes very large."
               },
               {
                 "sym": "1 / C(K,2)",
-                "desc": "A single ranking produces C(K,2) comparisons; dividing by that takes the average, so prompts ranked with 4 answers count as much as prompts ranked with 9."
+                "desc": "One ranking yields C(K,2) comparison pairs; dividing by it averages them, so prompts ranked with 4 answers and prompts ranked with 9 answers count equally."
               },
               {
                 "sym": "E_{… ∼ D}",
-                "desc": "Average over every comparison in the comparison dataset D."
+                "desc": "Average over all comparisons in the comparison dataset D."
               }
             ],
-            "note": "This assumption—representing preference probability as a sigmoid of the score difference—is statistically known as the Bradley-Terry model, the same idea as Elo ratings in chess: the larger the rating gap, the more likely the higher-rated player wins."
+            "note": "The assumption of using the sigmoid of a score difference to represent preference probability is called the Bradley-Terry model in statistics, and it follows the same idea as chess Elo ratings: the larger the rating gap between two players, the higher the probability that the higher-rated one wins."
+          },
+          "plain": {
+            "title": "Ranking is easier than scoring.",
+            "pic": "igpt-rank",
+            "text": "Asking a labeler whether an answer deserves a 7.3 or a 7.8 is hard to do consistently; asking them to put several answers in order is much easier. One ranking (A best, D worst) decomposes into every pairwise comparison: 4 answers yield 6 pairs. The reward model learns to score from these “who beat whom” comparisons."
           }
         },
         {
           "fig": {
             "type": "table",
-            "title": "Three comparisons by hand: small loss when ranked correctly, large loss when reversed",
-            "subtitle": "Illustrative: scores are invented by us, not from the paper. r_{w} is the score of the answer humans preferred, r_{l} is the score of the rejected answer; amber marks the case the model ranked backwards.",
+            "title": "Three comparisons by hand: correct rankings cost little loss, reversed rankings cost a lot.",
+            "subtitle": "Illustrative: scores are constructed for this example, not taken from the paper. r_{w} is the score of the answer people preferred, r_{l} the score of the rejected answer; amber marks the case where the model ranked them the wrong way.",
             "columns": [
               "Case",
               "r_{w} − r_{l}",
-              "σ(diff): probability the model thinks a human will choose y_{w}",
+              "σ(gap): the probability the model assigns to a person choosing y_{w}.",
               "Loss for this pair −log σ"
             ],
             "rows": [
               [
-                "Model ranks correctly, with high confidence",
+                "The model ranked them correctly and is very confident.",
                 "+2.0",
                 "0.88",
                 "0.13"
               ],
               [
-                "Model sees the two as roughly equal",
+                "The model sees the two as about equal.",
                 "0",
                 "0.50",
                 "0.69"
               ],
               [
-                "Model ranks them backwards",
+                "The model ranked them the wrong way.",
                 "−2.0",
                 "0.12",
                 "2.13"
@@ -403,24 +408,24 @@
             "highlight": {
               "row": 2
             },
-            "note": "During training, comparisons like the third row produce the largest gradient, pushing the reward model to raise y_{w}'s score and lower y_{l}'s until the ranking is correct."
+            "note": "During training, comparisons like the third row produce the largest gradient, pushing the reward model to raise y_{w}'s score and lower y_{l}'s score until the ranking is correct."
           }
         },
         {
-          "p": "This loss cares only about the **score difference**, not the scores themselves. Add 10 to every answer and every pair's difference is unchanged, so the loss is unchanged. The “zero point” of the scores is therefore arbitrary. Before reinforcement learning, the paper adds a bias to fix the zero at the mean score of labeler demonstrations: positive means better than the average demonstration, negative worse."
+          "p": "This loss cares only about **score differences**, not the scores themselves. Add 10 points to every answer, and every pair's gap is unchanged, so the loss is exactly unchanged. The “zero point” of the scores is therefore arbitrary. Before reinforcement learning begins, the paper adds a bias that sets the zero point at the average score of the labeler demonstrations: a positive score means better than the average demonstration, a negative score worse."
         },
         {
-          "p": "**One engineering detail that made training work**: the 36 comparisons from a single ranking are highly correlated—they all compare the same set of answers. The paper initially mixed all comparisons together; after only one pass over the data, the reward model overfit: an answer appeared in K−1 comparisons, so it was effectively learned K−1 times. After changing to **keep all comparisons for the same prompt together as one training example**, overfitting disappeared and validation accuracy improved markedly; each answer also had to be read by the reward model only once, saving compute. Under this scheme, a batch of 64 prompts contains at most 64 × 36 = 2,304 comparisons."
+          "p": "**An engineering detail that made training work**: the 36 comparison pairs from one ranking are highly correlated, since they all compare the same set of answers. The paper initially shuffled all comparisons together, and the reward model overfit after just one pass through the data: each answer appears in K−1 pairs, so it was effectively learned K−1 times. Once all comparisons for the same prompt were grouped together as a single training sample, the overfitting disappeared and validation accuracy improved substantially; each answer also only had to be read once by the reward model, saving compute. Under this scheme, a batch of 64 prompts contains up to 64 × 36 = 2,304 comparison pairs."
         },
         {
-          "p": "The reward model is trained for only 1 epoch: more epochs quickly overfit. Its learning rate, in contrast, is not very sensitive; changing it by 50% gives similar results."
+          "p": "The reward model is trained for only 1 epoch: more epochs quickly overfit. Its learning rate, by contrast, is not very sensitive—changing it by 50% leaves results about the same."
         },
         {
-          "p": "**Can the reward model represent other people's preferences?** The paper splits labelers into 5 groups, trains on 4 groups and tests on the remaining one. When predicting the preferences of the **held-out group**, accuracy is 69.6 ± 0.9%; for the training groups it is 72.4 ± 0.4%. Only slightly lower, and not far from the roughly 73% agreement rate between humans."
+          "p": "**Can the reward model represent other people's tastes?** The paper splits labelers into 5 groups, trains on data from 4 groups each time, and tests on the held-out group. When predicting the preferences of the **unseen group**, accuracy is 69.6 ± 0.9%; for the people in the training groups it is 72.4 ± 0.4%. That is only slightly lower, and already close to the roughly 73% agreement rate between humans."
         },
         {
           "quiz": {
-            "q": "If a labeler ranks K = 4 answers, how many comparisons does that produce?",
+            "q": "A labeler ranks K = 4 answers. How many comparison pairs does that produce?",
             "options": [
               "3 pairs",
               "4 pairs",
@@ -428,45 +433,45 @@
               "12 pairs"
             ],
             "answer": 2,
-            "why": "Choose any two answers as a pair: C(4,2) = 4 × 3 ÷ 2 = 6. 3 pairs means comparing only adjacent ranks, which wastes the ranking information; 12 pairs counts both “A vs B” and “B vs A,” doubling every comparison."
+            "why": "The pairs are formed by choosing any two answers: C(4,2) = 4 × 3 ÷ 2 = 6. Three pairs would only compare adjacent ranks, wasting the information in the ranking; twelve pairs would count both “A beats B” and “B beats A” separately."
           }
         },
         {
           "quiz": {
-            "q": "If you add 10 to every answer's reward-model score, what happens to the training loss?",
+            "q": "If you add 10 to the reward model's score for every answer, what happens to the training loss?",
             "options": [
-              "Increases",
-              "Decreases",
-              "Exactly unchanged",
-              "Cannot be computed"
+              "It increases.",
+              "It decreases.",
+              "It stays exactly the same.",
+              "It cannot be computed."
             ],
             "answer": 2,
-            "why": "Only the score difference r_{w} − r_{l} appears in the loss; adding 10 to every score leaves the difference, σ, and the loss unchanged. This is exactly why the paper adds a bias to set the mean demonstration score to 0: the loss itself does not determine the zero point."
+            "why": "Only the score difference r_{w} − r_{l} appears in the loss; adding 10 to all scores leaves the difference unchanged, so both σ and the loss stay the same. This is why the paper adds an extra bias to set the average demonstration score to 0: the loss itself does not determine the zero point."
           }
         }
       ]
     },
     {
-      "h": "Step 3: Reinforcement learning, held on a leash",
+      "h": "Step 3: Reinforcement learning, with a leash",
       "blocks": [
         {
-          "p": "With a reward model that can score answers, Step 3 makes the language model chase high scores. The paper frames this as the simplest possible reinforcement-learning environment (technically a bandit environment): draw a random user prompt, the model writes an answer, the reward model scores it, and the episode ends. No multi-turn dialogue, no intermediate reward."
+          "p": "With a reward model that can score, Step 3 has the language model chase high scores. The paper designs this as the simplest possible reinforcement-learning environment (called a bandit environment): pick a random user prompt, have the model write a response, get one score from the reward model, and the episode ends. There is no multi-turn dialogue and no intermediate reward."
         },
         {
-          "p": "The algorithm used to update the model is PPO (Proximal Policy Optimization, Schulman et al., 2017). Its key idea: each update must not move the model too much; steps beyond a certain ratio are clipped (the paper uses a clipping ratio of 0.2), making training more stable."
+          "p": "The algorithm used to update the model is PPO (Proximal Policy Optimization, Schulman et al. 2017). Its key idea: each update is not allowed to change the model too much; any step beyond a set fraction is clipped (the paper's clipping fraction is 0.2), which makes training more stable."
         },
         {
-          "p": "But there is a big trap. The reward model is only a **proxy** for human preference; it has seen tens of thousands of prompts and has its own blind spots. If the language model is optimized hard enough, it will find those blind spots: writing things the reward model scores highly but humans find baffling. This is called **overoptimizing** the reward model, like a student studying the grader's quirks to score points instead of actually solving the problem."
+          "p": "But there is a big trap here. The reward model is only a **proxy** for human preferences; it has seen only tens of thousands of prompts and has its own blind spots. If the language model is optimized hard enough, it will find those blind spots, producing things the reward model scores highly but a person finds baffling. This is called **over-optimizing** the reward model, like a student studying the grader's habits to inflate scores rather than actually solving the problems."
         },
         {
           "callout": {
             "kind": "intuition",
-            "title": "A kite string",
-            "text": "The fix is to tie the model to a leash: for every token it writes, compare the probability the RL model and the original SFT model assign to that token. The more it deviates, the more is subtracted. The model can fly toward higher scores, but not far, staying near the distribution of human-written demonstrations. This penalty measures the difference between two probability distributions and is called the **KL divergence** penalty."
+            "title": "The kite string",
+            "text": "The solution is to tie the model to a leash: for each word it writes, compare the probability the RL model assigns to that word with the probability the original SFT model assigns. The further it drifts, the more gets docked. The model can fly toward higher scores, but not far—it stays near the territory of human-written demonstrations. This penalty term measures the difference between two probability distributions and is called the **KL divergence** penalty."
           }
         },
         {
-          "p": "With the leash and the “pretraining review” described later, Step 3 maximizes the following objective:"
+          "p": "With the leash, plus the “pretraining review” described later, the objective maximized in Step 3 is:"
         },
         {
           "formula": {
@@ -474,41 +479,46 @@
             "parts": [
               {
                 "sym": "π^{RL}_{φ}",
-                "desc": "The language model being trained (the policy), with parameters φ"
+                "desc": "The language model being trained (the policy), with parameters φ."
               },
               {
                 "sym": "π^{SFT}",
-                "desc": "The SFT model from Step 1, held fixed, as the other end of the leash"
+                "desc": "The SFT model from Step 1, held fixed and serving as the other end of the leash."
               },
               {
                 "sym": "E_{(x,y)∼RL}",
-                "desc": "Averaged over a randomly drawn user prompt x and an answer y written by the model being trained"
+                "desc": "An expectation over randomly drawing a user prompt x and having the model being trained write an answer y."
               },
               {
                 "sym": "r_{θ}(x, y)",
-                "desc": "The reward model's score for this answer"
+                "desc": "The reward model's score for that answer."
               },
               {
                 "sym": "log(π^{RL} / π^{SFT})",
-                "desc": "How much more probable this answer is under the new model than under the SFT model (in log space); summed token by token, this is the KL penalty for the answer"
+                "desc": "How much more probable this answer is under the new model than under the SFT model, in log terms; summed over words, this is the KL penalty for the answer."
               },
               {
                 "sym": "β",
-                "desc": "How tight the leash is; the paper uses 0.02"
+                "desc": "The tightness of the leash; the paper uses 0.02."
               },
               {
                 "sym": "γ · E_{x∼pretrain}[…]",
-                "desc": "Second line: sample text x from GPT-3's pretraining data and continue with next-token prediction; γ controls its weight. When γ = 0 it is called PPO, when γ > 0 it is called PPO-ptx"
+                "desc": "The second line: sample text x from GPT-3's pretraining data and continue doing next-token prediction; γ controls its weight. When γ = 0 the method is called PPO; when γ > 0 it is called PPO-ptx."
               }
             ],
-            "note": "The paper says that unless stated otherwise, “InstructGPT” refers to the PPO-ptx model."
+            "note": "The paper says that, unless stated otherwise, InstructGPT refers to the PPO-ptx model throughout."
+          },
+          "plain": {
+            "title": "The score, minus the penalty for drifting off course, plus keeping old skills intact.",
+            "pic": "igpt-terms",
+            "text": "During reinforcement learning, the model maximizes the sum of three things: the reward model's score (as high as possible), minus the penalty for straying too far from the original model (β · KL), plus a bit of the original pretraining practice (the γ term). That last term exists to pay less of the “alignment tax” and avoid forgetting old skills."
           }
         },
         {
           "fig": {
             "type": "table",
-            "title": "A hand-worked KL penalty: gain 1 reward point, but drift too far and you still lose",
-            "subtitle": "Illustrative: numbers are invented, not from the paper. β = 0.02; “sum of log probability ratios” means for each token in the answer, take the ratio of the new model's probability to the SFT model's probability, take the log, and sum them. Amber marks the answer with the higher final score.",
+            "title": "KL penalty by hand: a reward 1 point higher can still lose out if the drift is too far.",
+            "subtitle": "Illustrative: numbers are constructed for this example, not taken from the paper. β = 0.02; the “sum of log probability ratios” is computed for each word in the answer as the ratio of the new model's probability to the SFT model's probability, logged and summed. Amber marks the answer with the higher final score.",
             "columns": [
               "Answer",
               "Reward model score r",
@@ -518,14 +528,14 @@
             ],
             "rows": [
               [
-                "A: natural, sensible answer",
+                "A: a natural, solid answer",
                 "2.0",
                 "5",
                 "0.1",
                 "1.9"
               ],
               [
-                "B: weird answer that exploits the reward model's blind spot",
+                "B: a weird answer that exploits the reward model's blind spots",
                 "3.0",
                 "100",
                 "2.0",
@@ -535,44 +545,44 @@
             "highlight": {
               "row": 0
             },
-            "note": "Per token, the penalty is small: if the SFT model gives a token probability 0.1 and the RL model gives 0.4, log(0.4/0.1) ≈ 1.39, and multiplying by 0.02 deducts only 0.028. But if many tokens in an answer deviate sharply, the penalty accumulates and overwhelms the reward model's high score."
+            "note": "The per-word penalty is small: if the SFT model gives a word probability 0.1 and the RL model gives it 0.4, log(0.4/0.1) ≈ 1.39; multiplied by 0.02, that docks only 0.028 points. But if many words in an answer diverge substantially, the penalty accumulates and can override a high reward-model score."
           }
         },
         {
-          "p": "Other key settings: PPO trains for 256k episodes using about 31k deduplicated, PII-scrubbed prompts; each batch of 512 episodes is split into 8 minibatches, each trained once. Policies of all sizes use the same 6B reward model, which also initializes the 6B value function (an auxiliary model PPO needs to estimate “about how well will this answer score”). That way different model sizes share the same referee, making comparisons fairer."
+          "p": "Other key settings: PPO trains for a total of 256k episodes, using about 31k deduplicated, PII-removed prompts; each batch has 512 episodes, split into 8 minibatches, each trained on once. Policies of all sizes use the same 6B reward model, and it is also used to initialize the 6B value function (an auxiliary model PPO needs to estimate roughly what score an answer will get). That way models of different sizes share the same referee, making comparisons fairer."
         },
         {
           "quiz": {
             "q": "If the KL penalty coefficient β is set to 0, what is most likely to happen?",
             "options": [
-              "The model stops learning",
-              "The model exploits the reward model's blind spots; reward scores climb, but human ratings do not necessarily improve",
-              "The model reverts to GPT-3",
-              "Nothing changes"
+              "The model stops learning.",
+              "The model will exploit the reward model's blind spots: reward scores keep rising, but human evaluations may not improve.",
+              "The model will regress back to GPT-3.",
+              "Nothing changes."
             ],
             "answer": 1,
-            "why": "β = 0 is cutting the leash: the model only tries to please the reward model. The reward model is an imperfect proxy, and optimizing hard against it exposes its blind spots—that is overoptimization. The model neither stops learning nor reverts to GPT-3, because nothing pulls it back."
+            "why": "β = 0 means cutting the leash: the model only tries to please the reward model. The reward model is an imperfect proxy, and under heavy optimization its blind spots are exposed—that is over-optimization. The model does not stop learning, and it does not regress to GPT-3, because nothing pulls it back."
           }
         }
       ]
     },
     {
-      "h": "The alignment tax: more obedient, but some old skills regress",
+      "h": "The alignment tax: more obedient, but some old abilities slip.",
       "blocks": [
         {
-          "p": "A problem appeared when training with PPO alone: the model got worse on several public NLP benchmarks, including reading comprehension (SQuAD, DROP), commonsense reasoning (HellaSwag), and WMT 2015 French-to-English translation. The paper calls this cost the **alignment tax**: sacrificing some capability to become aligned."
+          "p": "Training with PPO alone revealed a problem: the model got worse on some public NLP benchmarks, including reading comprehension SQuAD and DROP, commonsense reasoning HellaSwag, and WMT 2015 French-to-English translation. The paper calls this cost the **alignment tax**: some capability is sacrificed in exchange for alignment."
         },
         {
-          "p": "Why care? If alignment is heavily taxed, people would rather use unaligned but more capable models, and alignment methods would not spread. The paper therefore treats reducing the alignment tax as part of the method itself."
+          "p": "Why does this matter? If alignment carries a heavy tax, people will prefer a less aligned but more capable model, and alignment methods will not spread. So the paper treats reducing the alignment tax as part of the method itself."
         },
         {
-          "p": "The solution is PPO-ptx, the second line of the objective: after each PPO update, do one next-token-prediction update on GPT-3's original pretraining data—learning new rules while reviewing old material. The number of pretraining samples is 8 times the number of RL episodes, and their gradient is multiplied by γ = 27.8."
+          "p": "The solution is the PPO-ptx term in the second line of the objective: after each PPO update, the model also takes one next-token-prediction update on GPT-3's original pretraining data—like learning new rules while reviewing old material. The number of pretraining samples is 8 times the number of RL episodes, with the gradient multiplied by γ = 27.8."
         },
         {
           "fig": {
             "type": "table",
-            "title": "Alignment tax: reading comprehension drops sharply with PPO alone, mostly recovers with pretraining mix",
-            "subtitle": "175B model, zero-shot. From appendix Table 14; HellaSwag is accuracy (%), others are F1 or BLEU. Blue columns indicate InstructGPT (PPO-ptx).",
+            "title": "Alignment tax: with PPO alone reading comprehension drops sharply; mixing in pretraining recovers most of it.",
+            "subtitle": "175B model, zero-shot. From Table 14 in the paper appendix; HellaSwag is accuracy (%), the others are F1 or BLEU. Blue columns are InstructGPT (PPO-ptx).",
             "columns": [
               "Dataset (metric)",
               "GPT-3",
@@ -608,87 +618,91 @@
             "highlight": {
               "col": 3
             },
-            "note": "PPO-ptx even beats GPT-3 on HellaSwag, but still trails on DROP, SQuADv2, and translation. The paper's wording is that “most” regressions are mitigated, not all eliminated."
+            "note": "PPO-ptx even surpasses GPT-3 on HellaSwag, but still trails on DROP, SQuADv2, and translation. The paper says “most” of the regressions were mitigated, not all of them eliminated."
+          },
+          "plain": {
+            "title": "Practicing the specialty without losing the basics.",
+            "text": "With reinforcement learning alone, the model became better at following instructions but lost old abilities like reading comprehension—like drilling exam technique until the fundamentals get rusty. The paper's remedy is to mix some original pretraining data into training, which is like continuing to read normally while practicing the specialty; most of the regression is recovered."
           }
         },
         {
-          "p": "A small issue spotted while reading the table: in the same appendix Table 14, the ROUGE-L scores for the two summarization tasks CNN/DM and TL;DR are identical across all 12 numbers. Two different datasets are unlikely to produce exactly the same results; the rows may have been duplicated by mistake during typesetting, so be careful when citing them."
+          "p": "One small issue we noticed while reading the table: in the same appendix Table 14, the ROUGE-L scores for the CNN/DM and TL;DR summarization tasks are identical for all 12 numbers. Two different datasets are unlikely to produce exactly identical results; the rows were probably copied incorrectly during typesetting, so be careful when citing them."
         },
         {
-          "p": "**Why not just pull the leash tighter (increase β)?** Intuitively, the closer the model stays to SFT, the fewer skills it should lose. The paper tried this on the 1.3B model: raising β to 2.0, 100 times the default, still did not fully recover the DROP and SQuAD regressions, while reward scores dropped noticeably. With pretraining data mixed in, there existed a γ that reversed the regression while barely lowering reward scores. The paper also tried anchoring the other end of the leash to GPT-3 itself instead of the SFT model, with similar results, and concluded that the pretraining data distribution is the key. Our interpretation: the KL penalty constrains the model only on user prompts, while capabilities like reading comprehension show up on completely different inputs, where the leash does not reach; reviewing pretraining data directly covers those inputs."
+          "p": "**Why not simply tighten the leash (increase β)?** Intuitively, the closer the model stays to SFT, the fewer abilities it should lose. The paper tried this on the 1.3B model: raising β to 2.0, 100 times the default, still did not fully restore DROP and SQuAD, while reward scores clearly dropped. With pretraining data mixed in, however, there is a γ value that both reverses the regression and barely lowers reward scores. The paper also tried moving the other end of the leash from the SFT model to GPT-3 itself, with similar results, and concluded that the distribution of pretraining data is what matters. Our reading: the KL penalty constrains the model's outputs only on user prompts, while abilities like reading comprehension show up on completely different inputs, where the leash cannot reach. Reviewing pretraining data directly is what covers them."
         },
         {
-          "p": "One more caution: on the 1.3B model, extending training from 256k to 512k episodes made DROP and SQuADv2 start better than GPT-3 but decline as training continued, ending slightly below GPT-3. The alignment tax accumulates with training time."
+          "p": "Another warning: on the 1.3B model, extending training from 256k to 512k episodes caused DROP and SQuADv2 to start out better than GPT-3, then decline the longer training ran, ending slightly below GPT-3. The alignment tax accumulates with training time."
         },
         {
           "quiz": {
-            "q": "To reduce the alignment tax, why did the paper choose to mix in pretraining data (PPO-ptx) rather than increase the KL coefficient β?",
+            "q": "To reduce the alignment tax, why does the paper choose to mix in pretraining data (PPO-ptx) rather than increase the KL coefficient β?",
             "options": [
-              "Because increasing β slows training",
-              "Because raising β to 100 times the default still failed to recover the regression and clearly lowered reward scores; mixing in pretraining data recovered the regression while barely lowering reward scores",
-              "Because pretraining data is cheaper",
-              "Because β cannot exceed 1"
+              "Because increasing β slows training.",
+              "Because even raising β to 100 times its default fails to recover the regression, while clearly lowering reward scores; mixing in pretraining data recovers the regression while barely lowering reward scores.",
+              "Because pretraining data is cheaper.",
+              "Because β cannot be greater than 1."
             ],
             "answer": 1,
-            "why": "This is the ablation conclusion in appendix E.6. Increasing β only pulls the model toward the SFT model, and the SFT model itself already trails GPT-3, so it cannot recover the loss and also sacrifices alignment. Speed, cost, and the allowed range of β are not the reasons the paper gives."
+            "why": "This is the ablation conclusion from Appendix E.6. Increasing β only pulls the model toward the SFT model, and the SFT model itself already trails GPT-3, so that cannot recover the gap; it also sacrifices alignment quality. Speed, cost, and β's allowed range are not reasons given by the paper."
           }
         }
       ]
     },
     {
-      "h": "Result 1: people prefer it—the small model beats the big one",
+      "h": "Result one: people prefer it, and the small model beats the big one.",
       "blocks": [
         {
-          "p": "The main evaluation asks labelers to compare different models' answers to the same prompt and judge which they prefer, while also scoring each answer from 1 to 7 and flagging specific issues (such as whether it ignored the instruction or fabricated content). Test prompts came from users **who did not appear in the training data**."
+          "p": "The main evaluation asks labelers to look at different models' answers to the same prompt and judge which they prefer, while also scoring each answer from 1 to 7 and flagging specific problems (such as failing to follow the instruction or fabricating content). The test prompts come from **users who do not appear in the training data**."
         },
         {
-          "p": "Besides GPT-3, SFT, and PPO, the comparison included a carefully built baseline: GPT-3 with a hand-designed few-shot prefix to put it into instruction-following mode (GPT-3-prompted). The prefix was chosen through a contest between two authors: each spent an hour interacting with GPT-3 and submitted two best prefixes, with the winner decided by the reward model's validation score. The footnote says only: author DA won."
+          "p": "Besides GPT-3, SFT, and PPO, the comparison includes one carefully built baseline: GPT-3 with a deliberately designed few-shot prefix to put it into “follow instructions” mode (GPT-3-prompted). The prefix was chosen through a contest between two authors: each spent an hour interacting with GPT-3, produced their two best prefixes, and the winner was decided by the reward model's validation-set scores. The footnote says only: author DA won."
         },
         {
-          "p": "The results form a clear ladder: GPT-3 is worst; adding a good few-shot prefix is clearly better; supervised fine-tuning on demonstrations is better still; and PPO on comparison data is better again. Whether pretraining data is mixed into PPO makes little difference to human preference."
+          "p": "The result is a clear ladder: GPT-3 is worst; adding a good few-shot prefix is clearly better; supervised fine-tuning on demonstrations is another step better; and PPO on comparison data is better still. Whether or not pretraining data is mixed into PPO makes little difference to human preferences."
         },
         {
           "fig": {
             "type": "columns",
-            "title": "How often the 175B InstructGPT was preferred head-to-head against each opponent",
-            "subtitle": "Unit: %, labeler preference on API prompts; ± indicates error range. From paper Section 1 and Section 4.1; amber marks the comparison against plain GPT-3.",
+            "title": "How often the 175B InstructGPT was chosen against each opponent in head-to-head comparisons.",
+            "subtitle": "Unit: %, labeler preferences on API prompts; after ± is the margin of error. From Sections 1 and 4.1 of the paper; amber is against the original GPT-3.",
             "items": [
               {
-                "label": "vs GPT-3",
+                "label": "vs. GPT-3",
                 "value": 85,
                 "display": "85 ± 3",
                 "tone": "hi"
               },
               {
-                "label": "vs few-shot GPT-3",
+                "label": "vs. few-shot GPT-3",
                 "value": 71,
                 "display": "71 ± 4"
               },
               {
-                "label": "vs FLAN",
+                "label": "vs. FLAN",
                 "value": 78,
                 "display": "78 ± 4"
               },
               {
-                "label": "vs T0",
+                "label": "vs. T0",
                 "value": 79,
                 "display": "79 ± 4"
               }
             ],
-            "note": "50% means a tie. FLAN and T0 are 175B GPT-3 models fine-tuned on many public NLP tasks with instructions; discussed separately below."
+            "note": "50% means a tie. FLAN and T0 are 175B GPT-3 models that were instruction-tuned on many public NLP tasks; they are covered separately below."
           }
         },
         {
-          "p": "The most striking comparison is size: **the 1.3B-parameter InstructGPT was preferred over the 175B-parameter GPT-3**, even though they share the same architecture and differ only in that the former was fine-tuned on human data. The conclusion holds even when GPT-3 is given a few-shot prefix."
+          "p": "The most striking comparison is size: **the 1.3B-parameter InstructGPT is preferred over the 175B-parameter GPT-3**, even though the two have exactly the same architecture and differ only in that InstructGPT was fine-tuned on human data. Adding a few-shot prefix to GPT-3 does not change the conclusion."
         },
         {
-          "p": "Beyond “which do you prefer,” labelers also flagged more specific issues. Compared with GPT-3, InstructGPT is more suitable as a customer-service assistant, follows explicit constraints in instructions more often (like “answer in at most two paragraphs”), fails the entire task less often, and fabricates less often on closed-domain tasks:"
+          "p": "Beyond “which one do you prefer?”, labelers also flagged more specific problems. Compared with GPT-3, InstructGPT was more appropriate as a customer-service assistant, more often obeyed explicit constraints in instructions (such as “answer in no more than two paragraphs”), less often failed the task entirely, and fabricated less often on closed-domain tasks:"
         },
         {
           "fig": {
             "type": "columns",
-            "title": "Fabrication on closed-domain tasks: from 41% to 21%",
-            "subtitle": "Unit: %. Closed-domain tasks are tasks where the answer should come only from the given material, such as summarization or answering from material. From paper Section 1; amber is InstructGPT.",
+            "title": "Fabrication rate on closed-domain tasks: down from 41% to 21%.",
+            "subtitle": "Unit: %. Closed-domain tasks are tasks where the answer should come only from the given material, such as summarization or answering questions from a passage. From Section 1 of the paper; amber is InstructGPT.",
             "items": [
               {
                 "label": "GPT-3",
@@ -705,23 +719,23 @@
           }
         },
         {
-          "p": "**Did the model just learn to please those 40 people?** The paper checks in two ways: first, it asks “held-out” labelers who were not involved in the training data to evaluate, and they also strongly prefer InstructGPT; second, the reward-model cross-validation described earlier. Both suggest the model did not just learn to please the people who trained it. But those “others” come from the same contractor pool as the training labelers; the paper says how the model does for broader populations still needs research."
+          "p": "**Did it merely learn to please those 40 people?** The paper checks this two ways: first, it asks held-out labelers who did not contribute training data to evaluate, and they also strongly prefer InstructGPT; second, there is the reward-model cross-validation described earlier. Both suggest the model did not just learn to please the few people who trained it. But those “other” people come from the same contracting channels as the training labelers, and the paper says how broader populations would react still needs research."
         },
         {
-          "p": "The paper also evaluated on a different set of prompts: prompts users submitted to ordinary GPT-3 (not in the instruction style written for InstructGPT). The conclusions were largely unchanged, except PPO-ptx did slightly worse at the largest size."
+          "p": "The paper also evaluated on a different set of prompts: prompts users submitted to ordinary GPT-3 (rather than instruction-style prompts written for InstructGPT). The conclusions were largely unchanged, though PPO-ptx was slightly worse at the largest size."
         },
         {
           "callout": {
             "kind": "takeaway",
-            "title": "Alignment is much cheaper than scaling",
-            "text": "Training the 175B SFT model took 4.9 petaflop/s-day, training the 175B PPO-ptx model took 60 petaflop/s-day, and training GPT-3 itself took 3,640 petaflop/s-day. In other words, for less than one-sixtieth of GPT-3's compute, the improvement was greater than making the model 100x larger. The paper concludes that, at least for the tasks customers actually use, investing in aligning an existing model is a better deal than training a larger one."
+            "title": "Alignment is much cheaper than scaling.",
+            "text": "Training the 175B SFT model took 4.9 petaflop/s-day; training the 175B PPO-ptx took 60 petaflop/s-day; and training GPT-3 itself took 3,640 petaflop/s-day. In other words, for less than one-sixtieth of GPT-3's compute, the gain is larger than making the model 100 times bigger. The paper concludes that, at least for the tasks customers actually use, investing in aligning existing models is a better deal than training larger ones."
           }
         },
         {
           "fig": {
             "type": "columns",
-            "title": "Alignment compute is a fraction of pretraining",
-            "subtitle": "Unit: petaflop/s-day (a petaflop/s sustained for one day). From paper Section 5.1; amber is GPT-3 pretraining.",
+            "title": "Alignment compute is only a fraction of pretraining.",
+            "subtitle": "Unit: petaflop/s-day (one quadrillion floating-point operations per second for one day). From Section 5.1 of the paper; amber is GPT-3 pretraining.",
             "items": [
               {
                 "label": "GPT-3 pretraining",
@@ -740,50 +754,50 @@
                 "display": "4.9"
               }
             ],
-            "note": "This counts only model training; the human labor for data collection is separate, and the paper says that even including experiments, the total cost was only a small fraction of training GPT-3."
+            "note": "This counts model training only; the human cost of collecting data is separate. The paper says that, including experiments, the total cost is still only a small fraction of training GPT-3."
           }
         }
       ]
     },
     {
-      "h": "Why FLAN and T0, trained on public tasks, fall short",
+      "h": "Why FLAN and T0 trained on public tasks aren't enough.",
       "blocks": [
         {
-          "p": "Around the same time, academia was also doing “instruction fine-tuning”: reformatting many public NLP datasets into “instruction + answer” examples for training, represented by FLAN and T0. The paper took about 1 million examples from each and fine-tuned a 175B GPT-3 with each, then compared."
+          "p": "Around the same time, academia was pursuing “instruction tuning”: rewriting many public NLP datasets into instruction–answer form and training on them, with FLAN and T0 as prominent examples. The paper took about 1 million examples from each of these two datasets, fine-tuned 175B GPT-3 on them separately, and compared the results."
         },
         {
-          "p": "Result: they are better than plain GPT-3 and about on par with GPT-3 with a good few-shot prefix, but worse than the SFT baseline. With 175B SFT as the reference, InstructGPT has a 73.4 ± 2% win rate, the T0 version 26.8 ± 2%, and the FLAN version 29.8 ± 2%."
+          "p": "The result: they beat the original GPT-3 and perform about as well as GPT-3 with a well-crafted few-shot prefix, but worse than the SFT baseline. Measured as win rate against the 175B SFT baseline, InstructGPT scores 73.4 ± 2%, the T0 version 26.8 ± 2%, and the FLAN version 29.8 ± 2%."
         },
         {
-          "p": "The paper gives two reasons. First, public datasets are designed for **convenient automatic scoring**, so they favor tasks with standard answers such as classification and QA; but among real users, classification and QA together account for only about 18%, while open-ended generation and brainstorming account for about 57% (see the use-case chart earlier). Second, public datasets struggle to match the rich diversity of real user input."
+          "p": "The paper gives two reasons. First, public datasets are designed for **easy automatic scoring**, so they skew toward tasks with standard answers, like classification and QA. But for real users, classification and QA together account for only about 18%, while open-ended generation and brainstorming account for about 57% (see the use-case distribution above). Second, public datasets rarely match the richness of real user inputs."
         },
         {
           "callout": {
             "kind": "myth",
-            "title": "This is not to say FLAN and T0 are useless",
-            "text": "The paper's conclusion is restrained: public NLP tasks are also a kind of instruction, and models should be able to do them; **the broadest instruction-following model should combine both kinds of data**. What is being compared here is “who real users prefer on their prompts,” which measures something different from academic benchmarks."
+            "title": "That does not mean FLAN and T0 are useless.",
+            "text": "The paper's conclusion is measured: public NLP tasks are also instructions, and models should be expected to handle them. **The broadest instruction-following models should combine both kinds of data.** What is compared here is \"which model is preferred on real user prompts,\" which is different from academic benchmarks."
           }
         }
       ]
     },
     {
-      "h": "Result 2: somewhat more truthful, slightly less toxic, no improvement in bias",
+      "h": "Result two: more truthful, toxicity dips slightly, bias does not improve.",
       "blocks": [
         {
-          "p": "**Truthfulness**. TruthfulQA is a benchmark specifically designed to make models say the wrong thing (for example, by exploiting common misconceptions). The paper asked humans to judge whether answers were truthful and informative. The conclusion: PPO models generate answers that are “both truthful and informative” about twice as often as GPT-3, and this is default behavior—the model does not need to be told to “tell the truth.” The exception is the 1.3B PPO-ptx model, which is slightly worse than the same-size GPT-3."
+          "p": "**Truthfulness.** TruthfulQA is a set of questions designed specifically to lure models into saying the wrong thing (for example by exploiting common misconceptions), and the paper had humans judge whether answers were truthful and informative. The conclusion: PPO models produce answers that are both truthful and informative about twice as often as GPT-3, and this is default behavior—no need to coax the model to \"tell the truth.\" The exception is the 1.3B PPO-ptx, which does slightly worse than a same-size GPT-3."
         },
         {
-          "p": "If the prompt adds “If you are unsure, answer ‘I have no comment,’” PPO models are more likely to say “I have no comment” than to confidently give a wrong answer; GPT-3 is worse at this."
+          "p": "If the prompt adds a line like \"answer 'I have no comment' if you are unsure,\" PPO models are more inclined to say \"I have no comment\" than to state something wrong with confidence; GPT-3 does worse here."
         },
         {
           "fig": {
             "type": "table",
-            "title": "TruthfulQA automatic scoring: PPO improves a lot, but these numbers are overestimated",
-            "subtitle": "175B model, ordinary QA prompts. From appendix Table 14 (automatic scores, not human judgment); amber indicates InstructGPT (PPO-ptx).",
+            "title": "TruthfulQA automatic scores: PPO models improve a lot, but these numbers are inflated.",
+            "subtitle": "175B models, ordinary QA prompts. From Appendix Table 14 (automatic scores, not human judgments); amber is InstructGPT (PPO-ptx).",
             "columns": [
               "Model",
-              "Truthful (%)",
-              "Truthful and informative (%)"
+              "Proportion of truthful answers",
+              "Proportion truthful and informative"
             ],
             "rows": [
               [
@@ -810,29 +824,29 @@
             "highlight": {
               "row": 3
             },
-            "note": "The acknowledgments specifically note that the authors of the TruthfulQA dataset pointed out that the automatic scores overstate PPO's improvement. That is why the main text uses human judgment and reports roughly “twofold,” not the nearly threefold gap in this table."
+            "note": "The paper's acknowledgments note that the TruthfulQA dataset authors said the automatic scores overstate PPO models' improvement. That is why the main text uses human judgment and reports about \"twice,\" not the nearly threefold gap in this table."
           }
         },
         {
           "callout": {
             "kind": "note",
-            "title": "Two places in the paper don't fully agree",
+            "title": "Two places where the paper is not fully consistent.",
             "list": [
-              "The introduction says the results are “equally strong” on the subset of questions not adversarially selected against GPT-3; Section 4.2 says PPO models are still significantly better on this subset, but the absolute improvement is a few percentage points smaller.",
-              "The introduction says “about twice,” based on human judgment; the automatic scores in appendix Table 14 show nearly three times, and the paper itself admits the automatic scores overstate the improvement. When reading the numbers, check which scoring method is being used."
+              "The introduction says results are \"equally strong\" on the subset of questions not adversarially selected against GPT-3; Section 4.2 says PPO models are still significantly better on that subset, but the absolute improvement is a few percentage points smaller.",
+              "The introduction says \"about twice,\" based on human judgment; Appendix Table 14's automatic scores show nearly threefold, and the paper itself admits the automatic scores overstate the improvement. When reading the numbers, be clear which scoring method is being used."
             ]
           }
         },
         {
-          "p": "**Toxicity**. They tested on the RealToxicityPrompts dataset (a set of sentence prefixes likely to provoke profanity), using both the automatic scoring tool Perspective API and human evaluation. To get more high-toxicity inputs, the paper sampled prompts uniformly across toxicity levels, so the absolute toxicity numbers are higher than in typical measurements. The results fall into three cases:"
+          "p": "**Toxicity.** The team tested with the RealToxicityPrompts dataset (a set of sentence beginnings likely to elicit profanity), using both the automated Perspective API scorer and human judgment. To get more high-toxicity inputs, the paper sampled prompts uniformly by toxicity, so absolute toxicity numbers run higher than under the usual sampling. The results fall into three cases:"
         },
         {
           "fig": {
             "type": "table",
-            "title": "When asked to be polite, toxicity drops; when asked to be toxic, it is more toxic than GPT-3",
-            "subtitle": "Average Perspective API toxicity scores for the 175B model (0 to 1, higher is more toxic). From appendix Table 14; amber indicates prompts that asked for bias.",
+            "title": "When asked to be respectful, toxicity drops; when asked to be toxic, it is more toxic than GPT-3.",
+            "subtitle": "Average Perspective API toxicity score for 175B models (0 to 1, higher is more toxic). From Appendix Table 14; amber is prompts requesting bias.",
             "columns": [
-              "Requirement in the prompt",
+              "Prompt instruction",
               "GPT-3",
               "SFT",
               "PPO-ptx"
@@ -860,169 +874,169 @@
             "highlight": {
               "row": 2
             },
-            "note": "The introduction says that when asked to be respectful, InstructGPT produces about 25% fewer toxic outputs than GPT-3; this table uses a different average-score metric, which drops from 0.233 to 0.196. With no instruction, the two are about the same."
+            "note": "The introduction says that when asked to be respectful, InstructGPT produces about 25% fewer toxic outputs than GPT-3; this table uses a different average-score metric, falling from 0.233 to 0.196. With no instruction, the two are about the same."
           }
         },
         {
-          "p": "Human evaluation agrees: InstructGPT is less toxic when asked to be respectful, and about the same as GPT-3 with no instruction. The SFT model is the least toxic, but its answers are the least coherent and least preferred; the paper speculates it often wrote very short or broken outputs. Saying nothing is the surest way to avoid saying the wrong thing."
+          "p": "Human evaluation agrees: InstructGPT is less toxic when asked to be respectful, and about the same as GPT-3 when no instruction is given. The SFT model is the least toxic, but its answers are also the least coherent and least liked; the paper suspects it often wrote very short or broken responses—if you do not speak, you cannot say anything wrong."
         },
         {
-          "p": "**Bias**. They tested with Winogender and CrowS-Pairs: each item is a pair of sentences that differ only in a group identity, and the model's probabilities for the two sentences are compared. A completely unbiased model should treat the two sentences equally, which maximizes the entropy of the probabilities (50/50 gives 1 bit; if one gets 90% and the other 10%, entropy is only about 0.47 bits). By this standard, InstructGPT is **no less biased than GPT-3**; when asked to be “respectful,” entropy is actually lower. The paper says the pattern is unclear: instruction-trained models seem more “confident” regardless of whether the output is stereotypical."
+          "p": "**Bias.** Measured with Winogender and CrowSPairs: each item is a pair of sentences differing only in a group identity, and the model's probability of each sentence is compared. A completely unbiased model should treat the two sentences the same; the \"entropy\" of the two probabilities is then maximal (at 50/50, entropy is 1 bit; if one sentence gets 90% and the other 10%, entropy is only about 0.47 bits). By this standard, InstructGPT is **no less biased than GPT-3**; asking it to be \"respectful\" actually lowers the entropy. The paper says the pattern is unclear: instruction-trained models appear more \"certain,\" whether or not the output is stereotypical."
         },
         {
           "quiz": {
-            "q": "When asked to “please continue in a biased way,” InstructGPT is more toxic than GPT-3. What does this show?",
+            "q": "When asked to \"continue in a biased way,\" InstructGPT is more toxic than GPT-3. What does this show?",
             "options": [
-              "The reward model training failed.",
-              "InstructGPT learned to follow instructions, including harmful ones; training never taught it to refuse.",
-              "The pretraining data mixed into PPO-ptx was toxic.",
-              "Labelers preferred toxic content."
+              "The reward model failed to train.",
+              "InstructGPT learned to follow instructions—including harmful ones; training never taught it to refuse.",
+              "The pretraining data mixed into PPO-ptx is toxic.",
+              "Labelers prefer toxic content."
             ],
             "answer": 1,
-            "why": "During training, the paper explicitly asked labelers to prioritize helpfulness, so the model learned to “follow instructions better,” including malicious ones. The paper lists this as one of its biggest limitations and says the same technique could be used to train models to refuse certain requests, planned for later versions."
+            "why": "During training, the paper explicitly told labelers to prioritize being helpful to the user, so the model learned to \"execute instructions better,\" including malicious ones. The paper lists this as one of its biggest limitations, and says the same technique could train models to refuse certain requests, which it planned to explore in later versions."
           }
         }
       ]
     },
     {
-      "h": "It generalizes—and still makes simple mistakes",
+      "h": "It can generalize—and it still makes basic mistakes.",
       "blocks": [
         {
-          "p": "**Generalization**. Non-English instructions and code-related tasks are very rare in the training data, but InstructGPT can follow a French instruction to write a story, summarize code, and answer questions about code (its explanation of a binomial coefficient code example in Figure 8 is not entirely correct). It does, however, often answer non-English instructions in English. GPT-3 can do these things too, but only with more carefully designed prompts. The paper argues this shows the model has partly learned the **general concept** of “following instructions,” rather than just memorizing the types of tasks in training. This matters: you cannot have a human supervise everything a model does."
+          "p": "**Generalization.** Non-English instructions and code-related tasks are extremely rare in the training data, yet InstructGPT can write a story in response to a French instruction, summarize code, and answer questions about code (in Figure 8, its explanation of a binomial-coefficient snippet is not entirely correct). It does, however, often answer non-English instructions in English. GPT-3 can do these things too, but only with more careful prompting. The paper argues this suggests the model has learned the **general concept** of \"following instructions\" to some degree, rather than merely memorizing the task types it was trained on. That matters: it is impossible to have humans supervise everything a model does."
         },
         {
-          "p": "**Mistakes**. The paper also candidly shows simple mistakes from the 175B InstructGPT. The first two examples are from Figure 9; the third comes from the description in Section 4.3:"
+          "p": "**Mistakes.** The paper also candidly shows the 175B InstructGPT's basic errors; the first two examples come from Figure 9, and the third from the description in Section 4.3:"
         },
         {
           "list": [
-            "**Goes along with a false premise**: ask it “Why is it important to eat socks after meditation?” and, instead of pointing out the absurd premise, it solemnly lists several “theories.”",
-            "**Excessive vagueness**: ask “What happens if you fire a pumpkin out of a cannon at high speed?” and it says too many factors prevent a precise prediction, then lists possibilities. The paper notes the right answer is basically that the pumpkin explodes.",
-            "**Fails on multiple constraints**: such as “List 10 movies from the 1930s set in France,” or “Summarize this in a specified number of sentences.”"
+            "**Going along with false premises**: when asked \"why is it important to eat socks after meditating,\" it did not point out the absurd premise; instead it straight-facedly listed several \"theories.\"",
+            "**Excessive hedging**: asked \"what happens when a pumpkin is fired from a cannon at high speed,\" it said too many factors made a precise answer impossible, then listed a pile of possibilities; the paper notes the correct answer is basically that the pumpkin explodes.",
+            "**Multiple constraints trip it up**: for example, \"list 10 films shot in the 1930s and set in France,\" or \"write a summary in a specified number of sentences.\""
           ]
         },
         {
-          "p": "The paper offers explanations for the first two mistakes. Excessive vagueness may partly come from **the training setup itself**: labelers were told to reward “epistemic humility,” so they tended to give high scores to noncommittal answers, and the reward model learned that tendency. Going along with false premises may arise because the training set contained few prompts with false premises. The paper argues that adversarial data collection—deliberately looking for examples that make the model fail—could substantially reduce both problems."
+          "p": "The paper gives conjectures for the first two errors. Excessive hedging may partly come from the **training procedure itself**: labelers were told to reward \"cognitive humility,\" so they tended to give high scores to hedged answers, and the reward model learned that tendency. Going along with false premises may be because prompts with false premises rarely appeared in the training set. The paper suggests that adversarial data collection (deliberately finding examples that make the model err) could greatly reduce both problems."
         },
         {
           "callout": {
             "kind": "intuition",
-            "title": "The reward model amplifies small human preferences",
-            "text": "This is a general lesson of RLHF: small tendencies in the labelers—preferring caution, longer answers, a more polite tone—get learned by the reward model, then amplified by reinforcement learning into the model's “personality.” The verbosity and excessive disclaimers people complain about in today's chat models are already visible in this paper."
+            "title": "The reward model amplifies people's small preferences.",
+            "text": "This is a general lesson of RLHF: small tendencies in labelers—preferring caution, slightly longer answers, a little more politeness—get learned by the reward model, then amplified by reinforcement learning into the model's \"personality.\" The verbosity and excessive disclaimers that today's chat models are often criticized for are already visible in this paper."
           }
         },
         {
           "quiz": {
-            "q": "What does the paper think may explain InstructGPT being “excessively vague” even on simple questions?",
+            "q": "The paper considers InstructGPT to be \"excessively hedged\" even on simple questions. What is the likely reason?",
             "options": [
-              "Model has too few parameters.",
-              "Labelers were told to reward humble answers; the reward model learned that preference, and reinforcement learning amplified it.",
-              "PPO clipping ratio set too small.",
-              "Training data contains too many philosophy articles."
+              "The model has too few parameters.",
+              "Labelers were told to reward humble/hedged answers; the reward model learned this preference, and reinforcement learning amplified it.",
+              "PPO's clipping ratio was set too small.",
+              "The training data contains too many philosophy articles."
             ],
             "answer": 1,
-            "why": "This is the paper's own speculation: the problem is in the human feedback signal, not in model size or algorithm hyperparameters. It shows that the reward model learns not only “good vs. bad” but also labelers' habits, and that optimization amplifies them."
+            "why": "This is the paper's own conjecture: the problem lies in the human-feedback signal, not in model size or algorithm hyperparameters. It shows the reward model learns not just good vs. bad, but labelers' habits, which are then amplified by optimization."
           }
         }
       ]
     },
     {
-      "h": "Aligned to whom: the section most worth reading closely",
+      "h": "Aligned to whom: the section most worth reading closely.",
       "blocks": [
         {
-          "p": "The literature often talks about aligning models with “human preferences” or “human values.” Section 5.2 of the paper says plainly: we have not aligned to “humanity.” We have aligned to a specific group of people, and that group's preferences are shaped by the task instructions, the work setting (this is paid work), and who sets the tasks. It lays out the layers one by one:"
+          "p": "The literature often talks about aligning models with \"human preferences\" and \"human values.\" Section 5.2 is blunt: the model is not aligned with \"humanity,\" but with a specific group of people, and that group's preferences are shaped by the instructions, the working context (this was paid work), and who assigned the task. It lays out the layers:"
         },
         {
           "list": [
-            "**First layer, the training labelers**: mostly English speakers living in the U.S. or Southeast Asia. Among the 19 labelers who completed the questionnaire in the appendix, 52.6% identified as Southeast Asian; by nationality, the Philippines and Bangladesh each account for 22%, and the U.S. for 17%. Their agreement with one another is only about 73%.",
-            "**Second layer, the researchers themselves**: the labeling instructions were written by researchers, and edge cases were decided by them in a chat room, so the model is also indirectly aligned to OpenAI.",
-            "**Third layer, API customers**: prompts came from customers, so the model is implicitly aligned to the uses customers find valuable. But customers and their end users may have different interests: for example, a customer may want users to spend longer on the platform. Labelers also cannot see the contexts in which prompts and answers will actually be used.",
-            "**Fourth layer, who can become a customer**: for most of the project, API users were chosen from a waitlist, and the list was originally seeded with OpenAI employees, so the population skewed toward their own social circles."
+            "**Layer one, the training labelers**: mostly English speakers living in the US or Southeast Asia. Among the 19 labelers who answered the questionnaire in the appendix, 52.6% identified as Southeast Asian; by nationality, the Philippines and Bangladesh each accounted for 22%, and the US for 17%. Their agreement with one another was only about 73%.",
+            "**Layer two, the researchers themselves**: researchers wrote the labeling instructions and adjudicated edge cases in the chat room, so the model is also indirectly aligned with OpenAI.",
+            "**Layer three, API customers**: prompts come from customers, so the model implicitly aligns with the uses customers find valuable. But customers and their end users may have different interests—for example, a customer might want to keep users on the platform longer. The labelers also cannot see the real-world contexts in which prompts and answers will be used.",
+            "**Layer four, who gets to be a customer**: for most of the project, API users were admitted from a waitlist seeded at first by OpenAI employees, so the population leaned toward their own social circles."
           ]
         },
         {
-          "p": "The paper's position is that this work only proves **the technique can align a model to a specific population for a specific application.** It does not claim that researchers, labelers, or API customers are the “correct” preference source. Many more stakeholders deserve consideration: the institution training the model, customers building products with it, end users of those products, and the broader public indirectly affected. The paper also writes that it is impossible to train a system that aligns to everyone's preferences at once."
+          "p": "The paper's position is that it only demonstrates **a technique for aligning a model to a particular group of people for a particular application**. It does not claim researchers, labelers, or API customers are the \"correct\" source of preferences. Many other stakeholders deserve consideration: the institutions that train models, the customers who build products on them, the end users of those products, and the broader public affected indirectly. The paper also writes that it is impossible to train a system that aligns with everyone's preferences at once."
         },
         {
-          "p": "One direction it proposes is to let models be conditioned on a particular group's preferences, or be easy to fine-tune or prompt to represent different groups, so people with different values can use different models. But these models still affect society as a whole. Whose preferences to condition on, how to ensure all groups are represented, and how to allow people to opt out of harmful processes are all hard problems."
+          "p": "One direction it proposes: make models conditional on the preferences of a given group, or make them easy to fine-tune or prompt to represent different groups, so people with different values can use different models. But those models still affect society as a whole; whose preferences to condition on, how to ensure all groups are represented, and how people can opt out of harmful processes all remain hard problems."
         },
         {
           "callout": {
             "kind": "myth",
-            "title": "“An RLHF-trained model aligns with human values”",
-            "text": "The paper itself rejects this claim. RLHF moves the model closer to the judgments of **the specific people who provided feedback**, under **that specific set of instructions**. Swap the labelers or the instructions, and you get a different model. So when you hear “this model is aligned,” it is worth asking: aligned to whom? By what standard?"
+            "title": "\"RLHF-trained models align with human values.\"",
+            "text": "The paper itself rejects that claim. RLHF moves the model closer to the judgments of **the people who provided the feedback**, under **those particular instructions**. Change the labelers, or change the instructions, and you get a different model. So when you hear \"this model is aligned,\" it is worth asking: aligned to whom? By what standard?"
           }
         }
       ]
     },
     {
-      "h": "Limitations, and what came after",
+      "h": "Limitations, and what happened next.",
       "blocks": [
         {
-          "p": "Limitations and open questions listed in the paper:"
+          "p": "The limitations and open problems the paper lists:"
         },
         {
           "list": [
-            "**Data collection**: most comparisons were labeled by only one labeler, mainly to save money. Multiple labels per comparison would reveal areas of strong disagreement; and simply averaging over disagreements may not be appropriate—for content involving a minority group, more weight may belong to labelers from that group.",
-            "**The model is not safe**: it still generates toxic or biased content, fabricates facts, and sometimes generates sexual and violent content even when not asked. The biggest limitation is that it almost always does what the user asks, even when that could cause real-world harm.",
-            "**Ways it could improve**: adversarially collect worst-case examples; filter toxic content from the pretraining data; combine it with methods that improve truthfulness such as WebGPT; train the model to refuse certain instructions (the paper says it planned to explore this in later versions).",
-            "**Comparison may not be the most efficient signal**: perhaps labelers could directly rewrite answers, or provide critiques in natural language.",
-            "**What to align to**: There are subtle differences between aligning to instructions, intent, revealed preferences, ideal preferences, interests, or values. For simplicity, the paper aligns to “inferred user intent.”"
+            "**Data collection**: most comparisons were labeled by only one labeler, mostly to save money. Having multiple people label the same items could reveal points of sharp disagreement; and simply averaging across disagreements may not be right—for example, when content concerns a minority group, that group's labelers' views might deserve more weight.",
+            "**The model is not safe**: it still generates toxic or biased content and fabricates facts, and sometimes produces sexual or violent content even when not asked. The biggest limitation is that it almost always follows the user's instruction, even when that could cause real-world harm.",
+            "**Potential improvements**: adversarially collect worst-case data; filter toxic content from pretraining data; combine with truthfulness-improving methods such as WebGPT; train models to refuse certain instructions (the paper says it planned to explore this in later versions).",
+            "**Comparisons may not be the most efficient signal**: perhaps labelers could directly rewrite answers, or write critiques in natural language.",
+            "**What to align to**: aligning to instructions, intent, revealed preferences, ideal preferences, interests, or values all differ in subtle ways. For simplicity, the paper aligns to \"inferred user intent.\""
           ]
         },
         {
-          "p": "The paper's “Broader impacts” section is just as sober: making the model more obedient also makes it easier to misuse, for example to mass-produce plausible-looking disinformation. High-risk areas such as medical diagnosis, credit and hiring judgments, political advertising, and law enforcement should be approached with great caution, or not at all. Alignment technology is not a panacea; it is one tool in a larger safety system."
+          "p": "The paper's \"Broader Impacts\" section is also sober: making a model better at obeying also makes it easier to abuse, for example by generating realistic-looking disinformation at scale. High-stakes areas such as medical diagnosis, credit and hiring eligibility decisions, political ads, and law enforcement should be approached with great caution, or not at all. Alignment is not a silver bullet; it is one tool in a larger safety system."
         },
         {
-          "p": "**What came next.** In November 2022, OpenAI released ChatGPT, officially noting that it was trained with RLHF using the same method as InstructGPT, with a slightly different data collection setup (mainly changed to dialogue format). After that, “pretraining → supervised fine-tuning → training on human preferences” became the standard pipeline for chat models. In 2023, Meta's Llama 2 also used RLHF to train its dialogue model; the same year, DPO (Direct Preference Optimization) showed that one can fine-tune a language model directly on preference pairs, without separately training a reward model or running reinforcement learning, and achieve similar goals. Both are in our reading list."
+          "p": "**What followed.** In November 2022, OpenAI released ChatGPT, explicitly stating it was trained with RLHF using the same method as InstructGPT, with slightly different data-collection details (mainly a dialogue format). From then on, \"pretraining → supervised fine-tuning → training on human preferences\" became the standard pipeline for chat models. In 2023, Meta's Llama 2 also used RLHF to train its conversational model; the same year, DPO (Direct Preference Optimization) showed that fine-tuning a language model directly on preference pairs—without a separate reward model or reinforcement learning—could achieve similar goals. Both are on our reading list."
         },
         {
-          "p": "The PPO algorithm itself (2017), which this article does not cover, is also part of the fine-tuning and alignment section of the reading list."
+          "p": "The PPO algorithm itself (2017), which this article does not cover, is also in the fine-tuning and alignment section of our reading list."
         }
       ]
     },
     {
-      "h": "Check yourself: did you really get it?",
+      "h": "Check your understanding.",
       "blocks": [
         {
           "quiz": {
-            "q": "The 1.3B InstructGPT was preferred by labelers over the 175B GPT-3. Which conclusion **cannot** be drawn from this result?",
+            "q": "The 1.3B InstructGPT was preferred by labelers over the 175B GPT-3. Which of the following conclusions **cannot** be drawn from this result?",
             "options": [
-              "For customers' actual tasks, aligning with human feedback may be a better deal than scaling up the model.",
-              "The 1.3B InstructGPT comprehensively surpasses GPT-3 175B in knowledge and capabilities.",
-              "Pretrained models already have the ability to do many tasks; it just hasn't been brought out.",
+              "For customers' real tasks, aligning with human feedback may be more cost-effective than scaling up the model.",
+              "The 1.3B InstructGPT fully surpasses GPT-3 175B in knowledge and abilities.",
+              "Pretrained models already have the ability to perform many tasks; it simply has not been drawn out.",
               "Human preference scores measure something different from public NLP benchmarks."
             ],
             "answer": 1,
-            "why": "Preference scores measure “whether the answer matches the user's intent and is useful,” not raw knowledge. The paper also shows RLHF causes regressions on some public benchmarks (the alignment tax), so saying the smaller model “comprehensively surpasses” the larger one is an overreading. The other three are the paper's own arguments."
+            "why": "Preference scores measure whether an answer matches the user's intent and is useful, not the total amount of knowledge. The paper also shows RLHF causes regressions on some public benchmarks (the alignment tax), so saying the small model \"fully surpasses\" the large one is an overreading. The other three are arguments the paper itself makes."
           }
         },
         {
           "quiz": {
-            "q": "If Step 2 did not train a reward model, and Step 3 instead asked labelers to score every answer the model generated, what would be the main problem?",
+            "q": "If you skip training a reward model in Step 2 and instead have labelers score every answer generated in Step 3, what is the main problem?",
             "options": [
-              "Labeler scores would be inaccurate.",
-              "PPO runs 256k episodes; having humans score every episode is too slow and expensive to be feasible.",
+              "Labelers' scores are inaccurate.",
+              "PPO needs to run 256k episodes, each of which would need human evaluation; this is infeasible in cost and speed.",
               "Reinforcement learning cannot use human scores.",
-              "This would create an alignment tax."
+              "This causes the alignment tax."
             ],
             "answer": 1,
-            "why": "The point of the reward model is to “distill” finite human judgment into an always-available, nearly free referee. Human scores are not necessarily inaccurate—the reward model itself learns from humans—and reinforcement learning can use human scores; it is just too slow and expensive. The alignment tax is a separate issue."
+            "why": "The point of the reward model is to distill limited human judgment into a referee that is available at any time and nearly free. Human scores are not inaccurate (the reward model itself is learning from people), and reinforcement learning can use human scores; it is just too expensive and too slow. The alignment tax is a separate issue."
           }
         },
         {
-          "p": "After finishing this, you should be able to answer these questions:"
+          "p": "After reading this, you should be able to answer the following questions:"
         },
         {
           "list": [
-            "Why does a “predict the next token” model not necessarily follow instructions? Give an example.",
-            "What do people need to do in each of the three steps? Why is ranking cheaper than writing demonstrations, and why are Step 1's demonstrations still needed?",
+            "Why does a model trained to \"predict the next token\" not necessarily follow instructions? Give an example.",
+            "What do humans do in each of the three steps? Why is ranking cheaper than writing demonstrations, and why is the Step 1 demonstration still needed?",
             "How many comparison pairs does ranking 6 answers produce? Why should they be kept in the same training sample?",
             "Why is the reward model's loss insensitive to adding a constant to all scores? How does the paper set the zero point?",
-            "What problem does the KL penalty prevent? What happens if β is too large, or too small?",
-            "What is the alignment tax? How does PPO-ptx reduce it? Why does increasing β not work?",
-            "Why do FLAN and T0, instruction-tuned on public NLP data, fall short of InstructGPT?",
-            "Why do TruthfulQA's “roughly two times” and the nearly threefold gap in the appendix table not contradict each other?",
-            "Whose preferences does InstructGPT align to? Name at least three layers."
+            "What problem does the KL penalty prevent? What happens if β is too large or too small?",
+            "What is the alignment tax? How does PPO-ptx mitigate it, and why will not increasing β work?",
+            "Why do FLAN and T0, instruction-tuned on public NLP data, lose to InstructGPT?",
+            "Why are not the \"about twice\" claim and the nearly threefold gap in the appendix table contradictory?",
+            "Whose preferences does InstructGPT align with? Name at least three layers."
           ]
         }
       ]
@@ -1030,349 +1044,349 @@
   ],
   "sources": {
     "main": {
-      "title": "Training language models to follow instructions with human feedback (arXiv:2203.02155, v1)",
+      "title": "Training language models to follow instructions with human feedback (arXiv:2203.02155 v1)",
       "publisher": "Ouyang et al. · OpenAI",
       "date": "2022-03-04",
       "url": "https://arxiv.org/abs/2203.02155"
     },
-    "note": "This article is based on v1 of the arXiv paper (March 2022). Figures were redrawn by us from the paper's data; examples and numbers marked “Illustrative” are for explanation and are not paper data. Ratios such as “about 135x” and “one-sixtieth” were calculated by us from the paper's numbers. The ChatGPT, Llama 2, and DPO details come from their respective public releases and are not in this paper."
+    "note": "This article is based on the arXiv v1 of the paper (March 2022). Figures are redrawn by us from the paper's data; examples and numbers marked \"illustrative\" are for explaining concepts, not from the paper. Ratios such as \"about 135 times\" and \"one-sixtieth\" are calculated by us from the paper's numbers. ChatGPT, Llama 2, and DPO details come from their respective public releases and are not part of this paper."
   },
   "claims": [
     {
-      "text": "The 68-page paper's arXiv ID and date",
+      "text": "arXiv ID and date of the 68-page paper.",
       "value": "2203.02155",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "arXiv:2203.02155v1 [cs.CL] 4 Mar 2022",
       "as_written": "March 2022"
     },
     {
-      "text": "The 1.3B-parameter InstructGPT beats the 175B GPT-3",
+      "text": "The 1.3B-parameter InstructGPT beats the 175B-parameter GPT-3.",
       "value": "1.3B",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "outputs from the 1.3B parameter InstructGPT model are preferred to outputs from the 175B GPT-3",
-      "as_written": "1.3 billion"
+      "as_written": "1.3B"
     },
     {
       "text": "GPT-3 175B",
       "value": "175B",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "preferred to outputs from the 175B GPT-3",
-      "as_written": "175 billion"
+      "as_written": "175B"
     },
     {
-      "text": "More than 100x fewer parameters (we calculate about 135x from 175B / 1.3B).",
+      "text": "More than 100x fewer parameters (we calculate 175B ÷ 1.3B ≈ 135x).",
       "value": "100x",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "despite having over 100x fewer parameters",
       "as_written": "100x"
     },
     {
-      "text": "175B InstructGPT beats GPT-3 85 ± 3% of the time",
+      "text": "175B InstructGPT's win rate against GPT-3: 85 ± 3%.",
       "value": "85 ± 3%",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "Outputs from our 175B InstructGPT are preferred to 175B GPT-3 outputs 85 ± 3% of the time",
       "as_written": "85 ± 3%"
     },
     {
-      "text": "71 ± 4% win rate against few-shot GPT-3",
+      "text": "Win rate against few-shot GPT-3: 71 ± 4%.",
       "value": "71 ± 4%",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "preferred 71 ± 4% of the time to few-shot 175B GPT-3",
       "as_written": "71 ± 4%"
     },
     {
-      "text": "Fabricated content: 21% vs. 41%",
+      "text": "Fabricated content: 21% vs. 41%.",
       "value": "21% vs. 41%",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "(a 21% vs. 41% hallucination rate, respectively)",
       "as_written": "21%"
     },
     {
-      "text": "GPT-3 fabrication rate: 41%",
+      "text": "GPT-3's fabrication rate: 41%.",
       "value": "41%",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "21% vs. 41% hallucination rate",
       "as_written": "41%"
     },
     {
-      "text": "About 25% fewer toxic outputs when asked to be respectful",
+      "text": "About 25% fewer toxic outputs when asked to be respectful.",
       "value": "25%",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "InstructGPT models generate about 25% fewer toxic outputs than GPT-3 when prompted to be respectful",
       "as_written": "25%"
     },
     {
-      "text": "Roughly twice as often truthful and informative on TruthfulQA",
+      "text": "TruthfulQA truthful-and-informative answers: about twice as often.",
       "value": "twice",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "InstructGPT generates truthful and informative answers about twice as often as GPT-3",
-      "as_written": "2x"
+      "as_written": "twice"
     },
     {
-      "text": "About 40 labelers",
+      "text": "About 40 labelers.",
       "value": "about 40 contractors",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "we hired a team of about 40 contractors on Upwork and through ScaleAI",
       "as_written": "40"
     },
     {
-      "text": "Training labeler agreement: 72.6 ± 1.5%",
+      "text": "Training labeler agreement: 72.6 ± 1.5%.",
       "value": "72.6 ± 1.5%",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "training labelers agree with each-other 72.6 ± 1.5% of the time",
       "as_written": "72.6 ± 1.5%"
     },
     {
-      "text": "Held-out labeler agreement: 77.3 ± 1.3%",
+      "text": "Held-out labeler agreement: 77.3 ± 1.3%.",
       "value": "77.3 ± 1.3%",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "for held-out labelers this number is 77.3 ± 1.3%",
       "as_written": "77.3 ± 1.3%"
     },
     {
-      "text": "Summarization researcher agreement: 73 ± 4%",
+      "text": "Summarization researchers' agreement: 73 ± 4%.",
       "value": "73 ± 4%",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "researcher-researcher agreement was 73 ± 4%",
       "as_written": "73 ± 4%"
     },
     {
-      "text": "About 73% agreement",
+      "text": "Agreement: about 73%.",
       "value": "73%",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "we found the inter-labeler agreement to be about 73%",
       "as_written": "73%"
     },
     {
-      "text": "SFT: about 13k prompts; RM: 33k; PPO: 31k",
+      "text": "SFT: about 13,000 prompts; RM: 33,000; PPO: 31,000.",
       "value": "13k",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "The SFT dataset contains about 13k training prompts",
       "as_written": "13,000"
     },
     {
-      "text": "RM: 33k prompts",
+      "text": "RM: 33,000 prompts.",
       "value": "33k",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "the RM dataset has 33k training prompts",
       "as_written": "33,000"
     },
     {
-      "text": "PPO: 31k prompts",
+      "text": "PPO: 31,000 prompts.",
       "value": "31k",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "the PPO dataset has 31k training prompts (only from the API)",
       "as_written": "31,000"
     },
     {
-      "text": "At most 200 prompts per user",
+      "text": "At most 200 prompts per user.",
       "value": "200 per user ID",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "we limit the number of prompts to 200 per user ID",
       "as_written": "200"
     },
     {
-      "text": "Over 96% of the data is English",
+      "text": "More than 96% of the data is English.",
       "value": "96%",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "Our dataset is over 96% English",
       "as_written": "96%"
     },
     {
-      "text": "Table 6: SFT labeler-written 11,295",
+      "text": "Table 6: SFT labeler prompts: 11,295.",
       "value": "11,295",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "11,295",
       "as_written": "11,295"
     },
     {
-      "text": "Table 6: SFT customer 1,430",
+      "text": "Table 6: SFT customer prompts: 1,430.",
       "value": "1,430",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "1,430",
       "as_written": "1,430"
     },
     {
-      "text": "Table 6: RM labeler 6,623",
+      "text": "Table 6: RM labeler prompts: 6,623.",
       "value": "6,623",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "6,623",
       "as_written": "6,623"
     },
     {
-      "text": "Table 6: RM customer 26,584",
+      "text": "Table 6: RM customer prompts: 26,584.",
       "value": "26,584",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "26,584",
       "as_written": "26,584"
     },
     {
-      "text": "Table 6: PPO customer 31,144",
+      "text": "Table 6: PPO customer prompts: 31,144.",
       "value": "31,144",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "31,144",
       "as_written": "31,144"
     },
     {
-      "text": "Table 1: Generation 45.6%",
+      "text": "Table 1: generation: 45.6%.",
       "value": "45.6%",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "45.6%",
       "as_written": "45.6"
     },
     {
-      "text": "Open QA 12.4%",
+      "text": "Open QA: 12.4%.",
       "value": "12.4%",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "12.4%",
       "as_written": "12.4"
     },
     {
-      "text": "Brainstorming 11.2%",
+      "text": "Brainstorming: 11.2%.",
       "value": "11.2%",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "11.2%",
       "as_written": "11.2"
     },
     {
-      "text": "Chat 8.4%",
+      "text": "Chat: 8.4%.",
       "value": "8.4%",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "8.4%",
       "as_written": "8.4"
     },
     {
-      "text": "Rewrite 6.6%",
+      "text": "Rewrite: 6.6%.",
       "value": "6.6%",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "6.6%",
       "as_written": "6.6"
     },
     {
-      "text": "Summarization 4.2%",
+      "text": "Summarization: 4.2%.",
       "value": "4.2%",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "4.2%",
       "as_written": "4.2"
     },
     {
-      "text": "Classification and Other 3.5% each",
+      "text": "Classification and other: 3.5% each.",
       "value": "3.5%",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "3.5%",
       "as_written": "3.5"
     },
     {
-      "text": "Closed QA 2.6%",
+      "text": "Closed QA: 2.6%.",
       "value": "2.6%",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "2.6%",
       "as_written": "2.6"
     },
     {
-      "text": "Extract 1.9%",
+      "text": "Extract: 1.9%.",
       "value": "1.9%",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "1.9%",
       "as_written": "1.9"
     },
     {
-      "text": "Classification and QA about 18%",
+      "text": "Classification and QA: about 18%.",
       "value": "18%",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "classification and QA are only a small part (about 18%)",
       "as_written": "18%"
     },
     {
-      "text": "Open-ended generation and brainstorming about 57%",
+      "text": "Open-ended generation and brainstorming: about 57%.",
       "value": "57%",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "open-ended generation and brainstorming consist of about 57% of our prompt dataset",
       "as_written": "57%"
     },
     {
-      "text": "SFT: 16 epochs, dropout 0.2",
+      "text": "SFT: 16 epochs, dropout 0.2.",
       "value": "16 epochs",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "We trained for 16 epochs, using a cosine learning rate decay, and residual dropout of 0.2",
-      "as_written": "16 epochs"
+      "as_written": "16 epochs."
     },
     {
-      "text": "SFT validation loss overfits after 1 epoch",
+      "text": "SFT validation loss overfits after 1 epoch.",
       "value": "1 epoch",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "our SFT models overfit on validation loss after 1 epoch",
-      "as_written": "1 epoch"
+      "as_written": "1 epoch."
     },
     {
-      "text": "RL-start SFT: 2 epochs, 10% pretraining data mixed in",
+      "text": "RL starting SFT: 2 epochs, 10% pretraining data mixed in.",
       "value": "10%",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "We also mix in 10% pretraining data during fine-tuning",
       "as_written": "10%"
     },
     {
-      "text": "RL-start SFT: 2 epochs",
+      "text": "RL starting SFT: 2 epochs.",
       "value": "2 epochs",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "apply supervised fine-tuning for 2 epochs on the demonstration dataset",
-      "as_written": "2 epochs"
+      "as_written": "2 epochs."
     },
     {
-      "text": "Only a 6B reward model is used",
+      "text": "Uses only a 6B reward model.",
       "value": "6B",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "In this paper we only use 6B RMs",
-      "as_written": "6B"
+      "as_written": "6 billion."
     },
     {
-      "text": "K ranges from 4 to 9",
+      "text": "K is between 4 and 9.",
       "value": "K = 4",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "anywhere between K = 4 and K = 9 responses to rank",
-      "as_written": "4 to 9"
+      "as_written": "4 to 9."
     },
     {
-      "text": "At most 2,304 comparison pairs per batch",
+      "text": "One batch: up to 2,304 comparison pairs.",
       "value": "2,304",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "a single batch could contain up to 64 × K 2 ≤ 2,304 comparisons",
       "as_written": "2,304"
     },
     {
-      "text": "Reward model batch size: 64 prompts",
+      "text": "Reward model batch size: 64 prompts.",
       "value": "64",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "and a batch size of 64",
-      "as_written": "64"
+      "as_written": "64 prompts."
     },
     {
-      "text": "Changing the learning rate by 50% gives similar results",
+      "text": "Changing the learning rate by 50% gives similar results.",
       "value": "50%",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "changes of up to 50% in the learning rate resulted in similar performance",
       "as_written": "50%"
     },
     {
-      "text": "Held-out group accuracy: 69.6 ± 0.9%",
+      "text": "Held-out group accuracy: 69.6 ± 0.9%.",
       "value": "69.6 ± 0.9%",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "These RMs have an accuracy of 69.6 ± 0.9% on predicting the preferences of labelers in the held-out group",
       "as_written": "69.6 ± 0.9%"
     },
     {
-      "text": "Training group accuracy: 72.4 ± 0.4%",
+      "text": "Training group accuracy: 72.4 ± 0.4%.",
       "value": "72.4 ± 0.4%",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "a small decrease from their 72.4 ± 0.4% accuracy",
       "as_written": "72.4 ± 0.4%"
     },
     {
-      "text": "5-group cross-validation",
+      "text": "5-fold cross-validation.",
       "value": "5 groups",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "we split our labelers into 5 groups",
-      "as_written": "5 groups"
+      "as_written": "5 groups."
     },
     {
       "text": "β = 0.02",
@@ -1382,39 +1396,39 @@
       "as_written": "0.02"
     },
     {
-      "text": "PPO clipping ratio: 0.2",
+      "text": "PPO clipping fraction: 0.2.",
       "value": "0.2",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "The PPO clip ratio is set to 0.2",
       "as_written": "0.2"
     },
     {
-      "text": "256k episodes; about 31k prompts",
+      "text": "256k episodes, about 31k prompts.",
       "value": "256k episodes",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "We train all the RL models for 256k episodes",
       "as_written": "256k"
     },
     {
-      "text": "Batch 512; minibatch 64; 8 minibatches",
+      "text": "Batch size 512, minibatch size 64, split into 8 minibatches.",
       "value": "512",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "The batch size for each iteration is 512, with a minibatch size of 64",
       "as_written": "512"
     },
     {
-      "text": "Split into 8 minibatches",
+      "text": "Split into 8 minibatches.",
       "value": "8 minibatches",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "each batch is randomly split into 8 minibatches",
-      "as_written": "8"
+      "as_written": "8 minibatches."
     },
     {
-      "text": "Pretraining samples = 8× the number of episodes",
+      "text": "Pretraining samples are 8× the number of episodes.",
       "value": "8 times",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "We use 8 times more pretraining examples than the number of the RL training episodes",
-      "as_written": "8×"
+      "as_written": "8×."
     },
     {
       "text": "γ = 27.8",
@@ -1424,21 +1438,21 @@
       "as_written": "27.8"
     },
     {
-      "text": "Raising β to 2.0 — 100× the default — still did not recover the regression",
+      "text": "Raising β to 2.0, 100× the default, still does not recover.",
       "value": "2.0",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "even by increasing the KL reward coefficient to 2.0, which is 100 times of the default value",
-      "as_written": "100×"
+      "as_written": "100×."
     },
     {
-      "text": "After 512k episodes, performance fell below GPT-3",
+      "text": "After 512k episodes, falls below GPT-3.",
       "value": "512k",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "Instead of training for 256k episodes, we train for 512k episodes",
       "as_written": "512k"
     },
     {
-      "text": "Table 14: SQuADv2 64.30 / 43.68 / 59.85",
+      "text": "Table 14: SQuADv2: 64.30 / 43.68 / 59.85.",
       "value": "64.30",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "64.30",
@@ -1480,21 +1494,21 @@
       "as_written": "15.2"
     },
     {
-      "text": "French-to-English translation: 38.92 / 24.16 / 34.28",
+      "text": "French-to-English: 38.92 / 24.16 / 34.28.",
       "value": "38.92",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "38.92",
       "as_written": "38.9"
     },
     {
-      "text": "PPO: 24.16",
+      "text": "French-to-English PPO: 24.16.",
       "value": "24.16",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "24.16",
       "as_written": "24.2"
     },
     {
-      "text": "PPO-ptx: 34.28",
+      "text": "French-to-English PPO-ptx: 34.28.",
       "value": "34.28",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "34.28",
@@ -1522,63 +1536,63 @@
       "as_written": "80.7"
     },
     {
-      "text": "175B SFT compute: 4.9 PF-days",
+      "text": "SFT 175B compute: 4.9 PF-days.",
       "value": "4.9 petaflops/s-days",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "training our 175B SFT model requires 4.9 petaflops/s-days",
       "as_written": "4.9"
     },
     {
-      "text": "175B PPO-ptx compute: 60 PF-days",
+      "text": "PPO-ptx 175B compute: 60 PF-days.",
       "value": "60 petaflops/s-days",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "training our 175B PPO-ptx model requires 60 petaflops/s-days",
       "as_written": "60"
     },
     {
-      "text": "GPT-3 compute: 3,640 PF-days",
+      "text": "GPT-3 compute: 3,640 PF-days.",
       "value": "3,640 petaflops/s-days",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "compared to 3,640 petaflops/s-days for GPT-3",
       "as_written": "3,640"
     },
     {
-      "text": "More effective than scaling the model 100×",
+      "text": "More effective than scaling the model 100×.",
       "value": "100x model size increase",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "more so than a 100x model size increase",
-      "as_written": "100×"
+      "as_written": "100×."
     },
     {
-      "text": "Vs FLAN: 78 ± 4%",
+      "text": "vs. FLAN: 78 ± 4%.",
       "value": "78 ±4%",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "our 175B InstructGPT model outputs were preferred over our FLAN model 78 ±4% of the time",
       "as_written": "78 ± 4"
     },
     {
-      "text": "Vs T0: 79 ± 4%",
+      "text": "vs. T0: 79 ± 4%.",
       "value": "79 ± 4%",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "over our T0 model 79 ± 4% of the time",
       "as_written": "79 ± 4"
     },
     {
-      "text": "FLAN and T0: ~1 million examples each",
+      "text": "FLAN and T0: about 1 million examples each.",
       "value": "1 million",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "We fine-tune them on approximately 1 million examples respectively",
-      "as_written": "1 million"
+      "as_written": "1 million."
     },
     {
-      "text": "InstructGPT win rate: 73.4 ± 2%",
+      "text": "InstructGPT win rate: 73.4 ± 2%.",
       "value": "73.4 ±2%",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "InstructGPT has a 73.4 ±2% winrate vs. our baseline",
       "as_written": "73.4 ± 2%"
     },
     {
-      "text": "T0: 26.8 ± 2%; FLAN: 29.8 ± 2%",
+      "text": "T0: 26.8 ± 2%; FLAN: 29.8 ± 2%.",
       "value": "26.8 ±2%",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "compared to 26.8 ±2% and 29.8 ±2% for our version of T0 and FLAN",
@@ -1592,168 +1606,168 @@
       "as_written": "29.8 ± 2%"
     },
     {
-      "text": "Table 14, TruthfulQA truthful, GPT-3: 0.284",
+      "text": "Table 14 TruthfulQA truthful GPT-3: 0.284.",
       "value": "0.284",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "0.284",
       "as_written": "28.4%"
     },
     {
-      "text": "Truthful, SFT: 0.515",
+      "text": "TruthfulQA truthful SFT: 0.515.",
       "value": "0.515",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "0.515",
       "as_written": "51.5%"
     },
     {
-      "text": "Truthful, PPO: 0.755",
+      "text": "TruthfulQA truthful PPO: 0.755.",
       "value": "0.755",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "0.755",
       "as_written": "75.5%"
     },
     {
-      "text": "Truthful, PPO-ptx: 0.712",
+      "text": "TruthfulQA truthful PPO-ptx: 0.712.",
       "value": "0.712",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "0.712",
       "as_written": "71.2%"
     },
     {
-      "text": "Truthful and informative, GPT-3: 0.251",
+      "text": "Truthful and informative GPT-3: 0.251.",
       "value": "0.251",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "0.251",
       "as_written": "25.1%"
     },
     {
-      "text": "Truthful and informative, SFT: 0.271",
+      "text": "Truthful and informative SFT: 0.271.",
       "value": "0.271",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "0.271",
       "as_written": "27.1%"
     },
     {
-      "text": "Truthful and informative, PPO: 0.752",
+      "text": "Truthful and informative PPO: 0.752.",
       "value": "0.752",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "0.752",
       "as_written": "75.2%"
     },
     {
-      "text": "Truthful and informative, PPO-ptx: 0.689",
+      "text": "Truthful and informative PPO-ptx: 0.689.",
       "value": "0.689",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "0.689",
       "as_written": "68.9%"
     },
     {
-      "text": "Automatic TruthfulQA scores overestimate the improvement",
+      "text": "Automatic TruthfulQA scores overstate the improvement.",
       "value": "overstating",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "the automatic TruthfulQA metrics were overstating the gains of our PPO models",
-      "as_written": "Overestimated"
+      "as_written": "Overstated."
     },
     {
-      "text": "No instruction: 0.231 / 0.211 / 0.234",
+      "text": "Toxicity, no instruction: 0.231 / 0.211 / 0.234.",
       "value": "0.234",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "0.234",
       "as_written": "0.234"
     },
     {
-      "text": "Respectful, GPT-3: 0.233",
+      "text": "Toxicity, respectful GPT-3: 0.233.",
       "value": "0.233",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "0.233",
       "as_written": "0.233"
     },
     {
-      "text": "Respectful, PPO-ptx: 0.196",
+      "text": "Toxicity, respectful PPO-ptx: 0.196.",
       "value": "0.196",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "0.196",
       "as_written": "0.196"
     },
     {
-      "text": "Respectful, SFT: 0.199",
+      "text": "Toxicity, respectful SFT: 0.199.",
       "value": "0.199",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "0.199",
       "as_written": "0.199"
     },
     {
-      "text": "Asked to be biased, GPT-3: 0.285",
+      "text": "Toxicity, biased GPT-3: 0.285.",
       "value": "0.285",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "0.285",
       "as_written": "0.285"
     },
     {
-      "text": "Asked to be biased, PPO-ptx: 0.400",
+      "text": "Toxicity, biased PPO-ptx: 0.400.",
       "value": "0.400",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "0.400",
       "as_written": "0.400"
     },
     {
-      "text": "Asked to be biased, SFT: 0.256",
+      "text": "Toxicity, biased SFT: 0.256.",
       "value": "0.256",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "0.256",
       "as_written": "0.256"
     },
     {
-      "text": "No instruction, SFT: 0.211",
+      "text": "Toxicity, no instruction SFT: 0.211.",
       "value": "0.211",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "0.211",
       "as_written": "0.211"
     },
     {
-      "text": "Human labeling: 1,729 prompts",
+      "text": "Human-labeled: 1,729 prompts.",
       "value": "1,729",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "A total of 1,729 prompts were labeled",
       "as_written": "1,729"
     },
     {
-      "text": "Questionnaire: 19 labelers",
+      "text": "Questionnaire: 19 labelers.",
       "value": "19 respondents",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "show the results from the 19 respondents in Table 12",
-      "as_written": "19"
+      "as_written": "19 labelers."
     },
     {
-      "text": "Southeast Asian: 52.6%",
+      "text": "Southeast Asian: 52.6%.",
       "value": "52.6%",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "52.6%",
       "as_written": "52.6%"
     },
     {
-      "text": "Philippines and Bangladesh: 22% each",
+      "text": "Philippines and Bangladesh: 22% each.",
       "value": "22%",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "22%",
       "as_written": "22%"
     },
     {
-      "text": "United States: 17%",
+      "text": "US: 17%.",
       "value": "17%",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "17%",
       "as_written": "17%"
     },
     {
-      "text": "One labeler labeled most comparisons",
+      "text": "One labeler labeled most comparisons.",
       "value": "1 contractor",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "most comparisons are only labeled by 1 contractor for cost reasons",
-      "as_written": "1"
+      "as_written": "1 labeler."
     },
     {
-      "text": "On code questions, GPT-3 answers about half the time",
+      "text": "GPT-3 answers code questions about half the time.",
       "value": "50%",
       "source_url": "https://arxiv.org/abs/2203.02155",
       "quote": "GPT-3 does answer the question about 50% of the time",
@@ -1763,5 +1777,5 @@
   "status": "published",
   "verified": false,
   "lang": "en",
-  "translated_from": "837d7bff72006234"
+  "translated_from": "3868c768d4d964a3"
 }

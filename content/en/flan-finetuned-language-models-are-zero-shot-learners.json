@@ -1,0 +1,1105 @@
+{
+  "slug": "flan-finetuned-language-models-are-zero-shot-learners",
+  "category": "paper",
+  "publisher": "Google Research",
+  "date": "2021-09-03",
+  "title": "FLAN: Turning tasks into instructions taught a 137B model to generalize to unseen tasks",
+  "summary": "FLAN rewrites 62 datasets into natural-language instructions and fine-tunes a 137B-parameter model to beat GPT-3 zero-shot on unseen task types. We unpack the held-out cluster evaluation, the three key ablations (task variety, model scale, instructions themselves), and two numbers that are swapped in Figure 10.",
+  "ai_summary": "“Finetuned Language Models Are Zero-Shot Learners” (Wei et al., Google Research, ICLR 2022) introduces instruction tuning: it recasts 62 NLP datasets into 12 task clusters with 10 natural-language templates per dataset, then fine-tunes a 137B-parameter LaMDA-PT to produce FLAN. At evaluation, entire clusters are held out so the task type is unseen. Zero-shot FLAN beats zero-shot GPT-3 on 20 of 25 datasets. Ablations show more task clusters help, instructions themselves are critical, and models with 8B parameters or fewer get worse on new tasks after instruction tuning.",
+  "brief": [
+    "Problem: GPT-3’s zero-shot performance lags far behind few-shot, likely because the model isn’t used to following instructions — prompt formats don’t resemble pretraining data.",
+    "Method: 62 datasets across 12 task clusters, 10 instruction templates per dataset, and a 137B-parameter model; evaluation holds out entire clusters.",
+    "Result: zero-shot FLAN beats zero-shot GPT-3 on 20 of 25 datasets and few-shot GPT-3 on 10; more task clusters help, and the instructions themselves matter.",
+    "Limitations: hurts models with 8B parameters or fewer; no benefit for completion-style tasks; templates are handwritten; two numbers in Figure 10 are swapped."
+  ],
+  "paper": {
+    "title": "Finetuned Language Models Are Zero-Shot Learners",
+    "authors": "Jason Wei, Maarten Bosma, Vincent Y. Zhao, Kelvin Guu, Adams Wei Yu, Brian Lester, Nan Du, Andrew M. Dai, Quoc V. Le",
+    "org": "Google Research",
+    "venue": "ICLR 2022",
+    "year": 2021,
+    "arxiv": "2109.01652",
+    "url": "https://arxiv.org/abs/2109.01652"
+  },
+  "cover": {
+    "headline": "Inside the FLAN paper",
+    "highlight": "Tasks become instructions",
+    "glyph": {
+      "kind": "flow",
+      "nodes": [
+        {
+          "label": "62 datasets"
+        },
+        {
+          "label": "Fine-tuned on instructions",
+          "tone": "hi"
+        },
+        {
+          "label": "Unseen tasks handled"
+        }
+      ]
+    }
+  },
+  "sections": [
+    {
+      "h": "The bottom line: what this paper actually does",
+      "blocks": [
+        {
+          "p": "In September 2021, Jason Wei, Maarten Bosma, Vincent Zhao, Kelvin Guu, Quoc Le, and four colleagues at Google Research published this paper; it appeared at ICLR the following year. It introduced a step now used by nearly every large language model: **instruction tuning**."
+        },
+        {
+          "p": "The starting point is a known weak spot of GPT-3: give it a few examples (few-shot) and it does well; give it no examples, only a description of the task (zero-shot), and it does much worse. The paper’s hypothesis is that the model simply isn’t used to following instructions. So the authors did something very simple:"
+        },
+        {
+          "list": [
+            "Take 62 existing NLP datasets and rewrite each one in 10 different **natural-language instructions**, such as “Is this movie review positive or negative?” or “Translate this sentence into Spanish.”",
+            "Continue training the 137B-parameter pretrained model LaMDA-PT on that instruction data. The resulting model is **FLAN** (Finetuned Language Net).",
+            "The key evaluation method: when evaluating a type of task, that entire task type is absent from training. For example, when testing natural language inference, no inference datasets appear in training."
+          ]
+        },
+        {
+          "p": "Result: on task types the model never saw during training, zero-shot FLAN beats zero-shot GPT-3 (175B parameters) on 20 of 25 datasets, and even beats **few-shot** GPT-3 on 10. Ablations identify three key factors: enough task variety, enough model scale, and natural-language instructions at training time."
+        },
+        {
+          "callout": {
+            "kind": "takeaway",
+            "title": "In one sentence",
+            "text": "Rewrite many existing tasks as “instruction → answer” pairs and fine-tune a large model on them, and the model learns a general skill: hear an instruction and do what it says. It can transfer that skill to task types never seen during training — but only if the model is large enough. At 8B parameters or below, instruction tuning makes it worse on new tasks."
+          }
+        },
+        {
+          "callout": {
+            "kind": "prereq",
+            "title": "Three concepts to know",
+            "text": "If you’re fuzzy on these, this is enough:",
+            "list": [
+              "**Zero-shot / few-shot**: zero-shot means telling the model what to do without giving examples; few-shot means including a few “input → answer” examples in the prompt (see the GPT-3 close read).",
+              "**Fine-tuning**: continuing to train a pretrained model on data for one or more tasks. The traditional approach was one fine-tuned model per task (see the BERT and T5 close reads).",
+              "**Multitask training**: mixing data from many tasks to train a single model. T5 did this; FLAN adds natural-language instructions and holding out entire task clusters for evaluation."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "The problem: why GPT-3 isn’t great at following instructions",
+      "blocks": [
+        {
+          "p": "The GPT-3 paper already found that zero-shot performance lags far behind few-shot on tasks such as reading comprehension, question answering, and natural language inference (NLI). FLAN’s explanation: without examples, the prompt format doesn’t look like pretraining data, so the model doesn’t know how to continue."
+        },
+        {
+          "p": "Take natural language inference: given a premise and a hypothesis, determine whether the premise entails the hypothesis. That “premise … hypothesis …” format almost never appears in natural text on the web, so it’s awkward for a model that has only learned to continue writing. FLAN rewrites it as a more natural question: “Does <premise> mean that <hypothesis>?”",
+          "plain": {
+            "title": "A student who finishes the sentence vs. a student who reads the question",
+            "text": "A pretrained model is like a student who has only practiced completing text: give him half a sentence and he can finish it beautifully, but put a test in front of him that says “decide whether the following inference is valid,” and he freezes, unsure what to write. Instruction tuning gives him lots of practice at reading a request and answering it. After enough practice, even an unfamiliar question type prompts him to read the instructions first and then answer."
+          }
+        },
+        {
+          "p": "The paper positions instruction tuning between two existing paradigms. The classic “pretrain → fine-tune” pipeline (BERT, T5) needs lots of labeled data for each task and produces one model per task. Prompting (GPT-3) needs no training but depends on carefully designed prompts or a few examples. Instruction tuning instead uses supervised learning to teach the model **how to respond to instructions**, then at inference time drives it with instructions alone."
+        }
+      ]
+    },
+    {
+      "h": "The approach: 62 datasets, 10 phrasings each",
+      "blocks": [
+        {
+          "p": "Building a large instruction dataset from scratch would be expensive, so the authors recast existing research datasets into instruction format. They collected 62 public datasets from TensorFlow Datasets, spanning both understanding and generation tasks, and grouped them by task type into 12 **task clusters**:"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "The 12 task clusters used in FLAN",
+            "subtitle": "From paper Figure 3; numbers in parentheses are dataset counts as labeled in the figure.",
+            "columns": [
+              "Task cluster",
+              "Examples"
+            ],
+            "rows": [
+              [
+                "Natural language inference (7)",
+                "ANLI, RTE, CB, MNLI, SNLI, and others"
+              ],
+              [
+                "Reading comprehension (5)",
+                "BoolQ, OBQA, DROP, SQuAD, MultiRC"
+              ],
+              [
+                "Reading comprehension with commonsense (2)",
+                "CosmosQA, ReCoRD"
+              ],
+              [
+                "Closed-book QA (3)",
+                "ARC, Natural Questions, TriviaQA"
+              ],
+              [
+                "Commonsense (4)",
+                "COPA, HellaSwag, PIQA, StoryCloze"
+              ],
+              [
+                "Coreference resolution (3)",
+                "DPR, Winogrande, WSC273"
+              ],
+              [
+                "Sentiment (4)",
+                "IMDB, Sent140, SST-2, Yelp"
+              ],
+              [
+                "Paraphrase (4)",
+                "MRPC, QQP, PAWS, STS-B"
+              ],
+              [
+                "Struct to text (4)",
+                "CommonGen, DART, E2ENLG, WEBNLG"
+              ],
+              [
+                "Translation (8)",
+                "ParaCrawl, various WMT-16 language pairs"
+              ],
+              [
+                "Summarization (11)",
+                "CNN/DM, XSum, Gigaword, SamSum, and others"
+              ],
+              [
+                "Misc. (7)",
+                "Conversational QA CoQA and QuAC, question classification TREC, grammaticality judgment CoLA, math, and more"
+              ]
+            ],
+            "note": "The numbers in parentheses add up to 62."
+          }
+        },
+        {
+          "p": "For each dataset, the authors **hand-wrote 10 different templates** that describe the task in natural language. To increase diversity, up to 3 of them “turn the task around”: for a sentiment classification dataset, for example, they include a generation task like “write a positive movie review.” During training, each example is formatted with a randomly selected template for that dataset.",
+          "plain": {
+            "title": "One task, ten ways of asking",
+            "text": "For the same “can this sentence be inferred from that one?” task, the templates might ask “Based on the paragraph above, can we conclude that…?”, “Can we infer the following?”, or “Read the following and determine if the hypothesis can be inferred from the premise.” After training on ten phrasings, the model picks up not a fixed pattern but the skill of understanding what is being asked.",
+            "pic": "flan-templates"
+          }
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Three templates for the same inference example",
+            "subtitle": "From paper Figure 4 (translated here). Premise: Russian cosmonaut Valery Polyakov set the record for the longest continuous time in space — 438 days — between 1994 and 1995. Hypothesis: Russians hold the record for the longest stay in space.",
+            "columns": [
+              "Template",
+              "Wording"
+            ],
+            "rows": [
+              [
+                "Template 1",
+                "<premise> Based on the paragraph above, can we conclude that <hypothesis>? <options>"
+              ],
+              [
+                "Template 2",
+                "<premise> Can we infer the following? <hypothesis> <options>"
+              ],
+              [
+                "Template 3",
+                "Read the following and determine if the hypothesis can be inferred from the premise: Premise: <premise> Hypothesis: <hypothesis> <options>"
+              ]
+            ],
+            "note": "The <options> suffix is another small design choice: at the end of a classification task, append “OPTIONS:” and the candidate answers, such as “- yes - no.”"
+          }
+        },
+        {
+          "p": "**Why add options?** GPT-3 handles classification by rank classification: it compares which word, “yes” or “no,” has the higher probability. The paper points out a flaw: “yes” can be said many ways (“yes,” “right,” “correct”), so probability mass gets scattered among them and the token “yes” itself gets less. Listing the options explicitly tells the model which answers to choose from."
+        }
+      ]
+    },
+    {
+      "h": "Key design: hide an entire task type before the exam",
+      "blocks": [
+        {
+          "p": "The most important design decision in this paper is **how it defines an “unseen task.”** Some earlier work only required the test dataset not to appear in training. FLAN uses a stricter standard: when evaluating a dataset, **the entire task cluster it belongs to** must be absent from training."
+        },
+        {
+          "p": "For example, when evaluating RTE (an inference dataset), no inference datasets may appear in training. The paper adds further rules: NLI and paraphrase are too similar, so evaluating one also excludes the other; the same goes for reading comprehension, commonsense reasoning, and reading comprehension with commonsense. To evaluate c task clusters, you therefore train c models, each holding out a different cluster.",
+          "plain": {
+            "title": "Hiding the whole question type before the exam",
+            "text": "If you only hide the exact test, a student may have practiced many questions of the same type, so a good score doesn’t prove generalization. FLAN’s approach: when the test is an inference task, hold out every inference task — don’t let the model practice a single one. If it still does well, it has truly learned to read the instruction and follow it.",
+            "pic": "flan-holdout"
+          }
+        }
+      ]
+    },
+    {
+      "h": "Training details",
+      "blocks": [
+        {
+          "p": "**Base model**: LaMDA-PT is a 137B-parameter, decoder-only Transformer pretrained only as a language model (not the later LaMDA fine-tuned for dialogue). Pretraining data includes web documents with code, dialogue data, and Wikipedia, totaling 2.49T BPE tokens with a 32k vocabulary; about 10% is non-English."
+        },
+        {
+          "p": "**Instruction tuning** mixes all datasets and samples from them randomly. To balance datasets of very different sizes, it caps each dataset at 30k examples and uses the examples-proportional mixing scheme from the T5 paper with a mixing-rate maximum of 3,000. Training runs for 30k steps with a batch size of 8,192 tokens, the Adafactor optimizer, and a learning rate of 3 × 10⁻⁵. Inputs are capped at 1,024 tokens and outputs at 256, with multiple examples packed into a single sequence. On a TPUv3 with 128 cores it takes about 60 hours."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Working through the math: how the mixing-rate cap balances datasets of different sizes",
+            "subtitle": "Illustrative: the three dataset sizes are set here; the cap follows the paper at 3,000.",
+            "columns": [
+              "Dataset",
+              "Examples",
+              "Sampling weight proportional to examples",
+              "Weight after cap"
+            ],
+            "rows": [
+              [
+                "Small dataset",
+                "1000",
+                "1000 ÷ 34000 ≈ 3%",
+                "1000 ÷ 7000 ≈ 14%"
+              ],
+              [
+                "Medium dataset",
+                "3000",
+                "3000 ÷ 34000 ≈ 9%",
+                "3000 ÷ 7000 ≈ 43%"
+              ],
+              [
+                "Large dataset",
+                "30000",
+                "30000 ÷ 34000 ≈ 88%",
+                "3000 ÷ 7000 ≈ 43%"
+              ]
+            ],
+            "highlight": {
+              "col": 3
+            },
+            "note": "Without the cap, the large dataset takes nearly 90% of the draws and the small one nearly disappears. With the cap, examples beyond 3,000 no longer add weight, so the three datasets have a more balanced chance of being sampled."
+          },
+          "plain": {
+            "title": "Cafeteria rules: one scoop per dish",
+            "text": "If portions were proportional to how much was cooked, a huge pot of red-braised pork would fill the plate and the greens would get one strand. If the rule is “at most one scoop per dish,” the smaller dishes still show up on the plate. The mixing-rate cap is that one scoop."
+          }
+        }
+      ]
+    },
+    {
+      "h": "Results: zero-shot FLAN beats GPT-3",
+      "blocks": [
+        {
+          "p": "For each dataset, the authors report two numbers: the **mean** across all templates (a proxy for “write any instruction” performance) and the test-set score using the template that did best on the dev set (equivalent to a bit of prompt engineering). Baselines include the same LaMDA-PT without instruction tuning (using GPT-3’s prompts, zero-shot and few-shot) plus the reported numbers for 175B GPT-3 and GLaM."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Three unseen task types: zero-shot FLAN vs. GPT-3",
+            "subtitle": "From paper Figure 1. FLAN uses the mean over all templates; each category averages several datasets.",
+            "columns": [
+              "Task type",
+              "GPT-3 zero-shot",
+              "GPT-3 few-shot",
+              "FLAN zero-shot"
+            ],
+            "rows": [
+              [
+                "Natural language inference (ANLI R1–R3, CB, RTE)",
+                "42.9",
+                "53.2",
+                "56.2"
+              ],
+              [
+                "Reading comprehension (BoolQ, MultiRC, OBQA)",
+                "63.7",
+                "72.6",
+                "77.4"
+              ],
+              [
+                "Closed-book QA (ARC-e, ARC-c, NQ, TriviaQA)",
+                "49.8",
+                "55.7",
+                "56.6"
+              ]
+            ],
+            "highlight": {
+              "col": 3
+            },
+            "note": "The paper says these three improved most among the ten task types it evaluated. We checked the averages against Appendix Table 2; all three match."
+          }
+        },
+        {
+          "p": "Using the best dev template, zero-shot FLAN outperforms zero-shot GPT-3 on 20 of 25 datasets and few-shot GPT-3 on 10. Among 19 datasets where comparison is possible, it beats zero-shot GLaM on 13 and one-shot GLaM on 11."
+        },
+        {
+          "p": "FLAN doesn’t win everywhere. The paper’s own pattern: **the more a task is “listen to an instruction and do it,” the more instruction tuning helps** (inference, QA, translation, struct-to-text); **when the task itself is “continue the text,” instructions are largely redundant** and instruction tuning barely helps, such as commonsense reasoning and coreference tasks framed as sentence completions. Across seven commonsense and coreference tasks, FLAN beats the un-tuned LaMDA-PT on only three."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "A few representative datasets",
+            "subtitle": "From paper Appendix Table 2. FLAN uses the mean over all templates; GPT-3 is the 175B model.",
+            "columns": [
+              "Dataset",
+              "Type",
+              "LaMDA-PT zero-shot",
+              "GPT-3 zero-shot",
+              "GPT-3 few-shot",
+              "FLAN zero-shot"
+            ],
+            "rows": [
+              [
+                "ANLI R1",
+                "Inference",
+                "39.6",
+                "34.6",
+                "36.8",
+                "47.7"
+              ],
+              [
+                "RTE",
+                "Inference",
+                "73.3",
+                "63.5",
+                "72.9",
+                "78.3"
+              ],
+              [
+                "OBQA",
+                "Reading comprehension",
+                "41.8",
+                "57.6",
+                "65.4",
+                "77.4"
+              ],
+              [
+                "ARC-c",
+                "Closed-book QA",
+                "42.0",
+                "51.4",
+                "51.5",
+                "61.7"
+              ],
+              [
+                "StoryCloze",
+                "Commonsense",
+                "79.5",
+                "83.2",
+                "87.7",
+                "92.2"
+              ],
+              [
+                "HellaSwag",
+                "Commonsense (sentence completion)",
+                "57.0",
+                "78.9",
+                "79.3",
+                "56.4"
+              ],
+              [
+                "Winogrande",
+                "Coreference (sentence completion)",
+                "68.3",
+                "70.2",
+                "77.7",
+                "67.3"
+              ]
+            ],
+            "highlight": {
+              "col": 5
+            },
+            "note": "The last two rows are cases where FLAN didn’t help. HellaSwag and Winogrande are both essentially “choose the most natural ending,” the same objective as pretraining. FLAN is slightly below un-tuned LaMDA-PT and far below GPT-3."
+          }
+        },
+        {
+          "p": "For **translation**, LaMDA-PT’s pretraining data is about 90% English and was not specifically trained for machine translation. FLAN beats zero-shot GPT-3 on all six translation directions evaluated in the GPT-3 paper, though it falls short of few-shot GPT-3 in most cases. Translating into English is strong, comparable even to supervised translation models; translating out of English is weaker, which the paper attributes to FLAN’s English SentencePiece tokenizer and mostly-English pretraining data."
+        }
+      ]
+    },
+    {
+      "h": "Ablation 1: more task types help",
+      "blocks": [
+        {
+          "p": "The paper’s core question: how does instruction tuning improve zero-shot performance on new tasks? The first ablation holds out three task clusters (inference, closed-book QA, commonsense reasoning) for evaluation, then adds clusters to training one at a time, from 1 cluster upward, ordered by the number of datasets in each cluster, largest first:"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "More training clusters raise the average score on the three held-out clusters",
+            "subtitle": "From paper Figure 6; the “Average” column is the average of the three held-out clusters.",
+            "columns": [
+              "Training clusters",
+              "Cluster added",
+              "Cumulative datasets",
+              "Average score"
+            ],
+            "rows": [
+              [
+                "1",
+                "Summarization",
+                "11",
+                "49.9"
+              ],
+              [
+                "2",
+                "+ Translation",
+                "20",
+                "55.0"
+              ],
+              [
+                "3",
+                "+ Reading comprehension",
+                "26",
+                "59.3"
+              ],
+              [
+                "4",
+                "+ Sentiment",
+                "30",
+                "59.2"
+              ],
+              [
+                "5",
+                "+ Struct to text",
+                "34",
+                "60.8"
+              ],
+              [
+                "6",
+                "+ Coreference",
+                "37",
+                "61.9"
+              ],
+              [
+                "7",
+                "+ Conversational QA",
+                "39",
+                "63.5"
+              ]
+            ],
+            "highlight": {
+              "col": 3
+            },
+            "note": "Except for the step that adds sentiment analysis, every additional cluster improves performance on unseen tasks, and there is no sign of saturation by the seventh cluster."
+          },
+          "plain": {
+            "title": "The more question types you’ve seen, the better you generalize",
+            "text": "A student who has only practiced summarization still struggles when an inference question appears. Add translation, reading, coreference, and so on: the more question types he sees, the more he recognizes what questions ask and how to answer them, and the more confident he becomes on unfamiliar types. Sentiment analysis, though, doesn’t help much — perhaps because it is too simple and too different from the others.",
+            "pic": "flan-clusters"
+          }
+        }
+      ]
+    },
+    {
+      "h": "Ablation 2: small models get worse after instruction tuning",
+      "blocks": [
+        {
+          "p": "The second ablation uses the same splits and compares average zero-shot scores on 13 held-out tasks before and after instruction tuning at 422M, 2B, 8B, 68B, and 137B parameters (paper Figure 7). The result is surprising:"
+        },
+        {
+          "list": [
+            "**68B and 137B**, the two near-100B-parameter models: after instruction tuning, held-out task scores jump substantially (from the figure, roughly from the mid-50s to near 70).",
+            "**8B and below**: after instruction tuning, held-out task scores actually **drop**."
+          ],
+          "plain": {
+            "title": "A small cup can't hold it",
+            "text": "The paper's explanation is capacity. A small model is already full from memorizing the roughly 40 tasks seen during training; when it meets a new task, it does worse. A large model still has capacity left after learning those tasks, so it picks up a more general ability to follow instructions and uses the spare capacity for new tasks. It's like a small cup filled with a particular drink, while a large cup has room left over.",
+            "pic": "flan-scale"
+          }
+        },
+        {
+          "p": "This finding matters: it shows that following instructions is an ability that only emerges with scale. The paper's first author, Jason Wei, later wrote papers on emergent abilities and chain-of-thought prompting in large models (chain of thought is covered in Main Thread 4)."
+        }
+      ]
+    },
+    {
+      "h": "Ablation 3: Does multitask training work without instructions?",
+      "blocks": [
+        {
+          "p": "Maybe all the gains come from multitask training, and the instructions themselves don't matter? The authors ran two controls: **no templates**, with only inputs and outputs (for translation, just \"The dog runs.\" and \"Le chien court.\"), and **dataset name only**, such as prepending \"[Translation: WMT'14 to French]\" to the input. Evaluation is on four held-out clusters:"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Removing natural-language instructions during training sharply lowers performance",
+            "subtitle": "From paper Table 3. Translation uses BLEU; the rest use accuracy or similar.",
+            "columns": [
+              "Training format",
+              "Evaluation format",
+              "NLI",
+              "Reading comprehension",
+              "Closed-book QA",
+              "Translation",
+              "Four-cluster average"
+            ],
+            "rows": [
+              [
+                "Natural-language instructions (FLAN)",
+                "Natural-language instructions",
+                "56.2",
+                "77.4",
+                "56.6",
+                "30.7",
+                "55.2"
+              ],
+              [
+                "No templates",
+                "Natural-language instructions",
+                "50.5",
+                "58.2",
+                "25.5",
+                "15.0",
+                "37.3"
+              ],
+              [
+                "Dataset name only",
+                "Natural-language instructions",
+                "52.8",
+                "63.0",
+                "44.8",
+                "25.9",
+                "46.6"
+              ],
+              [
+                "Dataset name only",
+                "Dataset name",
+                "60.2",
+                "64.9",
+                "40.8",
+                "21.9",
+                "47.0"
+              ]
+            ],
+            "highlight": {
+              "row": 0
+            },
+            "note": "In the last row, the NLI score (60.2) is higher than FLAN's. The paper explains this is mainly because it scored 83.9 on CB, whose validation set has only 56 examples; FLAN also reaches 83.9 with its best template, but its average across all templates is only 64.1."
+          },
+          "plain": {
+            "title": "Problems without instructions",
+            "text": "Without templates, it's like handing a student a stack of exercises with only the prompts and answers, not telling them what to do for each one; they can only guess the task type. Dataset names only are like putting a label on the handout that says \"Translation Workbook 3\" — helpful, but when they see an unfamiliar label they don't know what it means. Only by writing in plain language, \"Please translate this sentence into French,\" will they understand a new task's requirement when it appears."
+          }
+        }
+      ]
+    },
+    {
+      "h": "Adding examples, and prompt tuning",
+      "blocks": [
+        {
+          "p": "**Instructions + few-shot examples**. FLAN can also include a few examples at inference time: concatenate several \"instruction + answer\" pairs, then append the new question's instruction. At both training and inference, examples are sampled randomly from the training set, up to 16, with total length capped at 960 tokens."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Zero-shot FLAN vs. few-shot FLAN",
+            "subtitle": "From paper Figure 9; each cluster averages several datasets.",
+            "columns": [
+              "Task cluster",
+              "Zero-shot",
+              "Few-shot"
+            ],
+            "rows": [
+              [
+                "NLI",
+                "54.7",
+                "59.3"
+              ],
+              [
+                "Reading comprehension",
+                "59.6",
+                "60.0"
+              ],
+              [
+                "Closed-book QA",
+                "53.7",
+                "57.2"
+              ],
+              [
+                "Commonsense",
+                "80.0",
+                "80.8"
+              ],
+              [
+                "Coreference",
+                "63.8",
+                "67.4"
+              ],
+              [
+                "Translation",
+                "31.0",
+                "33.0"
+              ],
+              [
+                "Struct to text",
+                "39.2",
+                "49.4"
+              ]
+            ],
+            "highlight": {
+              "col": 2
+            },
+            "note": "Adding examples helps on every cluster, with the largest gains on tasks with complex output formats (struct-to-text, translation, closed-book QA). It also narrows the gap between different templates, meaning the model becomes less sensitive to prompt wording."
+          }
+        },
+        {
+          "p": "**Prompt tuning**. Another test uses a \"soft prompt\": instead of writing words, prepend a short trainable continuous vector (length 10) to the input, and train only that vector while the model stays frozen. On the eight SuperGLUE tasks, FLAN as the base model outperforms LaMDA-PT: with only 32 training examples, the average rises from 63.8 to 78.1; with the full training set, from 79.1 to 87.4 (computed from Appendix Table 4). The paper says the gain exceeds 10 points in many cases, especially with very few examples."
+        }
+      ]
+    },
+    {
+      "h": "Data contamination: has the model already seen the test?",
+      "blocks": [
+        {
+          "p": "Pretraining data for large models is huge, so evaluation-set content may already appear in it. Following the method from the GPT-3 paper, the authors find examples that share roughly 13-word spans with the pretraining corpus, build \"clean\" subsets, and compare performance on the clean subsets versus the full evaluation set."
+        },
+        {
+          "list": [
+            "**ANLI R1 and R2** are almost entirely contaminated, and much more so than with GPT-3. But closer inspection shows the overlap is almost all in the premise context (97.3% for R1, 98.2% for R2), not in the hypothesis being judged. The authors suspect this is because LaMDA-PT used a newer version of Wikipedia, and the contexts in these two ANLI rounds were collected from Wikipedia in 2019.",
+            "Among the other datasets, only ReCoRD and PIQA scored more than 1 percentage point lower on the clean subset than on the full set, and those two are flagged separately in the table.",
+            "Overall, the authors found no pattern of \"more contamination, higher scores.\""
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Afterward: instruction tuning became standard",
+      "blocks": [
+        {
+          "list": [
+            "**Concurrent work**: a few weeks later, T0 from Hugging Face and others (Sanh et al., 2021) fine-tuned an 11B-parameter T5 with a similar method and also showed improved zero-shot performance; OpenAI's InstructGPT (2022) added reinforcement learning from human feedback on top of supervised fine-tuning (see the InstructGPT close read).",
+            "**Scaling up**: in 2022, Google's follow-up work extended instruction tuning to more than 1,800 tasks, training Flan-T5 and Flan-PaLM and adding chain-of-thought data.",
+            "**Where two paths meet**: nearly all of today's large models are first instruction-tuned (supervised learning, teaching the model to follow instructions) and then undergo RLHF or similar preference optimization (to make responses better match human preferences). FLAN represents the first half.",
+            "**Next in Main Thread 3**: Self-Instruct. FLAN's instruction data relies on hand-written templates and recasting existing datasets; Self-Instruct instead has the model generate instruction data itself."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Limitations, and a few details worth noting",
+      "blocks": [
+        {
+          "list": [
+            "**Only works for large models**: at 8B parameters or below, instruction tuning is harmful. This limits its applicability and shows the effect depends on scale.",
+            "**No help for completion-style tasks**: for tasks that are themselves sentence completion, such as commonsense reasoning and coreference resolution, instruction tuning does almost nothing.",
+            "**Templates are hand-written**: 62 datasets, 10 templates each, all composed by hand.",
+            "**The \"20 of 25\" uses the best template**: the headline conclusion \"beats zero-shot GPT-3 on 20 of 25 datasets\" is based on the template selected on the dev set — equivalent to a bit of prompt engineering. The Figure 1 comparison, by contrast, uses the average across all templates."
+          ]
+        },
+        {
+          "p": "A few things we noticed while reading the paper:"
+        },
+        {
+          "list": [
+            "**Two numbers in Figure 10 are swapped**: in the prompt-tuning bar chart, the labels say \"FLAN scores 79.1 with 32 examples\" and \"LaMDA-PT scores 78.1 on the full training set.\" But averaging the eight tasks in Appendix Table 4 gives FLAN 78.1 with 32 examples and LaMDA-PT 79.1 on the full training set. The two numbers appear to have traded places. This article uses the Table 4 numbers.",
+            "**Which 25 datasets?** We counted through Appendix Tables 1 and 2 item by item: there are 27 entries that can be compared with zero-shot GPT-3 and for which FLAN has a \"best template\" score. FLAN wins 21, loses 5, and ties 1 (COPA, both 91.0). Among the 5 losses, the paper itself says DROP and SQuADv2 are not directly comparable because GPT-3's \"zero-shot\" on those datasets actually used other QA examples from the same article as demonstrations. The paper does not specify which 25 datasets it means.",
+            "**Dataset counts in Figures 3 and 6**: in Figure 3 the translation cluster is labeled \"8 datasets\" but lists 9 language pairs below; the reading comprehension cluster is labeled 5, but SQuAD has v1 and v2. Figure 6's cumulative counts seem to use 9 and 6, respectively. Figure 6's seventh cluster, \"Conversational QA,\" is also not a separate cluster in Figure 3 but part of \"Misc.\"",
+            "**\"Best template\" or \"average template\"?** The start of Appendix A says the tables show \"the best of up to ten templates,\" but the table columns actually are \"average across all templates\" and \"best template on the dev set.\""
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Check yourself: did you really get it?",
+      "blocks": [
+        {
+          "quiz": {
+            "q": "When FLAN evaluates \"unseen tasks,\" what standard does it use?",
+            "options": [
+              "The test dataset just needs to be absent from training.",
+              "The entire task cluster containing the test dataset must be absent from training; evaluating several clusters requires training several models.",
+              "Only use examples that are not in the training set.",
+              "Train and test in different languages."
+            ],
+            "answer": 1,
+            "why": "For example, when testing an inference task, training contains no inference datasets; this is much stricter than only excluding the exact same dataset."
+          }
+        },
+        {
+          "quiz": {
+            "q": "What effect does instruction tuning have on models with 8B parameters or fewer?",
+            "options": [
+              "It helps just as much.",
+              "It actually hurts performance on held-out new tasks; the paper suspects the small model's capacity is used up by the training tasks.",
+              "It has no effect.",
+              "It only helps with translation."
+            ],
+            "answer": 1,
+            "why": "Only the 68B and 137B models significantly improved on new tasks after instruction tuning."
+          }
+        },
+        {
+          "quiz": {
+            "q": "What happens when training omits natural-language instructions and only does multitask training (no templates)?",
+            "options": [
+              "It matches FLAN.",
+              "The four-cluster average drops from 55.2 to 37.3, showing the instructions themselves are crucial.",
+              "It beats FLAN.",
+              "It can't be evaluated."
+            ],
+            "answer": 1,
+            "why": "Adding only dataset names gets only 46.6 to 47.0."
+          }
+        },
+        {
+          "quiz": {
+            "q": "Why does instruction tuning barely help on tasks like HellaSwag?",
+            "options": [
+              "The dataset is too small.",
+              "These tasks are already \"choose the most natural ending\" — the same objective as pretraining — so instructions are redundant.",
+              "The model is too small.",
+              "The templates were written incorrectly."
+            ],
+            "answer": 1,
+            "why": "The paper's conclusion: the more a task resembles \"listen to an instruction and do it,\" the more instruction tuning helps."
+          }
+        },
+        {
+          "p": "After reading this, you should be able to answer these questions:"
+        },
+        {
+          "list": [
+            "What might explain GPT-3's poor zero-shot performance?",
+            "How does instruction tuning differ from the \"pretrain → fine-tune\" and \"prompting\" paradigms?",
+            "Why write 10 templates per dataset? What problem does the options suffix solve?",
+            "Why hold out the entire task cluster during evaluation?",
+            "What do the three ablations — number of task clusters, model scale, and the instructions themselves — each show?",
+            "Do Figure 1 and the \"20 of 25\" claim use the same template scores?"
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Finetuned Language Models Are Zero-Shot Learners (arXiv:2109.01652, v5)",
+      "publisher": "Google Research",
+      "date": "2022-02-08",
+      "url": "https://arxiv.org/abs/2109.01652"
+    },
+    "note": "This article is based on arXiv v5 of the paper, first published in September 2021. Tables marked \"Illustrative\" use numbers we set and compute according to the rules described in the paper; values in Figures 1, 6, and 9 were read by us from the PDF page images and checked against the appendix tables; Figure 7 values are approximate readings. Follow-up work such as T0, Flan-T5, and Flan-PaLM comes from other public papers and is not in this article."
+  },
+  "claims": [
+    {
+      "text": "arXiv v5",
+      "value": "2109.01652v5",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "arXiv:2109.01652v5",
+      "as_written": "arXiv"
+    },
+    {
+      "text": "137B parameters",
+      "value": "137B",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "We take a 137B parameter pretrained language model",
+      "as_written": "137B"
+    },
+    {
+      "text": "175B GPT-3",
+      "value": "175B",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "zero-shot 175B GPT-3",
+      "as_written": "175B"
+    },
+    {
+      "text": "62 datasets",
+      "value": "62 text datasets",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "We aggregate 62 text datasets",
+      "as_written": "62"
+    },
+    {
+      "text": "12 task clusters",
+      "value": "twelve task clusters",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "one of twelve task clusters",
+      "as_written": "12"
+    },
+    {
+      "text": "10 templates",
+      "value": "ten unique templates",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "we manually compose ten unique templates",
+      "as_written": "10"
+    },
+    {
+      "text": "20 of 25",
+      "value": "20 of 25",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "outperforms zero-shot GPT-3 on 20 of 25 datasets",
+      "as_written": "20"
+    },
+    {
+      "text": "10 datasets beat few-shot GPT-3",
+      "value": "10 datasets",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "surpasses GPT-3’s few-shot performance on 10 datasets",
+      "as_written": "10"
+    },
+    {
+      "text": "2.49T token",
+      "value": "2.49T",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "tokenized into 2.49T BPE tokens",
+      "as_written": "2.49T"
+    },
+    {
+      "text": "About 10% non-English",
+      "value": "10%",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "Around 10% of the pretraining data was non-English",
+      "as_written": "10%"
+    },
+    {
+      "text": "About 90% English",
+      "value": "90%",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "around 90% English",
+      "as_written": "about 90%"
+    },
+    {
+      "text": "Up to 30k examples per dataset",
+      "value": "30k",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "limit the number of training examples per dataset to 30k",
+      "as_written": "30k"
+    },
+    {
+      "text": "30k steps",
+      "value": "30k gradient steps",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "We finetune all models for 30k gradient steps",
+      "as_written": "30k steps"
+    },
+    {
+      "text": "60 hours",
+      "value": "60 hours",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "This instruction tuning takes around 60 hours",
+      "as_written": "60 hours"
+    },
+    {
+      "text": "422M parameters",
+      "value": "422M",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "models of size 422M, 2B, 8B, 68B, and 137B",
+      "as_written": "422M"
+    },
+    {
+      "text": "2B parameters",
+      "value": "2B",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "422M, 2B, 8B",
+      "as_written": "2B"
+    },
+    {
+      "text": "8B parameters",
+      "value": "8B",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "422M, 2B, 8B, 68B",
+      "as_written": "8B"
+    },
+    {
+      "text": "68B parameters",
+      "value": "68B",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "8B, 68B, and 137B",
+      "as_written": "68B"
+    },
+    {
+      "text": "11B T5 (T0)",
+      "value": "11B",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "a model of 11B parameters",
+      "as_written": "11B"
+    },
+    {
+      "text": "97.3% / 98.2%",
+      "value": "97.3%",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "97.3% for ANLI R1 and 98.2% for ANLI R2",
+      "as_written": "97.3%"
+    },
+    {
+      "text": "98.2%",
+      "value": "98.2%",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "98.2% for ANLI R2",
+      "as_written": "98.2%"
+    },
+    {
+      "text": "Clean-subset scores more than 1 point lower",
+      "value": "1%",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "by more than 1%",
+      "as_written": "1 percentage point"
+    },
+    {
+      "text": "Prompt tuning improves by over 10 points",
+      "value": "10%",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "more than 10% improvement",
+      "as_written": "10 points"
+    },
+    {
+      "text": "Figure 1: 56.2",
+      "value": "56.2",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "56.2",
+      "as_written": "56.2"
+    },
+    {
+      "text": "77.4",
+      "value": "77.4",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "77.4",
+      "as_written": "77.4"
+    },
+    {
+      "text": "56.6",
+      "value": "56.6",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "56.6",
+      "as_written": "56.6"
+    },
+    {
+      "text": "42.9",
+      "value": "42.9",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "42.9",
+      "as_written": "42.9"
+    },
+    {
+      "text": "53.2",
+      "value": "53.2",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "53.2",
+      "as_written": "53.2"
+    },
+    {
+      "text": "63.7",
+      "value": "63.7",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "63.7",
+      "as_written": "63.7"
+    },
+    {
+      "text": "72.6",
+      "value": "72.6",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "72.6",
+      "as_written": "72.6"
+    },
+    {
+      "text": "49.8",
+      "value": "49.8",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "49.8",
+      "as_written": "49.8"
+    },
+    {
+      "text": "55.7",
+      "value": "55.7",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "55.7",
+      "as_written": "55.7"
+    },
+    {
+      "text": "Table 3: 37.3",
+      "value": "37.3",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "37.3",
+      "as_written": "37.3"
+    },
+    {
+      "text": "46.6",
+      "value": "46.6",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "46.6",
+      "as_written": "46.6"
+    },
+    {
+      "text": "47.0",
+      "value": "47.0",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "47.0",
+      "as_written": "47.0"
+    },
+    {
+      "text": "55.2",
+      "value": "55.2",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "55.2",
+      "as_written": "55.2"
+    },
+    {
+      "text": "Table 4: 87.4",
+      "value": "87.4",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "87.4",
+      "as_written": "87.4"
+    },
+    {
+      "text": "63.8",
+      "value": "63.8",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "63.8",
+      "as_written": "63.8"
+    },
+    {
+      "text": "79.1",
+      "value": "79.1",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "79.1",
+      "as_written": "79.1"
+    },
+    {
+      "text": "78.1",
+      "value": "78.1",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "78.1",
+      "as_written": "78.1"
+    },
+    {
+      "text": "Figure 6: 63.5",
+      "value": "63.5",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "63.5",
+      "as_written": "63.5"
+    },
+    {
+      "text": "49.9",
+      "value": "49.9",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "49.9",
+      "as_written": "49.9"
+    },
+    {
+      "text": "HellaSwag 78.9",
+      "value": "78.9",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "78.9",
+      "as_written": "78.9"
+    },
+    {
+      "text": "CB 83.9",
+      "value": "83.9",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "83.9",
+      "as_written": "83.9"
+    },
+    {
+      "text": "56 examples",
+      "value": "56 examples",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "only has 56 examples",
+      "as_written": "56"
+    },
+    {
+      "text": "More than 1,800 tasks (Flan-PaLM, public sources)",
+      "value": "Quoc V. Le",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "Quoc V. Le",
+      "as_written": "1800"
+    },
+    {
+      "text": "16 examples, 960 tokens",
+      "value": "960",
+      "source_url": "https://arxiv.org/abs/2109.01652",
+      "quote": "less than 960 tokens",
+      "as_written": "960"
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "6c3a607378c3fcad"
+}

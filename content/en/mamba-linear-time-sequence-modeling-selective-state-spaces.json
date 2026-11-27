@@ -1,0 +1,831 @@
+{
+  "slug": "mamba-linear-time-sequence-modeling-selective-state-spaces",
+  "category": "paper",
+  "publisher": "Gu & Dao · Carnegie Mellon University, Princeton University",
+  "date": "2023-12-01",
+  "title": "Mamba: memory learns what to keep, no attention required to match Transformers",
+  "summary": "Mamba makes state space model parameters depend on the input, so the model chooses what to carry forward and what to drop. A parallel scan run in the GPU's on-chip cache makes it fast. We walk through how selective gating differs from fixed gating, the language, DNA, and audio results, and a few numbers in the paper that don't quite add up.",
+  "ai_summary": "\"Mamba: Linear-Time Sequence Modeling with Selective State Spaces\" (Gu & Dao, Carnegie Mellon University and Princeton University, 2023) argues that earlier structured state space models were time-invariant and therefore could not make content-based choices. It makes the step size Δ and the matrices B and C depend on the input, producing a selective SSM, and computes it efficiently in the GPU's on-chip cache through kernel fusion, a parallel scan, and recomputation. The resulting Mamba architecture has no attention or MLP blocks, trains linearly in sequence length, and at inference takes constant time per step with no KV cache. Up to 3B parameters, it matches strong Transformer recipes on language modeling, and on DNA and audio it benefits from million-length contexts.",
+  "brief": [
+    "Problem: Attention scales quadratically with sequence length and stores a KV cache at inference. Linear-time SSMs are time-invariant, cannot select content, and have consistently lagged attention on text.",
+    "Method: Make Δ, B, and C input-dependent (the selection mechanism); run a parallel scan with recomputation in on-chip cache; merge the SSM and MLP into one simple block.",
+    "Result: Mamba-2.8B beats Pythia-6.9B on zero-shot average accuracy; inference throughput is about 5× that of a comparable Transformer; DNA and audio keep improving with context up to one million.",
+    "Limits: only tested up to about 3B parameters; may involve trade-offs on continuous signals; fine-tuning, prompting, and the surrounding ecosystem remain untested."
+  ],
+  "paper": {
+    "title": "Mamba: Linear-Time Sequence Modeling with Selective State Spaces",
+    "authors": "Albert Gu, Tri Dao",
+    "org": "Carnegie Mellon University, Princeton University",
+    "venue": "arXiv 2023",
+    "year": 2023,
+    "arxiv": "2312.00752",
+    "url": "https://arxiv.org/abs/2312.00752"
+  },
+  "cover": {
+    "headline": "Mamba paper close read",
+    "highlight": "Memory learns what matters",
+    "glyph": {
+      "kind": "flow",
+      "nodes": [
+        {
+          "label": "Input x"
+        },
+        {
+          "label": "Δ, B, C depend on x",
+          "tone": "hi"
+        },
+        {
+          "label": "Fixed-size state"
+        }
+      ]
+    }
+  },
+  "sections": [
+    {
+      "h": "The bottom line: what this paper actually does",
+      "blocks": [
+        {
+          "p": "In December 2023, Albert Gu at Carnegie Mellon and Tri Dao at Princeton released this paper. Tri Dao is the first author of FlashAttention, earlier in this series; Albert Gu is the main author of the structured state space model (S4) line of work."
+        },
+        {
+          "p": "The question it sets out to answer: **Can we build a language model as good as a Transformer without attention?** Attention's cost is that compute grows quadratically with sequence length, and at inference the KV cache keeps growing. There have been many linear-time alternatives, including state space models (SSMs). They do well on continuous signals such as audio but have never matched attention on text."
+        },
+        {
+          "p": "The paper's diagnosis: these models **cannot choose based on content**. They apply the same rule at every position, so they can't \"remember what matters and skip the filler.\" Mamba's change is simple to state: make several key SSM parameters (Δ, B, C) **depend on the current input**. Then the model can decide what to store and what to forget at each step. The cost is that the old fast path—a convolution—no longer works, so the authors wrote a **hardware-aware parallel scan**, in the same spirit as FlashAttention."
+        },
+        {
+          "p": "The results: up to about 3B parameters, Mamba's language model matches Transformers of the same size trained with the strongest recipes, and zero-shot scores catch models twice as large. Inference throughput is about 5× a same-size Transformer. On DNA and audio, it can use contexts up to a million tokens, with longer sequences helping more."
+        },
+        {
+          "callout": {
+            "kind": "takeaway",
+            "title": "The one-sentence version",
+            "text": "Attention stores the entire history: expensive but accurate. Recurrent models hold a fixed-size state: cheap but prone to blurring. Mamba makes the state-update rule depend on the input—important information gets written in, irrelevant information is skipped. A parallel scan that runs in the on-chip cache makes it fast, giving a linear-time model that can go head-to-head with Transformers."
+          }
+        },
+        {
+          "callout": {
+            "kind": "prereq",
+            "title": "Three small concepts to have before reading",
+            "text": "Don't worry if they're unfamiliar; these three are enough:",
+            "list": [
+              "**Recurrent models (RNNs)**: read one token at a time, keeping a single fixed-size \"memory\" that is updated on every token. See the Seq2Seq close read.",
+              "**KV cache**: during inference, a Transformer stores the keys and values of all previous tokens, and rereads them for each new token. See the GQA close read.",
+              "**Convolution**: a single template slides along a sequence, and each position is weighted by the same rule."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "The core question: how to compress context into a small state",
+      "blocks": [
+        {
+          "p": "The paper starts from a unified framing: **the fundamental problem in sequence modeling is compressing context into a smaller state**. Attention is powerful and expensive precisely because it does not compress at all: inference stores the whole context as a KV cache, so the cost of each step grows linearly while training grows quadratically. Recurrent models are the opposite: the state is fixed-size, inference is constant-time per step and training is linear-time, but everything depends on how well that state has compressed the context.",
+          "plain": {
+            "title": "A whole diary, or an index card",
+            "text": "Attention is like keeping every day of a diary (A): you can look up anything, but the diary keeps getting thicker and every search gets slower. A recurrent model is like carrying a small card (B): each day you write a few lines and erase a few, and it never grows. What you write and erase determines whether the card still holds what matters.",
+            "pic": "mb-diary"
+          }
+        },
+        {
+          "p": "So the paper proposes a basic principle for sequence models: **selectivity**—the ability to use context to decide which inputs get written into the state and which are filtered out."
+        }
+      ]
+    },
+    {
+      "h": "State space models: a leaky water tank",
+      "blocks": [
+        {
+          "p": "First, Mamba's predecessor: the structured state space model (S4). It comes from a classical control-theory model that maps an input x through a hidden state h to an output y. In continuous time it is a set of differential equations; after discretization it becomes a simple recurrence:"
+        },
+        {
+          "formula": {
+            "expr": "h_{t} = Ā · h_{t−1} + B̄ · x_{t}\ny_{t} = C · h_{t}\nĀ = exp(Δ · A), B̄ = (Δ · A)^{−1} (exp(Δ · A) − I) · Δ · B",
+            "parts": [
+              {
+                "sym": "h_{t}",
+                "desc": "Hidden state at step t, fixed size (N numbers per channel)"
+              },
+              {
+                "sym": "Ā",
+                "desc": "How much of the old state is kept. A is usually negative, so exp(Δ · A) lies between 0 and 1 and some of the state leaks away at each step."
+              },
+              {
+                "sym": "B̄ · x_{t}",
+                "desc": "How much of the new input is written in"
+              },
+              {
+                "sym": "C",
+                "desc": "How the output is read from the state"
+              },
+              {
+                "sym": "Δ",
+                "desc": "Step size: how long each step lasts when turning continuous time into discrete steps"
+              }
+            ],
+            "note": "The third line is the zero-order hold discretization (equation 4 in the paper). You don't need to remember it. The key point: Δ controls Ā and B̄—how much old state is kept and how much new input is written in."
+          },
+          "plain": {
+            "title": "A leaky water tank",
+            "text": "The hidden state h is like the water level in a tank. At each step, new input flows in according to B, old water leaks out according to A, and the output y reads the current level according to C. The level carries traces of every past input, with the oldest traces faintest.",
+            "pic": "mb-tank"
+          }
+        },
+        {
+          "p": "This recurrence has two computational forms: step-by-step recurrence, convenient at inference, or a single long convolution, convenient for parallel training. The two are equivalent only if Δ, A, B, and C are **the same for every time step**, which the paper calls linear time invariance (LTI). Until now, all structured SSMs were LTI, because that was the only way to use the fast convolution form."
+        }
+      ]
+    },
+    {
+      "h": "The weakness of time invariance: it ignores content",
+      "blocks": [
+        {
+          "p": "The paper uses two synthetic tasks to show what LTI models are missing:"
+        },
+        {
+          "list": [
+            "**Selective copying**: in the ordinary copying task, the tokens to memorize sit at fixed positions, so a convolution only needs to compute \"how many steps apart\" and never looks at content. Selective copying scatters those tokens among irrelevant ones, with different spacing every time, so the model must **read the content** to decide what to remember and what to skip.",
+            "**Induction heads**: if \"Harry Potter\" appeared earlier, the next time you see \"Harry\" you should predict \"Potter.\" That requires recalling from context. Induction heads are thought to explain most of the in-context learning ability of large language models."
+          ],
+          "plain": {
+            "title": "The spacing changes every time",
+            "text": "The colored cells have to be remembered, the white cells ignored, and the colored ones output in order at the end. If the colored cells always sat in the same places, a fixed template could copy them. But because the spacing differs on every trial (two rows), a model with fixed rules gets it wrong; it has to actually look at each cell's color.",
+            "pic": "mb-copy"
+          }
+        },
+        {
+          "p": "The LTI model's problem is that its update rule (Ā, B̄) is the same for every input. It cannot write a token in more strongly just because it matters, or skip a token because it is filler."
+        }
+      ]
+    },
+    {
+      "h": "The selection mechanism: making parameters input-dependent",
+      "blocks": [
+        {
+          "p": "Mamba's change: let **Δ, B, and C be computed from the current input x** (each through a linear projection), while A remains fixed. Then each position has its own Δ_{t}, B_{t}, and C_{t}, and the model goes from time-invariant to **time-varying**. The paper calls this selective SSM \"S6\"—S4 plus selection, computed with a scan."
+        },
+        {
+          "p": "Theorem 1 in the paper makes this concrete. In the simplest case—state dimension 1, A = −1, B = 1—the selective SSM becomes exactly a gated recurrent network:"
+        },
+        {
+          "formula": {
+            "expr": "g_{t} = σ( Linear(x_{t}) )\nh_{t} = (1 − g_{t}) · h_{t−1} + g_{t} · x_{t}",
+            "parts": [
+              {
+                "sym": "g_{t}",
+                "desc": "Gate: a number between 0 and 1 determined by the current input"
+              },
+              {
+                "sym": "g_{t} → 1",
+                "desc": "Nearly discards the old state and stores the current input (Δ large)"
+              },
+              {
+                "sym": "g_{t} → 0",
+                "desc": "Nearly ignores the current input and keeps the old state (Δ small)"
+              }
+            ],
+            "note": "So Δ is the most important parameter: it is the generalization of RNN gating, deciding whether this step deserves a closer look."
+          },
+          "plain": {
+            "title": "The gatekeeper: let the important in, keep the noise out",
+            "text": "When Δ is large, the gate opens wide (left): the current input is written almost entirely into the state and the old contents are flushed. When Δ is small, the gate stays nearly shut (right): filler words such as \"um\" or \"ah\" cannot get in, and the state remains as it was. The key point is that the current input decides how wide the gate opens.",
+            "pic": "mb-gate"
+          }
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Hand-worked: on the same input, a fixed gate dilutes the memory; a selective gate preserves it",
+            "subtitle": "Illustrative calculation using the recurrence from Theorem 1, with h_{0} = 0. The input 4 is the information to remember; the two 9s are irrelevant distractors. The numbers are our own.",
+            "columns": [
+              "Step",
+              "Input x",
+              "h with a fixed gate g = 0.5",
+              "Selective gate g",
+              "h with a selective gate"
+            ],
+            "rows": [
+              [
+                "1",
+                "4 (to remember)",
+                "2.0",
+                "1",
+                "4"
+              ],
+              [
+                "2",
+                "9 (distractor)",
+                "5.5",
+                "0",
+                "4"
+              ],
+              [
+                "3",
+                "9 (distractor)",
+                "7.25",
+                "0",
+                "4"
+              ],
+              [
+                "4",
+                "0",
+                "3.63",
+                "0",
+                "4"
+              ]
+            ],
+            "highlight": {
+              "col": 4
+            },
+            "note": "A fixed gate treats every input the same, so the distractors are written in too and by the final state the 4 is no longer recognizable. The selective gate opens fully when it sees 4 and shuts when it sees the distractors, so the state remains 4."
+          }
+        },
+        {
+          "p": "The paper summarizes three effects of selection: **variable spacing** (skipping irrelevant tokens in between, such as \"um\" in speech); **context filtering** (many models get worse as context grows because they cannot ignore irrelevant content, whereas a selective model should in theory improve monotonically); and **boundary reset** (when several documents are concatenated during training, the state can be cleared at document boundaries so one document does not bleed into the next)."
+        }
+      ]
+    },
+    {
+      "h": "The cost and the fix: parallel scan in on-chip cache",
+      "blocks": [
+        {
+          "p": "Once the parameters depend on the input, the model can no longer be unrolled into a convolution and must be run recurrently. That raises two problems. A recurrence is inherently step-by-step and hard to parallelize. And the full hidden state has size batch × length × channels × N—N times larger than the input and output, with N typically 10 to 100—so writing it all to GPU memory is both slow and wasteful."
+        },
+        {
+          "p": "The authors use three classic techniques, very much in the spirit of FlashAttention:"
+        },
+        {
+          "list": [
+            "**Kernel fusion**: instead of materializing that N-times-larger state in GPU memory, read Δ, A, B, and C directly from GPU memory into the on-chip cache (SRAM), perform discretization and the recurrence there, and write back only the output, of size batch × length × channels.",
+            "**Parallel scan**: even though the recurrence is sequential, it can use the classic work-efficient parallel scan algorithm—merge adjacent pairs, then groups of four, and so on—giving a tree of depth only log L.",
+            "**Recomputation**: intermediate states needed for backpropagation are not stored; on the backward pass they are recomputed in the cache from the inputs. This keeps memory usage comparable to a Transformer that uses FlashAttention."
+          ],
+          "plain": {
+            "title": "A relay race, parallelized",
+            "text": "In the sequential version (A), step 8 has to wait for the first seven steps. The parallel scan (B) first merges adjacent pairs, then merges those results in groups of four, and finally combines everything into one; the number of layers grows only with the logarithm of the length, and the merges inside each layer can run simultaneously.",
+            "pic": "mb-scan"
+          }
+        },
+        {
+          "p": "The paper also notes that the recurrence costs O(B·L·D·N) while the convolution costs O(B·L·D·log L). The recurrence has smaller constants, so as long as N is not too large and the sequence is long enough, it is actually cheaper. In practice the scan runs 20–40× faster than PyTorch's standard implementation and, beyond sequence length 2K, faster than FlashAttention-2."
+        }
+      ]
+    },
+    {
+      "h": "The Mamba block: merging SSM and MLP into one",
+      "blocks": [
+        {
+          "p": "Earlier SSM architectures such as H3 typically alternate an \"attention-like\" SSM block with an MLP block. Mamba combines the two into a single block and repeats it uniformly: the input is projected to E times the width (the paper fixes E = 2); one path goes through a 1D convolution and a selective SSM, another through a SiLU activation as a gate; the two paths are multiplied and projected back to the original width."
+        },
+        {
+          "list": [
+            "Most of each block's parameters are in the linear projections—about 3ED² (input projection 2ED², output projection ED²); the SSM itself has very few parameters.",
+            "Two Mamba blocks (about 12D² when E = 2) correspond to one attention block plus one MLP block in a Transformer.",
+            "The whole model has **no attention and no separate MLP blocks**."
+          ]
+        },
+        {
+          "callout": {
+            "kind": "myth",
+            "title": "\"Mamba is just a renamed RNN\"",
+            "text": "It is indeed a recurrent model: at inference, each step is constant-time and needs no KV cache. But it differs from a conventional RNN in two important ways. The state is expanded—each channel keeps N numbers—so the total state is much larger. And the update rule depends on the input, while training can still be parallelized. The paper's ablations show that the selection mechanism itself accounts for the largest improvement."
+          }
+        }
+      ]
+    },
+    {
+      "h": "Experiments: language, DNA, audio, and speed",
+      "blocks": [
+        {
+          "p": "**Synthetic tasks.** On selective copying, layers with selective S6 nearly all score 100%, while non-selective S4 does badly:"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Selective copying: selection is what matters",
+            "subtitle": "From Table 1 in the paper; accuracy (%).",
+            "columns": [
+              "Outer architecture",
+              "Inner sequence layer",
+              "Accuracy"
+            ],
+            "rows": [
+              [
+                "No gating",
+                "S4",
+                "18.3"
+              ],
+              [
+                "No gating",
+                "S6 (selective)",
+                "97.0"
+              ],
+              [
+                "H3",
+                "S4",
+                "57.0"
+              ],
+              [
+                "H3",
+                "S6",
+                "99.7"
+              ],
+              [
+                "Mamba",
+                "S4",
+                "56.4"
+              ],
+              [
+                "Mamba",
+                "S6",
+                "99.8"
+              ]
+            ],
+            "highlight": {
+              "row": 5
+            }
+          }
+        },
+        {
+          "p": "On induction heads, a 2-layer Mamba trained at length 256 extrapolates with perfect accuracy to about one million tokens—roughly 4,000× the training length—while the other methods never go beyond 2× the training length."
+        },
+        {
+          "p": "**Language modeling.** On the Pile dataset, models from 125M to 1.3B parameters are trained in the Chinchilla regime. Besides a standard GPT-3-style Transformer, the baselines include \"Transformer++\", a stronger recipe from PaLM and LLaMA (RoPE, SwiGLU, RMSNorm, etc.). The paper says Mamba is the first attention-free model to match Transformer++, and its advantage grows with sequence length. For zero-shot downstream evaluation, all models are trained with the same tokenizer and data for 300 billion tokens:"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Zero-shot evaluation: Mamba leads at every size and matches models twice as large",
+            "subtitle": "From paper Table 3 (partial). Pile is perplexity (lower is better); average accuracy is the mean over six of eight tasks (higher is better).",
+            "columns": [
+              "Model",
+              "Pile perplexity",
+              "LAMBADA accuracy",
+              "HellaSwag",
+              "Average accuracy"
+            ],
+            "rows": [
+              [
+                "Pythia-410M",
+                "9.95",
+                "51.4",
+                "40.6",
+                "48.2"
+              ],
+              [
+                "Mamba-370M",
+                "8.28",
+                "55.6",
+                "46.5",
+                "50.0"
+              ],
+              [
+                "Pythia-1.4B",
+                "7.51",
+                "61.7",
+                "52.1",
+                "55.2"
+              ],
+              [
+                "Mamba-1.4B",
+                "6.80",
+                "64.9",
+                "59.1",
+                "59.7"
+              ],
+              [
+                "Pythia-2.8B",
+                "6.73",
+                "64.7",
+                "59.3",
+                "59.1"
+              ],
+              [
+                "Mamba-2.8B",
+                "6.22",
+                "69.2",
+                "66.1",
+                "63.3"
+              ],
+              [
+                "Pythia-6.9B",
+                "6.51",
+                "67.1",
+                "64.0",
+                "61.7"
+              ]
+            ],
+            "highlight": {
+              "row": 5
+            },
+            "note": "Mamba-2.8B's average accuracy is about 4 points higher than the same-size Pythia-2.8B, and it also surpasses the 6.9B-parameter Pythia-6.9B."
+          }
+        },
+        {
+          "p": "**DNA and audio.** On the human genome, bigger models are better. At the largest scale, Mamba matches the competition with roughly a third to a quarter of the parameters. When model size is fixed and context grows from 1024 to about one million, Mamba keeps improving while HyenaDNA gets worse. On audio, for SC09 speech generation, a small 6.1M-parameter Mamba already beats much larger GAN and diffusion models (FID 0.94 vs. a previous best 1.42), and the 24.3M-parameter version brings FID down to 0.67."
+        },
+        {
+          "p": "**Speed.** Without a KV cache, Mamba can use much larger batches at inference, with throughput 4 to 5× that of a same-size Transformer. The paper gives an example: an untrained 6.9B-parameter Mamba has higher inference throughput than a 1.3B-parameter Transformer, even though the latter is 5× smaller."
+        },
+        {
+          "p": "**Ablations.** Table 7 shows that making Δ selective gives the largest gain on its own, and making all three selective works best (perplexity drops from 10.93 to 8.71). Table 10 shows that increasing state dimension N from 1 to 16 only helps substantially when B and C are also selective (9.73 to 8.71), at a cost of only about 1% more parameters."
+        }
+      ]
+    },
+    {
+      "h": "Limitations, and a few details worth noting",
+      "blocks": [
+        {
+          "p": "Limitations listed in the paper itself:"
+        },
+        {
+          "list": [
+            "**No free lunch**: the selection mechanism closes SSMs' gap on discrete modalities such as text and DNA, but it may weaken their strengths on continuous signals such as audio and video. The only experiment in the paper where the parameter benefit is given back is audio.",
+            "**The ecosystem is still unclear**: Transformers already have a whole toolbox—fine-tuning, prompting, in-context learning, instruction tuning, RLHF, quantization. Whether SSMs can be used just as effectively in these ways still needs research.",
+            "**Limited scale**: the experiments only go up to about 3B parameters, below mainstream open-source models such as LLaMA and also below RWKV and RetNet, which have been trained beyond 7B. The paper does not answer whether Mamba would still have the edge at larger scales."
+          ]
+        },
+        {
+          "p": "A few things we noticed while reading the paper:"
+        },
+        {
+          "list": [
+            "**The DNA token count doesn't add up**: the context-length experiment reports 20,000 training steps and about 330 billion tokens total. The text says both sets of experiments fix the token count per batch, and the earlier model-size experiment used about 1M tokens per batch over 10,000 steps for 10 billion total. If this experiment also used about 1M tokens per batch, 20,000 steps would only be about 20 billion tokens. The paper does not give the batch size for this experiment, so the 330 billion figure cannot be checked.",
+            "**One configuration, two perplexities**: in Table 6, the full Mamba (Mamba architecture + S6) has perplexity 8.69; in Tables 7, 8, 9, and 10 the same default configuration is 8.71. The difference is tiny—possibly different runs—but the paper doesn't explain it.",
+            "**Inconsistent throughput multiples**: the abstract and Figure 8 say 5×, while Section 4.5 says 4 to 5×.",
+            "**The “how many times faster” claims compare against different baselines**: the introduction says up to 3× faster than previous methods, Section 4.5 says 20–40× faster than the standard PyTorch scan, and Figure 8 says 40× faster. When reading, keep straight what each figure is being compared with."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Afterward: a different path beyond attention",
+      "blocks": [
+        {
+          "list": [
+            "**Mamba-2**: in 2024 the two authors published a follow-up that theoretically connects state space models to a form of attention and lets the model make more use of matrix multiplication, making training faster.",
+            "**Hybrids with attention**: since then, several models have alternated Mamba layers with a small number of attention layers, aiming to get both linear-time efficiency and attention's ability to recall exactly.",
+            "**Long-sequence domains**: DNA, audio, and video—data that easily runs to hundreds of thousands or millions of tokens—are where Mamba-style models have the biggest advantage.",
+            "**It has not replaced the Transformer**: so far, the core of the strongest large language models is still the Transformer. Mamba proves linear-time models can match Transformers at small-to-medium scale, but the verdict at larger scale is still taking shape."
+          ]
+        },
+        {
+          "p": "The final article in this route returns to the Transformer to see how these pieces fit together into today's large models: **DeepSeek-V3**. It uses mixture-of-experts, improved load balancing, attention with a compressed KV cache, and FP8 low-precision training."
+        }
+      ]
+    },
+    {
+      "h": "Check yourself: have you actually got it?",
+      "blocks": [
+        {
+          "quiz": {
+            "q": "What does the paper identify as the root cause of earlier structured SSMs' poor language performance?",
+            "options": [
+              "Too few parameters",
+              "They are time-invariant: the same rule applies at every position, so they cannot decide from content what to remember and what to ignore.",
+              "They don't use GPUs",
+              "They use complex numbers"
+            ],
+            "answer": 1,
+            "why": "LTI models use the same Ā and B̄ for every input, so they fail at content-aware tasks such as selective copying and induction heads."
+          }
+        },
+        {
+          "quiz": {
+            "q": "In a selective SSM, what does a large Δ mean?",
+            "options": [
+              "Ignore the current input and keep the old state.",
+              "Almost discard the old state and write in the current input.",
+              "The output becomes 0.",
+              "The model stops training."
+            ],
+            "answer": 1,
+            "why": "Theorem 1 shows Δ acts as a gate: a large Δ makes the gate g close to 1, resetting the state and remembering the current input; a small Δ ignores the current input."
+          }
+        },
+        {
+          "quiz": {
+            "q": "Why is Mamba's inference throughput much higher than an equivalent-size Transformer's?",
+            "options": [
+              "Because it has fewer parameters.",
+              "Because it is a recurrent model: each step only updates a fixed-size state, there is no KV cache, and much larger batches can be used.",
+              "Because it does no matrix multiplication.",
+              "Because it can only process short sequences."
+            ],
+            "answer": 1,
+            "why": "There is no ever-growing KV cache; each step has constant cost, and the saved memory fits much larger batches."
+          }
+        },
+        {
+          "p": "After reading this, you should be able to answer:"
+        },
+        {
+          "list": [
+            "Why is the fundamental problem of sequence modeling “compressing context”? Where do attention and recurrent models stand on that spectrum?",
+            "What does the state space model recurrence look like? What roles do Δ, A, B, and C play?",
+            "What does “linear time invariance” mean? Why does it let SSMs use convolutions for speed, and why does it prevent learning selective copying?",
+            "What does the selection mechanism change? Why is Δ called a generalization of RNN gating?",
+            "Which three techniques does the hardware-aware scan use? What does it have in common with FlashAttention?",
+            "Where should the paper's experimental conclusions still be treated with caution?"
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Mamba: Linear-Time Sequence Modeling with Selective State Spaces (arXiv:2312.00752, version 2)",
+      "publisher": "Albert Gu, Tri Dao · Carnegie Mellon University, Princeton University",
+      "date": "2024-05-31",
+      "url": "https://arxiv.org/abs/2312.00752"
+    },
+    "note": "This article is based on version 2 of the arXiv paper, first released in December 2023. Tables marked “Illustrative” use numbers we set and are computed according to Theorem 1 of the paper. The DNA token-count check is our calculation from the conditions given in the paper. Mamba-2, hybrid architectures, and other later developments come from public sources and are not in this paper."
+  },
+  "claims": [
+    {
+      "text": "arXiv version 2",
+      "value": "2312.00752v2",
+      "source_url": "https://arxiv.org/abs/2312.00752",
+      "quote": "arXiv:2312.00752v2",
+      "as_written": "arXiv"
+    },
+    {
+      "text": "5× throughput",
+      "value": "5×",
+      "source_url": "https://arxiv.org/abs/2312.00752",
+      "quote": "5× higher throughput than Transformers",
+      "as_written": "5×"
+    },
+    {
+      "text": "4 to 5×",
+      "value": "4-5×",
+      "source_url": "https://arxiv.org/abs/2312.00752",
+      "quote": "4-5× higher inference throughput",
+      "as_written": "4 to 5×"
+    },
+    {
+      "text": "up to 3× faster",
+      "value": "3×",
+      "source_url": "https://arxiv.org/abs/2312.00752",
+      "quote": "up to 3× faster on A100 GPUs",
+      "as_written": "3×"
+    },
+    {
+      "text": "about 4,000×",
+      "value": "4000×",
+      "source_url": "https://arxiv.org/abs/2312.00752",
+      "quote": "4000× longer than it saw during training",
+      "as_written": "4,000×"
+    },
+    {
+      "text": "2×",
+      "value": "2×",
+      "source_url": "https://arxiv.org/abs/2312.00752",
+      "quote": "while no other method goes beyond 2×",
+      "as_written": "2×"
+    },
+    {
+      "text": "20 to 40×",
+      "value": "20-40×",
+      "source_url": "https://arxiv.org/abs/2312.00752",
+      "quote": "up to 20-40× faster than a standard scan implementation",
+      "as_written": "20 to 40×"
+    },
+    {
+      "text": "Figure 8: 40×",
+      "value": "40×",
+      "source_url": "https://arxiv.org/abs/2312.00752",
+      "quote": "our efficient scan is 40× faster",
+      "as_written": "40×"
+    },
+    {
+      "text": "5× smaller 1.3B",
+      "value": "5×",
+      "source_url": "https://arxiv.org/abs/2312.00752",
+      "quote": "5× smaller Transformer-1.3B",
+      "as_written": "5× smaller"
+    },
+    {
+      "text": "300 billion tokens",
+      "value": "300B tokens",
+      "source_url": "https://arxiv.org/abs/2312.00752",
+      "quote": "training length (300B tokens)",
+      "as_written": "300 billion"
+    },
+    {
+      "text": "330 billion tokens",
+      "value": "330𝐵 tokens",
+      "source_url": "https://arxiv.org/abs/2312.00752",
+      "quote": "330𝐵 tokens",
+      "as_written": "330 billion"
+    },
+    {
+      "text": "10 billion tokens",
+      "value": "10𝐵 tokens",
+      "source_url": "https://arxiv.org/abs/2312.00752",
+      "quote": "10𝐵 tokens",
+      "as_written": "10 billion"
+    },
+    {
+      "text": "about 1% more parameters",
+      "value": "1%",
+      "source_url": "https://arxiv.org/abs/2312.00752",
+      "quote": "only 1% additional parameters",
+      "as_written": "1%"
+    },
+    {
+      "text": "4 points",
+      "value": "4 points higher",
+      "source_url": "https://arxiv.org/abs/2312.00752",
+      "quote": "4 points higher avg",
+      "as_written": "4 points"
+    },
+    {
+      "text": "Table 1",
+      "value": "18.3",
+      "source_url": "https://arxiv.org/abs/2312.00752",
+      "quote": "18.3",
+      "as_written": "18.3"
+    },
+    {
+      "text": "97.0",
+      "value": "97.0",
+      "source_url": "https://arxiv.org/abs/2312.00752",
+      "quote": "97.0",
+      "as_written": "97.0"
+    },
+    {
+      "text": "99.8",
+      "value": "99.8",
+      "source_url": "https://arxiv.org/abs/2312.00752",
+      "quote": "99.8",
+      "as_written": "99.8"
+    },
+    {
+      "text": "Table 3",
+      "value": "63.3",
+      "source_url": "https://arxiv.org/abs/2312.00752",
+      "quote": "63.3",
+      "as_written": "63.3"
+    },
+    {
+      "text": "59.1",
+      "value": "59.1",
+      "source_url": "https://arxiv.org/abs/2312.00752",
+      "quote": "59.1",
+      "as_written": "59.1"
+    },
+    {
+      "text": "61.7",
+      "value": "61.7",
+      "source_url": "https://arxiv.org/abs/2312.00752",
+      "quote": "61.7",
+      "as_written": "61.7"
+    },
+    {
+      "text": "Table 4, FID",
+      "value": "0.94",
+      "source_url": "https://arxiv.org/abs/2312.00752",
+      "quote": "0.94",
+      "as_written": "0.94"
+    },
+    {
+      "text": "0.67",
+      "value": "0.67",
+      "source_url": "https://arxiv.org/abs/2312.00752",
+      "quote": "0.67",
+      "as_written": "0.67"
+    },
+    {
+      "text": "6.1M",
+      "value": "6.1M",
+      "source_url": "https://arxiv.org/abs/2312.00752",
+      "quote": "6.1M",
+      "as_written": "6.1M"
+    },
+    {
+      "text": "24.3M",
+      "value": "24.3M",
+      "source_url": "https://arxiv.org/abs/2312.00752",
+      "quote": "24.3M",
+      "as_written": "24.3M"
+    },
+    {
+      "text": "Table 6, 8.69",
+      "value": "8.69",
+      "source_url": "https://arxiv.org/abs/2312.00752",
+      "quote": "8.69",
+      "as_written": "8.69"
+    },
+    {
+      "text": "8.71",
+      "value": "8.71",
+      "source_url": "https://arxiv.org/abs/2312.00752",
+      "quote": "8.71",
+      "as_written": "8.71"
+    },
+    {
+      "text": "10.93",
+      "value": "10.93",
+      "source_url": "https://arxiv.org/abs/2312.00752",
+      "quote": "10.93",
+      "as_written": "10.93"
+    },
+    {
+      "text": "9.73",
+      "value": "9.73",
+      "source_url": "https://arxiv.org/abs/2312.00752",
+      "quote": "9.73",
+      "as_written": "9.73"
+    },
+    {
+      "text": "3 to 4× fewer parameters",
+      "value": "3× to 4×",
+      "source_url": "https://arxiv.org/abs/2312.00752",
+      "quote": "roughly 3× to 4× fewer",
+      "as_written": "a third to a quarter"
+    },
+    {
+      "text": "1M length",
+      "value": "1048576",
+      "source_url": "https://arxiv.org/abs/2312.00752",
+      "quote": "1048576",
+      "as_written": "1 million"
+    },
+    {
+      "text": "E = 2",
+      "value": "𝐸 = 2",
+      "source_url": "https://arxiv.org/abs/2312.00752",
+      "quote": "𝐸 = 2",
+      "as_written": "E = 2"
+    },
+    {
+      "text": "3B",
+      "value": "Mamba-3B",
+      "source_url": "https://arxiv.org/abs/2312.00752",
+      "quote": "Mamba-3B",
+      "as_written": "3 billion"
+    },
+    {
+      "text": "125M",
+      "value": "125𝑀",
+      "source_url": "https://arxiv.org/abs/2312.00752",
+      "quote": "≈ 125𝑀",
+      "as_written": "125M"
+    },
+    {
+      "text": "1.3B",
+      "value": "1.3𝐵",
+      "source_url": "https://arxiv.org/abs/2312.00752",
+      "quote": "≈ 1.3𝐵",
+      "as_written": "1.3B"
+    },
+    {
+      "text": "6.9B",
+      "value": "Mamba-6.9B",
+      "source_url": "https://arxiv.org/abs/2312.00752",
+      "quote": "Mamba-6.9B",
+      "as_written": "6.9B"
+    },
+    {
+      "text": "7B",
+      "value": "7B",
+      "source_url": "https://arxiv.org/abs/2312.00752",
+      "quote": "7B parameter scale",
+      "as_written": "7B"
+    },
+    {
+      "text": "20,000 steps",
+      "value": "20𝐾",
+      "source_url": "https://arxiv.org/abs/2312.00752",
+      "quote": "20𝐾",
+      "as_written": "20,000"
+    },
+    {
+      "text": "about 1M tokens per batch",
+      "value": "1𝑀",
+      "source_url": "https://arxiv.org/abs/2312.00752",
+      "quote": "≈ 1𝑀",
+      "as_written": "1M"
+    },
+    {
+      "text": "10,000 steps",
+      "value": "10𝐾",
+      "source_url": "https://arxiv.org/abs/2312.00752",
+      "quote": "10𝐾 gradient steps",
+      "as_written": "10,000"
+    },
+    {
+      "text": "Our calculation: about 20 billion",
+      "value": "20𝐾",
+      "source_url": "https://arxiv.org/abs/2312.00752",
+      "quote": "20𝐾",
+      "as_written": "20 billion"
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "db0033ce2f9ffbbe"
+}
