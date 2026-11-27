@@ -1,0 +1,1342 @@
+{
+  "slug": "switch-transformer-scaling-to-trillion-parameter-models",
+  "category": "paper",
+  "publisher": "Fedus、Zoph、Shazeer · 谷歌",
+  "date": "2021-01-11",
+  "title": "精读《Switch Transformer》：每个 token 只找一个专家，把模型推到 1.6 万亿参数",
+  "summary": "Switch Transformer 把 MoE 的“选前 k 个专家”简化成只选 1 个，再配上容量上限、简化的负载均衡损失和一套稳定训练的技巧。我们手算容量系数和均衡损失，梳理它对 T5 的加速、蒸馏和多语言结果，以及“参数多不等于下游好”的反常。",
+  "ai_summary": "《Switch Transformers》（Fedus、Zoph、Shazeer，谷歌，JMLR 2022）把混合专家层简化为每个 token 只路由到 1 个专家的开关层，替换 T5 的部分前馈网络。论文用专家容量和容量系数应对动态路由，以单个辅助损失做负载均衡，并提出路由器内的选择性 float32 精度、缩小初始化和专家 dropout。在相同每 token 计算量下，预训练最多比 T5-Base 快 7 倍，在 101 种语言上全部超过 mT5-Base；1.6 万亿参数的 Switch-C 比 T5-XXL 快 4 倍。蒸馏可保留约 30% 的提升，但大模型在推理类下游任务上不一定占优。",
+  "brief": [
+    "问题：MoE 复杂、通信贵、训练不稳定，难以普及。",
+    "方法：每个 token 只送 1 个专家；设专家容量；单个负载均衡损失；路由器选择性高精度、小初始化、专家 dropout。",
+    "结果：同等计算比 T5-Base 预训练快最多 7 倍；101 种语言全部提升；1.6 万亿参数模型比 T5-XXL 快 4 倍。",
+    "局限：最大的稠密计算版本仍不稳定；上游困惑度的优势在推理类下游任务上不一定兑现；蒸馏只保留约 30% 的提升。"
+  ],
+  "paper": {
+    "title": "Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity",
+    "authors": "William Fedus, Barret Zoph, Noam Shazeer",
+    "org": "谷歌",
+    "venue": "JMLR 2022",
+    "year": 2021,
+    "arxiv": "2101.03961",
+    "url": "https://arxiv.org/abs/2101.03961"
+  },
+  "cover": {
+    "headline": "Switch 原论文精读",
+    "highlight": "每个 token 只找一个专家",
+    "glyph": {
+      "kind": "flow",
+      "nodes": [
+        {
+          "label": "token"
+        },
+        {
+          "label": "路由器只选 1 个专家",
+          "tone": "hi"
+        },
+        {
+          "label": "× 路由概率"
+        }
+      ]
+    }
+  },
+  "sections": [
+    {
+      "h": "先说结论：这篇论文到底做了什么",
+      "blocks": [
+        {
+          "p": "2021 年 1 月，谷歌的 William Fedus、Barret Zoph 和 Noam Shazeer 发布了这篇论文，2022 年发表在《机器学习研究期刊》（JMLR）。Shazeer 正是上一篇《稀疏混合专家（MoE）》的第一作者、也是《T5》的第二作者。"
+        },
+        {
+          "p": "上一篇的 MoE 证明了“参数可以和计算量脱钩”，但它没有普及开来。论文认为原因有三：**太复杂、通信太贵、训练不稳定**。Switch Transformer 要做的就是把 MoE 变简单、变稳。"
+        },
+        {
+          "p": "最核心的改动反直觉地简单：**每个 token 只送给 1 个专家**。此前人们认为至少要选 2 个专家，门控网络才能学会比较、学会路由；这篇论文发现 k ＝ 1 不但能用，而且质量不降、计算更省、实现更简单。它把 T5 每隔一层的前馈网络换成这样的“开关层”（Switch layer），其余结构保持不变。"
+        },
+        {
+          "p": "围绕这个简化，论文还给出了一套让稀疏模型真正好训练的配方：简化的负载均衡损失、只在路由器里用高精度的“选择性精度”、更小的初始化、以及微调时专门加大专家内部的 dropout。"
+        },
+        {
+          "p": "结果是：和计算量相同的 T5-Base 比，预训练速度最多快 7 倍；在 101 种语言上全部超过多语言基线；还训练出了 1.6 万亿参数的模型，比 T5-XXL 快 4 倍达到同样的困惑度。"
+        },
+        {
+          "callout": {
+            "kind": "takeaway",
+            "title": "一句话版本",
+            "text": "把 MoE 的“选前 k 个专家”简化成“只选 1 个”，配上容量上限、负载均衡损失和一套稳定训练的技巧。参数随专家数暴涨，每个 token 的计算量却和稠密模型一样。"
+          }
+        },
+        {
+          "callout": {
+            "kind": "prereq",
+            "title": "读这篇需要的三个小概念",
+            "text": "不懂也没关系，这三条够用了：",
+            "list": [
+              "**MoE 层**：很多个专家网络 ＋ 一个门控（路由器），每个输入只交给少数几个专家。详见《稀疏混合专家（MoE）》精读。",
+              "**T5**：谷歌的编码器－解码器模型，本文的所有对照基线都是它。详见《T5》精读。",
+              "**FLOPs**：浮点运算次数，衡量计算量。“FLOPs 相同”是本文所有对比的前提。"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "开关层：每个 token 只去一个专家",
+      "blocks": [
+        {
+          "p": "先回忆 MoE 的路由。路由器对每个 token 算出一组分数，经 softmax 得到每个专家的概率："
+        },
+        {
+          "formula": {
+            "expr": "p_{i}(x) ＝ e^{h(x)_{i}} / Σ_{j＝1}^{N} e^{h(x)_{j}}，h(x) ＝ W_{r} · x\ny ＝ Σ_{i∈T} p_{i}(x) · E_{i}(x)",
+            "parts": [
+              {
+                "sym": "W_{r}",
+                "desc": "路由器的权重矩阵"
+              },
+              {
+                "sym": "p_{i}(x)",
+                "desc": "token x 去第 i 个专家的概率"
+              },
+              {
+                "sym": "T",
+                "desc": "被选中的专家集合。原始 MoE 选前 k 个（k ≥ 2），Switch 只选概率最高的 1 个"
+              },
+              {
+                "sym": "p_{i}(x) · E_{i}(x)",
+                "desc": "专家的输出乘以它的概率。即使只选一个专家，这个乘法也让路由器能拿到梯度"
+              }
+            ],
+            "note": "论文指出，正是“输出乘以门控概率”这一步，让 k ＝ 1 的路由器仍然可以被训练，不需要像前人担心的那样至少比较两个专家。"
+          }
+        },
+        {
+          "p": "论文列出了 k ＝ 1 的三个好处："
+        },
+        {
+          "list": [
+            "**路由计算更少**：每个 token 只送一个专家。",
+            "**每个专家的“容量”至少能减半**：每个 token 只占一个位置，而不是 k 个。",
+            "**实现更简单、通信更少**：分布式训练时，每个 token 只需要发往一台机器。"
+          ]
+        },
+        {
+          "callout": {
+            "kind": "intuition",
+            "title": "像一个只准挂一个号的医院",
+            "text": "上一篇 MoE 的分诊台会把病人同时转给两三位医生，再把意见加权汇总。Switch 的分诊台只挂一个号：最合适的那位医生。直觉上会损失一些“会诊”的好处，但实验发现几乎没有损失，而医院的运转简单、便宜了很多。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "容量：每个专家最多接多少 token",
+      "blocks": [
+        {
+          "p": "TPU 要求所有张量的形状在编译时就固定，可路由是动态的：每批里有多少 token 去哪个专家，事先不知道。所以每个专家必须有一个固定的**容量**："
+        },
+        {
+          "formula": {
+            "expr": "专家容量 ＝ ( 每批 token 数 ÷ 专家数 ) × 容量系数",
+            "parts": [
+              {
+                "sym": "每批 token 数 ÷ 专家数",
+                "desc": "完全均匀分配时，每个专家该接多少 token"
+              },
+              {
+                "sym": "容量系数",
+                "desc": "留多少余量。大于 1 时，即使分配不太均匀也能接住"
+              }
+            ],
+            "note": "超出容量的 token 被“丢弃”：这一层不处理它，它只通过残差连接原样传到下一层。论文说实验中被丢弃的 token 通常不到 1%。"
+          }
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "手算：容量系数越大，丢的 token 越少，但浪费的位置越多",
+            "subtitle": "示意：一批 12 个 token、3 个专家，路由器把 6、4、2 个 token 分别送给专家 1、2、3。数字是本站编的，按论文公式 (3) 计算，对应论文图 3",
+            "columns": [
+              "容量系数",
+              "每个专家的容量",
+              "被丢弃的 token",
+              "空着的位置",
+              "位置利用率"
+            ],
+            "rows": [
+              [
+                "1.0",
+                "4",
+                "2（专家 1 超出）",
+                "2（专家 3）",
+                "10 / 12 ≈ 83%"
+              ],
+              [
+                "1.5",
+                "6",
+                "0",
+                "6",
+                "12 / 18 ≈ 67%"
+              ],
+              [
+                "2.0",
+                "8",
+                "0",
+                "12",
+                "12 / 24 ＝ 50%"
+              ]
+            ],
+            "highlight": {
+              "row": 0
+            },
+            "note": "容量大了不丢 token，但空位置也要占内存、参与通信。论文发现 Switch 在较小的容量系数（1.0、1.25）下表现更好，这对内存紧张的大模型很重要。"
+          }
+        },
+        {
+          "p": "论文附录还试过一个“不让任何 token 掉队”的办法：溢出的 token 改送到概率第二高的专家。结果没有任何实际收益。论文猜测，模型一旦学会了 token 和专家的对应关系，换一个专家反而会变差。"
+        }
+      ]
+    },
+    {
+      "h": "负载均衡：一个更简单的损失",
+      "blocks": [
+        {
+          "p": "上一篇的 MoE 用了两个损失（重要性和负载）。Switch 把它们合成一个，对每个开关层计算："
+        },
+        {
+          "formula": {
+            "expr": "loss ＝ α · N · Σ_{i＝1}^{N} f_{i} · P_{i}\nf_{i} ＝ (1 / T) · Σ_{x∈B} 1{ argmax p(x) ＝ i }，P_{i} ＝ (1 / T) · Σ_{x∈B} p_{i}(x)",
+            "parts": [
+              {
+                "sym": "f_{i}",
+                "desc": "这批 T 个 token 里，实际被送到专家 i 的比例。它是数出来的，没法求导"
+              },
+              {
+                "sym": "P_{i}",
+                "desc": "这批 token 给专家 i 的平均路由概率。它可以求导"
+              },
+              {
+                "sym": "N",
+                "desc": "专家数。乘以 N 是为了让均匀分配时损失恒为 α，不随专家数变化"
+              },
+              {
+                "sym": "α",
+                "desc": "系数，全文取 10^{−2}：足够让负载均衡，又不至于压过主要的交叉熵损失"
+              }
+            ]
+          }
+        },
+        {
+          "p": "**它怎样起作用？**梯度只能通过 P_{i} 传回去，而对 P_{i} 的梯度正比于 f_{i}。所以：实际接的 token 越多的专家，路由器给它的概率被压得越狠，后面的 token 就会被分流到别的专家。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "手算：分配越集中，均衡损失越大",
+            "subtitle": "示意：4 个专家，α ＝ 0.01。f、P 的数字是本站编的，按论文公式 (4)–(6) 计算",
+            "columns": [
+              "情况",
+              "实际分配比例 f",
+              "平均路由概率 P",
+              "N · Σ f_{i} P_{i}",
+              "损失"
+            ],
+            "rows": [
+              [
+                "完全均匀",
+                "0.25, 0.25, 0.25, 0.25",
+                "0.25, 0.25, 0.25, 0.25",
+                "1.00",
+                "0.0100"
+              ],
+              [
+                "专家 1 接了七成",
+                "0.70, 0.10, 0.10, 0.10",
+                "0.60, 0.15, 0.15, 0.10",
+                "1.84",
+                "0.0184"
+              ]
+            ],
+            "highlight": {
+              "row": 1
+            },
+            "note": "不均衡时，专家 1 的 f ＝ 0.70，所以 P_{1} 上的梯度最大，路由器会被推着少往专家 1 送 token。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "和 MoE、T5 正面比较",
+      "blocks": [
+        {
+          "p": "论文在 C4 上用 T5 的片段遮盖目标预训练（遮 15%），所有模型的每个 token 计算量和 T5-Base 相同（MoE 因为选 2 个专家，计算量更大），用同样的 32 个第三代 TPU 核心训练同样的步数。所有 MoE 和 Switch 模型都有 128 个专家，每隔一层前馈网络放一个专家层。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Switch 对 MoE 和 T5：同样的硬件，谁又快又好",
+            "subtitle": "来自论文表 1。质量是训练 10 万步后的负对数困惑度（越接近 0 越好）；“达标时间”是达到 −1.50 所需的小时数",
+            "columns": [
+              "模型",
+              "容量系数",
+              "10 万步后的质量",
+              "达标时间（小时）",
+              "速度（样本 / 秒）"
+            ],
+            "rows": [
+              [
+                "T5-Base",
+                "—",
+                "−1.731",
+                "未达到",
+                "1600"
+              ],
+              [
+                "T5-Large",
+                "—",
+                "−1.550",
+                "131.1",
+                "470"
+              ],
+              [
+                "MoE-Base",
+                "2.0",
+                "−1.547",
+                "68.7",
+                "840"
+              ],
+              [
+                "Switch-Base",
+                "2.0",
+                "−1.554",
+                "72.8",
+                "860"
+              ],
+              [
+                "MoE-Base",
+                "1.0",
+                "−1.572",
+                "80.1",
+                "860"
+              ],
+              [
+                "Switch-Base",
+                "1.0",
+                "−1.561",
+                "62.8",
+                "1000"
+              ],
+              [
+                "Switch-Base＋（加大版）",
+                "1.0",
+                "−1.534",
+                "67.6",
+                "780"
+              ]
+            ],
+            "highlight": {
+              "row": 5
+            },
+            "note": "同样的计算和时间，Switch 最快达标。容量系数越小，Switch 相对 MoE 的优势越明显。Switch-Base＋ 是把 Switch 加大到和 MoE 一样慢的版本，它在每一步上的质量超过了所有模型。"
+          }
+        },
+        {
+          "p": "论文也如实记录了一个“意外”：MoE 的容量系数从 2.0 降到 1.25，速度反而从 840 降到 790。论文解释说，速度既取决于算法，也取决于底层实现的优化。"
+        }
+      ]
+    },
+    {
+      "h": "让稀疏模型好训练的三个技巧",
+      "blocks": [
+        {
+          "p": "**一、选择性精度**。用 bfloat16 这种低精度训练能省内存、省通信，但路由器里的 softmax 和指数运算对精度很敏感，容易让训练发散。此前的 GShard 只好全程用 float32。Switch 的办法是：只在路由器函数内部把输入转成 float32，算完再转回 bfloat16。这样昂贵的 float32 张量不会在机器之间传输，却拿到了 float32 的稳定性。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "只在路由器里用高精度，就够了",
+            "subtitle": "来自论文表 2，32 个专家的模型训练初期",
+            "columns": [
+              "精度",
+              "质量（负对数困惑度）",
+              "速度（样本 / 秒）"
+            ],
+            "rows": [
+              [
+                "全部 float32",
+                "−1.718",
+                "1160"
+              ],
+              [
+                "全部 bfloat16",
+                "−3.780（发散）",
+                "1390"
+              ],
+              [
+                "选择性精度",
+                "−1.716",
+                "1390"
+              ]
+            ],
+            "highlight": {
+              "row": 2
+            }
+          }
+        },
+        {
+          "p": "**二、更小的初始化**。权重从截断正态分布初始化，标准差是 √(s / n)，n 是输入维度。论文建议把 Transformer 默认的缩放 s ＝ 1.0 缩小到十分之一。训练 3500 步后，平均质量从 −3.60 提高到 −2.72，三次随机种子之间的标准差从 0.68 降到 0.01。同一套初始化从 2.23 亿参数一直用到上万亿参数。"
+        },
+        {
+          "p": "**三、专家 dropout**。Switch 的参数比同计算量的稠密模型多得多，在小的下游任务上更容易过拟合。简单地加大所有层的 dropout 会变差；论文的做法是非专家层保持 0.1，只把专家内部的 dropout 提到 0.4。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "微调时只加大专家内部的 dropout",
+            "subtitle": "来自论文表 4。d 是普通 dropout，ed 是专家 dropout",
+            "columns": [
+              "模型",
+              "GLUE",
+              "CNNDM",
+              "SQuAD",
+              "SuperGLUE"
+            ],
+            "rows": [
+              [
+                "T5-Base（d ＝ 0.1）",
+                "82.9",
+                "19.6",
+                "83.5",
+                "72.4"
+              ],
+              [
+                "Switch-Base（d ＝ 0.1）",
+                "84.7",
+                "19.1",
+                "83.7",
+                "73.0"
+              ],
+              [
+                "Switch-Base（d ＝ 0.3）",
+                "83.9",
+                "19.6",
+                "83.4",
+                "70.7"
+              ],
+              [
+                "Switch-Base（d ＝ 0.1，ed ＝ 0.4）",
+                "85.2",
+                "19.6",
+                "83.7",
+                "73.0"
+              ]
+            ],
+            "highlight": {
+              "row": 3
+            }
+          }
+        },
+        {
+          "p": "论文附录还比较了几种让路由器“探索”的方式：总选最高分、按概率采样、对输入做 dropout、对输入乘一个随机扰动。最后选了随机扰动（jitter）。"
+        }
+      ]
+    },
+    {
+      "h": "扩展：专家越多越快，连稠密的大模型也追不上",
+      "blocks": [
+        {
+          "p": "**按步数比**：每个 token 的计算量固定，专家数从 2 一路翻倍到 256，参数从 2.23 亿涨到 147 亿，测试损失持续下降。64 个专家的 Switch-Base 在第 6 万步，就达到了 T5-Base 在第 45 万步的水平，按步数算快 7.5 倍。"
+        },
+        {
+          "p": "**按时间比**：Switch 多了路由计算和机器间的通信，按步数的优势不一定能变成按时间的优势。但实测在固定时间和算力下，64 个专家的 Switch-Base 只用约七分之一的时间就达到 T5-Base 的困惑度。"
+        },
+        {
+          "p": "**和更大的稠密模型比**：如果把算力拿去训练更大的稠密模型 T5-Large 呢？T5-Large 每个 token 的计算量是 Switch-Base 的 3.5 倍，可 Switch-Base 仍然更省样本，按时间算还快 2.5 倍。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "同样的计算量，参数可以差几十倍",
+            "subtitle": "来自论文表 9（部分）。FLOPs/seq 是每条序列的计算量",
+            "columns": [
+              "模型",
+              "参数",
+              "FLOPs/seq",
+              "专家数",
+              "50 万步后的质量"
+            ],
+            "rows": [
+              [
+                "T5-Base",
+                "2 亿",
+                "1240 亿",
+                "—",
+                "−1.556"
+              ],
+              [
+                "Switch-Base",
+                "70 亿",
+                "1240 亿",
+                "128",
+                "−1.306"
+              ],
+              [
+                "T5-Large",
+                "7 亿",
+                "4250 亿",
+                "—",
+                "−1.350"
+              ],
+              [
+                "Switch-Large",
+                "260 亿",
+                "4250 亿",
+                "128",
+                "−1.177"
+              ],
+              [
+                "T5-XXL",
+                "110 亿",
+                "6.3 万亿",
+                "—",
+                "−1.095"
+              ],
+              [
+                "Switch-XXL",
+                "3950 亿",
+                "6.3 万亿",
+                "64",
+                "−1.008"
+              ],
+              [
+                "Switch-C",
+                "1.571 万亿",
+                "8900 亿",
+                "2048",
+                "−1.043"
+              ]
+            ],
+            "highlight": {
+              "row": 6
+            },
+            "note": "Switch-C 每条序列的计算量只有 T5-XXL 的约七分之一，参数却多一百多倍，按论文说法，达到同样困惑度快 4 倍。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "下游任务、蒸馏和多语言",
+      "blocks": [
+        {
+          "p": "论文把 T5 和 Switch 都在改进版的 C4 上预训练 55 万步、约 5760 亿个 token，再在各种任务上微调。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "微调结果：多数任务都更好，但推理类任务不一定",
+            "subtitle": "来自论文表 5（部分），验证集，越高越好",
+            "columns": [
+              "模型",
+              "SuperGLUE",
+              "Winogrande",
+              "XSum 摘要",
+              "闭卷 TriviaQA",
+              "ARC 挑战集"
+            ],
+            "rows": [
+              [
+                "T5-Base",
+                "75.1",
+                "66.6",
+                "18.7",
+                "24.5",
+                "35.5"
+              ],
+              [
+                "Switch-Base",
+                "79.5",
+                "73.3",
+                "20.3",
+                "30.7",
+                "32.8"
+              ],
+              [
+                "T5-Large",
+                "82.7",
+                "79.1",
+                "20.9",
+                "29.5",
+                "35.5"
+              ],
+              [
+                "Switch-Large",
+                "84.7",
+                "83.0",
+                "22.3",
+                "36.9",
+                "35.5"
+              ]
+            ],
+            "note": "SuperGLUE 分别提高 4.4 和 2 个百分点；闭卷问答这类考“知识”的任务提升尤其大。只有 ARC 这组推理题没有提升：挑战集上 Switch-Base 不如 T5-Base，简单集上 Switch-Large 不如 T5-Large（表中只列了挑战集）。"
+          }
+        },
+        {
+          "p": "**蒸馏**：万亿参数不好部署，能不能把稀疏大模型压回小的稠密模型？论文发现两个技巧有用：用老师模型中非专家部分的权重初始化学生；损失里按 0.25 比 0.75 混合老师的概率和真实标签。这样能保留约 30% 的质量提升。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "把 Switch 蒸馏回 T5-Base 大小",
+            "subtitle": "来自论文表 7。“保留比例”是学生拿到了老师相对 T5-Base 质量提升的百分之几",
+            "columns": [
+              "老师参数",
+              "11 亿",
+              "20 亿",
+              "38 亿",
+              "74 亿",
+              "147 亿"
+            ],
+            "rows": [
+              [
+                "老师的质量",
+                "−1.505",
+                "−1.474",
+                "−1.444",
+                "−1.432",
+                "−1.427"
+              ],
+              [
+                "蒸馏后学生的质量",
+                "−1.587",
+                "−1.585",
+                "−1.579",
+                "−1.582",
+                "−1.578"
+              ],
+              [
+                "保留比例",
+                "37%",
+                "32%",
+                "30%",
+                "27%",
+                "28%"
+              ],
+              [
+                "压缩比例",
+                "82%",
+                "90%",
+                "95%",
+                "97%",
+                "99%"
+              ]
+            ],
+            "note": "学生都是 2.23 亿参数的 T5-Base，它自己的质量是 −1.636。压缩到原来的 1% 时，仍能保留老师 28% 的提升。"
+          }
+        },
+        {
+          "p": "**多语言**：在 101 种语言的 mC4 上预训练 100 万步，Switch 在**全部** 101 种语言上都超过了计算量相同的 mT5-Base，平均快 5 倍，91% 的语言至少快 4 倍。"
+        }
+      ]
+    },
+    {
+      "h": "上万亿参数：三种并行怎样组合",
+      "blocks": [
+        {
+          "p": "论文第 5 节讲了怎样把模型分到成千上万个核上。设核总数 N ＝ n × m，n 是数据并行的份数，m 是模型并行的份数："
+        },
+        {
+          "list": [
+            "**数据并行**：每个核放一整份模型，处理不同的数据，只在一步结束时同步梯度。",
+            "**模型并行**：把前馈网络的大矩阵切开分给不同的核，每一层前向和反向都要做一次全规约通信。",
+            "**专家并行**：每个核放不同的专家。路由时要做两次“全对全”通信：把 token 送到专家所在的核，算完再送回来。"
+          ]
+        },
+        {
+          "p": "Switch-C 只用专家并行和数据并行，所以宽度、深度都比 T5-XXL 小得多；Switch-XXL 则和 T5-XXL 计算量相同，多了模型并行的通信开销。训练 25 万步后，两者都比 T5-XXL 的负对数困惑度高出 0.061 以上；作为对比，T5-XXL 再多训练 25 万步也只提高了 0.052。"
+        },
+        {
+          "p": "**但大模型的问题也暴露了**："
+        },
+        {
+          "list": [
+            "**Switch-XXL 偶尔不稳定**：前面的技巧对 Base、Large、C 都有效，对它不够，所以它没有训练满 100 万步。",
+            "**上游好不等于下游好**：1.6 万亿参数的 Switch-C 在 SQuAD 上只有 87.7，反而不如更小的 Switch-XXL（89.6）。SuperGLUE 上，只预训练了约 5030 亿 token（约为 T5-XXL 的一半）的 Switch-XXL 得到 87.5，不如 T5-XXL 的 89.3；但在闭卷问答这类知识任务上，它超过了此前的最好成绩。论文的总结是：Switch 上游的提升，更容易转化到知识类任务，转化到推理类任务则没那么充分。"
+          ]
+        },
+        {
+          "callout": {
+            "kind": "myth",
+            "title": "“参数越多，模型就越聪明”",
+            "text": "这篇论文本身就是一个反例。Switch-C 的参数是 Switch-XXL 的约 4 倍，可 Switch-XXL 每个 token 的计算量大得多，在 SQuAD 这样的下游任务上反而更好。论文的解释是：微调质量、每个 token 的计算量和参数总量之间，存在一种“还没被理解的”关系。粗略地说，参数多像“记得多”，计算多像“想得深”，两者不能互相替代。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "几处值得留意的细节",
+      "blocks": [
+        {
+          "list": [
+            "**一句话把顺序说反了**：第 3.1 节写道 64 专家模型“在第 45 万步达到了 T5-Base 第 6 万步的水平”。按 7.5 倍加速的结论，应该反过来：Switch 在第 6 万步达到 T5-Base 第 45 万步的水平。",
+            "**“约 10 倍”其实约 7 倍**：第 5.6 节和第 8 节都说 Switch-XXL 每个 token 的计算量约是 Switch-C 的 10 倍。按表 9，6.3 万亿 ÷ 8900 亿约是 7 倍。",
+            "**“100 倍参数”其实约 17 倍**：表 6 的说明说可以把一个“参数多 100 倍”的稀疏模型蒸馏回小模型；但表里的老师 Switch-Base 是 38 亿参数，学生是 2.23 亿，约 17 倍。正文“约二十分之一的参数”更接近。",
+            "**注意力头数对不上**：表 1 说 Switch-Base＋ 把注意力头数“从 14 加到 16”，但表 9 里 T5-Base 和 Switch-Base 都是 12 个头。",
+            "**“越低越好”写反了**：附录表 11 的说明写负对数困惑度“越低越好”，全文其他地方都是越高越好（越接近 0 越好）。",
+            "**扰动是加还是乘**：附录说用“乘性”扰动作用在输入上，但附录的伪代码是把一个 1 附近的随机数**加**到路由分数上。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "之后：MoE 成了大模型的主流选择之一",
+      "blocks": [
+        {
+          "list": [
+            "**Top-1 和 Top-2 之争**：Switch 证明了只选一个专家可行；后来的不少开源 MoE 模型又回到每个 token 选两个甚至更多专家，加上更细粒度的专家划分。选几个，取决于质量、通信和硬件之间的权衡。",
+            "**负载均衡仍是核心问题**：Switch 的辅助损失（α · N · Σ f P）成了常见做法。本路线最后一篇 DeepSeek-V3 会看到另一种思路。",
+            "**稳定性的技巧被广泛沿用**：路由器用高精度、小初始化等经验，后来在大模型训练中很常见。",
+            "**“上游好、下游不一定好”**：这个现象提醒我们，只看预训练困惑度来评价稀疏模型是不够的。"
+          ]
+        },
+        {
+          "p": "这一条路线接下来换个方向，从“加参数”回到 Transformer 本身的零件：下一篇是**旋转位置编码（RoPE）**，今天几乎所有开源大模型都用它来告诉模型“每个词在哪个位置”。"
+        }
+      ]
+    },
+    {
+      "h": "检验一下：你吃透了吗",
+      "blocks": [
+        {
+          "quiz": {
+            "q": "只把 token 送给 1 个专家时，路由器为什么还能被训练？",
+            "options": [
+              "因为用了强化学习",
+              "因为专家的输出要乘以路由概率 p_{i}(x)，梯度可以通过这个乘法传回路由器",
+              "因为加了噪声",
+              "因为路由器是固定的，不需要训练"
+            ],
+            "answer": 1,
+            "why": "前人认为至少要比较两个专家才能学会路由。论文指出，只要输出乘上门控概率，路由器就有梯度，k ＝ 1 也能学。"
+          }
+        },
+        {
+          "quiz": {
+            "q": "容量系数设得太大会有什么代价？",
+            "options": [
+              "丢掉更多 token",
+              "空位置更多，浪费内存和计算，通信量也更大",
+              "路由器无法训练",
+              "专家数变少"
+            ],
+            "answer": 1,
+            "why": "容量系数大，丢的 token 少，但每个专家都要按容量分配位置，没用上的位置就是浪费。论文发现 Switch 在 1.0 到 1.25 的小容量系数下表现最好。"
+          }
+        },
+        {
+          "quiz": {
+            "q": "Switch-C 有 1.6 万亿参数，为什么在 SQuAD 上反而不如 3950 亿参数的 Switch-XXL？",
+            "options": [
+              "Switch-C 训练失败了",
+              "Switch-XXL 每个 token 的计算量大得多；论文认为微调质量和计算量、参数量之间有尚未理解的关系，参数多不能完全替代计算多",
+              "SQuAD 数据有问题",
+              "Switch-C 没有用专家"
+            ],
+            "answer": 1,
+            "why": "论文第 8 节专门讨论了这个“反常”。它说明稀疏模型的优势在知识类任务上更明显，推理类任务可能还需要更多的计算量。"
+          }
+        },
+        {
+          "p": "读完这篇，你应该能回答下面这些问题："
+        },
+        {
+          "list": [
+            "Switch 层和原始 MoE 层的区别在哪？k ＝ 1 有什么好处？",
+            "专家容量和容量系数是什么？被丢弃的 token 会怎样？",
+            "Switch 的负载均衡损失是怎样计算的？它怎样推动均衡？",
+            "选择性精度、小初始化、专家 dropout 各解决什么问题？",
+            "和 T5-Base、T5-Large 相比，Switch 快在哪？",
+            "蒸馏能保留多少质量？",
+            "为什么说“上游好、下游不一定好”？"
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity（arXiv:2101.03961 第 3 版）",
+      "publisher": "Fedus、Zoph、Shazeer · Google",
+      "date": "2022-06-16",
+      "url": "https://arxiv.org/abs/2101.03961"
+    },
+    "note": "本文依据论文 arXiv 第 3 版（内容为 JMLR 2022 正式版），首版发布于 2021 年 1 月。标注「示意」的表格由本站设定数字并按论文公式计算。“约 7 倍”“约 17 倍”由本站按论文表格计算。后续开源 MoE 模型的做法来自公开资料，不在本论文里。"
+  },
+  "claims": [
+    {
+      "text": "arXiv 第 3 版、JMLR 2022",
+      "value": "2101.03961v3",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "arXiv:2101.03961v3 [cs.LG] 16 Jun 2022",
+      "as_written": "JMLR"
+    },
+    {
+      "text": "最多快 7 倍",
+      "value": "7x",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "7x increases in pre-training speed",
+      "as_written": "7 倍"
+    },
+    {
+      "text": "101 种语言",
+      "value": "101",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "all 101 languages",
+      "as_written": "101 种"
+    },
+    {
+      "text": "比 T5-XXL 快 4 倍",
+      "value": "4x",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "4x speedup over the T5-XXL model",
+      "as_written": "4 倍"
+    },
+    {
+      "text": "1.6 万亿参数",
+      "value": "1.6 trillion",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "395 billion and 1.6 trillion parameters",
+      "as_written": "1.6 万亿"
+    },
+    {
+      "text": "3950 亿",
+      "value": "395 billion",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "395 billion and 1.6 trillion parameters",
+      "as_written": "3950 亿"
+    },
+    {
+      "text": "丢弃通常不到 1%",
+      "value": "< 1%",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "typically < 1%",
+      "as_written": "1%"
+    },
+    {
+      "text": "α = 10^-2",
+      "value": "10−2",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "α = 10−2",
+      "as_written": "10^{−2}"
+    },
+    {
+      "text": "遮 15%",
+      "value": "15%",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "we drop out 15% of tokens",
+      "as_written": "15%"
+    },
+    {
+      "text": "840 → 790",
+      "value": "790",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "(840 to 790)",
+      "as_written": "790"
+    },
+    {
+      "text": "缩小到十分之一",
+      "value": "factor of 10",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "by a factor of 10",
+      "as_written": "十分之一"
+    },
+    {
+      "text": "2.23 亿",
+      "value": "223M",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "223M parameter baseline",
+      "as_written": "2.23 亿"
+    },
+    {
+      "text": "147 亿",
+      "value": "14.7B",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "14.7B parameters",
+      "as_written": "147 亿"
+    },
+    {
+      "text": "快 7.5 倍",
+      "value": "7.5x",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "7.5x",
+      "as_written": "7.5 倍"
+    },
+    {
+      "text": "七分之一的时间",
+      "value": "one-seventh",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "one-seventh the time",
+      "as_written": "七分之一"
+    },
+    {
+      "text": "T5-Large 3.5 倍计算",
+      "value": "3.5x",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "3.5x more FLOPs per token",
+      "as_written": "3.5 倍"
+    },
+    {
+      "text": "快 2.5 倍",
+      "value": "2.5x",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "yields a 2.5x speedup",
+      "as_written": "2.5 倍"
+    },
+    {
+      "text": "55 万步",
+      "value": "550k",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "for 550k steps",
+      "as_written": "55 万步"
+    },
+    {
+      "text": "5760 亿 token",
+      "value": "576B",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "576B total tokens",
+      "as_written": "5760 亿"
+    },
+    {
+      "text": "SuperGLUE 提高 4.4 和 2",
+      "value": "4.4",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "4.4 and 2 percentage points",
+      "as_written": "4.4"
+    },
+    {
+      "text": "约 30%",
+      "value": "30%",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "≈ 30% of the quality gains",
+      "as_written": "30%"
+    },
+    {
+      "text": "1/20 的参数",
+      "value": "1/20th",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "≈ 1/20th of the parameters",
+      "as_written": "二十分之一"
+    },
+    {
+      "text": "表 6 说 100 倍",
+      "value": "100x",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "100x more parameters",
+      "as_written": "100 倍"
+    },
+    {
+      "text": "本站计算：3800M / 223M 约 17 倍",
+      "value": "3,800M",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "3,800M",
+      "as_written": "17 倍"
+    },
+    {
+      "text": "表 7：37% / 82%",
+      "value": "37%",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "37% of the quality",
+      "as_written": "37%"
+    },
+    {
+      "text": "82%",
+      "value": "82%",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "compressing 82%",
+      "as_written": "82%"
+    },
+    {
+      "text": "压缩 99%",
+      "value": "99%",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "compress the model 99%",
+      "as_written": "99%"
+    },
+    {
+      "text": "保留 28%",
+      "value": "28%",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "28% of the teacher",
+      "as_written": "28%"
+    },
+    {
+      "text": "32%",
+      "value": "32%",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "32%",
+      "as_written": "32%"
+    },
+    {
+      "text": "27 %",
+      "value": "27 %",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "27 %",
+      "as_written": "27%"
+    },
+    {
+      "text": "90 %",
+      "value": "90 %",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "90 %",
+      "as_written": "90%"
+    },
+    {
+      "text": "95 %",
+      "value": "95 %",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "95 %",
+      "as_written": "95%"
+    },
+    {
+      "text": "97 %",
+      "value": "97 %",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "97 %",
+      "as_written": "97%"
+    },
+    {
+      "text": "多语言平均快 5 倍",
+      "value": "5x",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "mean speed-up over mT5-Base of 5x",
+      "as_written": "5 倍"
+    },
+    {
+      "text": "91% 至少快 4 倍",
+      "value": "91%",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "91% of languages achieve at least a 4x speedup",
+      "as_written": "91%"
+    },
+    {
+      "text": "Switch-C 1571B",
+      "value": "1571B",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "1571B",
+      "as_written": "1.571 万亿"
+    },
+    {
+      "text": "890B",
+      "value": "890B",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "890B",
+      "as_written": "8900 亿"
+    },
+    {
+      "text": "6.3T",
+      "value": "6.3T",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "6.3T",
+      "as_written": "6.3 万亿"
+    },
+    {
+      "text": "本站计算：6.3T / 890B 约 7 倍",
+      "value": "6.3T",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "6.3T",
+      "as_written": "7 倍"
+    },
+    {
+      "text": "“约 10 倍”",
+      "value": "10x",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "nearly 10x larger FLOPs",
+      "as_written": "10 倍"
+    },
+    {
+      "text": "约 4 倍参数",
+      "value": "≈4x",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "≈4x less unique parameters",
+      "as_written": "4 倍"
+    },
+    {
+      "text": "0.061 / 0.052",
+      "value": "0.061",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "by over 0.061",
+      "as_written": "0.061"
+    },
+    {
+      "text": "0.052",
+      "value": "0.052",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "0.052",
+      "as_written": "0.052"
+    },
+    {
+      "text": "SQuAD 87.7 / 89.6",
+      "value": "87.7",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "87.7 exact match",
+      "as_written": "87.7"
+    },
+    {
+      "text": "89.6",
+      "value": "89.6",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "89.6",
+      "as_written": "89.6"
+    },
+    {
+      "text": "503B token",
+      "value": "503B",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "partially pre-trained on 503B tokens",
+      "as_written": "5030 亿"
+    },
+    {
+      "text": "SuperGLUE 87.5 / 89.3",
+      "value": "87.5",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "87.5",
+      "as_written": "87.5"
+    },
+    {
+      "text": "89.3",
+      "value": "89.3",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "89.3",
+      "as_written": "89.3"
+    },
+    {
+      "text": "表 9：70 亿、260 亿、110 亿、2 亿、7 亿",
+      "value": "7B",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "7B",
+      "as_written": "70 亿"
+    },
+    {
+      "text": "26B",
+      "value": "26B",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "26B",
+      "as_written": "260 亿"
+    },
+    {
+      "text": "11B",
+      "value": "11B",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "11B",
+      "as_written": "110 亿"
+    },
+    {
+      "text": "0.2B",
+      "value": "0.2B",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "0.2B",
+      "as_written": "2 亿"
+    },
+    {
+      "text": "0.7B",
+      "value": "0.7B",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "0.7B",
+      "as_written": "7 亿"
+    },
+    {
+      "text": "124B",
+      "value": "124B",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "124B",
+      "as_written": "1240 亿"
+    },
+    {
+      "text": "425B",
+      "value": "425B",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "425B",
+      "as_written": "4250 亿"
+    },
+    {
+      "text": "表 7 老师 11 亿到 147 亿",
+      "value": "1.1B",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "1.1B to 14.7B",
+      "as_written": "11 亿"
+    },
+    {
+      "text": "2.0B",
+      "value": "2.0B",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "2.0B",
+      "as_written": "20 亿"
+    },
+    {
+      "text": "3.8B",
+      "value": "3.8B",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "3.8B",
+      "as_written": "38 亿"
+    },
+    {
+      "text": "7.4B",
+      "value": "7.4B",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "7.4B",
+      "as_written": "74 亿"
+    },
+    {
+      "text": "表 1",
+      "value": "-1.731",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "-1.731",
+      "as_written": "−1.731"
+    },
+    {
+      "text": "-1.534",
+      "value": "-1.534",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "-1.534",
+      "as_written": "−1.534"
+    },
+    {
+      "text": "62.8",
+      "value": "62.8",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "62.8",
+      "as_written": "62.8"
+    },
+    {
+      "text": "表 2",
+      "value": "-3.780",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "-3.780",
+      "as_written": "−3.780"
+    },
+    {
+      "text": "1390",
+      "value": "1390",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "1390",
+      "as_written": "1390"
+    },
+    {
+      "text": "表 3",
+      "value": "-2.72",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "-2.72",
+      "as_written": "−2.72"
+    },
+    {
+      "text": "-3.60",
+      "value": "-3.60",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "-3.60",
+      "as_written": "−3.60"
+    },
+    {
+      "text": "0.68",
+      "value": "0.68",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "0.68",
+      "as_written": "0.68"
+    },
+    {
+      "text": "表 5",
+      "value": "79.5",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "79.5",
+      "as_written": "79.5"
+    },
+    {
+      "text": "36.9",
+      "value": "36.9",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "36.9",
+      "as_written": "36.9"
+    },
+    {
+      "text": "32.8",
+      "value": "32.8",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "32.8",
+      "as_written": "32.8"
+    },
+    {
+      "text": "表 9 质量",
+      "value": "-1.008",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "-1.008",
+      "as_written": "−1.008"
+    },
+    {
+      "text": "-1.043",
+      "value": "-1.043",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "-1.043",
+      "as_written": "−1.043"
+    },
+    {
+      "text": "-1.095",
+      "value": "-1.095",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "-1.095",
+      "as_written": "−1.095"
+    },
+    {
+      "text": "32 个第三代 TPU 核心",
+      "value": "32 TPUv3 cores",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "32 TPUv3 cores",
+      "as_written": "32 个"
+    },
+    {
+      "text": "第 45 万步",
+      "value": "450k",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "step 450k",
+      "as_written": "45 万"
+    },
+    {
+      "text": "100 万步",
+      "value": "1M steps",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "1M steps",
+      "as_written": "100 万"
+    },
+    {
+      "text": "25 万步",
+      "value": "250k steps",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "additional 250k steps",
+      "as_written": "25 万"
+    },
+    {
+      "text": "注意力头 14 → 16",
+      "value": "14 to 16",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "from 14 to 16",
+      "as_written": "从 14 加到 16"
+    },
+    {
+      "text": "表 11：lower is better",
+      "value": "lower is better",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "(lower is better)",
+      "as_written": "越低越好"
+    },
+    {
+      "text": "伪代码：加到路由分数上",
+      "value": "+=",
+      "source_url": "https://arxiv.org/abs/2101.03961",
+      "quote": "minval=1−eps, maxval=1+eps",
+      "as_written": "加"
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "tier": "primary",
+    "writer": "论文精读"
+  }
+}
