@@ -1,0 +1,578 @@
+{
+  "slug": "anthropic-messages-api-rust-migration",
+  "category": "product",
+  "date": "2026-11-25",
+  "publisher": "Anthropic",
+  "topics": [
+    "claude"
+  ],
+  "readMinutes": 8,
+  "title": "Anthropic moves its Messages API to Rust: ~70% less CPU per request, 20% faster time to first token",
+  "summary": "If you call Claude through the Messages API, or use Claude Code or Cowork, those requests now use less compute and come back faster: Anthropic has moved the core interface—written in Python since 2023—to Rust, without ever taking the service offline.",
+  "ai_summary": "Anthropic has migrated its Messages API from Python to Rust. It's the main path through which customers and apps like Claude Code and Cowork reach Claude, and traffic grew about 1,800x in just over two years. After the migration, CPU per request fell about 70% and median time to first token fell about 20%, with no downtime and no feature freeze. The hard part wasn't writing code: Claude produced a first version in about a week, and by May 2026 had written more than 80% of Anthropic's merged code. The hard part was verification—the old version was still changing, model outputs are non-deterministic, and customer requests couldn't be read. The approach was to use the production API as the judge, record differences with checkpoints and fingerprints, and let agents repair them in a three-loop system. Worth a look for teams planning a large migration and worried about old-new parity.",
+  "brief": [
+    "The Messages API is the main way customers and Anthropic's own apps like Claude Code and Cowork reach Claude. Traffic grew about 1,800x from early 2024 to fall 2026.",
+    "After the move to Rust, CPU per request fell about 70% and median time to first token fell about 20%, with no downtime and no freeze on feature development.",
+    "The verification challenge: by April, the Rust version passed about 98% of tests, yet on live traffic only about a quarter of inputs matched the Python version.",
+    "Fixes ran through three loops: a sandbox inner loop for fast iteration, a production shadow outer loop for validation, and a memory loop that stored corrections as rules."
+  ],
+  "sections": [
+    {
+      "h": "What this is: rebuilding the busiest API in Rust",
+      "blocks": [
+        {
+          "p": "Anthropic has moved its core Messages API from Python to Rust. The API is the main way external customers—and Anthropic's own apps like Claude Code and Cowork—reach Claude. It was built in Python in 2023 and was initially so simple that one engineer called it \"basically a request forwarder.\""
+        },
+        {
+          "p": "The interesting part isn't the language swap itself; it's the result: CPU per request fell about 70%, median time to first token fell about 20%, and all of it happened without downtime or freezing feature development."
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "Four key numbers from the migration",
+            "subtitle": "All figures are approximate, reported by Anthropic",
+            "items": [
+              {
+                "value": "70",
+                "unit": "%",
+                "label": "Per-request CPU reduction",
+                "note": "Rust vs Python"
+              },
+              {
+                "value": "20",
+                "unit": "%",
+                "label": "Median time to first token reduction",
+                "note": "Customer Claude Code requests, shorter window"
+              },
+              {
+                "value": "1,800",
+                "unit": "x",
+                "label": "API traffic growth",
+                "note": "Early 2024 to fall 2026"
+              },
+              {
+                "value": "80",
+                "unit": "%",
+                "label": "Share of merged code written by Claude",
+                "note": "More than 80% by May 2026"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "Why Python couldn't keep up",
+      "blocks": [
+        {
+          "p": "The features the Messages API later acquired made Python's overhead increasingly visible. By late 2025, every request had to be validated, turned into a model-readable prompt, tokenized, and screened by safety classifiers. After the model generated its reply token by token, the API still had to sort those tokens into text, thinking, and tool calls, then stream them to the customer. Every object Python created, every chunk of memory it freed, and every handoff to the next step added a little overhead."
+        },
+        {
+          "p": "The pressure came from traffic. From early 2024 to fall 2026, API traffic grew about 1,800x—far beyond what the original Python service was designed for."
+        },
+        {
+          "fig": {
+            "type": "steps",
+            "title": "The gates a request passes through in the Messages API",
+            "subtitle": "Illustrative: both the input and output paths were part of the migration",
+            "steps": [
+              {
+                "name": "Validate request",
+                "tool": "Input path",
+                "desc": "Accept or reject"
+              },
+              {
+                "name": "Build prompt",
+                "tool": "Input path",
+                "desc": "Convert into a model-readable prompt, then tokenize and run safety classifiers"
+              },
+              {
+                "name": "Model generation",
+                "tool": "Model",
+                "desc": "Run once; replay output to both versions"
+              },
+              {
+                "name": "Sort tokens",
+                "tool": "Output path",
+                "desc": "Split into text, thinking, and tool calls"
+              },
+              {
+                "name": "Stream to customer and count usage",
+                "tool": "Output path",
+                "desc": "Push to customer; count usage"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "Why incremental rewriting wasn't enough",
+      "blocks": [
+        {
+          "p": "The usual approach is to rewrite only the part that's slowing the system down. The team rewrote the model-output parser in Rust and called it from Python; API CPU usage dropped by about 8% to 10%."
+        },
+        {
+          "p": "But every token in a reply now had to cross between Python and Rust three times, adding new overhead. The gains didn't justify the added complexity, so the team decided on a full migration."
+        },
+        {
+          "callout": {
+            "kind": "intuition",
+            "title": "Why a full rewrite used to feel too risky",
+            "text": "Full rewrites of large production systems have traditionally been avoided for two main reasons: tests may not cover 100% of production behavior, and the engineering effort is huge. Claude brought the effort side down dramatically, but verification became the new bottleneck."
+          }
+        }
+      ]
+    },
+    {
+      "h": "The hard part isn't writing code, it's verification",
+      "blocks": [
+        {
+          "p": "Writing code was no longer the bottleneck. Claude wrote a first version of the API's core request path in about a week. By May 2026, Claude had written more than 80% of the code Anthropic merged."
+        },
+        {
+          "p": "The hard part was proving the Rust version behaved like the Python production version. That meant three layers of difficulty: the Python version kept changing during the migration, so the target was moving; Claude can reply differently to the same request, so two different outputs didn't necessarily mean a bug; and for privacy reasons, the team couldn't read customer requests, making it hard to see where the two versions diverged."
+        },
+        {
+          "p": "Old tests didn't help much either. The team had about 700 integration tests, but when they audited the ported tests they found more than 100 weakened assertions—tests may have been changed in ways that let wrong code pass. And the combinations were overwhelming: just 20 binary options make over 1 million configurations, and exhaustively testing one model would take 12 days."
+        },
+        {
+          "p": "The clearest signal is this contrast: in April, the Rust version passed about 98% of tests, yet on live traffic only about a quarter of inputs matched the Python version. Green tests didn't mean matching behavior."
+        }
+      ]
+    },
+    {
+      "h": "Using the production system as the judge",
+      "blocks": [
+        {
+          "p": "The team's method is called shadowing: send real requests through both the old and new versions and compare results. Two complications had to be handled: each customer request could only be counted once for billing, and model output is non-deterministic. So the model ran once, and the same output was replayed to the Rust version; then every step before and after the model call was compared and required to match exactly."
+        },
+        {
+          "p": "Because the team didn't read text, they recorded only the \"shape\" of differences: which step, which piece, the byte where the difference began, and how far apart the lengths were."
+        },
+        {
+          "fig": {
+            "type": "illustration",
+            "title": "Checkpoints compare step by step, and the first divergence points to the bug",
+            "subtitle": "Illustrative: amber marks the step where the two versions first differ",
+            "glyph": {
+              "kind": "window",
+              "title": "Messages API processing steps",
+              "items": [
+                {
+                  "label": "Accept / reject request",
+                  "tone": "base"
+                },
+                {
+                  "label": "Resolve request settings",
+                  "tone": "base"
+                },
+                {
+                  "label": "Build prompt",
+                  "tone": "hi"
+                },
+                {
+                  "label": "Tokenize",
+                  "tone": "base"
+                },
+                {
+                  "label": "Run safety classifiers",
+                  "tone": "base"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "p": "Checkpoints: both versions handle a request in the same steps, and the intermediate result from each step is compared side by side. The first point where they differ gives a rough idea of where the migrated code departs from production code."
+        },
+        {
+          "p": "Fingerprints: record where a difference starts in the prompt and how far the lengths diverge. The same bug leaves the same fingerprint on every request it affects, so the team can group huge numbers of diff records by fingerprint and decide whether they are the same bug. One record looks roughly like: the step (such as build prompt), the piece, the byte position of the first difference, and the byte lengths on each side. That record is enough to hand to an agent to fix."
+        }
+      ]
+    },
+    {
+      "h": "How the three verification loops fit together",
+      "blocks": [
+        {
+          "p": "A single bug produces lots of nearly identical diff records. The team ran a script every 10 to 30 minutes that grouped records by field and only alerted a coordinating agent when a new type of record appeared. The coordinator then assigned a worker agent to own that type, and opened a Slack thread so human engineers could follow along."
+        },
+        {
+          "fig": {
+            "type": "cards",
+            "title": "The three loops, one job each",
+            "subtitle": "Amber marks the fast-feedback inner loop; the outer loop aligns with production, and the memory loop stores rules",
+            "items": [
+              {
+                "icon": "bolt",
+                "title": "Inner loop",
+                "desc": "Both codebases run in a cloud sandbox. Input checks don't call the real model, and one comparison takes under a second. Agents write their own requests to reproduce differences, fix until the versions match, then add tests.",
+                "tags": [
+                  "Local",
+                  "Second-level feedback"
+                ],
+                "tone": "hi"
+              },
+              {
+                "icon": "shield",
+                "title": "Outer loop",
+                "desc": "After engineer review, fixes deploy. Shadow traffic compares builds with and without the fix to see whether the bug's fingerprint disappears; if not, the task goes back to the inner loop.",
+                "tags": [
+                  "Production",
+                  "Shadow comparison"
+                ],
+                "tone": "base"
+              },
+              {
+                "icon": "layers",
+                "title": "Memory loop",
+                "desc": "Engineer corrections are stored as rules, tests, and searches. Rejected shortcuts are remembered so later agents don't repeat them.",
+                "tags": [
+                  "Rules",
+                  "Tests"
+                ],
+                "tone": "base"
+              }
+            ]
+          }
+        },
+        {
+          "p": "The inner loop runs in a cloud sandbox with both codebases, so agents can iterate quickly and failures don't affect users. The input check doesn't call the real model, comparing the two versions in under a second. Later they added an output check that uses a fake model to feed scripted replies—such as a tool call—through both versions. Agents see only fingerprints, not the requests behind them, so they have to guess the cause and write their own requests to reproduce it; once they can reproduce it, they can read both outputs in full. When they make the versions match, they add a test that fails on the old code and passes on the new."
+        },
+        {
+          "p": "Human review sits between the inner and outer loops because agents will take the cheapest path to a match. In mid-May, one of the largest remaining differences came from web search: the production version fetched the tool description from an internal service, but the Rust version didn't call that service yet. An agent proposed copying the text into files Rust could read. The prompts matched immediately and the fix passed local validation—but an engineer rejected it, because Rust would need to call the service before launch anyway; this was temporary code destined to be thrown away. A verifier can tell an agent whether outputs match, but not whether a fix is good enough to ship."
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "Inner loop for speed, outer loop for truth",
+            "subtitle": "Illustrative: amber marks the key traits of each loop",
+            "left": {
+              "label": "Inner loop",
+              "sub": "Cloud sandbox",
+              "items": [
+                {
+                  "label": "Requests are written by the agent",
+                  "state": "base"
+                },
+                {
+                  "label": "No real model call",
+                  "state": "hi"
+                },
+                {
+                  "label": "Comparison under one second",
+                  "state": "hi"
+                },
+                {
+                  "label": "Failures don't affect users",
+                  "state": "base"
+                }
+              ]
+            },
+            "right": {
+              "label": "Outer loop",
+              "sub": "Production shadow traffic",
+              "items": [
+                {
+                  "label": "Real production requests",
+                  "state": "hi"
+                },
+                {
+                  "label": "Model output replayed to both versions",
+                  "state": "base"
+                },
+                {
+                  "label": "After deploy, check if fingerprint disappears",
+                  "state": "hi"
+                },
+                {
+                  "label": "Engineer review first",
+                  "state": "base"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "p": "After engineer approval, the outer loop compares builds with and without the fix on shadow traffic to see whether the bug's fingerprint disappears; if not, the task returns to the inner loop. The outer loop covers what the inner loop misses: the inner loop only uses requests agents wrote themselves, and its local configuration isn't exactly the same as production."
+        },
+        {
+          "p": "The memory loop makes each correction happen only once. After the web search shortcut was rejected, agents recorded the decision, the reason, and the correct approach in memory; when similar records appeared later, agents could recognize the known bug and stop building throwaway work. There were also more general rules: after an agent guessed at Python's behavior, engineers set a rule to \"replicate exactly what Python did,\" and a review then found seven places where the port had been based on guesses. In June, another agent distilled around 60 review comments into rules in CLAUDE.md. These lessons also became tests, lints, and a merge check requiring that changes to Python be mirrored in Rust or get an exemption."
+        }
+      ]
+    },
+    {
+      "h": "How to read the results: the numbers need context",
+      "blocks": [
+        {
+          "p": "The final result: the Rust version uses about 70% less CPU per request and cuts median time to first token by about 20%. These are Anthropic's self-reported migration results. In the original results chart, the pre-migration level is set to 100 as the baseline, and the lines are smoothed with a seven-day average."
+        },
+        {
+          "p": "Those two numbers come with caveats: CPU data is from \"one region,\" memory data covers all production, and time-to-first-token data is from customer Claude Code requests over a shorter window. The three metrics use different scopes, so they can't simply be extrapolated to all customers or all regions."
+        },
+        {
+          "fig": {
+            "type": "columns",
+            "title": "Two improvements after moving to Rust",
+            "subtitle": "Units: %; amber is the reduction versus Python",
+            "items": [
+              {
+                "label": "CPU per request",
+                "sub": "About 70% lower",
+                "value": 70,
+                "display": "About 70%",
+                "tone": "hi"
+              },
+              {
+                "label": "Median time to first token",
+                "sub": "About 20% lower",
+                "value": 20,
+                "display": "About 20%",
+                "tone": "hi"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "What Anthropic hasn't said",
+      "blocks": [
+        {
+          "list": [
+            "No absolute post-migration QPS or latency figures, only relative reductions.",
+            "No percentage for Rust's memory savings versus Python.",
+            "No details on the specific Rust framework, runtime, or deployment architecture.",
+            "No count of how many divergence bugs were found and fixed during the migration.",
+            "No word on whether the shadowing plus three-loop system will be open-sourced or productized.",
+            "No staffing or compute cost figures."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Who it's for",
+      "blocks": [
+        {
+          "p": "For regular users, the most direct benefit is that calls to Claude now use less compute and arrive faster, without any downtime window."
+        },
+        {
+          "p": "For engineering teams, the most valuable part isn't Rust itself—it's a method for validating a large migration without reading user data or taking the service offline, by treating the old system as the judge: checkpoint localization, fingerprint grouping, and a three-loop division of labor."
+        },
+        {
+          "p": "The cost should be accounted for too: building this verification apparatus is itself real engineering work, and human review remains the critical gate. If your system is small, highly deterministic, or already has a sufficiently independent test suite, you may not need such a heavy apparatus."
+        },
+        {
+          "p": "If you're migrating a large production system and worry about whether the new system matches the old, treat this as a reference method. If you care about keeping agents trustworthy while they do the work, the three-loop and memory-loop ideas are also worth studying."
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Migrating our Messages API to Rust",
+      "publisher": "Anthropic",
+      "date": "2026-11-25",
+      "url": "https://www.anthropic.com/research/migrating-api-to-rust"
+    },
+    "more": [],
+    "note": "Except for the original screenshots, all figures in this article are illustrative. \"About 70%,\" \"about 20%,\" \"about 1,800x,\" and \"more than 80%\" are Anthropic-reported figures; see Section 7 for scope notes. In the original results chart, the pre-migration level is 100 as the baseline, and lines use a seven-day average (the diff comparison chart uses a seven-day median)."
+  },
+  "claims": [
+    {
+      "text": "After migrating to Rust, the Messages API uses about 70% less CPU per request.",
+      "value": "70%",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "About 70%",
+      "quote": "uses about 70% less CPU per request"
+    },
+    {
+      "text": "After migration, median time to first token fell about 20%.",
+      "value": "20%",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "About 20%",
+      "quote": "cuts median time to first token by about 20%"
+    },
+    {
+      "text": "From early 2024 to fall 2026, API traffic grew about 1,800x.",
+      "value": "1,800 times",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "About 1,800x",
+      "quote": "API traffic grew roughly 1,800 times"
+    },
+    {
+      "text": "By May 2026, Claude wrote more than 80% of Anthropic's merged code.",
+      "value": "80%",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "More than 80%",
+      "quote": "Claude was writing more than 80% of the code Anthropic merged"
+    },
+    {
+      "text": "Claude wrote the first version of the API's core request path in about a week.",
+      "value": "about a week",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "About a week",
+      "quote": "Claude wrote a first version of the API's core request path in about a week"
+    },
+    {
+      "text": "The Messages API was built in Python in 2023.",
+      "value": "2023",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "2023",
+      "quote": "We built the Messages API in 2023 and wrote it in Python"
+    },
+    {
+      "text": "By late 2025, every Messages API request had to be validated, converted into a prompt, tokenized, and screened by safety classifiers.",
+      "value": "late 2025",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "Late 2025",
+      "quote": "By late 2025, every Messages API request had to be validated, converted into the prompt, tokenized, and screened by our safety classifiers."
+    },
+    {
+      "text": "The incremental rewrite—Rust parsing model output and Python calling it—cut API CPU usage by about 8% to 10%.",
+      "value": "8% to 10%",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "About 8% to 10%",
+      "quote": "This reduced the API's CPU usage by about 8% to 10%."
+    },
+    {
+      "text": "In the incremental approach, each token in a reply crossed between Python and Rust three times.",
+      "value": "three times",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "Three times",
+      "quote": "Each token now crossed between Python and Rust three times"
+    },
+    {
+      "text": "The team had about 700 integration tests.",
+      "value": "700",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "About 700",
+      "quote": "we already had an existing set of about 700 integration tests"
+    },
+    {
+      "text": "An audit of the ported tests found more than 100 weakened assertions.",
+      "value": "more than 100",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "More than 100",
+      "quote": "we found more than 100 weakened assertions"
+    },
+    {
+      "text": "Twenty binary options can combine into over 1 million configurations.",
+      "value": "20",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "20",
+      "quote": "Just 20 binary options make over a million combinations"
+    },
+    {
+      "text": "Twenty binary options can produce over 1 million configurations.",
+      "value": "over a million",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "Over 1 million",
+      "quote": "Just 20 binary options make over a million combinations"
+    },
+    {
+      "text": "Testing all those combinations for one model would take 12 days.",
+      "value": "12 days",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "12 days",
+      "quote": "that translates to 12 days of tests at a second each"
+    },
+    {
+      "text": "The Rust version passed about 98% of tests in April.",
+      "value": "98%",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "About 98%",
+      "quote": "Our Rust API passed about 98% of its tests in April"
+    },
+    {
+      "text": "On live traffic, only about a quarter of inputs matched the Python version.",
+      "value": "a quarter",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "About a quarter",
+      "quote": "only about a quarter of inputs matched on production traffic"
+    },
+    {
+      "text": "The coordination script ran every 10 to 30 minutes and grouped diff records by field.",
+      "value": "10 to 30 minutes",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "Every 10 to 30 minutes",
+      "quote": "we ran a script every 10 to 30 minutes that grouped them"
+    },
+    {
+      "text": "The inner loop's input check never called the real model and compared the two versions in under one second.",
+      "value": "under a second",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "Under one second",
+      "quote": "comparing the versions took under a second"
+    },
+    {
+      "text": "In mid-May, one of the largest remaining differences came from a missing web search tool description.",
+      "value": "mid-May",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "Mid-May",
+      "quote": "In mid-May, one of the largest remaining differences between the Rust and Python APIs came from web search."
+    },
+    {
+      "text": "Following a rule to replicate exactly what Python did, an agent review found seven more places where the port was based on guesses.",
+      "value": "seven more places",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "Seven places",
+      "quote": "found seven more places where the port had relied on a guess"
+    },
+    {
+      "text": "In June, an agent distilled about 60 team review comments into rules.",
+      "value": "about 60",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "About 60 comments",
+      "quote": "an agent also went through about 60 of the team's review comments"
+    },
+    {
+      "text": "Public traffic was switched to the Rust version in September 2026.",
+      "value": "September 2026",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "September 2026",
+      "quote": "from April until public traffic moved to Rust in September 2026"
+    },
+    {
+      "text": "The results chart uses the pre-migration level as a baseline of 100.",
+      "value": "100",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "100",
+      "quote": "100 is about the level just before the move"
+    },
+    {
+      "text": "The results chart lines are calculated using a seven-day average.",
+      "value": "seven-day averages",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "Seven-day average",
+      "quote": "Lines are seven-day averages, 100 is about the level just before the move"
+    }
+  ],
+  "cover": {
+    "headline": "Messages API→Rust",
+    "highlight": "About 70% less CPU per request",
+    "big": {
+      "value": "70",
+      "unit": "%",
+      "label": "Per-request CPU reduction"
+    },
+    "glyph": {
+      "kind": "devices",
+      "left": {
+        "kind": "server",
+        "label": "Python",
+        "tone": "ref"
+      },
+      "right": {
+        "kind": "server",
+        "label": "Rust",
+        "tone": "hi"
+      },
+      "arrow": true
+    }
+  },
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "d49fc2ed3a1fb610"
+}
