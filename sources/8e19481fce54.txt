@@ -1,0 +1,13 @@
+URL: https://x.com/GeminiApp/status/2123813017855103449
+FETCHED: 2026-11-27T23:40:29.141Z
+NOTE: X 帖子原文（含作者自己的整串），由 Grok Bot 在 X 上读取
+
+Say hello to GIFs in Gemini. Say goodbye to searching for the perfect one.
+
+From looping photo effects to funny memes, create any GIF you can imagine with our latest video model, Gemini Omni 1.2 Flash, for smooth motion and consistent quality across every frame.
+
+GIFs are now available to all Google AI subscribers and free of charge in the U.S., Japan, Korea, Australia, Canada, U.K., Germany, and France.
+
+Get started by prompting in the main chat or by selecting the image or video tool. Then, choose GIF in the format picker and describe what you want to make.
+
+Learn more about availability: https://t.co/Jgy24YhQFs

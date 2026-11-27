@@ -1,0 +1,9 @@
+URL: https://x.com/NVIDIAAI/status/2123817447413395732
+FETCHED: 2026-11-27T23:40:29.065Z
+NOTE: X 帖子原文（含作者自己的整串），由 Grok Bot 在 X 上读取
+
+Look away and return to the same scene. For interactive video world models, preserving that consistency is a challenge.
+
+WorldTrace from @NVIDIA Research helps models remember places without retraining, keeping spaces more consistent as users explore. On LoopBench, a benchmark for scene recall, it improves recall of revisited scenes by 32% over the standard sliding-window approach.
+
+Read our #NeurIPS2026 paper ➡️ https://t.co/KH88xnqwk1

@@ -1,0 +1,25 @@
+URL: https://x.com/OpenAIDevs/status/2123471880292299171
+FETCHED: 2026-11-27T23:40:29.104Z
+NOTE: X 帖子原文（含作者自己的整串），由 Grok Bot 在 X 上读取
+
+Codex already helps us build ChatGPT faster. Now it’s helping us keep ChatGPT fast.
+
+We built the Performance Factory to coordinate agents that investigate regressions, propose fixes for engineers to review, and check if those fixes work in production. https://t.co/zUEAO4wjoI
+
+Before Codex, engineers manually analyzed metrics and logs. To take that a step further, we captured our performance team’s investigation process in a shared skill called “perf-forensics”. This skill tells Codex which tools are available, when to use them, and how to work through a slowdown so Codex can resolve the problem.
+
+Next, we moved investigations to the cloud so an alert could start a Codex session automatically.
+
+That helps us keep pace as we build ChatGPT.
+
+Each task keeps its state and findings, so work can pass between agents and engineers and resume after a code review or deployment.
+
+Engineers define the workflow in the task service. A dispatch loop periodically checks which tasks are ready for the next step. It assigns an agent to each task by starting a Codex turn with the instructions for the task’s current state.
+
+For example, a task waiting on a pull request review can subscribe to review comments. The agent doesn’t need to keep running while an engineer reviews the fix. When a matching comment arrives, the task becomes ready again and the dispatch loop can assign an agent to address the feedback.
+
+After deployment, another agent picks up the same task to check whether performance has returned to baseline.
+
+In just over three months, our Regression Workflow tracked more than 1,700 investigations and identified root causes in over 600 cases.
+
+https://t.co/qap4DzEb3h

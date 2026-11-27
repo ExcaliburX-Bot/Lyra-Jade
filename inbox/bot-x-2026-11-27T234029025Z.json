@@ -1,0 +1,12 @@
+[
+  {
+    "title": "Distillation can reproduce powerful AI capabilities without the safeguards built around them.",
+    "url": "https://x.com/OpenAI/status/2123862344422088794",
+    "publisher": "@OpenAI",
+    "tier": "official",
+    "source": "bot:x:x-labs-global",
+    "published": "2026-11-20T19:33:37.021Z",
+    "summary": "Distillation can reproduce powerful AI capabilities without the safeguards built around them.\n\nWe’re sharing new research on our work to combat distillation of our models, how these capabilities transfer, and how we detect and disrupt coordinated attempts.\n\nThese findings are hel",
+    "category": "product"
+  }
+]
