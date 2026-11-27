@@ -1,0 +1,690 @@
+{
+  "slug": "lemo-animi-stop-motion-skill",
+  "date": "2026-11-20",
+  "category": "product",
+  "publisher": "Lemomo (@lemomo_ai)",
+  "title": "lemo-animi 开源定格动画插件：一句话生成 40 秒短片",
+  "summary": "想做定格动画但不会一格格摆拍？这个开源插件让 Codex 或 Claude Code 从一句话开始，写脚本、生图、排帧、配音、审片全自动，默认成片 40 秒。",
+  "ai_summary": "lemo-animi 是一个开源定格动画 Skill，装在 Codex 或 Claude Code 里，一句话就能得到一支短片。它内置 8 种材质，每支样片都从一句话生成。制作时 agent 写故事和镜头表，用生图模型出角色、背景和 8 格动作表，再按一拍二或一拍三排帧，配上真实乐器采样配乐和拟音，最后在本地审片台逐条修改。默认成片 40 秒、24 帧/秒、1920×1080；片子越长，生成的图越多。个人使用免费，商用需另外授权。主要限制：首次要下载约 1.7 GB 环境，只支持 macOS 或 Linux；Claude Code 模式默认依赖本机 Codex 生图。",
+  "brief": [
+    "一句话就能生成一支定格动画短片，默认 40 秒，内置 8 种材质风格。",
+    "agent 自己写脚本、生图、按一拍二或一拍三排帧、配乐加拟音。",
+    "首次使用要下载约 1.7 GB（Python 环境约 300 MB + 乐器采样约 1.4 GB）。",
+    "个人非商用免费（CC BY-NC 4.0），商用需授权；旁白走微软 Edge 在线语音。"
+  ],
+  "readMinutes": 8,
+  "topics": [
+    "openai",
+    "claude"
+  ],
+  "cover": {
+    "headline": "一句话生成定格动画",
+    "highlight": "8 种材质，默认 40 秒成片",
+    "big": {
+      "value": "40",
+      "unit": "秒",
+      "label": "默认成片时长"
+    }
+  },
+  "sections": [
+    {
+      "h": "lemo-animi 是什么？",
+      "blocks": [
+        {
+          "p": "lemo-animi 是 Lemomo 新发布的开源定格动画 Skill——可以理解成给 AI 编程助手 Codex、Claude Code 装的「拍片插件」。你在对话里说一句话，比如「做一支 40 秒的黏土定格动画：小企鹅学做煎饼」，agent 就会自己写故事、出镜头表、生成角色和布景，再把它们一格一格动起来，最后配上音乐和音效，交给你一支成片。"
+        },
+        {
+          "p": "定格动画（stop-motion）是一种手工动画：把物体摆好、拍一张、稍微动一下、再拍一张，连续播放就动起来了。「一顿一顿」的节奏是它的特点，不是 bug。lemo-animi 把这个过程搬进代码：生图模型负责画角色、背景和动作表，Python 负责把动作表切成帧、排时间、加运镜和光影。"
+        },
+        {
+          "p": "它做出来的是完整片子：有片头片尾、配乐、拟音，还能加旁白和字幕。默认输出 1920×1080，也可以选竖屏 1080×1920 或方形 1080×1080，帧率 24 帧/秒。"
+        }
+      ]
+    },
+    {
+      "h": "8 种材质，各能拍出什么？",
+      "blocks": [
+        {
+          "p": "作者给每种材质做了固定的风格包——提示词模板、光线、机位写法、配乐和拟音都是配套的。选风格用中文名、英文名或 id 都行。8 支样片都是这个 skill 自己从一句话做出来的。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "8 种材质对应 8 支样片，时长都在 1 分钟上下",
+            "subtitle": "时长是作者为每支样片写的故事时长",
+            "note": "每支样片都是 skill 从一句话生成",
+            "columns": [
+              "风格",
+              "材质 id",
+              "样片",
+              "时长"
+            ],
+            "rows": [
+              [
+                "黏土定格",
+                "clay",
+                "《波波的煎饼》",
+                "53 秒"
+              ],
+              [
+                "纸艺立体定格",
+                "papercraft",
+                "《会游泳的灯塔》",
+                "57 秒"
+              ],
+              [
+                "铁皮玩具定格",
+                "tin",
+                "《嘟嘟的发条》",
+                "55 秒"
+              ],
+              [
+                "羊毛毡定格",
+                "felt",
+                "《雪夜的小灯》",
+                "57 秒"
+              ],
+              [
+                "纸板箱定格",
+                "cardboard",
+                "《纸箱登月》",
+                "58 秒"
+              ],
+              [
+                "木偶定格",
+                "wood",
+                "《灯下》",
+                "55 秒"
+              ],
+              [
+                "钩织玩偶定格",
+                "crochet",
+                "《噗噗鼓起来》",
+                "58 秒"
+              ],
+              [
+                "布偶拼布定格",
+                "fabric",
+                "《豆豆抄近路》",
+                "58 秒"
+              ]
+            ]
+          }
+        },
+        {
+          "p": "样片故事都带一点小转折：黏土片里小企鹅抛煎饼、失败两次第三次成功；纸板箱片里「登月」其实是卧室地板上的想象，片尾写着「实际飞行距离：三十厘米」。这些设定也来自 agent 的剧本。"
+        }
+      ]
+    },
+    {
+      "h": "从一句话到成片，中间发生了什么？",
+      "blocks": [
+        {
+          "p": "装好环境后，agent 会一次问齐所有问题——风格、时长、画幅、旁白、片头片尾，默认项排第一，也可以直接回「全部默认」。之后一路做到成片，中途只发简短进度。"
+        },
+        {
+          "fig": {
+            "type": "steps",
+            "title": "从一句话到成片：定方案、生图、排帧、配音、审片",
+            "subtitle": "示意：流程由 agent 自动衔接，图中名称是概括",
+            "steps": [
+              {
+                "name": "定方案",
+                "tool": "agent",
+                "desc": "故事骨架、每段秒数、节拍、镜头表、生图清单"
+              },
+              {
+                "name": "生图",
+                "tool": "生图模型",
+                "desc": "角色设定、背景、八格动作表、2×2 近景表，透明底"
+              },
+              {
+                "name": "排帧",
+                "tool": "Python",
+                "desc": "动作表切成一格一格，一拍二或一拍三，加运镜、接触阴影、光和调色"
+              },
+              {
+                "name": "配声音",
+                "tool": "乐器采样",
+                "desc": "原创配乐、每个接触的拟音，可选旁白和字幕"
+              },
+              {
+                "name": "审片",
+                "tool": "审片台",
+                "desc": "agent 先自己审一遍改一遍，再打开审片台交给你"
+              }
+            ]
+          }
+        },
+        {
+          "p": "最关键的一步是「排帧」。生图模型不负责动画，只给静态动作表；让角色动起来，靠 Python 把动作表切开、按节拍重复每一格。"
+        },
+        {
+          "fig": {
+            "type": "schematic",
+            "title": "同一个动作，一拍二比一拍三少一帧",
+            "subtitle": "示意：琥珀色框是同一个动作被复制到的帧",
+            "items": [
+              {
+                "glyph": {
+                  "kind": "frames",
+                  "count": 8,
+                  "select": [
+                    1,
+                    2
+                  ]
+                },
+                "title": "一拍二",
+                "sub": "一个动作占 2 帧",
+                "rows": [
+                  {
+                    "k": "节奏",
+                    "v": "每张动作图停 2 帧"
+                  }
+                ]
+              },
+              {
+                "glyph": {
+                  "kind": "frames",
+                  "count": 8,
+                  "select": [
+                    1,
+                    3
+                  ]
+                },
+                "title": "一拍三",
+                "sub": "一个动作占 3 帧",
+                "rows": [
+                  {
+                    "k": "节奏",
+                    "v": "每张动作图停 3 帧"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "p": "「一拍二」就是每张动作图在时间轴上停 2 帧，「一拍三」停 3 帧。拍数越高越省图、也越顿；定格动画的顿挫感主要从这里来。"
+        },
+        {
+          "fig": {
+            "type": "quote",
+            "text": "定格动画本来就是一格一格拍出来的，一顿一顿才是它的味道。",
+            "zh": "定格动画本来就是一张张拍出来的，那种一顿一顿的节奏正是它的味道。",
+            "who": "@lemomo_ai（Lemomo）",
+            "role": "lemo-animi 作者",
+            "source_url": "https://x.com/lemomo_ai/status/2123038832815907084"
+          }
+        }
+      ]
+    },
+    {
+      "h": "片子越长，要生成多少张图？",
+      "blocks": [
+        {
+          "p": "主要成本花在生图上。作者按片长给了镜头数和图片数：片越长，镜头和生图越多。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "片子越长，镜头和生图越多",
+            "subtitle": "高亮为默认的 40 秒档；生图张数是约数",
+            "columns": [
+              "片长",
+              "镜头数",
+              "生图张数"
+            ],
+            "rows": [
+              [
+                "20 秒",
+                "2–4 个",
+                "约 10–14 张"
+              ],
+              [
+                "40 秒（默认）",
+                "5–8 个",
+                "约 20–26 张"
+              ],
+              [
+                "60 秒",
+                "6–12 个",
+                "约 30–38 张"
+              ],
+              [
+                "2 分钟",
+                "12–22 个",
+                "约 55–68 张"
+              ]
+            ],
+            "highlight": {
+              "row": 1
+            }
+          }
+        },
+        {
+          "p": "想要更丰富的情节，可以在开始时提前要求故事情节；试片用 20 秒档可以省生图次数。如果想完全用代码画、不用生图，作者还有另一个项目 lemo-opuscar，99 种影片风格全部用代码做。"
+        }
+      ]
+    },
+    {
+      "h": "怎么装？Codex 和 Claude Code 怎么选？",
+      "blocks": [
+        {
+          "p": "安装前要准备好 macOS 或 Linux、ffmpeg（macOS 用 brew install ffmpeg）、Python 3.11–3.13 或 uv。第一次做片时，agent 会先自动检查和安装环境：从零开始大约下载 1.7 GB——Python 运行环境约 300 MB，配乐用乐器采样约 1.4 GB（支持断点续传），都放在 ~/lemo-animi-env。"
+        },
+        {
+          "p": "Codex 的装法，是在终端或 App 里运行下面两条命令：`codex plugin marketplace add lemomo-ai/lemo-animi`，然后 `codex plugin add lemo-animi@lemomo-ai`，装好后新开一个对话。Claude Code 在对话里输入 `/plugin install lemo-animi --marketplace lemomo-ai/lemo-animi`，再 `/reload-plugins` 或新开会话。"
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "Codex 是主要用法，Claude Code 也能跑",
+            "subtitle": "琥珀色是作者推荐的主要路径",
+            "left": {
+              "label": "Codex",
+              "sub": "主要用法",
+              "items": [
+                {
+                  "label": "装插件后新开对话",
+                  "state": "hi"
+                },
+                {
+                  "label": "生图用 Codex 自带",
+                  "state": "hi"
+                },
+                {
+                  "label": "推荐 GPT-6.2 Sol / Astra，推理 High",
+                  "state": "hi"
+                },
+                {
+                  "label": "旁白、审片台要允许联网和申请权限",
+                  "state": "base"
+                }
+              ]
+            },
+            "right": {
+              "label": "Claude Code",
+              "sub": "也可以用",
+              "items": [
+                {
+                  "label": "命令安装，再 /reload-plugins",
+                  "state": "base"
+                },
+                {
+                  "label": "Claude 不会画图，默认用本机 Codex 生图",
+                  "state": "base"
+                },
+                {
+                  "label": "要用 auto 模式跑几百条命令",
+                  "state": "base"
+                },
+                {
+                  "label": "可配置其他或本地生图模型",
+                  "state": "base"
+                }
+              ]
+            },
+            "footer": "两者共用同一套 ~/lemo-animi-env 环境"
+          }
+        },
+        {
+          "p": "Codex 下作者推荐 GPT-6.2 Sol 或 GPT-6.2 Astra，推理强度 High；GPT-6.1 Sol、GPT-6 Astra（High 及以上）也可以。Claude Code 必须用 auto 模式，因为一支片子要跑几百条命令，默认模式每条都会先问你。"
+        }
+      ]
+    },
+    {
+      "h": "审片台：不放心就一帧一帧改",
+      "blocks": [
+        {
+          "p": "成片不是一次性生成完就结束。片子做好后，agent 会先在本地浏览器打开审片台：上面是片子，下面是按镜头排开的胶片，右边写意见。用法一共四步："
+        },
+        {
+          "list": [
+            "停在要改的那一刻：空格播放/暂停，← → 一帧一帧找。",
+            "按回车写下问题：时间码、帧号和镜头会自动带上，胶片上钉一枚图钉。",
+            "点「提交给 agent」：它逐条改，在每条意见下回复改了什么，登记新版本。",
+            "满意了点「通过」：agent 交片。"
+          ]
+        },
+        {
+          "p": "打开审片台后，agent 最多等你 30 分钟。超时也不丢东西：意见边写边存在片子文件夹里，写完点「提交给 agent」或「通过」，再回对话说「看完了」即可。如果审片台是以本地文件打开的，点「复制意见」贴进对话。"
+        }
+      ]
+    },
+    {
+      "h": "费用和授权：个人免费，商用要买",
+      "blocks": [
+        {
+          "p": "个人使用永远免费。许可证是 CC BY-NC 4.0：非商用免费，但要署名「lemo-animi by Lemomo (LemoLab)」。任何商用——广告、接单、带变现的频道、产品——都需要商用授权，联系邮箱写在仓库里。"
+        },
+        {
+          "p": "旁白默认用微软 Edge 在线语音，可以替换；旁白文字会发到微软的语音服务。对数据上传敏感的人要注意这一点。"
+        }
+      ]
+    },
+    {
+      "h": "官方还没说的",
+      "blocks": [
+        {
+          "list": [
+            "商用授权的价格：原文只给了联系邮箱，没有标价。",
+            "Windows 支持：目前只写 macOS 或 Linux。",
+            "生图模型的具体成本：图片由模型生成，但没写每张图或每支片的生成费用。",
+            "测试中的皮影戏、平面剪纸、彩泥浮雕、微缩模型何时放出：原文只说「以后的版本」。",
+            "和市面其他 AI 动画工具的横向对比：原文没有对照对象或跑分。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "适合谁",
+      "blocks": [
+        {
+          "p": "价值很清楚：不会画画、不会摆拍、不会剪片的人，也能用一句话得到有完整叙事、配乐和音效的定格动画短片。它省掉的是从零学动画的门槛，适合做内容、教学、品牌小片或单纯想玩的人。"
+        },
+        {
+          "p": "代价也要说清：首次要下载约 1.7 GB 环境；只在 macOS/Linux 上跑；商用要另外付费；Claude Code 路径默认还得依赖本机 Codex 生图。而且这是第一个版本，作者也希望大家多提 issue。"
+        },
+        {
+          "p": "如果你已经在用 Codex，想要快速出片，这是顺手的路径；如果只装了 Claude Code、没有 Codex，也能用，但要自己配生图模型。如果你要拿去接单或做商业频道，先联系作者谈授权。"
+        },
+        {
+          "callout": {
+            "kind": "takeaway",
+            "title": "一句话记住",
+            "text": "一句话 → 定格动画短片；个人免费，商用要授权。"
+          }
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "lemo-animi：一句话生成定格动画短片（X 帖子）",
+      "publisher": "@lemomo_ai",
+      "date": "2026-11-20",
+      "url": "https://x.com/lemomo_ai/status/2123038832815907084"
+    },
+    "note": "本文只基于 @lemomo_ai 的 X 帖子原文；样片时长、镜头/图片数区间、下载量等数字都出自原文。排帧示意图和流程图是本站为解释概念画的示意，不是项目截图。原文提到的仓库为 github.com/lemomo-ai/lemo-animi，画廊为 lemomo-ai.github.io/lemo-animi。"
+  },
+  "claims": [
+    {
+      "text": "开箱示例是一支 40 秒的黏土定格动画。",
+      "value": "40 秒",
+      "source_url": "https://x.com/lemomo_ai/status/2123038832815907084",
+      "as_written": "40 秒",
+      "quote": "做一支 40 秒的黏土定格动画：小企鹅学做煎饼。"
+    },
+    {
+      "text": "内置 8 种材质、8 支样片。",
+      "value": "八种材质、八支样片",
+      "source_url": "https://x.com/lemomo_ai/status/2123038832815907084",
+      "as_written": "8 种材质、8 支样片",
+      "quote": "下面八种材质、八支样片，每一支都是它自己从一句话开始做出来的。"
+    },
+    {
+      "text": "首次从零安装约下载 1.7 GB。",
+      "value": "约 1.7 GB",
+      "source_url": "https://x.com/lemomo_ai/status/2123038832815907084",
+      "as_written": "约 1.7 GB",
+      "quote": "那么下载约 1.7 GB：Python 运行环境（约 300 MB）和配乐用的乐器采样（约 1.4 GB，可断点续传）"
+    },
+    {
+      "text": "其中 Python 运行环境约 300 MB。",
+      "value": "约 300 MB",
+      "source_url": "https://x.com/lemomo_ai/status/2123038832815907084",
+      "as_written": "约 300 MB",
+      "quote": "Python 运行环境（约 300 MB）"
+    },
+    {
+      "text": "配乐用乐器采样约 1.4 GB。",
+      "value": "约 1.4 GB",
+      "source_url": "https://x.com/lemomo_ai/status/2123038832815907084",
+      "as_written": "约 1.4 GB",
+      "quote": "配乐用的乐器采样（约 1.4 GB，可断点续传）"
+    },
+    {
+      "text": "Claude Code 做一支片子要跑几百条命令。",
+      "value": "几百条",
+      "source_url": "https://x.com/lemomo_ai/status/2123038832815907084",
+      "as_written": "几百条",
+      "quote": "一支片子要跑几百条命令"
+    },
+    {
+      "text": "黏土样片时长 53 秒。",
+      "value": "53 秒",
+      "source_url": "https://x.com/lemomo_ai/status/2123038832815907084",
+      "as_written": "53 秒",
+      "quote": "故事（53 秒）：小企鹅波波想抛出一张完美的煎饼"
+    },
+    {
+      "text": "纸艺样片时长 57 秒。",
+      "value": "57 秒",
+      "source_url": "https://x.com/lemomo_ai/status/2123038832815907084",
+      "as_written": "57 秒",
+      "quote": "故事（57 秒）：小狐狸提着纸灯笼出海"
+    },
+    {
+      "text": "铁皮玩具样片时长 55 秒。",
+      "value": "55 秒",
+      "source_url": "https://x.com/lemomo_ai/status/2123038832815907084",
+      "as_written": "55 秒",
+      "quote": "故事（55 秒）：打烊后的铁皮马戏团"
+    },
+    {
+      "text": "羊毛毡样片时长 57 秒。",
+      "value": "57 秒",
+      "source_url": "https://x.com/lemomo_ai/status/2123038832815907084",
+      "as_written": "57 秒",
+      "quote": "故事（57 秒）：小兔子把灯留给怕黑的小松鼠"
+    },
+    {
+      "text": "纸板箱样片时长 58 秒。",
+      "value": "58 秒",
+      "source_url": "https://x.com/lemomo_ai/status/2123038832815907084",
+      "as_written": "58 秒",
+      "quote": "故事（58 秒）：纸箱宇航员登上月球、插旗敬礼"
+    },
+    {
+      "text": "木偶样片时长 55 秒。",
+      "value": "55 秒",
+      "source_url": "https://x.com/lemomo_ai/status/2123038832815907084",
+      "as_written": "55 秒",
+      "quote": "故事（55 秒）：刚刻好的小木熊在油灯下醒来"
+    },
+    {
+      "text": "钩织样片时长 58 秒。",
+      "value": "58 秒",
+      "source_url": "https://x.com/lemomo_ai/status/2123038832815907084",
+      "as_written": "58 秒",
+      "quote": "故事（58 秒）：小河豚一激动就鼓成刺球"
+    },
+    {
+      "text": "布偶拼布样片时长 58 秒。",
+      "value": "58 秒",
+      "source_url": "https://x.com/lemomo_ai/status/2123038832815907084",
+      "as_written": "58 秒",
+      "quote": "故事（58 秒）：走在最后的小鸭走散了"
+    },
+    {
+      "text": "生图模型出 8 格动作表。",
+      "value": "八格",
+      "source_url": "https://x.com/lemomo_ai/status/2123038832815907084",
+      "as_written": "8 格",
+      "quote": "生图模型负责出角色设定、八格动作表、背景。"
+    },
+    {
+      "text": "还会生成 2×2 近景表。",
+      "value": "2×2",
+      "source_url": "https://x.com/lemomo_ai/status/2123038832815907084",
+      "as_written": "2×2",
+      "quote": "角色设定、背景、八格动作表、2×2 近景表，透明底"
+    },
+    {
+      "text": "排帧用一拍二或一拍三。",
+      "value": "一拍二（或一拍三）",
+      "source_url": "https://x.com/lemomo_ai/status/2123038832815907084",
+      "as_written": "一拍二（或一拍三）",
+      "quote": "Python 把动作表切成一格一格，一拍二（或一拍三）排在布景上"
+    },
+    {
+      "text": "20 秒是可选片长之一。",
+      "value": "20 秒",
+      "source_url": "https://x.com/lemomo_ai/status/2123038832815907084",
+      "as_written": "20 秒",
+      "quote": "20 秒：2–4 个镜头，约 10–14 张图"
+    },
+    {
+      "text": "20 秒档约 2–4 个镜头。",
+      "value": "2–4 个镜头",
+      "source_url": "https://x.com/lemomo_ai/status/2123038832815907084",
+      "as_written": "2–4 个镜头",
+      "quote": "20 秒：2–4 个镜头，约 10–14 张图"
+    },
+    {
+      "text": "20 秒档约 10–14 张图。",
+      "value": "约 10–14 张图",
+      "source_url": "https://x.com/lemomo_ai/status/2123038832815907084",
+      "as_written": "约 10–14 张图",
+      "quote": "20 秒：2–4 个镜头，约 10–14 张图"
+    },
+    {
+      "text": "40 秒是默认片长。",
+      "value": "40 秒（默认）",
+      "source_url": "https://x.com/lemomo_ai/status/2123038832815907084",
+      "as_written": "40 秒（默认）",
+      "quote": "40 秒（默认）：5–8 个镜头，约 20–26 张图"
+    },
+    {
+      "text": "默认 40 秒档约 5–8 个镜头。",
+      "value": "5–8 个镜头",
+      "source_url": "https://x.com/lemomo_ai/status/2123038832815907084",
+      "as_written": "5–8 个镜头",
+      "quote": "40 秒（默认）：5–8 个镜头，约 20–26 张图"
+    },
+    {
+      "text": "默认 40 秒档约 20–26 张图。",
+      "value": "约 20–26 张图",
+      "source_url": "https://x.com/lemomo_ai/status/2123038832815907084",
+      "as_written": "约 20–26 张图",
+      "quote": "40 秒（默认）：5–8 个镜头，约 20–26 张图"
+    },
+    {
+      "text": "60 秒是可选片长之一。",
+      "value": "60 秒",
+      "source_url": "https://x.com/lemomo_ai/status/2123038832815907084",
+      "as_written": "60 秒",
+      "quote": "60 秒：6–12 个镜头，约 30–38 张图"
+    },
+    {
+      "text": "60 秒档约 6–12 个镜头。",
+      "value": "6–12 个镜头",
+      "source_url": "https://x.com/lemomo_ai/status/2123038832815907084",
+      "as_written": "6–12 个镜头",
+      "quote": "60 秒：6–12 个镜头，约 30–38 张图"
+    },
+    {
+      "text": "60 秒档约 30–38 张图。",
+      "value": "约 30–38 张图",
+      "source_url": "https://x.com/lemomo_ai/status/2123038832815907084",
+      "as_written": "约 30–38 张图",
+      "quote": "60 秒：6–12 个镜头，约 30–38 张图"
+    },
+    {
+      "text": "2 分钟是可选片长之一。",
+      "value": "2 分钟",
+      "source_url": "https://x.com/lemomo_ai/status/2123038832815907084",
+      "as_written": "2 分钟",
+      "quote": "2 分钟：12–22 个镜头，约 55–68 张图"
+    },
+    {
+      "text": "2 分钟档约 12–22 个镜头。",
+      "value": "12–22 个镜头",
+      "source_url": "https://x.com/lemomo_ai/status/2123038832815907084",
+      "as_written": "12–22 个镜头",
+      "quote": "2 分钟：12–22 个镜头，约 55–68 张图"
+    },
+    {
+      "text": "2 分钟档约 55–68 张图。",
+      "value": "约 55–68 张图",
+      "source_url": "https://x.com/lemomo_ai/status/2123038832815907084",
+      "as_written": "约 55–68 张图",
+      "quote": "2 分钟：12–22 个镜头，约 55–68 张图"
+    },
+    {
+      "text": "默认横屏分辨率 1920×1080。",
+      "value": "1920×1080",
+      "source_url": "https://x.com/lemomo_ai/status/2123038832815907084",
+      "as_written": "1920×1080",
+      "quote": "成片默认 1920×1080（竖屏 1080×1920，方形 1080×1080），24 帧/秒"
+    },
+    {
+      "text": "竖屏分辨率 1080×1920。",
+      "value": "1080×1920",
+      "source_url": "https://x.com/lemomo_ai/status/2123038832815907084",
+      "as_written": "1080×1920",
+      "quote": "成片默认 1920×1080（竖屏 1080×1920，方形 1080×1080），24 帧/秒"
+    },
+    {
+      "text": "方形分辨率 1080×1080。",
+      "value": "1080×1080",
+      "source_url": "https://x.com/lemomo_ai/status/2123038832815907084",
+      "as_written": "1080×1080",
+      "quote": "成片默认 1920×1080（竖屏 1080×1920，方形 1080×1080），24 帧/秒"
+    },
+    {
+      "text": "默认帧率 24 帧/秒。",
+      "value": "24 帧/秒",
+      "source_url": "https://x.com/lemomo_ai/status/2123038832815907084",
+      "as_written": "24 帧/秒",
+      "quote": "成片默认 1920×1080（竖屏 1080×1920，方形 1080×1080），24 帧/秒"
+    },
+    {
+      "text": "打开审片台后 agent 最多等 30 分钟。",
+      "value": "30 分钟",
+      "source_url": "https://x.com/lemomo_ai/status/2123038832815907084",
+      "as_written": "30 分钟",
+      "quote": "打开审片台后它最多等 30 分钟"
+    },
+    {
+      "text": "另一个项目 lemo-opuscar 有 99 种影片风格。",
+      "value": "99 种",
+      "source_url": "https://x.com/lemomo_ai/status/2123038832815907084",
+      "as_written": "99 种",
+      "quote": "另一个项目 lemo-opuscar：99 种影片风格，全部用代码做。"
+    },
+    {
+      "text": "纸板箱样片片尾字幕写「实际飞行距离：三十厘米」。",
+      "value": "三十厘米",
+      "source_url": "https://x.com/lemomo_ai/status/2123038832815907084",
+      "as_written": "30 厘米",
+      "quote": "「实际飞行距离：三十厘米」"
+    },
+    {
+      "text": "Codex 安装要运行两条命令。",
+      "value": "两条",
+      "source_url": "https://x.com/lemomo_ai/status/2123038832815907084",
+      "as_written": "两条",
+      "quote": "在终端里/APP运行这两条"
+    },
+    {
+      "text": "审片台用法一共四步。",
+      "value": "四步",
+      "source_url": "https://x.com/lemomo_ai/status/2123038832815907084",
+      "as_written": "4 步",
+      "quote": "用法一共四步："
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "origin": "auto",
+    "candidate": "5aa3a24a55",
+    "tier": "official",
+    "via": "https://xiaohu.ai/article/lemo-animi-stop-motion/",
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "generated_at": "2026-11-27T19:36:19.003Z"
+  }
+}
