@@ -3,14 +3,14 @@
   "category": "paper",
   "publisher": "Bahdanau et al. · Université de Montréal",
   "date": "2014-09-01",
-  "title": "Where attention began: Bahdanau's decoder re-reads the source sentence for every word",
-  "summary": "Seq2Seq crams an entire sentence into a fixed-length vector, so longer sentences lose information. Bahdanau et al. changed that: for each word the decoder generates, it scores every word in the source sentence and takes a weighted sum. Attention was born. We'll work through one attention step by hand, open up the bidirectional encoder and the alignment maps, and trace the path to the Transformer.",
-  "ai_summary": "The 2014 Université de Montréal paper “Neural Machine Translation by Jointly Learning to Align and Translate” argues that compressing a whole sentence into a fixed-length vector is a bottleneck. It uses a bidirectional RNN encoder to leave an annotation vector for each source word. Each time the decoder generates a word, it scores all the annotations with a small network, applies softmax to turn the scores into weights, and takes a weighted sum to form a context vector specific to that step. Alignment and translation are trained jointly. On WMT'14 English-to-French translation, RNNsearch-50 scores 26.75 BLEU versus 17.82 for the model without attention; with longer training it reaches 28.45, and on sentences with no unknown words it beats Moses, 36.15 to 35.63. Long sentences no longer degrade, and the weights can be drawn as alignment maps.",
+  "title": "A close read of Bahdanau attention: every word looks back, and attention begins here",
+  "summary": "Seq2Seq compresses an entire sentence into a fixed-length vector, so long sentences lose information. Bahdanau et al. made the decoder look back at every source word before generating each target word—score them and take a weighted sum—and the attention mechanism was born. We compute one attention step by hand, unpack the bidirectional encoder and alignment maps, then trace the path to the Transformer.",
+  "ai_summary": "“Neural Machine Translation by Jointly Learning to Align and Translate” (Université de Montréal, 2014) argues that the encoder-decoder's fixed-length vector is the bottleneck. It uses a bidirectional RNN encoder to leave one annotation vector for each source word. Every time the decoder generates a word, a small network scores all of the annotations, turns those scores into softmax weights, and takes a weighted sum to produce a context vector for that step, training alignment and translation together. On WMT'14 English-to-French, RNNsearch-50 scored 26.75 BLEU versus 17.82 without attention; trained longer, it reached 28.45, and on sentences without unknown words it beat Moses 36.15 to 35.63. Long sentences no longer degraded, and the weights can be drawn as alignment maps.",
   "brief": [
-    "Problem: the encoder–decoder has to squeeze a whole sentence into one fixed-length vector, so translation quality drops quickly as sentences get long.",
-    "Method: a bidirectional RNN keeps a vector for each source word; at each decoder step, the model scores those vectors, applies softmax, and takes a weighted sum to form a context vector just for that step.",
-    "Result: BLEU rises from 17.82 to 26.75, and long sentences stop degrading; on sentences with no unknown words it beats the statistical system Moses, and the weights can be drawn as alignment maps.",
-    "Limits: the computation scales with the product of the two sentence lengths, unknown words are handled poorly, and it is still a recurrent network that is hard to parallelize; later, Transformer built on the idea."
+    "Problem: the encoder-decoder compresses the whole sentence into a fixed-length vector, and translation quality drops quickly as sentences get longer.",
+    "Method: a bidirectional RNN leaves one vector for each source word; at each step the decoder scores them, applies softmax, and takes a weighted sum to get a context vector specific to that step.",
+    "Result: BLEU rises from 17.82 to 26.75, long sentences no longer degrade; on sentences without unknown words it beats the statistical MT system Moses, and the weights can be plotted as alignment maps.",
+    "Limits: compute grows with the product of source and target length, rare words are handled poorly, and it is still a recurrent network that is hard to parallelize; the Transformer later carried the idea much further."
   ],
   "paper": {
     "title": "Neural Machine Translation by Jointly Learning to Align and Translate",
@@ -22,8 +22,8 @@
     "url": "https://arxiv.org/abs/1409.0473"
   },
   "cover": {
-    "headline": "Bahdanau attention: a close read",
-    "highlight": "Every translated word looks back at the source sentence",
+    "headline": "Bahdanau attention, close read",
+    "highlight": "Every translated word looks back at the source",
     "glyph": {
       "kind": "flow",
       "nodes": [
@@ -42,36 +42,36 @@
   },
   "sections": [
     {
-      "h": "First, the bottom line: what this paper did",
+      "h": "The bottom line: what this paper actually did",
       "blocks": [
         {
-          "p": "In September 2014, Dzmitry Bahdanau, Kyunghyun Cho, and Yoshua Bengio at the Université de Montréal released this paper, later published at ICLR 2015. It targets the weakness from our previous close read of Seq2Seq: **the encoder has to compress the whole sentence into a fixed-length vector**."
+          "p": "In September 2014, Dzmitry Bahdanau, Kyunghyun Cho, and Yoshua Bengio of the Université de Montréal released this paper, later published at ICLR 2015. It targets the weakness from our previous close read of Seq2Seq: **the encoder must squash the entire sentence into a fixed-length vector**."
         },
         {
-          "p": "The paper's fix: the encoder no longer hands back just the final vector. It leaves a vector for **every word** of the source sentence. Each time the decoder generates a word, it looks back over those vectors, works out which words matter right now, and takes a weighted average according to how much it attends to them, producing a context vector made for that step. In the paper's own words, this “implements a mechanism of **attention** in the decoder.”"
+          "p": "The paper's approach: instead of handing over only the last vector, the encoder leaves one vector for **each word** in the source sentence. Each time the decoder generates a word, it looks back over those vectors, works out which words matter right now, and takes a weighted average according to how much attention each one deserves. That gives a context vector built specifically for this step. In the paper's own words, this “implements a mechanism of **attention** in the decoder.”"
         },
         {
-          "p": "The effect is clearest on long sentences: without attention, translation quality drops sharply as sentences get longer; with attention, it doesn't degrade even past 50 words. A single model's BLEU rises from 17.82 to 26.75, and reaches 28.45 with longer training. On sentences with no unknown words, it even beats the traditional statistical system Moses, 36.15 to 35.63."
+          "p": "Long sentences show the clearest effect. Without attention, translation quality falls off a cliff as sentences get longer; with attention, even sentences over 50 words do not degrade. A single model's BLEU rose from 17.82 to 26.75, then to 28.45 with longer training. On sentences without unknown words, it even beat the traditional statistical translation system Moses, 36.15 to 35.63."
         },
         {
-          "p": "This was the first time attention really succeeded at machine translation. Three years later, Transformer pushed the idea to its limit: it removed the recurrent network and kept only attention. Today, every layer of every large language model does the thing this paper pioneered: **for the content it is about to output, find the relevant parts of the input**."
+          "p": "This was attention's first major success in machine translation. Three years later, the Transformer pushed the idea to its logical extreme, removing the recurrent network and keeping only attention. Today, every layer of every large language model does what this paper started: **when it is about to output something, it searches the input for the relevant parts**."
         },
         {
           "callout": {
             "kind": "takeaway",
-            "title": "One-sentence version",
-            "text": "Don't cram the whole sentence into one vector. Give each word its own vector. At each decoder step, a small network scores those vectors, softmax turns the scores into weights, and a weighted sum produces the context for that step. The weights are themselves a “soft alignment” table showing which source words each target word came from."
+            "title": "The one-sentence version",
+            "text": "Don't squash the whole sentence into a single vector; keep one vector per word instead. At each decoder step, use a small network to score those vectors, turn the scores into softmax weights, and take a weighted sum to get that step's context vector. The weights themselves are a “soft alignment” table showing which source words each translated word came from."
           }
         },
         {
           "callout": {
             "kind": "prereq",
-            "title": "Three concepts to know first",
-            "text": "If you don't know them, don't worry—these three are enough:",
+            "title": "Three small concepts you'll need",
+            "text": "If they are new to you, these three are enough:",
             "list": [
-              "**Encoder–decoder**: one recurrent network reads the source sentence into a vector, and another generates the translation from that vector. See the previous entry in this series, Seq2Seq.",
-              "**Softmax**: turns arbitrary scores into positive numbers that sum to 1, with higher scores getting a larger share.",
-              "**Weighted average**: multiply each vector by a weight and add the results. When the weights sum to 1, the result lies “between” the vectors, biased toward the one with the larger weight."
+              "**Encoder-decoder**: one recurrent network reads the source sentence into a vector, and another generates the translation from that vector. See the previous close read in this series, Seq2Seq.",
+              "**Softmax**: turns any set of scores into positive numbers that add up to 1, with higher scores receiving a larger share.",
+              "**Weighted average**: multiply each vector by a weight, then add the results. When the weights sum to 1, the result lands “between” those vectors, closer to the one with the largest weight."
             ]
           }
         }
@@ -81,97 +81,107 @@
       "h": "The problem: a fixed-length vector is a bottleneck",
       "blocks": [
         {
-          "p": "The paper opens by pointing out a potential weakness in the encoder–decoder architecture: the neural network has to compress everything the source sentence needs into a fixed-length vector. That is hard for long sentences, especially sentences longer than those in the training data. Cho et al., from the same group, had already observed that a basic encoder–decoder **deteriorates rapidly** as the input sentence grows."
+          "p": "The paper opens by pointing out the potential problem with the encoder-decoder architecture: a neural network has to compress all the necessary information about a source sentence into a fixed-length vector. That is hard for long sentences, especially sentences longer than those in the training data. Cho et al., from the same group, had already observed that basic encoder-decoder translation quality **deteriorates rapidly** as input sentences get longer.",
+          "plain": {
+            "title": "Cramming a whole sentence into a small box",
+            "pic": "bah-bottleneck",
+            "text": "The original encoder has to squeeze an entire sentence, however long, into the same fixed-size vector c (the small red box). When the sentence is long, the box cannot hold everything, details are lost, and translation quality drops sharply."
+          }
         },
         {
           "callout": {
             "kind": "intuition",
-            "title": "Like a translator allowed only one sticky note",
-            "text": "Ask a translator to listen to an entire passage, write the main points on one sticky note, and then translate the whole thing without looking back at the original. Short sentences are fine. When the sentence runs long, the note fills up, and details from the second half get lost or “invented.” Attention is like letting the translator glance back at the original whenever needed, checking whichever part the current sentence requires."
+            "title": "Like a translator allowed a single sticky note",
+            "text": "Imagine a translator who listens to a whole passage but is allowed to write only key points on one sticky note, then must translate from that note without looking at the original. Short sentences are fine. When the sentence is long, the note runs out of room, and details from the second half are lost or guessed. Attention is like letting that translator glance back at the source while writing, checking whichever part is needed."
           }
         },
         {
-          "p": "The Seq2Seq paper eased training by reversing the source sentence and reported that long sentences did not collapse. But that model had an 8,000-dimensional sentence vector and a four-layer LSTM. This paper targets the bottleneck in the structure itself: **no matter how long the sentence is, its representation has the same size**."
+          "p": "Seq2Seq eased training by reversing the source sentence and reported that long sentences did not collapse. But that model used an 8000-dimensional sentence vector and a 4-layer LSTM. This paper targets the structural bottleneck itself: **no matter how long the sentence is, the representation is always the same size**."
         }
       ]
     },
     {
-      "h": "Core idea: every generated word soft-searches the source sentence",
+      "h": "Core idea: for every generated word, soft-search the source sentence again",
       "blocks": [
         {
-          "p": "The paper calls the new model **RNNsearch**—an RNN that searches—and compares it with RNNencdec, which has no attention. The key difference from a basic encoder–decoder is that it **does not try to encode the whole sentence into a fixed-length vector**. Instead, it encodes the sentence as a sequence of vectors and adaptively selects part of that sequence during decoding."
+          "p": "The paper calls the new model **RNNsearch** (an RNN that searches), with attention-free RNNencdec as the control. The most important difference from the basic encoder-decoder is that it does **not** try to encode the whole sentence into a fixed-length vector. Instead, it encodes the sentence into a sequence of vectors and adaptively selects some of them while decoding."
         },
         {
-          "p": "In the original encoder–decoder, every generated word uses the same sentence vector c. In the new model, generating the i-th word uses a **context vector computed specifically for it**, c_{i}:"
+          "p": "In the original encoder-decoder, every generated word uses the same sentence vector c. In the new model, generating the i-th word uses a **context vector computed specifically for it**, c_i:"
         },
         {
           "formula": {
-            "expr": "p(y_{i} | y_{1}, …, y_{i−1}, x) = g(y_{i−1}, s_{i}, c_{i}),  s_{i} = f(s_{i−1}, y_{i−1}, c_{i})",
+            "expr": "p(y_i | y_1, …, y_{i−1}, x) = g(y_{i−1}, s_i, c_i),  s_i = f(s_{i−1}, y_{i−1}, c_i)",
             "parts": [
               {
                 "sym": "y_{i}",
-                "desc": "The i-th target word to generate"
+                "desc": "y_i: the i-th target word to be generated"
               },
               {
                 "sym": "s_{i}",
-                "desc": "The decoder's hidden state at step i—roughly where the translation stands and what it wants to say next."
+                "desc": "s_i: the decoder's hidden state at step i, roughly where the translation is and what should come next"
               },
               {
                 "sym": "c_{i}",
-                "desc": "The context vector specific to step i. In the old model, every step shared one c; this is the key difference between the two."
+                "desc": "c_i: the context vector specific to step i. The old model shares one c across all steps; this is the key difference."
               },
               {
                 "sym": "g, f",
-                "desc": "Two nonlinear functions: g gives the probability of the next word, and f updates the decoder state."
+                "desc": "Two nonlinear functions: g outputs the probability of the next word, and f updates the decoder state."
               }
             ]
           }
         },
         {
-          "p": "How is c_{i} computed? Three steps: **score, normalize, weighted sum**."
+          "p": "How is c_i computed? Three steps: **score, normalize, take a weighted sum**."
         },
         {
           "formula": {
-            "expr": "e_{ij} = a(s_{i−1}, h_{j})\nα_{ij} = exp(e_{ij}) / Σ_{k=1}^{T_{x}} exp(e_{ik})\nc_{i} = Σ_{j=1}^{T_{x}} α_{ij} h_{j}",
+            "expr": "e_{ij} = a(s_{i−1}, h_j)\nα_{ij} = exp(e_{ij}) / Σ_{k=1}^{T_{x}} exp(e_{ik})\nc_i = Σ_{j=1}^{T_{x}} α_{ij} h_j",
             "parts": [
               {
                 "sym": "h_{j}",
-                "desc": "The annotation for the j-th source word: the vector the encoder leaves behind for that word. It contains information about the whole sentence but focuses on the area around the j-th word."
+                "desc": "h_j: the “annotation” of source word j, the vector the encoder leaves for that word. It contains information about the whole sentence but focuses on the parts around word j."
               },
               {
                 "sym": "e_{ij}",
-                "desc": "The alignment score: how well the decoder's state before generating word i, s_{i−1}, matches the source annotation h_{j}."
+                "desc": "e_{ij}: the alignment score—how well the decoder state before generating word i, s_{i−1}, matches source annotation h_j."
               },
               {
                 "sym": "a",
-                "desc": "The alignment model: a small feedforward network trained jointly with the rest of the translation model."
+                "desc": "a: the alignment model, a small feedforward network trained jointly with the whole translation model."
               },
               {
                 "sym": "α_{ij}",
-                "desc": "The attention weight: softmax over the scores of all source words, so the weights at each step sum to 1."
+                "desc": "α_{ij}: the attention weight, obtained by applying softmax to the scores for all source words; weights for each step sum to 1."
               },
               {
                 "sym": "c_{i}",
-                "desc": "A weighted average of all source annotations by those weights, giving the context for this step."
+                "desc": "c_i: the weighted average of all source annotations, giving the context for this step."
               }
             ],
-            "note": "The paper gives another interpretation: treat α_{ij} as “the probability that the i-th target word was translated from the j-th source word.” Then c_{i} is the expected annotation over all possible alignments."
+            "note": "The paper offers another reading: treat α_{ij} as the probability that the i-th target word is aligned to, or translated from, the j-th source word. Then c_i is the expected annotation over all possible alignments."
+          },
+          "plain": {
+            "title": "Every time you write a word, sweep the source sentence with a flashlight",
+            "pic": "bah-flashlight",
+            "text": "Before writing the next target word, the decoder gives each source word a score for how relevant it is. After softmax, those scores become brightness levels that add up to 1. When producing zone, the light lands almost entirely on Area (0.81—the value in the worked table below), and the information from each word is blended by that brightness into a context vector for this step."
           }
         },
         {
-          "p": "The alignment model a has the specific form (Appendix A.1.2): a(s_{i−1}, h_{j}) = v_{a}^{⊤} tanh(W_{a} s_{i−1} + U_{a} h_{j}). It transforms the decoder state and the source annotation separately, sums them, passes the result through tanh, and projects it to a single number. Because U_{a} h_{j} does not depend on i, it can be precomputed for each source word, saving a lot of repeated computation. This form later became known as **additive attention**, as opposed to the dot-product attention used by the Transformer."
+          "p": "The exact form of the alignment model a (Appendix A.1.2) is a(s_{i−1}, h_j) = v_a^{⊤} tanh(W_a s_{i−1} + U_a h_j). It transforms the decoder state and the source annotation separately, adds them, passes the sum through tanh, and projects the result to a single number. Because U_a h_j does not depend on i, it can be precomputed once per source word, saving a large amount of repeated computation. This form was later called **additive attention**, to distinguish it from the dot-product attention used in the Transformer."
         },
         {
           "fig": {
             "type": "table",
-            "title": "One attention step by hand: when generating “zone,” the model puts 81% of its attention on “Area.”",
-            "subtitle": "Illustrative: the scores and two-dimensional annotation vectors are our own, used to demonstrate the calculation; the real model's annotations are 2,000-dimensional.",
+            "title": "One worked attention step: when generating “zone,” the model gives 81% of its attention to “Area”",
+            "subtitle": "Illustrative: the scores and two-dimensional annotation vectors are made up for this walkthrough; the real model's annotations have 2000 dimensions.",
             "columns": [
               "Source word j",
               "Alignment score e_{ij}",
               "exp(e_{ij})",
               "Attention weight α_{ij}",
-              "Annotation h_{j} (illustrative, 2-D)"
+              "Annotation h_j (illustrative, 2D)"
             ],
             "rows": [
               [
@@ -203,7 +213,7 @@
                 "(0, 0)"
               ],
               [
-                "Total / context c_{i}",
+                "Sum / context c_i",
                 "",
                 "15.12",
                 "1",
@@ -213,19 +223,19 @@
             "highlight": {
               "row": 2
             },
-            "note": "The scores differ by only about 2, but after the exponential amplifies them, Area takes about 80% of the weight. The context c_{i} therefore lands near Area's annotation, while still carrying a little information from the other words. This is “soft” alignment: it doesn't choose one word all-or-nothing, but gives each word a share."
+            "note": "The raw scores differ by only about 2, but after exponential amplification, Area takes about 80% of the weight. The context c_i therefore lands near Area's annotation while still carrying a little information from the other words. That is “soft” alignment: instead of choosing one word or another, every word gets a share."
           }
         },
         {
           "callout": {
             "kind": "intuition",
-            "title": "Why call it “soft” search?",
-            "text": "Traditional statistical MT first has to decide “which source word corresponds to which target word.” That is a hard, discrete choice: it cannot be differentiated directly, so it has to be treated as a latent variable and estimated with other algorithms. Here the weights are continuous and differentiable, so the gradient of the translation loss can travel all the way back to the alignment model. **Alignment and translation are learned jointly under a single objective**—exactly what the paper title “jointly learning to align and translate” means."
+            "title": "Why it is called “soft” search",
+            "text": "Traditional statistical MT first decides which source word corresponds to which target word—a hard, discrete choice that cannot be differentiated directly and has to be estimated as a hidden variable with separate algorithms. Here the weights are continuous and differentiable, so the gradient of the translation error can flow all the way back into the alignment model. As a result, **alignment and translation are learned together under the same objective**, exactly the “jointly learning to align and translate” in the paper's title."
           }
         },
         {
           "quiz": {
-            "q": "The attention weights α_{ij} are computed with softmax. What does this guarantee?",
+            "q": "The attention weights α_{ij} are computed with softmax. What does that guarantee?",
             "options": [
               "Every source word gets the same weight.",
               "For each target word i, all source-word weights are positive and sum to 1.",
@@ -233,53 +243,58 @@
               "The weights do not depend on sentence length."
             ],
             "answer": 1,
-            "why": "Softmax turns arbitrary scores into positive numbers that sum to 1, so c_{i} is a weighted average of the annotations. The model can focus attention on one word or spread it across several words. It is not forced to pick a single word—that is the “soft” part."
+            "why": "Softmax turns arbitrary scores into positive numbers that sum to 1, so c_i is a weighted average of the annotations. The model can concentrate attention on one word or spread it over several; it is not forced to choose exactly one. That is what “soft” means."
           }
         }
       ]
     },
     {
-      "h": "Encoder: a bidirectional RNN so each word's vector sees what comes before and after",
+      "h": "Encoder: a bidirectional RNN so each word's vector sees both sides of the context",
       "blocks": [
         {
-          "p": "Attention requires the encoder to leave a good vector h_{j} for each source word. A plain RNN reads from left to right, so the state at position j has seen only the words before it. But translating a word often requires the words after it. For example, English “the” becomes French le, la, les, or l' depending on the noun that follows."
+          "p": "Attention requires the encoder to leave a good vector h_j for every source word. A normal RNN reads left to right, so the state at position j only knows the words before it. But translating a word often requires looking ahead: whether English the becomes French le, la, les, or l' depends on the following noun."
         },
         {
-          "p": "So the paper uses a **bidirectional RNN**: one RNN reads left to right, another reads right to left, and the two states at position j are concatenated to form h_{j}. Each word's annotation summarizes both the preceding context and the following context. Because RNNs tend to represent recent inputs best, h_{j} focuses on the words around position j."
+          "p": "So the paper uses a **bidirectional RNN**: one RNN reads left to right, another reads right to left, and the two states at position j are concatenated into h_j. Each word's annotation then summarizes both the preceding and following context. Because RNNs are better at remembering recent inputs, h_j will focus on the area around word j."
         },
         {
           "formula": {
-            "expr": "h_{j} = [ →h_{j} ; ←h_{j} ]",
+            "expr": "h_j = [→h_j; ←h_j]",
             "parts": [
               {
                 "sym": "→h_{j}",
-                "desc": "The state after reading left-to-right up to the j-th word (1,000 dimensions), summarizing x_{1} through x_{j}."
+                "desc": "→h_j: the state after reading left-to-right up to word j (1000 dimensions), summarizing x_1 through x_j"
               },
               {
                 "sym": "←h_{j}",
-                "desc": "The state after reading right-to-left as far as the j-th word (1,000 dimensions), summarizing x_{j} through x_{T}."
+                "desc": "←h_j: the state after reading right-to-left down to word j (1000 dimensions), summarizing x_j through x_T"
               },
               {
                 "sym": "[ ; ]",
-                "desc": "Concatenation: two 1,000-dimensional vectors joined end to end to produce a 2,000-dimensional annotation."
+                "desc": "Concatenation: the two 1000-dimensional vectors are joined end to end into a 2000-dimensional annotation."
               }
             ]
+          },
+          "plain": {
+            "title": "One person reads left to right, the other right to left",
+            "pic": "bah-bidir",
+            "text": "One RNN reads left to right, so at word j it knows what came before; the other reads right to left, so it knows what comes after. Join the two sets of notes at word j, and that word's representation has looked at both sides of the sentence."
           }
         },
         {
-          "p": "The recurrent unit is the **gated hidden unit** just proposed by Cho et al. (later widely known as the GRU). It has an “update gate” and a “reset gate,” which serve a similar purpose to an LSTM: they let gradients flow over long distances without vanishing, but with a simpler structure. The paper says an LSTM would also work here."
+          "p": "The recurrent units are the **gated hidden units** just introduced by Cho et al.—later widely known as the GRU. They have an update gate and a reset gate, similar in spirit to the LSTM: they let gradients flow over long distances instead of vanishing, but with a simpler structure. The paper notes that LSTM units would work here too."
         },
         {
           "quiz": {
-            "q": "Why use a bidirectional RNN for the encoder instead of a plain left-to-right RNN?",
+            "q": "Why use a bidirectional RNN for the encoder instead of an ordinary left-to-right RNN?",
             "options": [
               "To make training faster",
               "So each source word's annotation contains both preceding and following context",
               "To make the sentence vector shorter",
-              "To handle unknown words"
+              "To handle rare words"
             ],
             "answer": 1,
-            "why": "Attention reads the annotation at each position directly, so each annotation should ideally have seen the whole sentence. A unidirectional RNN at position j has seen only the preceding words. A bidirectional RNN is actually more expensive, and it does not change the vocabulary."
+            "why": "Attention uses each position's annotation directly, so ideally each annotation has seen the whole sentence. A unidirectional RNN at position j has only seen the earlier words. A bidirectional RNN is actually more expensive and does not change the vocabulary."
           }
         }
       ]
@@ -288,16 +303,16 @@
       "h": "Experiments: same data, with and without attention",
       "blocks": [
         {
-          "p": "The paper compares two types of models on the WMT'14 English-to-French task: RNNencdec without attention and RNNsearch with attention. Both use the same data and the same training procedure. The WMT'14 English–French parallel corpus contains 850 million words, reduced to 348 million words following Cho et al.'s method. The test set is 3,003 sentences not present in the training data. Only the 30,000 most frequent words in each language are used; everything else is replaced with [UNK]."
+          "p": "The paper compares two model types on the WMT'14 English-to-French task: RNNencdec without attention and RNNsearch with attention. Both use the same data and the same training procedure. The WMT'14 English-French parallel corpus has 850 million words, reduced to 348 million using Cho et al.'s data-selection method. The test set consists of 3003 sentences not present in training. Only the 30,000 most frequent words in each language are kept; everything else becomes [UNK]."
         },
         {
-          "p": "Each model is trained twice: once on sentences up to 30 words (-30), and once on sentences up to 50 words (-50). Model sizes (Appendix A.2.3):"
+          "p": "Each model is trained twice: once with sentences up to 30 words (-30), and once with sentences up to 50 words (-50). Model sizes (Appendix A.2.3):"
         },
         {
           "fig": {
             "type": "table",
-            "title": "RNNsearch's scale: 1,000 hidden units, 620-dimensional word vectors, and a 1,000-unit alignment model.",
-            "subtitle": "From the paper's Section 4.2 and Appendix A.2.3.",
+            "title": "RNNsearch at a glance: 1000 hidden units, 620-dimensional word vectors, 1000-dimensional alignment model",
+            "subtitle": "From Section 4.2 and Appendix A.2.3 of the paper.",
             "columns": [
               "Component",
               "Setting"
@@ -305,11 +320,11 @@
             "rows": [
               [
                 "Encoder",
-                "Bidirectional, with 1,000 gated hidden units in each of the forward and backward RNNs; the annotation h_{j} is 2,000-dimensional."
+                "Bidirectional; forward and backward RNNs have 1000 gated hidden units each; annotation h_j is 2000-dimensional."
               ],
               [
                 "Decoder",
-                "1,000 gated hidden units"
+                "1000 gated hidden units"
               ],
               [
                 "Word vector dimension",
@@ -321,11 +336,11 @@
               ],
               [
                 "Output layer",
-                "One layer of 500 maxout units, followed by softmax over 30,000 words"
+                "One layer of 500 maxout units, followed by softmax over 30,000 words."
               ],
               [
                 "Training",
-                "Minibatches of 80 sentences, stochastic gradient descent + Adadelta; each model trains for about 5 days"
+                "Minibatches of 80 sentences, stochastic gradient descent plus Adadelta, each model trained for about 5 days."
               ],
               [
                 "Decoding",
@@ -337,8 +352,8 @@
         {
           "callout": {
             "kind": "note",
-            "title": "Not directly comparable with Seq2Seq",
-            "text": "The two papers appeared almost simultaneously and used the same filtered WMT'14 data, but their settings differ considerably: Seq2Seq used a 4-layer LSTM, an 80,000-word French vocabulary, a 5-model ensemble, and reversed source sentences. This paper used a single layer of gated units, a 30,000-word vocabulary, and a single model. So Seq2Seq's 34.81 and this paper's 28.45 cannot be compared directly. Seq2Seq's Table 1 also lists this 28.45."
+            "title": "Not directly comparable to Seq2Seq",
+            "text": "The two papers appeared at almost the same time and used the same filtered WMT'14 data, but their setups differ considerably. Seq2Seq used a 4-layer LSTM, an 80,000-word French vocabulary, an ensemble of 5 models, and reversed source sentences. This paper uses single-layer gated units, a 30,000-word vocabulary, and a single model. So Seq2Seq's 34.81 and this paper's 28.45 cannot be compared directly. Seq2Seq's Table 1 also lists the 28.45 from here."
           }
         }
       ]
@@ -349,12 +364,12 @@
         {
           "fig": {
             "type": "table",
-            "title": "Models with attention lead across the board; on sentences with no unknown words, they even beat statistical MT.",
-            "subtitle": "BLEU scores from the paper's Table 1. “With no unknown words” means neither the source sentence nor the reference translation contains an out-of-vocabulary word; the model is also not allowed to output [UNK]. Blue columns show results on sentences with no unknown words.",
+            "title": "The attention model leads across the board; on sentences without unknown words, it even beats statistical MT",
+            "subtitle": "BLEU, from Table 1 of the paper. “Without unknown words” means neither the source sentence nor the reference translation contains a word outside the vocabulary; the model is also forbidden to output [UNK]. Blue columns show those results.",
             "columns": [
               "Model",
               "All sentences",
-              "Sentences with no unknown words"
+              "Sentences without unknown words"
             ],
             "rows": [
               [
@@ -383,7 +398,7 @@
                 "36.15"
               ],
               [
-                "Moses (phrase-based statistical translation)",
+                "Moses (phrase-based statistical MT)",
                 "33.30",
                 "35.63"
               ]
@@ -391,44 +406,44 @@
             "highlight": {
               "col": 2
             },
-            "note": "The longer-trained version was trained until its validation score stopped improving, taking 252 hours—more than double the others. Moses also used an extra 418 million words of monolingual data; the neural models did not."
+            "note": "The longer-trained model was trained until the validation set stopped improving; it took 252 hours, more than twice as long as the other models. Moses also used an additional 418 million words of monolingual data, which the neural models did not."
           }
         },
         {
-          "p": "A few comparisons stand out: RNNsearch-30, trained only on sentences up to 30 words, scores 21.50, already above RNNencdec-50, trained on sentences up to 50 words, at 17.82. On sentences with no unknown words, the longer-trained RNNsearch-50 reaches 36.15, beating Moses at 35.63. The paper calls this an important achievement, since Moses also used 418 million words of monolingual data."
+          "p": "Several comparisons stand out. RNNsearch-30, trained only on sentences up to 30 words, scored 21.50—already ahead of RNNencdec-50's 17.82, which was trained on sentences up to 50 words. On sentences without unknown words, the longer-trained RNNsearch-50 reached 36.15, above Moses's 35.63. The paper calls this a significant achievement because Moses also used a separate 418-million-word monolingual corpus."
         },
         {
-          "p": "**Long sentences** are the paper's core evidence. Figure 2 sorts test sentences by length: RNNencdec's BLEU drops sharply as sentences get longer; RNNsearch-30 and RNNsearch-50 are far more stable, and **RNNsearch-50 shows no degradation even on sentences longer than 50 words**."
+          "p": "**Long sentences** are the paper's central evidence. Figure 2 plots test sentences by length: RNNencdec's BLEU drops sharply as length increases; RNNsearch-30 and RNNsearch-50 are far more stable, and **RNNsearch-50 shows no degradation even on sentences above 50 words**."
         },
         {
-          "p": "The paper gives a concrete example. The source sentence is: “An admitting privilege is the right of a doctor to admit a patient to a hospital or a medical centre to carry out a diagnosis or a procedure, based on his status as a health care worker at a hospital.” RNNencdec-50 translates correctly up to “a medical centre” and then loses the thread, turning “based on his status as a health care worker at a hospital” into “based on his health condition.” RNNsearch-50 translates the entire sentence fully and accurately."
+          "p": "The paper gives a specific example. The source sentence is: “An admitting privilege is the right of a doctor to admit a patient to a hospital or a medical centre to carry out a diagnosis or a procedure, based on his status as a health care worker at a hospital.” RNNencdec-50 translates correctly up to “a medical centre,” then goes off course, rendering “based on his status as a health care worker at a hospital” as “based on his health condition.” RNNsearch-50 translates the whole sentence completely and accurately."
         },
         {
           "quiz": {
-            "q": "RNNsearch-30, trained only on sentences up to 30 words, still beats RNNencdec-50, which was trained on sentences up to 50 words. What does this show most clearly?",
+            "q": "RNNsearch-30 was trained only on sentences up to 30 words, yet it beat RNNencdec-50, which was trained on sentences up to 50 words. What does this most clearly demonstrate?",
             "options": [
-              "The data with sentences up to 30 words is of higher quality",
-              "Attention's structural improvement matters more than training on longer sentences",
-              "RNNencdec was not trained long enough",
-              "BLEU favors short sentences"
+              "The data with sentences up to 30 words is higher quality.",
+              "The structural improvement from attention matters more than training on longer sentences.",
+              "RNNencdec was not trained long enough.",
+              "BLEU favors short sentences."
             ],
             "answer": 1,
-            "why": "RNNencdec-50 was trained on longer sentences and should by rights be better at them, yet it still loses to RNNsearch-30, which never saw a long sentence. The only difference between them is structural: attention. The paper uses this point as further evidence that the fixed-length vector is the bottleneck."
+            "why": "RNNencdec-50 has seen longer sentences and should in theory handle them better, yet it still loses to RNNsearch-30, which has never seen long sentences. The only difference is the architecture: whether attention is present. The paper uses this as further evidence that the fixed-length vector is the bottleneck."
           }
         }
       ]
     },
     {
-      "h": "Open up the model: the attention weights are an alignment map",
+      "h": "Opening the model: attention weights are an alignment map",
       "blocks": [
         {
-          "p": "Attention has an unexpected benefit: **you can see directly what the model is thinking**. Plot the weights α_{ij} from each target word to each source word as a grayscale image, and you get a “soft alignment” map. Figure 3 in the paper shows four examples."
+          "p": "Attention has an unexpected bonus: **you can see directly what the model is thinking**. Plot each target word's weight α_{ij} over each source word as a grayscale image, and you get a soft-alignment map. Figure 3 of the paper shows four of them."
         },
         {
           "fig": {
             "type": "heatmap",
-            "title": "Adjective–noun order flips between English and French; attention jumps the gap on its own",
-            "subtitle": "Illustrative: a simplified version drawn from the description of Figure 3(a) in the paper; the values are our own. Rows are generated French words, columns are English source words.",
+            "title": "Adjective-noun order is reversed between English and French; attention “jumps” across automatically.",
+            "subtitle": "Illustrative: simplified from the description in Figure 3(a) of the paper; the values are invented for this article. Rows are generated French words, columns are English source words.",
             "rows": [
               "zone",
               "économique",
@@ -459,20 +474,24 @@
             "highlight": {
               "row": 0
             },
-            "note": "In English it is European Economic Area; in French it is zone économique européenne — the reverse order. The paper describes how, to generate zone, the model skips over two words and aligns directly with Area, then works backward one word at a time to fill in the phrase."
+            "note": "English says European Economic Area; French says zone économique européenne, in exactly the opposite order. As the paper describes it, when the model produces zone it skips two words and aligns directly with Area, then works backward one word at a time to complete the phrase."
+          },
+          "plain": {
+            "title": "An alignment map reads like a matching game.",
+            "text": "The x-axis is the English source sentence, the y-axis is the French translation, and a brighter cell means the model was looking more at that English word while writing that French word. Most bright cells run along the diagonal, meaning the translation proceeds roughly in order; where adjective-noun order reverses, the bright cells jump, showing the model learned to reorder words on its own."
           }
         },
         {
-          "p": "From these maps, you can see that English–French alignment is **mostly monotonic**: the weights lie largely on the diagonal. But there are also plenty of non-monotonic alignments, such as the adjective–noun word-order difference above."
+          "p": "What the maps show: English–French alignment is **largely monotonic**, with most weight on the diagonal, but there are also many non-monotonic alignments, such as the adjective-noun order differences above."
         },
         {
-          "p": "**Why soft alignment beats hard alignment.** In Figure 3(d) of the paper, the source phrase “the man” is translated as “l'homme”. Any hard alignment would map “the” to “l'” and “man” to “homme”. But whether “the” becomes “le”, “la”, “les”, or “l'” depends on what the next word is and what letter it starts with. Soft alignment lets the model look at both “the” and “man” while generating “l'”, which solves the problem naturally. Soft alignment also handles cases where source and target phrases have different lengths, without the awkward hard-alignment workaround of mapping words to “empty” ([NULL])."
+          "p": "**Why soft alignment beats hard alignment**. In Figure 3(d) of the paper, the source phrase the man is translated as l'homme. Any hard alignment would map the to l' and man to homme. But whether the becomes le, la, les, or l' depends on the following word and what letter it starts with. Soft alignment lets the model look at both the and man while generating l', which solves the problem naturally. Soft alignment also handles cases where source and target phrases have different lengths, without hard alignment's awkward need to align words to an empty token ([NULL])."
         },
         {
           "callout": {
             "kind": "myth",
-            "title": "Are attention weights the model's reasoning?",
-            "text": "Attention maps are intuitive, but they only show where the context vector mainly comes from when generating a given word; they do not fully explain why the model translates the way it does. The decoder's hidden state and the output layer also contribute to the decision. Later research has also found that the relationship between attention weights and model decisions is more complicated than it looks. Treat the map as a useful window, not a full explanation."
+            "title": "Do attention weights equal the model's reasoning process?",
+            "text": "Attention maps are intuitive, but they only show where the context vector mainly came from when generating a word. They are not a complete explanation of why the model translated the way it did; the decoder's hidden state and output layer also play a role. Later research has also found that the relationship between attention weights and model decisions is more complicated than it looks. Treat them as a useful window, not a full account."
           }
         }
       ]
@@ -482,80 +501,80 @@
       "blocks": [
         {
           "list": [
-            "**Computation scales with the product of the two sentence lengths**: for each target word, the model has to score every source word, so a sentence pair takes T_{x} × T_{y} operations. The paper says most sentences in translation are only 15 to 40 words, so this is not a serious problem, but it may limit the model on other tasks. The Transformer three years later had the same quadratic cost, and the cost of attention over long texts remains an active research topic.",
-            "**Unknown words**: the 30,000-word vocabulary causes a large drop on sentences that contain unknown words (28.45 on all sentences versus 36.15 on sentences with no unknown words). The paper's conclusion says better handling of unknown words is a future challenge.",
-            "**Still a recurrent network**: both the encoder and decoder process one word at a time, so training is hard to parallelize. Each model took about 5 days to train, and the best one took about 10 days.",
-            "**Only tested on English-to-French**: the paper notes that language pairs such as English-to-German, which require long-distance reordering, would be more difficult, but it does not run experiments."
+            "**Compute grows with the product of source and target length**: for every target word, the model scores every source word, so a sentence pair requires T_{x} × T_{y} scoring operations. The paper says most sentences in translation are only 15 to 40 words long, so this is not a problem there, but it may limit other tasks. Three years later, the Transformer had the same quadratic cost, and the cost of attention on long texts remains an active research area.",
+            "**Rare words**: the 30,000-word vocabulary penalizes sentences with unknown words heavily (28.45 on all sentences versus 36.15 on sentences without unknown words). The paper's conclusion says better handling of rare words is a future challenge.",
+            "**Still a recurrent network**: both encoder and decoder process one word at a time, making training hard to parallelize. Each model took about 5 days to train, and the best model about 10 days.",
+            "**English-to-French only**: the paper mentions that language pairs needing long-distance reordering, such as English-to-German, would be harder, but it did not run experiments on them."
           ]
         },
         {
-          "p": "**A few small inconsistencies in the paper**: in Section 5.2.1, when describing the alignment maps, the same French phrase is first written “zone économique européen” and a few lines later “européenne” (the latter is the correct feminine form). Section 4.2 says each model trained for about 5 days, while Table 2 in the appendix says the longer-trained RNNsearch-50 took 252 hours (about 10.5 days); the note to Table 1 already indicates that it was trained longer."
+          "p": "**A few small inconsistencies in the paper**: in Section 5.2.1, when describing the alignment map, the same French phrase appears first as zone économique européen and a few lines later as européenne (the latter is the correct feminine form). Section 4.2 says each model was trained for about 5 days, but Appendix Table 2 shows the longer-trained RNNsearch-50 took 252 hours (about 10.5 days); the note to Table 1 already says that version was trained longer."
         }
       ]
     },
     {
-      "h": "What came next: from “looking back” to “attention only”",
+      "h": "What came next: from “looking back” to attention alone",
       "blocks": [
         {
-          "p": "The paper notes that using a differentiable attention mechanism to make a network attend to different parts of the input had already been done by Graves (2013) for handwriting generation. But that attention could only move forward monotonically, making it unsuitable for translation, which requires reordering. The attention in this paper can jump freely across the source sentence, and that is key to its success in translation."
+          "p": "The paper notes that using a differentiable attention mechanism to focus a network on different parts of its input had already been done by Graves (2013) for handwriting generation, but that attention could only move forward monotonically, which is unsuitable for translation requiring reordering. This paper's attention can jump anywhere in the source sentence, and that is the key to its success in translation."
         },
         {
-          "p": "Looking ahead along the main thread:"
+          "p": "Following the main thread of this series:"
         },
         {
           "list": [
-            "**From 2015 onward**: attention became standard in almost all encoder–decoder models, used in translation, summarization, image captioning, speech recognition, and other tasks.",
-            "**2017, Transformer**: if attention works this well, why keep the recurrent network? Transformer uses “self-attention” to let each word in a sentence attend to every other word, removes the RNN entirely, and can therefore train in parallel. It replaces the alignment model here with the simpler scaled dot-product attention and formally names the roles of s_{i−1} and h_{j} as query, key, and value.",
-            "**Today's large language models**: each layer has dozens of attention heads, and every head performs the three steps from this paper: score, softmax, weighted sum."
+            "**From 2015 on**: attention became a standard part of almost every encoder-decoder model, used in translation, summarization, image captioning, speech recognition, and other tasks.",
+            "**2017, the Transformer**: if attention is so useful, why keep the recurrent network? The Transformer uses “self-attention” to let every word in a sentence attend to every other word, removing the RNN entirely and enabling parallel training. It replaced the alignment model here with the simpler scaled dot product, and formally named the roles of s_{i−1} and h_{j} as query, key, and value.",
+            "**Today's large language models**: every layer has dozens of attention heads, and each head performs the same three steps from this paper: score, softmax, weighted sum."
           ]
         },
         {
-          "p": "Next up is GPT-1 (2018): it takes the Transformer decoder on its own, pretrains it on a large amount of unlabeled text, and then fine-tunes it for specific tasks. From there, the main thread turns from “translation” toward “general language models.”"
+          "p": "Next in the series is GPT-1 (2018): it takes just the Transformer decoder, pretrains it on a large amount of unlabeled text, then fine-tunes it for specific tasks. From here, the main thread shifts from translation to general-purpose language models."
         }
       ]
     },
     {
-      "h": "Test yourself: did you get it?",
+      "h": "Check yourself: did you really get it?",
       "blocks": [
         {
           "quiz": {
-            "q": "If the context vector c_{i} at every step of RNNsearch were fixed to the encoder's final forward state, what would the model become?",
+            "q": "If you fixed the context vector c_{i} at every step to the encoder's last forward state, what would the model become?",
             "options": [
               "Transformer",
-              "An RNN encoder–decoder without attention",
-              "Statistical machine translation",
-              "A bidirectional language model"
+              "An RNN encoder-decoder without attention.",
+              "Statistical machine translation.",
+              "A bidirectional language model."
             ],
             "answer": 1,
-            "why": "The appendix says explicitly: fixing c_{i} to →h_{T_{x}} reduces the model to Cho et al.'s RNN encoder–decoder. The whole point of attention is that c_{i} changes with i."
+            "why": "The paper's appendix explicitly says that fixing c_{i} to →h_{T_{x}} reduces the model to the RNN encoder-decoder of Cho et al. The entire point of attention is that c_{i} varies with i."
           }
         },
         {
           "quiz": {
-            "q": "Why can the term U_{a} h_{j} in the alignment model be computed ahead of time?",
+            "q": "In the alignment model, why can the term U_{a} h_{j} be “precomputed”?",
             "options": [
-              "Because it is small",
-              "Because it depends only on the source word, not on which target word is being generated",
-              "Because it is constant",
-              "Because h_{j} is randomly initialized"
+              "Because it is small.",
+              "Because it depends only on the source word and not on which target word is being generated.",
+              "Because it is a constant.",
+              "Because h_{j} is randomly initialized."
             ],
             "answer": 1,
-            "why": "U_{a} h_{j} depends only on the source sentence and is the same for every target word generated, so it only needs to be computed once per source word. At each step, only the decoder-state-dependent term W_{a} s_{i−1} has to be recalculated. This is the paper's design for reducing the cost of T_{x} × T_{y} scoring operations."
+            "why": "U_{a} h_{j} depends only on the source sentence and is identical for every target word, so it only needs to be computed once per source word. At each step, only the decoder-state term W_{a} s_{i−1} has to be recomputed. The paper designed it this way to cut the cost of scoring T_{x} × T_{y} times."
           }
         },
         {
-          "p": "After reading this, you should be able to answer the following:"
+          "p": "After reading this, you should be able to answer these questions:"
         },
         {
           "list": [
             "Why is a fixed-length sentence vector a bottleneck?",
-            "How is the context vector c_{i} obtained through scoring, softmax, and a weighted sum?",
+            "How is the context vector c_{i} produced via scoring, softmax, and weighted sum?",
             "How can α_{ij} be interpreted? Why is this called “soft” alignment?",
             "Why does the encoder use a bidirectional RNN? What information does h_{j} contain?",
             "How does the paper show that attention solves the long-sentence problem?",
-            "What advantage of soft alignment does the example “the man → l'homme” illustrate?",
+            "What soft-alignment advantage does the example the man → l'homme illustrate?",
             "What does the computational cost of attention scale with?",
-            "What are the similarities and differences between this attention and Transformer attention?"
+            "How is this attention similar to, and different from, attention in the Transformer?"
           ]
         }
       ]
@@ -563,12 +582,12 @@
   ],
   "sources": {
     "main": {
-      "title": "Neural Machine Translation by Jointly Learning to Align and Translate (arXiv:1409.0473v7)",
+      "title": "Neural Machine Translation by Jointly Learning to Align and Translate (arXiv:1409.0473, v7)",
       "publisher": "Bahdanau et al. · Université de Montréal",
       "date": "2016-05-19",
       "url": "https://arxiv.org/abs/1409.0473"
     },
-    "note": "This article is based on version 7 of the paper on arXiv (May 2016, the official ICLR 2015 version); the first version was released in September 2014. Figures marked “Illustrative” were created by this site to demonstrate the calculations. Comparison figures with Seq2Seq come from that paper; the claim that the relationship between attention weights and model decisions is complicated is a general conclusion from later research, not from this paper."
+    "note": "This article is based on v7 of the arXiv paper (May 2016, the ICLR 2015 official version); the first version was released in September 2014. We produced the figures marked “Illustrative” to demonstrate the calculation. Numbers compared with Seq2Seq come from that paper; the statement that attention weights have a complex relationship with model decisions is a general conclusion from later research, not from this paper."
   },
   "claims": [
     {
@@ -576,66 +595,66 @@
       "value": "1409.0473v7",
       "source_url": "https://arxiv.org/abs/1409.0473",
       "quote": "arXiv:1409.0473v7 [cs.CL] 19 May 2016",
-      "as_written": "version 7"
+      "as_written": "v7"
     },
     {
-      "text": "Cho et al. observed rapid degradation on long sentences",
+      "text": "Cho et al. observed that long sentences degrade rapidly",
       "value": "deteriorates rapidly",
       "source_url": "https://arxiv.org/abs/1409.0473",
       "quote": "the performance of a basic encoder–decoder deteriorates rapidly as the length of an input sentence increases",
-      "as_written": "deteriorates rapidly"
+      "as_written": "degrade rapidly"
     },
     {
-      "text": "WMT'14 contains 850 million words in total",
+      "text": "WMT'14 has 850 million words in total",
       "value": "850M words",
       "source_url": "https://arxiv.org/abs/1409.0473",
       "quote": "totaling 850M words",
       "as_written": "850 million"
     },
     {
-      "text": "filtered down to 348 million words",
+      "text": "Filtered down to 348 million words",
       "value": "348M words",
       "source_url": "https://arxiv.org/abs/1409.0473",
       "quote": "we reduce the size of the combined corpus to have 348M words",
       "as_written": "348 million"
     },
     {
-      "text": "test set of 3,003 sentences",
+      "text": "Test set: 3003 sentences",
       "value": "3003",
       "source_url": "https://arxiv.org/abs/1409.0473",
       "quote": "which consists of 3003 sentences not present in the training data",
-      "as_written": "3,003"
+      "as_written": "3003"
     },
     {
-      "text": "30,000-word vocabulary",
+      "text": "30,000 words",
       "value": "30,000",
       "source_url": "https://arxiv.org/abs/1409.0473",
       "quote": "we use a shortlist of 30,000 most frequent words in each language",
       "as_written": "30,000"
     },
     {
-      "text": "1,000 hidden units",
+      "text": "1000 hidden units",
       "value": "1000 hidden units",
       "source_url": "https://arxiv.org/abs/1409.0473",
       "quote": "The encoder of the RNNsearch consists of forward and backward recurrent neural networks (RNN) each having 1000 hidden units",
-      "as_written": "1,000"
+      "as_written": "1000"
     },
     {
-      "text": "minibatches of 80 sentences, about 5 days",
+      "text": "80 sentences per minibatch, about 5 days",
       "value": "80",
       "source_url": "https://arxiv.org/abs/1409.0473",
       "quote": "Each SGD update direction is computed using a minibatch of 80 sentences",
       "as_written": "80"
     },
     {
-      "text": "training takes about 5 days",
+      "text": "Trained for about 5 days",
       "value": "5 days",
       "source_url": "https://arxiv.org/abs/1409.0473",
       "quote": "We trained each model for approximately 5 days",
       "as_written": "5 days"
     },
     {
-      "text": "word vectors 620, maxout 500, alignment 1,000",
+      "text": "620-dimensional word vectors, 500 maxout units, 1000-dimensional alignment model",
       "value": "620",
       "source_url": "https://arxiv.org/abs/1409.0473",
       "quote": "the word embedding dimensionality m is 620 and the size of the maxout hidden layer in the deep output l is 500",
@@ -733,7 +752,7 @@
       "as_written": "33.30"
     },
     {
-      "text": "Moses used an extra 418 million words of monolingual data",
+      "text": "Moses used an additional 418 million words of monolingual data",
       "value": "418M",
       "source_url": "https://arxiv.org/abs/1409.0473",
       "quote": "Moses uses a separate monolingual corpus (418M words)",
@@ -747,25 +766,25 @@
       "as_written": "252 hours"
     },
     {
-      "text": "sentences mostly have 15–40 words",
+      "text": "Most sentences are 15–40 words",
       "value": "15–40",
       "source_url": "https://arxiv.org/abs/1409.0473",
       "quote": "most of input and output sentences are only 15–40 words",
       "as_written": "15 to 40"
     },
     {
-      "text": "no degradation above 50 words",
+      "text": "No degradation above 50 words",
       "value": "50 or more",
       "source_url": "https://arxiv.org/abs/1409.0473",
       "quote": "shows no performance deterioration even with sentences of length 50 or more",
       "as_written": "50 words"
     },
     {
-      "text": "starts to go off track after about 30 words",
+      "text": "Went off track after about 30 words",
       "value": "30 words",
       "source_url": "https://arxiv.org/abs/1409.0473",
       "quote": "after generating approximately 30 words",
-      "as_written": "30 words"
+      "as_written": "30"
     },
     {
       "text": "Seq2Seq: 34.81",
@@ -782,7 +801,7 @@
       "as_written": "80,000"
     },
     {
-      "text": "Seq2Seq: 8,000 dimensions",
+      "text": "Seq2Seq: 8000-dimensional",
       "value": "8,000",
       "source_url": "https://arxiv.org/abs/1409.3215",
       "quote": "with 384M parameters and 8,000 dimensional state each",
@@ -796,21 +815,21 @@
       "as_written": "4 layers"
     },
     {
-      "text": "Seq2Seq: 5-model ensemble",
+      "text": "Seq2Seq: ensemble of 5",
       "value": "5 deep LSTMs",
       "source_url": "https://arxiv.org/abs/1409.3215",
       "quote": "an ensemble of 5 deep LSTMs",
-      "as_written": "5 models"
+      "as_written": "5"
     },
     {
-      "text": "about 10 days (this site's conversion from 252 hours)",
+      "text": "About 10 days (our conversion from 252 hours)",
       "value": "252",
       "source_url": "https://arxiv.org/abs/1409.0473",
       "quote": "252",
       "as_written": "10 days"
     },
     {
-      "text": "about 10.5 days (this site's conversion from 252 hours)",
+      "text": "About 10.5 days (our conversion from 252 hours)",
       "value": "252",
       "source_url": "https://arxiv.org/abs/1409.0473",
       "quote": "252",
@@ -820,5 +839,5 @@
   "status": "published",
   "verified": false,
   "lang": "en",
-  "translated_from": "e551de66d051854b"
+  "translated_from": "d751a262a1f901b4"
 }
