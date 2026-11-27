@@ -13,8 +13,8 @@ on:
         description: 只翻这几篇（slug，逗号分隔；不填就翻所有还没有英文版或中文稿改过的）
         default: ""
       max:
-        description: 这次最多翻几篇
-        default: "6"
+        description: 这次最多翻几篇（有 110 分钟的时间预算兜底，填大也不怕超时）
+        default: "30"
       publish:
         description: 翻完开 PR 上线（不勾就只推到预览分支）
         type: boolean
@@ -55,7 +55,7 @@ jobs:
           WG_TRANSLATE_MODEL: ${{ vars.WG_TRANSLATE_MODEL }}
         run: |
           # 一篇长精读要翻 10 分钟左右；预算 110 分钟，最后一篇翻完也赶得上 150 分钟的超时，已翻好的不会白丢
-          ARGS=(--max "${{ inputs.max || '6' }}" --budget 110 --out /tmp/new-translations.json)
+          ARGS=(--max "${{ inputs.max || '30' }}" --budget 110 --out /tmp/new-translations.json)
           if [ -n "${{ inputs.slugs }}" ]; then ARGS+=(--slug "${{ inputs.slugs }}"); fi
           node scripts/translate.mjs "${ARGS[@]}"
       - name: 只预览：译文推到 preview/en-<运行编号> 分支，不开 PR、不上线
