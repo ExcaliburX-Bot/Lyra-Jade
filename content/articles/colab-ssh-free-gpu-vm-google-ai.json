@@ -1,0 +1,433 @@
+{
+  "slug": "colab-ssh-free-gpu-vm-google-ai",
+  "date": "2026-11-21",
+  "category": "howto",
+  "publisher": "@jandisufg",
+  "title": "Google AI 订阅用户可用 Colab 开免费远程机器：无 GPU 版 2 vCPU、12GB 内存",
+  "summary": "如果你已经是 Google AI 的 Plus、Pro 或 Ultra 订阅用户，订阅里还藏着 Colab 算力额度。这篇教程教你用官方 CLI 把 Colab 变成一台能 SSH 登录的 Linux 机器，可选 T4、L4、A100、H100 显卡，不额外花钱。",
+  "ai_summary": "Google AI Plus、Pro、Ultra 订阅附送 Colab 算力额度。用官方工具 google-colab-cli，可把 Colab 变成一台能 SSH 登录的 Linux 机器，在终端或 VS Code 里操作。无 GPU 会话：2 vCPU、12GB 内存、约 226GB 硬盘；要显卡可选 T4、L4、A100、H100。额度按小时烧：无 GPU 近乎零，T4 约 1.8、L4 约 4.8、A100 约 11–13。适合想用免费 GPU 跑代码、远程开发或挂 agent 的订阅用户。最大限制：磁盘临时、结束即清空，Pro 单次约 24 小时，闲置也持续耗额度。",
+  "brief": [
+    "官方 CLI 叫 google-colab-cli，装完就有 colab 命令，配好 ~/.ssh/config 后 ssh colab 直接进机器。",
+    "作者贴出的无 GPU 会话是 2 vCPU、12GB 内存、约 226GB 硬盘，系统 Ubuntu 24.04；帖子标题写的约 8 vCPU 和截图对不上。",
+    "T4 每小时约 1.8 个计算单位、L4 约 4.8、A100 约 11–13，无 GPU 几乎不消耗。",
+    "机器开着就持续烧额度，磁盘是临时的；结束前要 git push 或 scp 把文件带走。"
+  ],
+  "readMinutes": 6,
+  "sections": [
+    {
+      "h": "这是什么",
+      "blocks": [
+        {
+          "p": "这是一篇写给 Google AI 订阅用户的教程。你已经付钱订了 Plus、Pro 或 Ultra，但可能没注意里面还带着 Colab 的算力额度。作者 @jandisufg 的做法是：用 Google 官方的命令行工具 google-colab-cli，把 Colab 当成一台普通的远程 Linux 机器，用 SSH 登录。"
+        },
+        {
+          "p": "登录之后，你在本地终端、VS Code 或任何支持 SSH 的编辑器里操作它，和操作一台 VPS 没什么区别。它最吸引人的一点是：可以用订阅里附带的额度换到带 GPU 的机器，不用再为这台虚拟机单独掏钱。"
+        },
+        {
+          "callout": {
+            "kind": "note",
+            "title": "先说前提",
+            "text": "这套方法只对 Google AI Plus、Pro 或 Ultra 订阅用户有意义。没有订阅，就没有 Colab 额度可烧。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "它为什么值得折腾",
+      "blocks": [
+        {
+          "p": "对已经订阅 Google AI 的人来说，这相当于多了一台随开随用的远程机器。临时跑一段要 GPU 的代码、测个模型、把 agent 放上去跑，都可以扔给 Colab 这台机器，而不是在自己的电脑上折腾环境。"
+        },
+        {
+          "p": "好处有两个：一是 GPU 档位多，从便宜的 T4 到 A100、H100 都能选；二是它作为普通 SSH 主机接入，VS Code 的 Remote-SSH、scp、rsync 这些常用工具直接就能用。"
+        },
+        {
+          "fig": {
+            "type": "illustration",
+            "title": "ssh colab 以后，Colab 就是 ~/.ssh/config 里的一台普通主机",
+            "subtitle": "示意：本地终端通过 colab CLI 这座桥连到 Colab 虚拟机；琥珀色是这次新增的远程机器",
+            "glyph": {
+              "kind": "devices",
+              "left": {
+                "kind": "laptop",
+                "label": "本地终端",
+                "tone": "base"
+              },
+              "right": {
+                "kind": "server",
+                "label": "Colab 机器",
+                "tone": "hi"
+              },
+              "arrow": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "h": "连接前要准备三样东西",
+      "blocks": [
+        {
+          "list": [
+            "一个能访问 Colab 的 Google 账号（订阅 Google AI Plus、Pro 或 Ultra）",
+            "Python 3 环境，带 uv 或 pip，用来装 CLI",
+            "OpenSSH（Linux、macOS、Windows 10/11 都自带）和一把 ed25519 格式的 SSH 公钥"
+          ]
+        },
+        {
+          "p": "安装 CLI 就是一条命令：uv tool install google-colab-cli，或者 pip install google-colab-cli，装完会多出一个 colab 命令。还没有公钥的话，用 ssh-keygen -t ed25519 生成一把。"
+        },
+        {
+          "p": "接着把下面这个块加进 ~/.ssh/config，Host 后面的 colab 就是以后登录用的别名。"
+        },
+        {
+          "fig": {
+            "type": "code",
+            "lang": "bash",
+            "title": "把这几行加进 ~/.ssh/config，就能用 ssh colab 登录",
+            "subtitle": "原文配置块；把 -i 后面换成自己的公钥路径",
+            "code": "Host colab\n  User root\n  ProxyCommand colab ssh --proxy-mode -s colab -i ~/.ssh/id_ed25519.pub\n  StrictHostKeyChecking no\n  UserKnownHostsFile /dev/null",
+            "highlight": [
+              3
+            ]
+          }
+        },
+        {
+          "p": "这个配置块里，Host colab 是别名；User root 表示以 root 登录；ProxyCommand 是核心——它让 SSH 不直接连某个 IP，而是把连接交给 colab ssh --proxy-mode，由 CLI 当桥梁把流量带到 Colab 机器；-s colab 是会话名，不存在时 CLI 会自动创建。后面两行 StrictHostKeyChecking no 和 UserKnownHostsFile /dev/null，是因为每次会话都是一台新机器、主机密钥都会变，关掉检查才不会每次连接都报警。"
+        }
+      ]
+    },
+    {
+      "h": "首次登录要在「真终端」里做",
+      "blocks": [
+        {
+          "p": "第一次连接时，CLI 会给你一个 Google 授权链接：在浏览器里点同意，再把 Google 给的验证码贴回终端。这一步必须在有键盘输入的交互式终端（PowerShell、Terminal、iTerm 等）里完成。"
+        },
+        {
+          "p": "如果第一次 ssh colab 是从没有键盘的地方发起的——比如 agent、脚本、聊天窗口里点出来的命令——CLI 没地方读验证码，就会报 \"Malformed auth code\"。授权一旦保存，以后在哪里连都行。"
+        },
+        {
+          "p": "两个额外的小坑：如果 ~/.ssh/config 里已经有一个 Host * 通配块，要把 Host colab 写在它前面，因为 SSH 只认先匹配到的那条；Windows 用户要在 ProxyCommand 里写密钥的绝对路径，~ 不会被展开。"
+        },
+        {
+          "fig": {
+            "type": "steps",
+            "title": "从零到登录，一共六步",
+            "subtitle": "示意：把 Colab 当成一台 SSH 主机的完整流程",
+            "steps": [
+              {
+                "name": "装 CLI",
+                "tool": "uv / pip",
+                "desc": "uv tool install google-colab-cli，得到 colab 命令"
+              },
+              {
+                "name": "生成公钥",
+                "tool": "ssh-keygen",
+                "desc": "ssh-keygen -t ed25519"
+              },
+              {
+                "name": "写配置",
+                "tool": "~/.ssh/config",
+                "desc": "加入 Host colab 块"
+              },
+              {
+                "name": "首次授权",
+                "tool": "colab new",
+                "desc": "在交互终端里完成 Google 授权"
+              },
+              {
+                "name": "连接",
+                "tool": "ssh colab",
+                "desc": "以 root 身份进入 /content"
+              },
+              {
+                "name": "用完关闭",
+                "tool": "colab stop",
+                "desc": "不关就持续烧额度"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "连上后，你拿到一台什么机器",
+      "blocks": [
+        {
+          "p": "登录后执行 ssh colab，你会以 root 身份落在 /content 目录，系统是 Ubuntu 24.04。想要 GPU，就在创建会话时带上：colab new -s colab --gpu T4，可选 L4、A100、H100，--high-mem 可以要更多内存。"
+        },
+        {
+          "p": "作者贴出的无 GPU 会话显示 2 vCPU、12GB 内存、约 226GB 硬盘。注意，帖子标题写的是约 8 vCPU，和截图里的 2 vCPU 对不上；带 GPU 或 --high-mem 的会话配置会不一样，原文没给每个档位的具体规格。"
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "作者贴出的无 GPU 会话，配置长这样",
+            "subtitle": "截图数据；24 小时是 Pro 档会话时长上限",
+            "items": [
+              {
+                "value": 2,
+                "unit": "vCPU",
+                "label": "CPU",
+                "note": "截图里的实际数字"
+              },
+              {
+                "value": 12,
+                "unit": "GB",
+                "label": "内存"
+              },
+              {
+                "value": 226,
+                "unit": "GB",
+                "label": "磁盘"
+              },
+              {
+                "value": 24,
+                "unit": "小时",
+                "label": "Pro 会话上限"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "额度怎么烧、数据放哪",
+      "blocks": [
+        {
+          "p": "不同机器消耗计算单位的速度不一样：无 GPU 几乎不消耗；T4 每小时约 1.8 个单位；L4 约 4.8；A100 约 11–13。H100 的数字原文没给。费率会变，作者建议会话开着时用 colab usage 自己看实时数字。"
+        },
+        {
+          "p": "会话有最长时长限制，Pro 档大约是 24 小时，闲置也会被系统踢下线。更关键的是：机器只要开着，就算什么都不干也在持续烧额度，所以用完要 colab stop。如果怕忘关，可以在 ProxyCommand 里加 --rm，SSH 一断开就自动关闭会话，避免空烧。"
+        },
+        {
+          "p": "磁盘是临时的。会话一结束，里面的文件全没了。想保住结果，要么 git push，要么用 scp、rsync、colab download 传走，要么用 colab drivemount 把 Google Drive 挂上去。"
+        },
+        {
+          "fig": {
+            "type": "bars",
+            "title": "显卡越强，每小时烧的计算单位越多",
+            "subtitle": "琥珀色是带 GPU 的档位；数值为每小时消耗的计算单位，A100 是 11–13 的范围",
+            "legend": [
+              {
+                "tone": "hi",
+                "label": "带 GPU 档位"
+              },
+              {
+                "tone": "base",
+                "label": "无 GPU"
+              }
+            ],
+            "groups": [
+              {
+                "label": "每小时消耗的计算单位",
+                "items": [
+                  {
+                    "label": "无 GPU",
+                    "value": 0,
+                    "display": "≈0",
+                    "tone": "base"
+                  },
+                  {
+                    "label": "T4",
+                    "value": 1.8,
+                    "display": "1.8",
+                    "tone": "hi"
+                  },
+                  {
+                    "label": "L4",
+                    "value": 4.8,
+                    "display": "4.8",
+                    "tone": "hi"
+                  },
+                  {
+                    "label": "A100",
+                    "value": 11,
+                    "display": "11–13",
+                    "tone": "hi"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "值得背下来的几个 CLI 命令",
+            "note": "命令照抄原文",
+            "columns": [
+              "命令",
+              "作用"
+            ],
+            "rows": [
+              [
+                "colab sessions",
+                "列出活跃会话"
+              ],
+              [
+                "colab status",
+                "查看会话状态"
+              ],
+              [
+                "colab usage",
+                "查看余额和消耗速率"
+              ],
+              [
+                "colab upload / colab download",
+                "上传 / 下载文件"
+              ],
+              [
+                "colab drivemount",
+                "挂载 Google Drive"
+              ],
+              [
+                "colab stop -s <nome>",
+                "关闭会话"
+              ]
+            ],
+            "highlight": {
+              "row": 5
+            }
+          }
+        }
+      ]
+    },
+    {
+      "h": "官方还没说的",
+      "blocks": [
+        {
+          "p": "这篇教程没把下面这些信息讲全，动手前要知道："
+        },
+        {
+          "list": [
+            "Plus、Pro、Ultra 各自每月送多少 Colab 计算单位，原文没写",
+            "--high-mem 具体能加到多少内存，原文没写",
+            "闲置多久会被系统踢下线，原文只说会掉",
+            "H100 每小时消耗多少计算单位，原文没给",
+            "Colab 额度是否和 Google AI 其他额度共用，原文没说明",
+            "帖子里说的免费，指的是订阅内已含额度，不是一分钱不花"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "适合谁",
+      "blocks": [
+        {
+          "p": "最大的价值是：不额外花钱，把已经付过的订阅变成一台能跑 GPU 的远程机器，适合临时的、不要求 7×24 在线的任务。代价是：磁盘不持久、会话会掉线、闲置也烧额度，而且全程要会命令行和 SSH。"
+        },
+        {
+          "list": [
+            "如果你已经订阅 Google AI 且会用一点终端：值得花半小时照做，等于多一台临时 GPU 机器",
+            "如果你需要长期在线、要保存数据的任务：不合适，磁盘会被清空",
+            "如果你从没用过 SSH 和命令行：先补基础，否则容易卡在首次授权和配置上"
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Como usar o Google Colab como VPS com GPU de graça (para assinantes do Google AI)",
+      "publisher": "@jandisufg（X）",
+      "date": "2026-11-21",
+      "url": "https://x.com/jandisufg/status/2123530059310850353"
+    },
+    "note": "正文里的配置和额度数字都来自作者原帖，属于作者自述，未经独立验证；帖子标题写约 8 vCPU，与正文截图的 2 vCPU 不一致。配图为原帖数据重排或示意。"
+  },
+  "claims": [
+    {
+      "text": "帖子标题称，Google AI 订阅用户能免费拿到约 12GB 内存的虚拟机",
+      "value": "~12GB",
+      "source_url": "https://x.com/jandisufg/status/2123530059310850353",
+      "as_written": "约 12GB",
+      "quote": "VPS com ~12GB de RAM e ~8 vCPU de graça"
+    },
+    {
+      "text": "帖子标题称这台虚拟机约有 8 个 vCPU；但正文截图显示的是 2 个 vCPU",
+      "value": "~8",
+      "source_url": "https://x.com/jandisufg/status/2123530059310850353",
+      "as_written": "约 8 vCPU",
+      "quote": "VPS com ~12GB de RAM e ~8 vCPU de graça"
+    },
+    {
+      "text": "作者贴出的无 GPU 会话实际显示 2 个 vCPU",
+      "value": "2",
+      "source_url": "https://x.com/jandisufg/status/2123530059310850353",
+      "as_written": "2 vCPU",
+      "quote": "A sessão sem GPU do print tem 2 vCPUs, 12 GB de RAM e uns 226 GB de disco."
+    },
+    {
+      "text": "无 GPU 会话内存为 12GB",
+      "value": "12 GB",
+      "source_url": "https://x.com/jandisufg/status/2123530059310850353",
+      "as_written": "12GB",
+      "quote": "A sessão sem GPU do print tem 2 vCPUs, 12 GB de RAM e uns 226 GB de disco."
+    },
+    {
+      "text": "无 GPU 会话磁盘约 226GB",
+      "value": "226 GB",
+      "source_url": "https://x.com/jandisufg/status/2123530059310850353",
+      "as_written": "约 226GB",
+      "quote": "A sessão sem GPU do print tem 2 vCPUs, 12 GB de RAM e uns 226 GB de disco."
+    },
+    {
+      "text": "T4 GPU 每小时约 1.8 个计算单位",
+      "value": "1,8",
+      "source_url": "https://x.com/jandisufg/status/2123530059310850353",
+      "as_written": "约 1.8",
+      "quote": "a T4 gira em torno de 1,8 por hora, a L4 de 4,8 e a A100 de 11 a 13"
+    },
+    {
+      "text": "L4 GPU 每小时约 4.8 个计算单位",
+      "value": "4,8",
+      "source_url": "https://x.com/jandisufg/status/2123530059310850353",
+      "as_written": "约 4.8",
+      "quote": "a T4 gira em torno de 1,8 por hora, a L4 de 4,8 e a A100 de 11 a 13"
+    },
+    {
+      "text": "A100 GPU 每小时约 11–13 个计算单位",
+      "value": "11 a 13",
+      "source_url": "https://x.com/jandisufg/status/2123530059310850353",
+      "as_written": "约 11–13",
+      "quote": "a T4 gira em torno de 1,8 por hora, a L4 de 4,8 e a A100 de 11 a 13"
+    },
+    {
+      "text": "Pro 档会话时长上限约 24 小时",
+      "value": "24 h",
+      "source_url": "https://x.com/jandisufg/status/2123530059310850353",
+      "as_written": "约 24 小时",
+      "quote": "até cerca de 24 h no Pro"
+    }
+  ],
+  "cover": {
+    "headline": "Colab 变成 SSH 主机",
+    "highlight": "订阅附送的 GPU 机器",
+    "glyph": {
+      "kind": "devices",
+      "left": {
+        "kind": "laptop",
+        "label": "本地",
+        "tone": "base"
+      },
+      "right": {
+        "kind": "server",
+        "label": "Colab",
+        "tone": "hi"
+      },
+      "arrow": true
+    }
+  },
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "origin": "auto",
+    "candidate": "3f1695fde4",
+    "tier": "official",
+    "via": "https://xiaohu.ai/article/google-colab-cli-ssh/",
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "generated_at": "2026-11-27T19:32:24.122Z"
+  }
+}
