@@ -161,12 +161,28 @@ const subsup = h => { for (let i = 0; i < 3; i++) { const n = h.replace(/_\{([^{
 const math = h => subsup(h).replace(/\b([A-Za-z])\^([A-Za-z0-9])(?![A-Za-z0-9{])/g, "$1<sup>$2</sup>");
 const rich = s => math(esc(s)).replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>");
 
-/* 小白版：任何块都可以带一个 plain（标题、比喻、可选的插图 site/assets/plain/<pic>.svg）。宽屏放在左边空白处，窄屏放在块下面 */
-function block(b) {
+/* 小白版：任何块都可以带一个 plain（标题、比喻、可选的插图 site/assets/plain/<pic>.svg）。
+   窄屏：放在对应块的下面。宽屏：放进正文左侧空白，用连接线指回对应的块；同一小节里挨得很近的几条（中间最多隔一块）合成一张卡 */
+let PLN = 0;
+const plainItem = (p, n) => { const pic = /^[a-z0-9-]{1,60}$/.test(p.pic || "") ? p.pic : "";
+  return `<div class="pl-h"><span class="pl-k">${L().plain}</span>${p.title ? `<b>${esc(p.title)}</b>` : ""}</div>${pic ? `<img src="${ASSETS}plain/${pic}.svg" alt="${esc(p.alt || p.title || "")}" loading="lazy" width="240">` : ""}${p.text ? `<p>${rich(p.text)}</p>` : ""}`; };
+function block(b, grouped) {
   const h = block0(b);
   if (!b.plain) return h;
-  const p = b.plain, pic = /^[a-z0-9-]{1,60}$/.test(p.pic || "") ? p.pic : "";
-  return `<div class="pl-wrap"><aside class="plain"><div class="pl-h"><span class="pl-k">${L().plain}</span>${p.title ? `<b>${esc(p.title)}</b>` : ""}</div>${pic ? `<img src="${ASSETS}plain/${pic}.svg" alt="${esc(p.alt || p.title || "")}" loading="lazy" width="240">` : ""}${p.text ? `<p>${rich(p.text)}</p>` : ""}</aside>${h}</div>`;
+  const n = ++PLN;
+  return `<div class="pl-wrap${grouped ? " pl-grouped" : ""}" data-pl="${n}"><aside class="plain">${plainItem(b.plain, n)}</aside>${h}</div>`;
+}
+function blocks(list) {
+  const idx = list.map((b, i) => b.plain ? i : -1).filter(i => i >= 0), groups = [];
+  for (const i of idx) { const g = groups.at(-1); if (g && i - g.at(-1) <= 2) g.push(i); else groups.push([i]); }
+  const first = new Map(groups.filter(g => g.length > 1).map(g => [g[0], g])), inGroup = new Set([...first.values()].flat());
+  let out = "";
+  list.forEach((b, i) => {
+    const g = first.get(i);
+    if (g) out += `<aside class="plain pl-merged">${g.map((j, k) => `<div class="pl-item" data-pl="${PLN + 1 + g.slice(0, k).length}">${plainItem(list[j].plain)}</div>`).join("")}</aside>`;
+    out += block(b, inGroup.has(i));
+  });
+  return out;
 }
 function block0(b) {
   if (b.p) return `<p class="body">${rich(b.p)}</p>`;
@@ -208,13 +224,13 @@ const L = () => UI[LANG] || UI.zh;
 
 /* 文章正文：速览、小节目录、各小节（文字 + 图）、来源块 */
 export function renderArticleBody(a, { lang = "zh", assets = "../assets/" } = {}) {
-  LANG = lang; ASSETS = assets;
+  LANG = lang; ASSETS = assets; PLN = 0;
   const s = a.sources || {}, u = L();
   return `${a.paper ? paperCard(a.paper) : ""}${a.ai_summary ? `<section class="aisum" aria-label="${u.ai}"><div class="aisum-h"><span class="aisum-ic">✦</span>${u.ai}<em>${a.verified ? u.aiOk : u.aiTodo}</em></div><p>${esc(a.ai_summary)}</p></section>` : ""}
     <p class="lede">${esc(a.summary)}</p>
     <div class="brief"><strong>${u.brief}</strong><ul>${(a.brief || []).map(b => `<li>${esc(b)}</li>`).join("")}</ul></div>
     <div class="rtoc">${a.sections.map((x, i) => `<button data-goto="sec${i}">${num(i)} ${esc(x.h)}</button>`).join("")}</div>
-    ${a.sections.map((x, i) => `<h2 class="sec" id="sec${i}"><span>${num(i)}</span>${esc(x.h)}</h2>${x.blocks.map(block).join("")}`).join("")}
+    ${a.sections.map((x, i) => `<h2 class="sec" id="sec${i}"><span>${num(i)}</span>${esc(x.h)}</h2>${blocks(x.blocks)}`).join("")}
     <div class="srcbox">
       ${s.main ? `<div><label>${u.src}</label><p>${esc(s.main.title)} · ${esc(s.main.publisher)} · ${esc(s.main.date)} · <a href="${esc(s.main.url)}" target="_blank" rel="noopener">${u.srcLink}</a></p></div>` : ""}
       ${s.more?.length ? `<div><label>${u.more}</label><p>${s.more.map(m => `<a href="${esc(m.url)}" target="_blank" rel="noopener">${esc(m.label)} ↗</a>`).join(" · ")}</p></div>` : ""}

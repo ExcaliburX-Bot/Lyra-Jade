@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import crypto from "node:crypto";
 /* 第 8 步：把 content/articles 里的文章生成静态网站到 dist/
    首页 index.html、每篇 a/<slug>.html、关于页 about.html、订阅源 rss.xml、sitemap.xml、robots.txt、404.html，
    英文版在 en/ 下（en/index.html、en/a/<slug>.html、en/about.html、en/rss.xml），文章来自 content/en（scripts/translate.mjs 生成），
@@ -114,6 +115,9 @@ function shareHtml(L, a, url, where) {
     </div>`;
 }
 
+/* 静态资源加版本号（内容的短哈希）：改了样式或脚本，浏览器就不会拿缓存里的旧文件配新页面 */
+const ASSET_V = Object.fromEntries(["site.css", "themes/coss.css", "app.js", "components.js"].map(f => [f, crypto.createHash("sha1").update(fs.readFileSync(path.join(SITE, "assets", f))).digest("hex").slice(0, 8)]));
+const versioned = html => html.replace(/assets\/(site\.css|themes\/coss\.css|app\.js|components\.js)(?=["'])/g, (m, f) => `assets/${f}?v=${ASSET_V[f]}`);
 function render(L, { page, depth, title, desc, bodyClass = "", main, data, ogType = "website", ogImage = OGIMAGE }) {
   const base = "../".repeat(depth + (L.dir ? 1 : 0)) || "./";
   const home = "../".repeat(depth) || "./";
@@ -122,7 +126,7 @@ function render(L, { page, depth, title, desc, bodyClass = "", main, data, ogTyp
     URL: abs(L, page), ALTURL: alt(L, depth, page), ALTLABEL: L.lang === "en" || articlesEn.length ? L.altLabel : "", ALTTITLE: L.altTitle, ALTLANG: L.altLang, HREFLANG: hreflang(page), DATA: safeJson(data) };
   const out = path.join(DIST, L.dir, page);
   fs.mkdirSync(path.dirname(out), { recursive: true });
-  fs.writeFileSync(out, fill(tpl, { ...vars, MAIN: fill(main, vars) }));
+  fs.writeFileSync(out, versioned(fill(tpl, { ...vars, MAIN: fill(main, vars) })));
 }
 
 function buildLang(L) {

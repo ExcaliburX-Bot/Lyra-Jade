@@ -389,28 +389,40 @@ applyTheme();
 applyStyle();
 renderAll();
 
-/* 小白版的连接线：宽屏时旁注在左侧空白，画一条线连到它解释的那一块；旁注被上一条挤下去时，线会斜着连回原处 */
+/* 小白版的连接线：宽屏时旁注在正文左侧空白，从每条旁注画一条线连到它解释的那一块（合并的卡里每一条各连一根）；悬停时高亮这一对 */
 (function(){
-  const wraps=$$(".pl-wrap");if(!wraps.length)return;
+  const wraps=$$(".pl-wrap"),reader=$("#reader");if(!wraps.length||!reader)return;
   const mq=matchMedia("(min-width:1560px)"),NS="http://www.w3.org/2000/svg";
+  let layer;
+  const pairs=()=>wraps.map(w=>{
+    const id=w.dataset.pl,blk=[...w.children].find(x=>!x.matches(".plain"));
+    const note=w.classList.contains("pl-grouped")?$(`.pl-item[data-pl="${id}"]`):w.querySelector(":scope>.plain");
+    return{id,w,blk,note};
+  }).filter(x=>x.blk&&x.note);
   function draw(){
-    wraps.forEach(w=>{
-      w.querySelector(":scope>.pl-link")?.remove();
-      if(!mq.matches)return;
-      const note=w.querySelector(":scope>.plain"),blk=[...w.children].find(x=>!x.matches(".plain,.pl-link"));if(!note||!blk)return;
-      const W=w.getBoundingClientRect(),N=note.getBoundingClientRect(),B=blk.getBoundingClientRect();
-      const x1=N.right-W.left,y1=N.top-W.top+22,x2=B.left-W.left,y2=B.top-W.top+Math.min(26,B.height/2);
-      const top=Math.min(y1,y2)-6,h=Math.abs(y2-y1)+12,wd=x2-x1;if(wd<8)return;
-      const s=document.createElementNS(NS,"svg");s.setAttribute("class","pl-link");s.setAttribute("aria-hidden","true");
-      s.setAttribute("width",wd);s.setAttribute("height",h);s.style.left=x1+"px";s.style.top=top+"px";
-      const a=y1-top,b=y2-top;
-      s.innerHTML=`<path d="M0 ${a} C${wd*.55} ${a} ${wd*.45} ${b} ${wd-4} ${b}"/><circle cx="3" cy="${a}" r="3"/><circle cx="${wd-4}" cy="${b}" r="4"/>`;
-      w.appendChild(s);
+    layer?.remove();layer=null;
+    if(!mq.matches)return;
+    const R=reader.getBoundingClientRect();
+    layer=document.createElementNS(NS,"svg");layer.setAttribute("class","pl-layer");layer.setAttribute("aria-hidden","true");
+    let html="";
+    pairs().forEach(({id,blk,note})=>{
+      const card=note.closest(".plain")||note,C=card.getBoundingClientRect(),N=note.getBoundingClientRect(),B=blk.getBoundingClientRect();
+      if(!N.height||!B.height)return;
+      const x1=C.right-R.left,y1=N.top-R.top+(note===card?22:16),x2=B.left-R.left,y2=B.top-R.top+Math.min(26,B.height/2),dx=x2-x1;
+      if(dx<8)return;
+      html+=`<g data-pl="${id}"><path d="M${x1} ${y1} C${x1+dx*.55} ${y1} ${x2-dx*.45} ${y2} ${x2-4} ${y2}"/><circle cx="${x1+3}" cy="${y1}" r="3"/><circle cx="${x2-4}" cy="${y2}" r="4"/></g>`;
     });
+    layer.innerHTML=html;reader.appendChild(layer);
   }
+  function hot(id,on){
+    layer?.querySelector(`g[data-pl="${id}"]`)?.classList.toggle("hot",on);
+    const w=$(`.pl-wrap[data-pl="${id}"]`);w?.classList.toggle("pl-hot",on);
+    (w?.classList.contains("pl-grouped")?$(`.pl-item[data-pl="${id}"]`):w?.querySelector(":scope>.plain"))?.classList.toggle("hot",on);
+  }
+  pairs().forEach(({id,blk,note})=>[blk,note].forEach(el=>{el.addEventListener("mouseenter",()=>hot(id,true));el.addEventListener("mouseleave",()=>hot(id,false))}));
   let t;const later=()=>{clearTimeout(t);t=setTimeout(draw,60)};
   draw();addEventListener("resize",later);mq.addEventListener?.("change",later);
-  $$(".pl-wrap img").forEach(i=>i.complete||i.addEventListener("load",later));
+  $$(".plain img").forEach(i=>i.complete||i.addEventListener("load",later));
   document.fonts?.ready.then(later);
-  if(window.ResizeObserver){const r=$("#reader");r&&new ResizeObserver(later).observe(r)}
+  if(window.ResizeObserver)new ResizeObserver(later).observe(reader);
 })();

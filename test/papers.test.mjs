@@ -85,7 +85,13 @@ test("回首页的链接：只有首页本身原地回顶部，论文精读页�
 test("小白版：块上的 plain 会渲染成带插图的旁注，插图文件必须存在", () => {
   const a = { ...paper, sections: [{ h: "公式", blocks: [{ formula: { expr: "a ＝ b" }, plain: { title: "打个比方", text: "像**搬家**。", pic: "flash-cart" } }] }] };
   const h = renderArticleBody(a, { assets: "../assets/" });
-  assert.match(h, /class="pl-wrap"><aside class="plain">/);
+  assert.match(h, /class="pl-wrap" data-pl="1"><aside class="plain">/);
+  /* 同一小节里挨得近的（中间最多隔一块）合成一张卡，远的单独一张 */
+  const g = renderArticleBody({ ...paper, sections: [{ h: "x", blocks: [{ p: "a", plain: { text: "一" } }, { p: "b" }, { p: "c", plain: { text: "二" } }, { p: "d" }, { p: "e" }, { p: "f", plain: { text: "三" } }] }] });
+  assert.equal((g.match(/pl-merged/g) || []).length, 1);
+  assert.match(g, /pl-merged"><div class="pl-item" data-pl="1">[\s\S]*<div class="pl-item" data-pl="2">/);
+  assert.equal((g.match(/pl-wrap pl-grouped/g) || []).length, 2);
+  assert.match(g, /class="pl-wrap" data-pl="3"/);
   assert.match(h, /小白版/);
   assert.match(h, /src="\.\.\/assets\/plain\/flash-cart\.svg"/);
   assert.match(h, /<b>搬家<\/b>/);
