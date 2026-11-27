@@ -150,7 +150,7 @@ FIGS.heatmap = f => {
 
 export function figure(f) {
   const body = (FIGS[f.type] || (() => ""))(f);
-  return `<figure class="fig" data-type="${esc(f.type)}">${f.title ? `<div class="fig-h">${esc(f.title)}</div>` : ""}${f.subtitle ? `<div class="fig-s">${math(esc(f.subtitle))}</div>` : ""}${body}${f.note ? `<figcaption>${math(esc(f.note))}</figcaption>` : ""}</figure>`;
+  return `<figure class="fig" data-type="${esc(f.type)}">${f.title ? `<div class="fig-h">${math(esc(f.title))}</div>` : ""}${f.subtitle ? `<div class="fig-s">${math(esc(f.subtitle))}</div>` : ""}${body}${f.note ? `<figcaption>${math(esc(f.note))}</figcaption>` : ""}</figure>`;
 }
 
 const num = i => String(i + 1).padStart(2, "0");
