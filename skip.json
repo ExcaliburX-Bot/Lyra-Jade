@@ -310,5 +310,65 @@
     "reason": "材料太短（284 字），自动跳过",
     "title": "Guided Vision in Gemini Live is now available on iOS",
     "at": "2026-11-26T08:26:04.640Z"
+  },
+  {
+    "id": "022420567f",
+    "reason": "这是「What is GraphRAG」科普指南，不是新产品或带方法与数据的一手研究；文中 326ms→155ms 说的是 ElevenAgents 现有向量 RAG 的检索优化，不是 GraphRAG 发布",
+    "title": "ElevenLabs 发布 GraphRAG 实践指南：用知识图谱解多跳追问，把语音 RAG 中位延迟从 326ms 压到 155ms",
+    "at": "2026-11-27T02:04:27.784Z"
+  },
+  {
+    "id": "ff7c1d6266",
+    "reason": "英伟达 GeForce NOW 周四社区/促销稿（黑五折扣、社区故事、新游戏入库），不是新的 AI 模型或产品发布",
+    "title": "Come for the Games, Stay for the Community With GeForce NOW",
+    "at": "2026-11-27T02:04:27.826Z"
+  },
+  {
+    "id": "b1c71d0787",
+    "reason": "官方页面日期 November 16, 2026，已超过 72 小时",
+    "title": "Strengthening the fight against online child sexual abuse with new tools and support",
+    "at": "2026-11-27T02:04:27.865Z"
+  },
+  {
+    "id": "f891bd93f3",
+    "reason": "官方页面日期 November 16, 2026，已超过 72 小时",
+    "title": "Science at the Frontier: How scientists use ChatGPT",
+    "at": "2026-11-27T02:04:27.905Z"
+  },
+  {
+    "id": "f054a54f82",
+    "reason": "OpenAI 客户案例，且官方页面日期 November 16, 2026，已超过 72 小时",
+    "title": "How Revolut raises ambition without lowering the bar",
+    "at": "2026-11-27T02:04:27.942Z"
+  },
+  {
+    "id": "ebd9eb9496",
+    "reason": "官方页面日期 November 16, 2026，已超过 72 小时",
+    "title": "Our first phase of embedded assessments",
+    "at": "2026-11-27T02:04:27.978Z"
+  },
+  {
+    "id": "3899b6e8ee",
+    "reason": "OpenAI 客户案例，且官方页面日期 November 16, 2026，已超过 72 小时",
+    "title": "At Holiday Extras, dots get to work before anyone asks",
+    "at": "2026-11-27T02:04:28.048Z"
+  },
+  {
+    "id": "4b0fc5b701",
+    "reason": "只是宣布开设科学博客栏目，没有新的模型、产品或研究结论；官方页面日期 November 15, 2026，已超过 72 小时",
+    "title": "Our new blog for science",
+    "at": "2026-11-27T02:04:28.087Z"
+  },
+  {
+    "id": "1112027d59",
+    "reason": "开发者案例合集，且官方页面日期 November 19, 2026，已超过 72 小时",
+    "title": "Into the Omniverse: How Developers Turn Ideas Into Simulations With Frontier AI Agents",
+    "at": "2026-11-27T02:04:28.131Z"
+  },
+  {
+    "id": "cfcc7acb02",
+    "reason": "官方页面日期 November 16, 2026，已超过 72 小时；同日另有「Advancing computer-use agents for healthcare teams」，已写成 openai-computer-use-healthcare-agents",
+    "title": "More ways to move care forward with ChatGPT for Healthcare",
+    "at": "2026-11-27T02:04:42.041Z"
   }
 ]
