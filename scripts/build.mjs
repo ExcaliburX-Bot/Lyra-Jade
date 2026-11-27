@@ -140,9 +140,11 @@ function buildLang(L) {
   }));
   const minOf = a => index.find(x => x.slug === a.slug).min;
   /* 今日精选：最新上线的一篇（人工核对过的优先，但只在最近两天内找） */
-  const featured = (list.find(a => a.verified && a._day >= bjDay(new Date(Date.now() - 2 * 864e5).toISOString())) || list[0])?.slug || null;
+  /* 论文精读只出现在论文精读页：首页（AI 解读）、专题、今日精选都不算它 */
+  const news = list.filter(a => a.category !== "paper");
+  const featured = (news.find(a => a.verified && a._day >= bjDay(new Date(Date.now() - 2 * 864e5).toISOString())) || news[0])?.slug || null;
   /* 专题：两种语言用同一组（按中文版定），英文的篇数按英文版算 */
-  const topics = topicList(list, L.lang, { keys: TOPIC_KEYS });
+  const topics = topicList(news, L.lang, { keys: TOPIC_KEYS });
   const data = { articles: index, featured, today, topics };
 
   /* 首页 */
@@ -212,8 +214,8 @@ function buildLang(L) {
       disclose: `本文由 AI 辅助撰写，依据上方列出的一手来源，关键数字已与原文核对${a.verified ? "，并经编辑通读" : ""}。如有出入，请以原文为准。<a href="../about.html#ai">关于我们的内容</a>${CONTACT ? ` · 发现错误请写信到 <a href="mailto:${esc(CONTACT)}">${esc(CONTACT)}</a>` : ""}`
     };
     const main = `<article class="reader" id="reader">
-    <a href="../index.html" class="back" data-home><svg class="i"><use href="#i-chev-l"/></svg>${T.back}</a>
-    <div class="tags"><span class="tag">${esc(L.cat[a.category] || a.category)}</span>${a._topics.map(k => `<a class="tag tag-tp" href="../t/${k}.html">${esc(topics.find(t => t.k === k)?.name || k)}</a>`).join("")}${a.verified ? `<span class="verified"><svg class="i"><use href="#i-check"/></svg>${T.verified}</span>` : `<a class="muted" href="../about.html#ai">${T.ai}</a>`}</div>
+    ${a.category === "paper" ? `<a href="../papers.html" class="back"><svg class="i"><use href="#i-chev-l"/></svg>${en ? "Back to paper deep dives" : "返回论文精读"}</a>` : `<a href="../index.html" class="back" data-home><svg class="i"><use href="#i-chev-l"/></svg>${T.back}</a>`}
+    <div class="tags"><span class="tag">${esc(L.cat[a.category] || a.category)}</span>${(a.category === "paper" ? [] : a._topics).map(k => `<a class="tag tag-tp" href="../t/${k}.html">${esc(topics.find(t => t.k === k)?.name || k)}</a>`).join("")}${a.verified ? `<span class="verified"><svg class="i"><use href="#i-check"/></svg>${T.verified}</span>` : `<a class="muted" href="../about.html#ai">${T.ai}</a>`}</div>
     <h1>${esc(a.title)}</h1>
     <div class="rmeta-row"><div class="rmeta"><span>${esc(T.pub)}</span>${T.src ? `<span>${esc(T.src)}</span>` : ""}<span>${esc(T.min)}</span><span>${esc(T.from)}</span></div>${shareHtml(L, a, abs(L, `a/${a.slug}.html`), "top")}</div>
     ${renderArticleBody(a, { lang: L.lang, assets: en ? "../../assets/" : "../assets/" })}
@@ -281,7 +283,7 @@ ${list.slice(0, 30).map(a => `<item><title>${esc(a.title)}</title><link>${abs(L,
   return { index, data, topics };
 }
 
-const TOPIC_KEYS = topicList(articles, "zh").map(t => t.k);
+const TOPIC_KEYS = topicList(articles.filter(a => a.category !== "paper"), "zh").map(t => t.k);
 const zh = buildLang(LANGS.zh);
 buildLang(LANGS.en);
 

@@ -56,6 +56,13 @@ test("构建：论文精读页有书单，精读过的论文链到文章；论�
   assert.ok(fs.existsSync(path.join(dist, "en/papers.html")));
   const art = fs.readFileSync(path.join(dist, "a/p.html"), "utf8");
   assert.match(art, /论文 NIPS 2017/);
+  /* 论文精读只属于论文精读页：返回链接回论文精读，不回 AI 解读首页 */
+  assert.match(art, /<a href="\.\.\/papers\.html" class="back">[\s\S]{0,120}返回论文精读<\/a>/);
+  assert.doesNotMatch(art, /返回 AI 解读<\/a>/);
+  /* 首页（AI 解读）和专题页的列表都从“非论文”的文章里取 */
+  const app = fs.readFileSync("site/assets/app.js", "utf8");
+  assert.match(app, /const NEWS = ARTICLES\.filter\(a=>a\.cat!=="paper"\)/);
+  assert.match(app, /const POOL = TOPIC \? NEWS\.filter[\s\S]{0,160}: NEWS;/);
   /* 文章底部的路线导航：Transformer 是主线一第 4 篇，前后两篇都没精读，链到书单 */
   assert.match(art, /class="pathnav"[\s\S]*主线一[\s\S]*第 4 \/ 13 篇/);
   assert.match(art, /class="pn-prev pn-todo" href="\.\.\/papers\.html#p-bahdanau-attention"/);

@@ -122,8 +122,9 @@ const ARTICLES = DATA.articles || [];
 const TOPICS = DATA.topics || [];                    /* 专题（Claude、OpenAI、Gemini、Grok……），见 scripts/lib/topics.mjs */
 const TOPIC = TOPICS.find(t=>t.k===DATA.topic) || null; /* 在专题页上：只看这个专题 */
 const SECTION = DATA.section || null;                /* 在论文精读页上：只看论文精读 */
-const POOL = TOPIC ? ARTICLES.filter(a=>(a.tp||[]).includes(TOPIC.k)) : SECTION ? ARTICLES.filter(a=>a.cat===SECTION) : ARTICLES;
-const FEATURED = TOPIC || SECTION ? null : (ARTICLES.find(a=>a.slug===DATA.featured) || ARTICLES[0] || null);
+const NEWS = ARTICLES.filter(a=>a.cat!=="paper");    /* 论文精读只在论文精读页出现，首页（AI 解读）和专题页都不放 */
+const POOL = TOPIC ? NEWS.filter(a=>(a.tp||[]).includes(TOPIC.k)) : SECTION ? ARTICLES.filter(a=>a.cat===SECTION) : NEWS;
+const FEATURED = TOPIC || SECTION ? null : (NEWS.find(a=>a.slug===DATA.featured) || NEWS[0] || null);
 const LIST = !!document.getElementById("feed");          // 列表页才有
 const artUrl = a => `${HOME}a/${a.slug}.html`;
 
@@ -196,7 +197,7 @@ function renderStatic(){
   $$("[data-ph]").forEach(el=>el.placeholder=t(el.dataset.ph));
   if(LIST)$("#q").placeholder=t("qPh");
   $$(".lang button").forEach(b=>b.classList.toggle("on",b.dataset.lang===S.lang));
-  if(LIST)$("#heroStats").innerHTML=TOPIC?t("topicStats",{sub:esc(TOPIC.sub),n:POOL.length}):t("stats",{n:ARTICLES.length});
+  if(LIST)$("#heroStats").innerHTML=TOPIC?t("topicStats",{sub:esc(TOPIC.sub),n:POOL.length}):t("stats",{n:NEWS.length});
   if(LIST&&SECTION){$("[data-t=eyebrow]").textContent=t("paperEyebrow");$("[data-t=h1a]").textContent=t("paperH1a");$("[data-t=h1b]").textContent=t("paperH1b");$("#heroStats").innerHTML=t("paperStats",{n:POOL.length})}
   if(LIST&&TOPIC){$("[data-t=eyebrow]").textContent=t("topicEyebrow");$("[data-t=h1a]").textContent=TOPIC.name+" ";$("[data-t=h1b]").textContent=t("topicH1b")}
   // 专题条：链接到各专题页（专题页有自己的网址，方便分享和收藏）
