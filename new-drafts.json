@@ -1,8 +1,17 @@
 [
   {
-    "slug": "cloudflare-search-for-agents",
-    "title": "Cloudflare 上线 Search for Agents：一个开关，让 AI 智能体直接搜索你的网站",
-    "file": "content/articles/cloudflare-search-for-agents.json",
+    "slug": "colab-ssh-free-gpu-vm-google-ai",
+    "title": "Google AI 订阅用户可用 Colab 开免费远程机器：无 GPU 版 2 vCPU、12GB 内存",
+    "file": "content/articles/colab-ssh-free-gpu-vm-google-ai.json",
+    "errors": 0,
+    "warnings": 1,
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro"
+  },
+  {
+    "slug": "lemo-animi-stop-motion-skill",
+    "title": "lemo-animi 开源定格动画插件：一句话生成 40 秒短片",
+    "file": "content/articles/lemo-animi-stop-motion-skill.json",
     "errors": 0,
     "warnings": 0,
     "provider": "deepseek",

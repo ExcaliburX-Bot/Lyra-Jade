@@ -424,5 +424,11 @@
     "reason": "欧洲 Vibe Pro 免费一个月的促销，且发布于 2026-11-23T16:39:11Z，已超过 72 小时。",
     "title": "If you’re in Europe, you get a month of Vibe Pro for free",
     "at": "2026-11-27T08:08:14.857Z"
+  },
+  {
+    "id": "9bb998d7b6",
+    "reason": "主材料是 X 帖子，读取失败：xAI X 搜索 返回 403：{\"code\":\"permission-denied\",\"error\":\"Your team 615e02b5-01ff-42e0-867c-40565fbe0765 has either used all available credits or reached its monthly spending limit. To continue making API requests, please purchase more credits or raise your spending limit.\"}，自动跳过",
+    "title": "让AI 能掌握电影大师的配色画面：迪金斯、王家卫、韦斯·安德森 15 位大师 5 种配色思路（附调色 Skill）",
+    "at": "2026-11-27T19:29:30.839Z"
   }
 ]
