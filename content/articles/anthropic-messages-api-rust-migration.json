@@ -1,0 +1,585 @@
+{
+  "slug": "anthropic-messages-api-rust-migration",
+  "category": "product",
+  "date": "2026-11-25",
+  "publisher": "Anthropic",
+  "topics": [
+    "claude"
+  ],
+  "readMinutes": 8,
+  "title": "Anthropic Messages API 迁 Rust：CPU 省约 70%、首个 token 快 20%",
+  "summary": "如果你通过 Messages API 调 Claude，或常用 Claude Code、Cowork，这些请求在背后跑得更省、响应更快了：Anthropic 把这个 2023 年就用 Python 写的核心接口迁到 Rust，且全程没停服。",
+  "ai_summary": "Anthropic 把 Messages API 从 Python 迁到 Rust。它是客户和 Claude Code、Cowork 触达 Claude 的主通道，流量两年多涨了约 1,800 倍。迁移后每请求 CPU 约降 70%、中位首个 token 时间约降 20%，全程没停服、没冻结功能。难点不在写代码：Claude 约一周写出初版，到 2026 年 5 月写了超 80% 的合并代码；难在验证——旧版还在改、模型输出不确定、又不能读客户请求。做法是把生产 API 当“裁判”，用检查点和指纹记录差异，让 agent 在三层循环里自动修。适合要做大型迁移、又担心新旧一致性的团队参考。",
+  "brief": [
+    "Messages API 是客户和 Claude Code、Cowork 触达 Claude 的主通道，2024 年初到 2026 年秋流量约涨 1,800 倍。",
+    "迁到 Rust 后，每请求 CPU 约降 70%、中位首个 token 时间约降 20%，全程没停服、没冻结功能开发。",
+    "验证难点：Rust 版 4 月已通过约 98% 的测试，但真实流量上只有约四分之一输入和 Python 版对上。",
+    "修复靠三层循环：沙箱内环快速试错、生产影子外环验证、记忆环把纠正存成规则。"
+  ],
+  "sections": [
+    {
+      "h": "这是什么：把最忙的接口换了语言",
+      "blocks": [
+        {
+          "p": "Anthropic 把自家核心的 Messages API 从 Python 迁到了 Rust。这个接口是外部客户、以及 Claude Code 和 Cowork 等自家应用触达 Claude 的主要通道；它 2023 年用 Python 建成，最初简单到被一位工程师形容为“基本就是个请求转发器”。"
+        },
+        {
+          "p": "这次迁移的看点不在“换语言”，而在结果：每请求 CPU 用量约降 70%，中位首个 token 时间约降 20%，而且全程没停服、没冻结功能开发。"
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "这次迁移的四个关键数字",
+            "subtitle": "均为 Anthropic 自报的约数",
+            "items": [
+              {
+                "value": "70",
+                "unit": "%",
+                "label": "每请求 CPU 下降",
+                "note": "Rust 相对 Python"
+              },
+              {
+                "value": "20",
+                "unit": "%",
+                "label": "中位首个 token 时间下降",
+                "note": "客户 Claude Code 请求，更短窗口"
+              },
+              {
+                "value": "1,800",
+                "unit": "倍",
+                "label": "API 流量增长",
+                "note": "2024 年初到 2026 年秋"
+              },
+              {
+                "value": "80",
+                "unit": "%",
+                "label": "Claude 写的合并代码占比",
+                "note": "到 2026 年 5 月，超过 80%"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "为什么 Python 撑不住了？",
+      "blocks": [
+        {
+          "p": "Messages API 后来长出的功能，让 Python 的开销越来越明显。到 2025 年底，每个请求都要先验证、再转成模型能读的 prompt、分词、过安全分类器；模型逐 token 生成回复后，API 还要把这些 token 分成文本、思考、工具调用，再流式推给客户。Python 每创建一次对象、释放一次内存、把任务交接给下一步，都会叠加一点开销。"
+        },
+        {
+          "p": "压力来自流量。从 2024 年初到 2026 年秋，API 流量涨了约 1,800 倍，远超最初 Python 服务的设计容量。"
+        },
+        {
+          "fig": {
+            "type": "steps",
+            "title": "一个请求在 Messages API 里要过的关卡",
+            "subtitle": "示意：输入路径和输出路径都参与了迁移",
+            "steps": [
+              {
+                "name": "验证请求",
+                "tool": "输入路径",
+                "desc": "决定接受还是拒绝"
+              },
+              {
+                "name": "构建 prompt",
+                "tool": "输入路径",
+                "desc": "转成模型可读的提示，再分词、过安全分类"
+              },
+              {
+                "name": "模型生成",
+                "tool": "模型",
+                "desc": "只跑一次，把输出重放给两版"
+              },
+              {
+                "name": "整理 token",
+                "tool": "输出路径",
+                "desc": "分成文本、思考、工具调用"
+              },
+              {
+                "name": "流式返回并计费",
+                "tool": "输出路径",
+                "desc": "推给客户，统计用量"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "先试了增量重写，为什么不够？",
+      "blocks": [
+        {
+          "p": "常规做法是先只重写拖慢系统的那部分。团队把“解析模型输出”的代码用 Rust 重写，再由 Python 调用，API 的 CPU 用量降了约 8% 到 10%。"
+        },
+        {
+          "p": "但代价是：回复的每个 token 都要在 Python 和 Rust 之间来回三次，产生新的开销。收益没盖过新增的复杂度，于是团队决定整体迁移。"
+        },
+        {
+          "callout": {
+            "kind": "intuition",
+            "title": "为什么以前不敢整体重写？",
+            "text": "传统上不敢整锅重写大型生产系统，主要怕两件事：一是测试未必覆盖 100% 的生产行为，二是工程量太大。Claude 把“工程量”这头压下去了，但“验证”反而成了新的瓶颈。"
+          }
+        }
+      ]
+    },
+    {
+      "h": "真正的难点不是写代码，是验证",
+      "blocks": [
+        {
+          "p": "写代码已经不是瓶颈。Claude 大约一周就写出了 API 核心请求路径的第一版；到 2026 年 5 月，Claude 已经写了 Anthropic 合并代码的超过 80%。"
+        },
+        {
+          "p": "难的是证明 Rust 版和 Python 生产版“行为一致”。这里有三层困难：Python 版在迁移期间还在持续改，验证目标是“移动靶”；Claude 对同一请求可能给出不同回复，两个输出不一样不代表有 bug；为保护隐私，团队不能读客户请求，也就难以直接看到两版在哪里分岔。"
+        },
+        {
+          "p": "旧测试也帮不上大忙。团队原有约 700 个集成测试，但审计移植后的测试时发现 100 多个断言被削弱——测试可能被改到“让错误的代码通过”。而且组合太多：光 20 个二选一选项就能凑出 100 万多种配置，单个模型全测一遍要 12 天。"
+        },
+        {
+          "p": "最能说明问题的是这个对照：Rust 版 4 月已经通过约 98% 的测试，但在真实流量上，只有约四分之一的输入能和 Python 版对上。测试全绿，不等于行为一致。"
+        }
+      ]
+    },
+    {
+      "h": "把生产系统当成“裁判”",
+      "blocks": [
+        {
+          "p": "团队用的办法叫 shadowing（影子对比）：让真实请求同时经过旧版和新版，再比对结果。这里要处理两个麻烦：客户请求只能计费一次、模型输出不确定。所以模型只跑一次，把同一份输出“重放”给 Rust 版，然后比较模型调用前后的每一步，要求完全一致。"
+        },
+        {
+          "p": "因为不读文本，团队只记录“差异的形状”：在哪一步、哪一块、从第几个字节开始、两边长度差多少。"
+        },
+        {
+          "fig": {
+            "type": "illustration",
+            "title": "检查点逐关对比，第一次分岔就是线索",
+            "subtitle": "示意：琥珀色是两版第一次出现差异的步骤",
+            "glyph": {
+              "kind": "window",
+              "title": "Messages API 处理步骤",
+              "items": [
+                {
+                  "label": "接受 / 拒绝请求",
+                  "tone": "base"
+                },
+                {
+                  "label": "解析请求设置",
+                  "tone": "base"
+                },
+                {
+                  "label": "构建 prompt",
+                  "tone": "hi"
+                },
+                {
+                  "label": "分词",
+                  "tone": "base"
+                },
+                {
+                  "label": "过安全分类",
+                  "tone": "base"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "p": "检查点（checkpoint）：两版按同样步骤处理请求，每一步产生的中间结果逐步对比。第一次分岔的地方，就大致指出迁移代码和生产代码在哪不同。"
+        },
+        {
+          "p": "指纹（fingerprint）：再记录差异从 prompt 的哪个位置开始、长度差多少。同一种 bug 会在它影响的每个请求上留下相同指纹，于是可以把海量差异记录按指纹分组，判断是不是同一个 bug。一条记录大致是：在哪个 step（比如 build prompt）、第几 piece、第一个差异字节的位置、两边各多少 bytes；拿着这样一条记录，就能交给 agent 去修。"
+        }
+      ]
+    },
+    {
+      "h": "三层验证循环怎么转",
+      "blocks": [
+        {
+          "p": "一个 bug 会产生大量几乎一样的差异记录。团队每 10 到 30 分钟跑一次脚本，按字段把它们分组，只在出现“新类型”记录时提醒协调 agent；协调 agent 再派一个工人 agent 负责这一类型，并在 Slack 开线程让人类工程师跟进。"
+        },
+        {
+          "fig": {
+            "type": "cards",
+            "title": "三层循环各管一件事",
+            "subtitle": "琥珀色是反馈最快的内环；外环对齐生产，记忆环沉淀规则",
+            "items": [
+              {
+                "icon": "bolt",
+                "title": "内环",
+                "desc": "云沙箱里两套代码都在，输入检查不真调模型，一次对比不到一秒；agent 自己写请求复现差异，修到一致再补测试。",
+                "tags": [
+                  "本地",
+                  "秒级反馈"
+                ],
+                "tone": "hi"
+              },
+              {
+                "icon": "shield",
+                "title": "外环",
+                "desc": "工程师审核后部署，在影子流量上对比有/无修复的构建，看 bug 指纹是否消失；没消失就退回内环。",
+                "tags": [
+                  "生产",
+                  "影子对比"
+                ],
+                "tone": "base"
+              },
+              {
+                "icon": "layers",
+                "title": "记忆环",
+                "desc": "把工程师的纠正存成规则、搜索和测试；被否的捷径会被记住，后续 agent 不再重走。",
+                "tags": [
+                  "规则",
+                  "测试"
+                ],
+                "tone": "base"
+              }
+            ]
+          }
+        },
+        {
+          "p": "内环在云沙箱里跑，两套代码都在，agent 可以快速试错、失败也不影响用户。输入检查不真调模型，两版对比不到一秒；后来加了输出检查，用假模型把脚本化回复（比如一次工具调用）喂给两版对比。agent 只能看到指纹、看不到背后请求，所以要自己猜原因、自己写请求复现；写出来就能完整读两边结果。修到一致后，补一个“旧代码失败、新代码通过”的测试。"
+        },
+        {
+          "p": "内环和外环之间是人类审核，因为 agent 会走“最便宜凑对”的捷径。5 月中旬，最大的剩余差异之一来自 web search：生产版会从内部服务取工具描述，Rust 版还没调这个服务。一个 agent 提议把文本复制成文件给 Rust 读，两版 prompt 立刻对上，也过了本地验证；但工程师否决了——上线前 Rust 本来就要调这个服务，这只是一段会被扔掉的临时代码。验证器能告诉 agent“输出对不对得上”，判断不了“修复够不够好、能不能上线”。"
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "内环求快，外环求真",
+            "subtitle": "示意：琥珀色标出各环的关键特点",
+            "left": {
+              "label": "内环",
+              "sub": "云沙箱",
+              "items": [
+                {
+                  "label": "请求是 agent 自己写的",
+                  "state": "base"
+                },
+                {
+                  "label": "不真调模型",
+                  "state": "hi"
+                },
+                {
+                  "label": "一次对比不到一秒",
+                  "state": "hi"
+                },
+                {
+                  "label": "失败不影响用户",
+                  "state": "base"
+                }
+              ]
+            },
+            "right": {
+              "label": "外环",
+              "sub": "生产影子流量",
+              "items": [
+                {
+                  "label": "真实生产请求",
+                  "state": "hi"
+                },
+                {
+                  "label": "模型输出重放给两版",
+                  "state": "base"
+                },
+                {
+                  "label": "部署后看指纹是否消失",
+                  "state": "hi"
+                },
+                {
+                  "label": "工程师先审核",
+                  "state": "base"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "p": "工程师批准后，外环在影子流量上对比“有修复”和“没修复”的构建，看这个 bug 的指纹是否消失；没消失就退回内环继续。外环补的是内环的盲区：内环只用 agent 自己写的请求，本地配置也不完全等同生产。"
+        },
+        {
+          "p": "记忆环让纠正只做一次。web search 捷径被否后，agent 把决定、原因和正确做法记进记忆；后续同类记录再出现时，agent 查记忆就能认出已知 bug，不再写工作区。还有更通用的规则：一个 agent 猜了 Python 的行为，工程师立规矩“逐字照搬 Python 做了什么”，agent 复查后找出 7 处靠猜的移植；6 月又有 agent 梳理约 60 条评审意见，归纳成规则写进 CLAUDE.md。这些经验还会落成测试、lint，以及“改 Python 必须同步改 Rust 或申请豁免”的合并检查。"
+        }
+      ]
+    },
+    {
+      "h": "结果怎么看：数字要带前提",
+      "blocks": [
+        {
+          "p": "最终结果是：Rust 版每请求 CPU 约降 70%，中位首个 token 时间约降 20%。这是 Anthropic 自报的迁移效果。原文结果图把迁移前水平设为 100 作基准，线条按七天平均平滑。"
+        },
+        {
+          "p": "看这两个数字还要带一点前提：CPU 是“一个区域”的数据，内存是全部生产环境，首个 token 时间是客户 Claude Code 请求在更短窗口内的数据——三个指标口径不同，不能简单外推到所有客户、所有区域。"
+        },
+        {
+          "fig": {
+            "type": "columns",
+            "title": "迁到 Rust 后的两项改善",
+            "subtitle": "单位：%；琥珀色是相对 Python 版的降幅",
+            "items": [
+              {
+                "label": "每请求 CPU",
+                "sub": "约降 70%",
+                "value": 70,
+                "display": "约 70%",
+                "tone": "hi"
+              },
+              {
+                "label": "中位首个 token 时间",
+                "sub": "约降 20%",
+                "value": 20,
+                "display": "约 20%",
+                "tone": "hi"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "官方还没说的",
+      "blocks": [
+        {
+          "list": [
+            "没有给出迁移后绝对的 QPS 或延迟数字，只有相对降幅。",
+            "没有给出 Rust 版相比 Python 版的内存节省百分比。",
+            "没有披露具体用的 Rust 框架、运行时或部署架构。",
+            "没有统计整个迁移期间一共发现并修了多少个差异 bug。",
+            "没有说明这套“影子对比 + 三层循环”是否会开源或产品化。",
+            "没有给出人力、算力等成本数字。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "适合谁",
+      "blocks": [
+        {
+          "p": "对普通用户，最直接的价值是调 Claude 的接口更省、更快，而且没有经历停服窗口。"
+        },
+        {
+          "p": "对工程团队，这篇最值钱的不是 Rust 本身，而是一套“不读用户数据、不停服，把旧系统当裁判验证大迁移”的方法：检查点定位、指纹分组、三层循环分工。"
+        },
+        {
+          "p": "代价也要算清：搭这套验证装置本身有工程量，人类审核仍是关键闸门。如果你的系统小、行为确定性强，或本来就有一份足够独立的测试套件，未必需要这么重的装置。"
+        },
+        {
+          "p": "如果你在做大型生产系统迁移、担心“新系统是不是和旧系统一样”，可以把这篇当方法参考；如果你更关心怎么让 agent 干活的同时保持可信，三层循环和记忆环的思路也值得一看。"
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Migrating our Messages API to Rust",
+      "publisher": "Anthropic",
+      "date": "2026-11-25",
+      "url": "https://www.anthropic.com/research/migrating-api-to-rust"
+    },
+    "more": [],
+    "note": "除原文截图外，本文配图均为示意图；“约 70%”“约 20%”“约 1,800 倍”“超过 80%”等为 Anthropic 自报数字，口径说明见正文第 7 节。原文结果图以迁移前为 100 基准、线条按七天平均（差异对比图用七天中位数）。"
+  },
+  "claims": [
+    {
+      "text": "迁移到 Rust 后，Messages API 每请求 CPU 用量下降约 70%",
+      "value": "70%",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "约 70%",
+      "quote": "uses about 70% less CPU per request"
+    },
+    {
+      "text": "迁移后中位首个 token 时间下降约 20%",
+      "value": "20%",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "约 20%",
+      "quote": "cuts median time to first token by about 20%"
+    },
+    {
+      "text": "从 2024 年初到 2026 年秋，API 流量增长约 1,800 倍",
+      "value": "1,800 times",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "约 1,800 倍",
+      "quote": "API traffic grew roughly 1,800 times"
+    },
+    {
+      "text": "到 2026 年 5 月，Claude 写了 Anthropic 合并代码的 80% 以上",
+      "value": "80%",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "超过 80%",
+      "quote": "Claude was writing more than 80% of the code Anthropic merged"
+    },
+    {
+      "text": "Claude 大约一周就写出了 API 核心请求路径的第一版",
+      "value": "about a week",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "约一周",
+      "quote": "Claude wrote a first version of the API's core request path in about a week"
+    },
+    {
+      "text": "Messages API 于 2023 年用 Python 构建",
+      "value": "2023",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "2023 年",
+      "quote": "We built the Messages API in 2023 and wrote it in Python"
+    },
+    {
+      "text": "到 2025 年底，每个 Messages API 请求都要经过验证、转成 prompt、分词、过安全分类",
+      "value": "late 2025",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "2025 年底",
+      "quote": "By late 2025, every Messages API request had to be validated, converted into the prompt, tokenized, and screened by our safety classifiers."
+    },
+    {
+      "text": "增量重写（Rust 解析模型输出、Python 调用）把 API 的 CPU 用量降低了约 8% 到 10%",
+      "value": "8% to 10%",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "约 8% 到 10%",
+      "quote": "This reduced the API's CPU usage by about 8% to 10%."
+    },
+    {
+      "text": "增量方案里，回复的每个 token 要在 Python 和 Rust 之间来回三次",
+      "value": "three times",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "三次",
+      "quote": "Each token now crossed between Python and Rust three times"
+    },
+    {
+      "text": "团队原有约 700 个集成测试",
+      "value": "700",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "约 700 个",
+      "quote": "we already had an existing set of about 700 integration tests"
+    },
+    {
+      "text": "审计移植后的测试时，发现 100 多个断言被削弱",
+      "value": "more than 100",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "100 多个",
+      "quote": "we found more than 100 weakened assertions"
+    },
+    {
+      "text": "20 个二选一选项就能组合出 100 万多种配置",
+      "value": "20",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "20 个",
+      "quote": "Just 20 binary options make over a million combinations"
+    },
+    {
+      "text": "20 个二选一选项可组合出 100 万多种配置",
+      "value": "over a million",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "100 万多种",
+      "quote": "Just 20 binary options make over a million combinations"
+    },
+    {
+      "text": "这些组合单个模型全测一遍要 12 天",
+      "value": "12 days",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "12 天",
+      "quote": "that translates to 12 days of tests at a second each"
+    },
+    {
+      "text": "Rust 版 4 月通过约 98% 的测试",
+      "value": "98%",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "约 98%",
+      "quote": "Our Rust API passed about 98% of its tests in April"
+    },
+    {
+      "text": "真实流量上只有约四分之一输入和 Python 版对上",
+      "value": "a quarter",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "约四分之一",
+      "quote": "only about a quarter of inputs matched on production traffic"
+    },
+    {
+      "text": "协调脚本每 10 到 30 分钟运行一次，按字段把差异记录分组",
+      "value": "10 to 30 minutes",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "每 10 到 30 分钟",
+      "quote": "we ran a script every 10 to 30 minutes that grouped them"
+    },
+    {
+      "text": "内环的输入检查不真调模型，两版对比不到一秒",
+      "value": "under a second",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "不到一秒",
+      "quote": "comparing the versions took under a second"
+    },
+    {
+      "text": "5 月中旬，最大的剩余差异之一来自 web search 工具描述缺失",
+      "value": "mid-May",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "5 月中旬",
+      "quote": "In mid-May, one of the largest remaining differences between the Rust and Python APIs came from web search."
+    },
+    {
+      "text": "一个 agent 按“逐字照搬 Python 行为”的规则复查，又找出 7 处靠猜的移植",
+      "value": "seven more places",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "7 处",
+      "quote": "found seven more places where the port had relied on a guess"
+    },
+    {
+      "text": "6 月一个 agent 梳理了约 60 条团队评审意见",
+      "value": "about 60",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "约 60 条",
+      "quote": "an agent also went through about 60 of the team's review comments"
+    },
+    {
+      "text": "公开流量于 2026 年 9 月切到 Rust 版",
+      "value": "September 2026",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "2026 年 9 月",
+      "quote": "from April until public traffic moved to Rust in September 2026"
+    },
+    {
+      "text": "结果图以迁移前水平为 100 作基准",
+      "value": "100",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "100",
+      "quote": "100 is about the level just before the move"
+    },
+    {
+      "text": "结果图的线条按七天平均计算",
+      "value": "seven-day averages",
+      "source_url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "as_written": "七天平均",
+      "quote": "Lines are seven-day averages, 100 is about the level just before the move"
+    }
+  ],
+  "cover": {
+    "headline": "Messages API→Rust",
+    "highlight": "每请求 CPU 省约 70%",
+    "big": {
+      "value": "70",
+      "unit": "%",
+      "label": "每请求 CPU 下降"
+    },
+    "glyph": {
+      "kind": "devices",
+      "left": {
+        "kind": "server",
+        "label": "Python",
+        "tone": "ref"
+      },
+      "right": {
+        "kind": "server",
+        "label": "Rust",
+        "tone": "hi"
+      },
+      "arrow": true
+    }
+  },
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "origin": "auto",
+    "candidate": "07e4d18518",
+    "tier": "official",
+    "via": null,
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "generated_at": "2026-11-27T02:11:03.254Z"
+  }
+}
