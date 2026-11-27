@@ -1,23 +1,16 @@
-# 候选清单（2026-11-26 22:07 UTC）
+# 候选清单（2026-11-27 04:23 UTC）
 
 | 分数 | 标题 | 发布方 | 层级 | 相关报道 |
 | --- | --- | --- | --- | --- |
 | 5.9 | [Cloudflare 发布 Search for Agents：后台开一个开关，AI Agent 就能直接搜你整站、取回 Markdown 原文](https://blog.cloudflare.com/search-for-agents/) | blog.cloudflare.com | official | 0 |
-| 5.9 | [ElevenLabs 发布 GraphRAG 实践指南：用知识图谱解多跳追问，把语音 RAG 中位延迟从 326ms 压到 155ms](https://elevenlabs.io/blog/what-is-graphrag) | elevenlabs.io | official | 0 |
-| 4.8 | [Come for the Games, Stay for the Community With GeForce NOW](https://blogs.nvidia.com/blog/geforce-now-thursday-community-war-thunder-reward/) | NVIDIA | official | 0 |
-| 4.2 | [Strengthening the fight against online child sexual abuse with new tools and support](https://openai.com/index/strengthening-online-child-safety) | OpenAI | official | 0 |
-| 4.2 | [Science at the Frontier: How scientists use ChatGPT](https://openai.com/index/science-at-the-frontier) | OpenAI | official | 0 |
-| 4.2 | [How Revolut raises ambition without lowering the bar](https://openai.com/business/customer-stories/revolut) | OpenAI | official | 0 |
-| 4.2 | [Our first phase of embedded assessments](https://openai.com/index/our-first-phase-of-embedded-assessments) | OpenAI | official | 0 |
-| 4.2 | [More ways to move care forward with ChatGPT for Healthcare](https://openai.com/index/more-ways-to-move-care-forward-with-chatgpt-for-healthcare) | OpenAI | official | 0 |
-| 4.2 | [At Holiday Extras, dots get to work before anyone asks](https://openai.com/business/customer-stories/holiday-extras-dots) | OpenAI | official | 0 |
-| 4.2 | [Our new blog for science](https://openai.com/index/our-new-blog-for-science) | OpenAI | official | 0 |
-| 4.1 | [Migrating our Messages API to Rust](https://www.anthropic.com/research/migrating-api-to-rust) | Anthropic | official | 0 |
-| 4.1 | [Into the Omniverse: How Developers Turn Ideas Into Simulations With Frontier AI Agents](https://blogs.nvidia.com/blog/developers-simulation-frontier-ai-agents/) | NVIDIA | official | 0 |
+| 5.1 | [MAGI-2 提示词指南：10 套可用脚本、六段式写法与省钱大法全公开](https://higgsfield.ai/zh/blog/magi-2-prompt-guide-10-prompts-and-settings-that-work) | higgsfield.ai | official | 0 |
+| 5.1 | [2026 年 10 款 AI 口型同步工具大比拼：内置翻译 18 到 175+ 种，单次最长 60 分钟](https://higgsfield.ai/zh/blog/10-best-ai-lip-sync-tools-for-any-language-2026) | higgsfield.ai | official | 0 |
+| 4.9 | [The H3 Family: Models, Community, and What's Next](https://www.minimax.io/blog/minimax-h3-family) | MiniMax | official | 0 |
 | 4.1 | [We’re partnering with Blue Origin on our first heavy-lift Project Suncatcher launch.](https://blog.google/innovation-and-ai/models-and-research/google-research/blue-origin-project-suncatcher-partnership/) | Google | official | 0 |
 | 4.1 | [Ian Buck Kicks Off NVIDIA’s Week at SC26 as Science Enters the Age of Agents](https://blogs.nvidia.com/blog/ian-buck-sc26/) | NVIDIA | official | 0 |
 | 4.1 | [NVIDIA CUDA-X Libraries Give Agents the Tools to Accelerate Scientific Discovery](https://blogs.nvidia.com/blog/cuda-x-libraries-agents-accelerate-scientific-discovery/) | NVIDIA | official | 0 |
 | 4.1 | [NVIDIA Announces Rubin HPC — A New GPU to Accelerate Agents for Science, Engineering and Analytics](https://blogs.nvidia.com/blog/rubin-hpc/) | NVIDIA | official | 0 |
+| 3.7 | [How Clay Builds GTM Agents — Jeff Barg, Head of AI](https://lspace.beehiiv.com/podcast/s/latent_space_the_ai_engineer_podcast/how_clay_builds_gtm_agents_jeff_barg_head_of_ai) | Latent Space | discovery | 0 |
 | 3.6 | [Building on Nemotron 3.5 Parse: Open Data, Fine-Tuning, and Faster Inference](https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin) | Hugging Face | primary | 0 |
 | 3.6 | [Connectors and skills come together as plugins](https://x.com/claudeai/status/2124970294523945328) | @claudeai | official | 0 |
 | 3.6 | [If you’re in Europe, you get a month of Vibe Pro for free](https://x.com/MistralAI/status/2124905610386780451) | @MistralAI | official | 0 |
@@ -42,5 +35,12 @@
 | 3.6 | [Microsoft Ignite 2026: MAI keynote transcript](https://microsoft.ai/news/microsoft-ignite-2026-mai-keynote/) | Microsoft AI | official | 0 |
 | 3.5 | [Introducing Genie 4 in the Gemini API and Google AI Studio, the first world model for developers.](https://aistudio.google.com/social_preview/page/genie) | @OfficialLoganK | official | 0 |
 | 3.4 | [Google Will Make AI Agents Use Its MCP Servers. The Gmail One Can't Send Email](https://techstackups.com/articles/google-workspace-ai-agents-mcp/) | Hacker News | discovery | 0 |
+| 3.4 | [Anthropic 发布 58 家企业 AI 访谈报告：三分之二缩减招聘，高回报靠改分工与流程](https://www.anthropic.com/research/working-with-ai) | Anthropic | official | 0 |
+| 3.4 | [How to build and maintain an agentic evaluation](https://huggingface.co/blog/agentic-evals) | Hugging Face | primary | 0 |
+| 3.4 | [Introducing harness adapters: adapt your favorite model to your harness to improve performance and cost](https://huggingface.co/blog/harness-adapters-at-scale) | Hugging Face | primary | 0 |
+| 3.4 | [Time-Series Models in the Streamhouse: A New Frontier and Use Cases](https://huggingface.co/blog/ibm-research/time-series-powered-streamhouse) | Hugging Face | primary | 0 |
+| 3.4 | [Rumble-2-Flash: an open 0.5B speech model for 40+ languages](https://huggingface.co/blog/rumble-2-flash) | Hugging Face | primary | 0 |
+| 3.4 | [Hugging Face and OpenRouter join forces to make open-weight models easy to run](https://huggingface.co/blog/openrouter) | Hugging Face | primary | 0 |
+| 3.3 | [Merry Making: Play, Build and Create With NVIDIA Technologies This Holiday Season](https://blogs.nvidia.com/blog/nvidia-technologies-holidays-2026/) | NVIDIA | official | 0 |
 
 **超过 30 天没有新内容的源**：Mistral 新闻、Kimi 博客
