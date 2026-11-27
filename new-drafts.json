@@ -1,37 +1,10 @@
 [
   {
-    "slug": "qwen-audio-3-1-multilingual-chinese-dialects",
-    "title": "Qwen-Audio-3.1 多语言升级：ASR 覆盖 59 种语言、8 种中文方言",
-    "file": "content/articles/qwen-audio-3-1-multilingual-chinese-dialects.json",
+    "slug": "anthropic-messages-api-rust-migration",
+    "title": "Anthropic Messages API 迁 Rust：CPU 省约 70%、首个 token 快 20%",
+    "file": "content/articles/anthropic-messages-api-rust-migration.json",
     "errors": 0,
     "warnings": 0,
-    "provider": "deepseek",
-    "model": "deepseek-v4-pro"
-  },
-  {
-    "slug": "llamacpp-amd-benchmark-dashboard",
-    "title": "llama.cpp × AMD 跑分面板上线：按硬件、模型、量化跟踪 PP512 与 TG128",
-    "file": "content/articles/llamacpp-amd-benchmark-dashboard.json",
-    "errors": 0,
-    "warnings": 0,
-    "provider": "deepseek",
-    "model": "deepseek-v4-pro"
-  },
-  {
-    "slug": "swarms-flocks-gangs-part1",
-    "title": "四只 Agent 共用一只小模型：成功率从 6.6% 升到 82.3%，token 省 37.4%",
-    "file": "content/articles/swarms-flocks-gangs-part1.json",
-    "errors": 0,
-    "warnings": 0,
-    "provider": "deepseek",
-    "model": "deepseek-v4-pro"
-  },
-  {
-    "slug": "openai-chatgpt-academic-researchers-expansion",
-    "title": "OpenAI 科研免费 ChatGPT 扩到 20 万研究者，新一轮发 5 万个名额",
-    "file": "content/articles/openai-chatgpt-academic-researchers-expansion.json",
-    "errors": 0,
-    "warnings": 1,
     "provider": "deepseek",
     "model": "deepseek-v4-pro"
   }
