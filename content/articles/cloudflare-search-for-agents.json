@@ -1,0 +1,403 @@
+{
+  "slug": "cloudflare-search-for-agents",
+  "category": "product",
+  "publisher": "Cloudflare",
+  "date": "2026-11-27",
+  "title": "Cloudflare 上线 Search for Agents：一个开关，让 AI 智能体直接搜索你的网站",
+  "summary": "做网站的人不用再手动搭一套检索后端：在 Cloudflare 控制台打开一个开关，网站就会被自动索引，并在自己的域名下暴露一个 AI 智能体自己会发现的搜索接口。",
+  "ai_summary": "Cloudflare 发布了 Search for Agents：把原本要手动创建和接入的网站搜索，收成控制台里的一个开关。打开后，它会自动为你的域名建 AI Search 实例、爬取并索引内容，并在每个页面注入元数据，让任何 AI 智能体都能发现并调用你自己域名下的 /.well-known/search 接口。搜索结果以 Markdown 返回，而不是另一个模型生成的答案，智能体可直接当作素材。它还原生支持 2026 年 6 月成为 RFC 10008 的新 HTTP QUERY 方法。功能对所有用户开放，免费套餐可用但有限额，费用按 AI Search 计价。最大的限制是官方没给免费档的具体额度。",
+  "brief": [
+    "打开一个开关，就自动建 AI Search 实例、爬取并索引你的网站。",
+    "每个页面自动注入元数据，智能体自己发现 /.well-known/search 接口并复用。",
+    "返回的是 Markdown 检索内容，不是 AI 生成的答案。",
+    "原生支持 RFC 10008 的 HTTP QUERY 方法；免费套餐可用但有限额。"
+  ],
+  "readMinutes": 6,
+  "sections": [
+    {
+      "h": "Search for Agents 是什么？",
+      "blocks": [
+        {
+          "p": "Cloudflare 之前已经有一个服务叫 AI Search：它能把你的内容建好索引，让你给任意应用或智能体加搜索，而不必自己搭一整套检索后端。它也早就支持把「你的网站」当作数据源，自动爬取页面、转成索引。"
+        },
+        {
+          "p": "问题在于，给网站开通 AI Search 还是得自己动手：先手动创建和配置实例，再做一堆接入工作，把搜索端点放到你的域名下，还要确保智能体知道去哪找索引、怎么用它。"
+        },
+        {
+          "p": "Search for Agents 就是把这些事收成一个开关。在控制台给你的 zone 打开它，Cloudflare 会自动建 AI Search 实例、开始索引内容，并让搜索从你自己的域名可被发现、可被调用。"
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "以前要自己搭，现在一个开关完成",
+            "subtitle": "琥珀色是这次新增的自动化动作；左边是过去的手动步骤",
+            "left": {
+              "label": "以前：手动接入",
+              "sub": "AI Search 支持网站后仍需自己配置",
+              "items": [
+                {
+                  "label": "手动创建 AI Search 实例",
+                  "state": "base"
+                },
+                {
+                  "label": "自己配置爬取和索引",
+                  "state": "base"
+                },
+                {
+                  "label": "自己把接口接到域名",
+                  "state": "base"
+                },
+                {
+                  "label": "自己告诉智能体去哪找",
+                  "state": "base"
+                }
+              ]
+            },
+            "right": {
+              "label": "现在：一个开关",
+              "sub": "控制台 Quick Actions 里打开",
+              "items": [
+                {
+                  "label": "自动建实例并开始索引",
+                  "state": "hi"
+                },
+                {
+                  "label": "自动在每个页面注入元数据",
+                  "state": "hi"
+                },
+                {
+                  "label": "接口就在你的 /.well-known 域名下",
+                  "state": "hi"
+                },
+                {
+                  "label": "智能体自动发现并复用",
+                  "state": "hi"
+                }
+              ]
+            },
+            "footer": "同一件事：让你的网站对 AI 智能体可搜索"
+          }
+        }
+      ]
+    },
+    {
+      "h": "打开开关后，后台自动做了什么？",
+      "blocks": [
+        {
+          "p": "开关在控制台 zone 页面的 Quick Actions 里，也可以用 API 开启。开启后，Cloudflare 自动创建 AI Search 实例，开始爬取和索引你这个 zone 里的内容；爬取的具体方式见开发者文档。"
+        },
+        {
+          "p": "实例先按默认设置创建，之后你随时可以开 reranking（重排序，让结果更贴合问题）或改缓存等配置。因为它本质上还是 AI Search 实例，所以标准功能全都在：公开 REST API、MCP 端点、从 Workers 调用，或者给人类访客嵌一个搜索框。"
+        },
+        {
+          "p": "能不能搜、谁能搜，还受你域名现有设置约束，比如 Bot 管理、AI Crawl Control（控制哪些 AI 爬虫能访问）和 WAF 规则。"
+        }
+      ]
+    },
+    {
+      "h": "智能体怎么知道你的网站能搜？",
+      "blocks": [
+        {
+          "p": "光有接口不够，智能体得先知道它存在。Search for Agents 会在你网站的每个页面上自动「打广告」。"
+        },
+        {
+          "p": "对 HTML 响应，它往页面 <head> 里注入一组 meta 标签：agent:instructions 告诉智能体「用这个搜索接口、不要逐页爬」，agent:endpoint 给出端点地址，agent:method 写明用 GET，agent:documentation 指向文档。"
+        },
+        {
+          "p": "如果你同时开了 Markdown for Agents，智能体用 Accept: text/markdown 请求页面时，会收到同样的信息，只是放在 YAML front matter 里。"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "同一组信息，HTML 和 Markdown 两种格式都发",
+            "subtitle": "给智能体的四个元数据字段",
+            "columns": [
+              "字段",
+              "HTML 响应（<head> 里的 meta）",
+              "Markdown for Agents（YAML）"
+            ],
+            "rows": [
+              [
+                "怎么用",
+                "agent:instructions",
+                "agent: instructions"
+              ],
+              [
+                "端点",
+                "agent:endpoint",
+                "agent: endpoint"
+              ],
+              [
+                "方法",
+                "agent:method",
+                "agent: method"
+              ],
+              [
+                "文档",
+                "agent:documentation",
+                "agent: documentation"
+              ]
+            ],
+            "highlight": {
+              "col": 1
+            }
+          }
+        },
+        {
+          "fig": {
+            "type": "illustration",
+            "title": "智能体发现并复用你站内的搜索接口",
+            "subtitle": "示意：琥珀色是这次新增的自动发现和搜索环节",
+            "glyph": {
+              "kind": "flow",
+              "nodes": [
+                {
+                  "label": "网页元数据",
+                  "tone": "base"
+                },
+                {
+                  "label": "智能体发现",
+                  "tone": "hi"
+                },
+                {
+                  "label": "调搜索端点",
+                  "tone": "hi"
+                },
+                {
+                  "label": "Markdown 结果",
+                  "tone": "base"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "h": "搜出来的是什么？跟让 AI 直接回答有什么不同？",
+      "blocks": [
+        {
+          "p": "智能体发现端点后，就能直接调用。一个普通的 GET 请求，比如搜「cloudflare artifacts」，会返回相关页面，内容已经转成 Markdown，并按相关性打分排序——示例里第一条 1.000、第二条 0.951。"
+        },
+        {
+          "p": "根据你的 AI Search 配置，智能体也可以用自然语言提问，比如「Cloudflare Artifacts 的最大 push 是多少」，端点会返回相关文档片段。"
+        },
+        {
+          "p": "关键区别在这里：端点返回的是检索到的内容，不是生成的答案。智能体自己已经有模型和对话上下文，它要的只是你网站里的原始信息，而不是另一个模型替你回答。"
+        },
+        {
+          "fig": {
+            "type": "code",
+            "lang": "bash",
+            "title": "接口支持 GET 和新的 QUERY 方法",
+            "subtitle": "官方博客里的调用示例",
+            "note": "第一段是普通 GET；后两段是新的 HTTP QUERY 方法，分别是纯文本和 JSON 请求体。",
+            "code": "curl \"https://developers.cloudflare.com/.well-known/search?q=cloudflare+artifacts\"\n\ncurl -X QUERY 'https://developers.cloudflare.com/.well-known/search' \\\n  --data 'What is the maximum payload size per ingestion request in Basin Pipelines?'\n\ncurl -X QUERY 'https://developers.cloudflare.com/.well-known/search' \\\n  --header 'Content-Type: application/json' \\\n  --data '{\"q\":\"How many bulk import requests per minute does Email Service allow?\"}'",
+            "highlight": [
+              1,
+              3,
+              6
+            ]
+          }
+        },
+        {
+          "fig": {
+            "type": "quote",
+            "title": "端点给的是原材料，不是替 AI 回答",
+            "text": "Note that this search endpoint returns retrieved content, in Markdown, not a generated answer.",
+            "zh": "注意，这个搜索端点返回的是检索到的内容（Markdown），不是生成的答案。",
+            "who": "Cloudflare 博客",
+            "role": "说明 Search for Agents 返回内容的性质",
+            "source_url": "https://blog.cloudflare.com/search-for-agents/"
+          }
+        }
+      ]
+    },
+    {
+      "h": "新的 HTTP QUERY 方法是怎么回事？",
+      "blocks": [
+        {
+          "p": "除了普通 GET，Search for Agents 原生支持新的 HTTP QUERY 方法。QUERY 是 IETF 的 Proposed Standard，2026 年 6 月作为 RFC 10008 发布，Cloudflare 的 James Snell 是共同作者之一。"
+        },
+        {
+          "p": "它让客户端把搜索条件放进请求体，安全、幂等地发出去，不修改服务器状态，很适合 AI 搜索这种「问而不改」的场景。"
+        },
+        {
+          "p": "采用正在进行中：主流浏览器厂商在讨论这个 RFC，curl 和 undici 等客户端、框架已经采用或在讨论。Search for Agents 支持纯文本或 JSON 请求体。"
+        }
+      ]
+    },
+    {
+      "h": "费用怎么算？",
+      "blocks": [
+        {
+          "p": "从现在起，Search for Agents 对所有客户开放，包括免费套餐，但原文只写了「有限额」。"
+        },
+        {
+          "p": "用量按 AI Search 的定价走：摄取内容、存储索引内容、服务查询都计费，并受账户 Workers Free / Paid 套餐的包含用量和限额约束。"
+        },
+        {
+          "p": "换句话说，免费用户能先用起来，但原文没有写出免费档的具体额度数字。"
+        },
+        {
+          "fig": {
+            "type": "cards",
+            "title": "开关背后，还是一个完整的 AI Search 实例",
+            "subtitle": "这些事有的是自动、有的是可选",
+            "items": [
+              {
+                "icon": "search",
+                "title": "自动建索引",
+                "desc": "打开开关就建好 AI Search 实例，开始爬取索引你的 zone。",
+                "tags": [
+                  "自动"
+                ]
+              },
+              {
+                "icon": "globe",
+                "title": "端点可被发现",
+                "desc": "每个页面自动注入元数据，智能体自己找到接口。",
+                "tags": [
+                  "自动"
+                ]
+              },
+              {
+                "icon": "doc",
+                "title": "返回 Markdown",
+                "desc": "检索结果以 Markdown 给智能体，不是生成答案。",
+                "tags": [
+                  "内容"
+                ]
+              },
+              {
+                "icon": "bolt",
+                "title": "原生 QUERY",
+                "desc": "支持新的 HTTP QUERY 方法，纯文本或 JSON 请求体。",
+                "tags": [
+                  "新协议"
+                ]
+              },
+              {
+                "icon": "layers",
+                "title": "可开 Reranking",
+                "desc": "默认配置之外，随时可开启重排序、改缓存等。",
+                "tags": [
+                  "可选"
+                ]
+              },
+              {
+                "icon": "user",
+                "title": "也能给人类访客",
+                "desc": "同一实例可嵌 AI Search 搜索框给网站访客用。",
+                "tags": [
+                  "可选"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "官方还没说的",
+      "blocks": [
+        {
+          "list": [
+            "免费套餐的具体限额（能索引多少页、每月能服务多少次查询）没有给出数字。",
+            "索引多久更新一次、新页面多久能搜到，原文只说「见开发者文档」。",
+            "和同类「给智能体开放网站搜索」方案的效果、价格对照，没有提供。",
+            "QUERY 方法在各浏览器、各框架的具体落地时间表没有给出。",
+            "开启后对 AI 爬虫流量本身是否计入 AI Crawl Control 的具体规则，只提到「受域名设置影响」。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "适合谁",
+      "blocks": [
+        {
+          "p": "价值在于省事：你有内容站或文档站，想让 OpenAI、OpenCode 这类智能体在回答时能查到你的资料，不用写代码、不用维护检索服务，接口还留在自己的域名下。"
+        },
+        {
+          "p": "代价也要算清：内容会被 Cloudflare 爬取并索引，费用按 AI Search 计价，免费档有限额；具体能搜到多少，还受你的 WAF、Bot 管理、AI Crawl Control 设置影响。"
+        },
+        {
+          "list": [
+            "如果你有一个文档站或内容站，想让 AI 工具能查到你的页面，这个开关是最省事的起点。",
+            "如果你已经在用 Cloudflare，又不想自建检索后端，可以直接在 Quick Actions 里试。",
+            "如果你对内容暴露给智能体有顾虑，先去看 Agent Readiness 页面和 AI Crawl Control，再决定要不要开。"
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Introducing Search for Agents",
+      "publisher": "Cloudflare Blog",
+      "date": "2026-11-27",
+      "url": "https://blog.cloudflare.com/search-for-agents/"
+    },
+    "more": [],
+    "note": "所有事实来自 Cloudflare 官方博客；流程示意图为示意，代码和元数据示例来自官方博客原文。免费档具体额度原文未给出。"
+  },
+  "claims": [
+    {
+      "text": "新的 HTTP QUERY 方法在 2026 年 6 月作为 RFC 10008 发布",
+      "value": "June 2026",
+      "source_url": "https://blog.cloudflare.com/search-for-agents/",
+      "as_written": "2026 年 6 月",
+      "quote": "published in June 2026 as RFC 10008"
+    },
+    {
+      "text": "官方示例搜索里第一条结果的相关性分数是 1.000",
+      "value": "1.000",
+      "source_url": "https://blog.cloudflare.com/search-for-agents/",
+      "as_written": "1.000",
+      "quote": "## docs/artifacts/api/workers-binding/index.md (score: 1.000)"
+    },
+    {
+      "text": "官方示例搜索里第二条结果的相关性分数是 0.951",
+      "value": "0.951",
+      "source_url": "https://blog.cloudflare.com/search-for-agents/",
+      "as_written": "0.951",
+      "quote": "## docs/artifacts/index.md (score: 0.951)"
+    }
+  ],
+  "cover": {
+    "headline": "Search for Agents",
+    "highlight": "一个开关，网站可被智能体搜索",
+    "glyph": {
+      "kind": "flow",
+      "nodes": [
+        {
+          "label": "你的网站",
+          "tone": "base"
+        },
+        {
+          "label": "智能体发现",
+          "tone": "hi"
+        },
+        {
+          "label": "搜索端点",
+          "tone": "hi"
+        },
+        {
+          "label": "Markdown",
+          "tone": "base"
+        }
+      ]
+    }
+  },
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "origin": "auto",
+    "candidate": "170ba12c1b",
+    "tier": "official",
+    "via": "https://xiaohu.ai/article/cloudflare-search-for-agents/",
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "generated_at": "2026-11-27T08:42:06.710Z"
+  }
+}
