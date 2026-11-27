@@ -1,10 +1,10 @@
 [
   {
-    "slug": "minimax-h3-family",
-    "title": "MiniMax H3 开源 100 天：社区衍生 1,472 个模型，下载超 1.48 亿次",
-    "file": "content/articles/minimax-h3-family.json",
+    "slug": "nemotron-35-parse-open-data-fine-tuning",
+    "title": "Nemotron 3.5 Parse 开放三个数据集与微调配方，DFlash2 推理快 7.62 倍",
+    "file": "content/articles/nemotron-35-parse-open-data-fine-tuning.json",
     "errors": 0,
-    "warnings": 1,
+    "warnings": 0,
     "provider": "deepseek",
     "model": "deepseek-v4-pro"
   }
