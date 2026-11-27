@@ -1,28 +1,18 @@
-# 候选清单（2026-11-27 04:23 UTC）
+# 候选清单（2026-11-27 14:06 UTC）
 
 | 分数 | 标题 | 发布方 | 层级 | 相关报道 |
 | --- | --- | --- | --- | --- |
-| 5.9 | [Cloudflare 发布 Search for Agents：后台开一个开关，AI Agent 就能直接搜你整站、取回 Markdown 原文](https://blog.cloudflare.com/search-for-agents/) | blog.cloudflare.com | official | 0 |
-| 5.1 | [MAGI-2 提示词指南：10 套可用脚本、六段式写法与省钱大法全公开](https://higgsfield.ai/zh/blog/magi-2-prompt-guide-10-prompts-and-settings-that-work) | higgsfield.ai | official | 0 |
-| 5.1 | [2026 年 10 款 AI 口型同步工具大比拼：内置翻译 18 到 175+ 种，单次最长 60 分钟](https://higgsfield.ai/zh/blog/10-best-ai-lip-sync-tools-for-any-language-2026) | higgsfield.ai | official | 0 |
-| 4.9 | [The H3 Family: Models, Community, and What's Next](https://www.minimax.io/blog/minimax-h3-family) | MiniMax | official | 0 |
-| 4.1 | [We’re partnering with Blue Origin on our first heavy-lift Project Suncatcher launch.](https://blog.google/innovation-and-ai/models-and-research/google-research/blue-origin-project-suncatcher-partnership/) | Google | official | 0 |
-| 4.1 | [Ian Buck Kicks Off NVIDIA’s Week at SC26 as Science Enters the Age of Agents](https://blogs.nvidia.com/blog/ian-buck-sc26/) | NVIDIA | official | 0 |
-| 4.1 | [NVIDIA CUDA-X Libraries Give Agents the Tools to Accelerate Scientific Discovery](https://blogs.nvidia.com/blog/cuda-x-libraries-agents-accelerate-scientific-discovery/) | NVIDIA | official | 0 |
-| 4.1 | [NVIDIA Announces Rubin HPC — A New GPU to Accelerate Agents for Science, Engineering and Analytics](https://blogs.nvidia.com/blog/rubin-hpc/) | NVIDIA | official | 0 |
-| 3.7 | [How Clay Builds GTM Agents — Jeff Barg, Head of AI](https://lspace.beehiiv.com/podcast/s/latent_space_the_ai_engineer_podcast/how_clay_builds_gtm_agents_jeff_barg_head_of_ai) | Latent Space | discovery | 0 |
-| 3.6 | [Building on Nemotron 3.5 Parse: Open Data, Fine-Tuning, and Faster Inference](https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin) | Hugging Face | primary | 0 |
-| 3.6 | [Connectors and skills come together as plugins](https://x.com/claudeai/status/2124970294523945328) | @claudeai | official | 0 |
-| 3.6 | [If you’re in Europe, you get a month of Vibe Pro for free](https://x.com/MistralAI/status/2124905610386780451) | @MistralAI | official | 0 |
+| 4.6 | [让AI 能掌握电影大师的配色画面：迪金斯、王家卫、韦斯·安德森 15 位大师 5 种配色思路（附调色 Skill）](https://x.com/TuyetloanP81840/status/2125857648683933907) | @TuyetloanP81840 | official | 0 |
+| 4 | [已经订阅了 Google AI服务的 免费领取一台Google Colab云电脑 上手指南：一条 SSH 连进 12 GB 内存 Ubuntu](https://x.com/jandisufg/status/2123530059310850353) | @jandisufg | official | 1 |
+| 4 | [Skill lemo-animi：一句话让 Codex 做出带配乐和拟音的定格短片](https://x.com/lemomo_ai/status/2123038832815907084) | @lemomo_ai | official | 1 |
+| 3.6 | [Taking Trainium3 to the Track: Generating Videos with LTX-2.5](https://huggingface.co/blog/video-trainium3) | Hugging Face | primary | 0 |
 | 3.6 | [Returning to the Neuron Basis for Interpretability, Part 1: Answering Three Objections](https://alignment.anthropic.com/2026/neuron-basis-theory/) | Anthropic | official | 1 |
 | 3.6 | [Zero data retention with Enterprise Frontier Safeguards is now in beta](https://claude.com/resources/articles/zero-data-retention-with-enterprise-frontier-safeguards) | Anthropic | official | 0 |
 | 3.6 | [Anthropic 数学家称和 Claude 证明了黎曼猜想：1700 万行 Lean 证明已公开，尚无外部核对](https://alpo.ge/remark.pdf) | alpo.ge | official | 0 |
-| 3.6 | [已经订阅了 Google AI服务的 免费领取一台Google Colab云电脑 上手指南：一条 SSH 连进 12 GB 内存 Ubuntu](https://x.com/jandisufg/status/2123530059310850353) | @jandisufg | official | 0 |
 | 3.6 | [Notion 团队 AI 工作指南：100 人各写一份技能，不如 2 人搭一座全队共用的工厂](https://www.notion.com/a-new-shape-for-work) | notion.com | official | 0 |
 | 3.6 | [a16z 每周图表：Z 世代观点全重合不到一成，过半基金经理预计巨头半年内砍 AI 开支](https://www.a16z.news/p/charts-of-the-week-there-is-no-gen) | a16z.news | official | 0 |
 | 3.6 | [Perplexity Computer now works directly in Chromium browsers via the extension.](https://pplx.ai/chrome-extension) | @perplexity_ai | official | 0 |
 | 3.6 | [NVIDIA published eight design guidelines for efficient sparse attention.](https://developer.nvidia.com/blog/co-designing-sparse-attention-for-efficient-long-context-inference/) | @NVIDIAAI | official | 0 |
-| 3.6 | [Skill lemo-animi：一句话让 Codex 做出带配乐和拟音的定格短片](https://x.com/lemomo_ai/status/2123038832815907084) | @lemomo_ai | official | 0 |
 | 3.6 | [NVIDIA published a technical blog on cutting RL rollout bottlenecks with Dynamo](https://developer.nvidia.com/blog/reducing-rollout-bottlenecks-in-reinforcement-learning-with-nvidia-dynamo/?ncid=so-face-545758) | @NVIDIAAI | official | 0 |
 | 3.6 | [Perplexity Computer Brain now auto-creates self-improving agent skills](https://x.com/perplexity_ai/status/2123449395882701224) | @perplexity_ai | official | 1 |
 | 3.6 | [Kling 4.0 now supports native 4K and 10-bit HDR output.](https://kling.ai/) | @Kling_ai | official | 0 |
@@ -34,7 +24,6 @@
 | 3.6 | [MAI Licensed Weights: Frontier performance you control](https://microsoft.ai/news/introducing-mai-licensed-weights/) | Microsoft AI | official | 0 |
 | 3.6 | [Microsoft Ignite 2026: MAI keynote transcript](https://microsoft.ai/news/microsoft-ignite-2026-mai-keynote/) | Microsoft AI | official | 0 |
 | 3.5 | [Introducing Genie 4 in the Gemini API and Google AI Studio, the first world model for developers.](https://aistudio.google.com/social_preview/page/genie) | @OfficialLoganK | official | 0 |
-| 3.4 | [Google Will Make AI Agents Use Its MCP Servers. The Gmail One Can't Send Email](https://techstackups.com/articles/google-workspace-ai-agents-mcp/) | Hacker News | discovery | 0 |
 | 3.4 | [Anthropic 发布 58 家企业 AI 访谈报告：三分之二缩减招聘，高回报靠改分工与流程](https://www.anthropic.com/research/working-with-ai) | Anthropic | official | 0 |
 | 3.4 | [How to build and maintain an agentic evaluation](https://huggingface.co/blog/agentic-evals) | Hugging Face | primary | 0 |
 | 3.4 | [Introducing harness adapters: adapt your favorite model to your harness to improve performance and cost](https://huggingface.co/blog/harness-adapters-at-scale) | Hugging Face | primary | 0 |
@@ -42,5 +31,16 @@
 | 3.4 | [Rumble-2-Flash: an open 0.5B speech model for 40+ languages](https://huggingface.co/blog/rumble-2-flash) | Hugging Face | primary | 0 |
 | 3.4 | [Hugging Face and OpenRouter join forces to make open-weight models easy to run](https://huggingface.co/blog/openrouter) | Hugging Face | primary | 0 |
 | 3.3 | [Merry Making: Play, Build and Create With NVIDIA Technologies This Holiday Season](https://blogs.nvidia.com/blog/nvidia-technologies-holidays-2026/) | NVIDIA | official | 0 |
+| 3.3 | [OpenAI is sharing new research on combating distillation of its models.](https://x.com/OpenAI/status/2123862344422088794) | @OpenAI | official | 0 |
+| 3.3 | [How Watch Duty is using Gemini to get wildfire alerts out faster](https://blog.google/company-news/outreach-and-initiatives/google-org/watch-duty-gemini-tool/) | Google | official | 0 |
+| 3.3 | [NVIDIA Research introduced WorldTrace to help video world models remember scenes.](https://x.com/NVIDIAAI/status/2123817447413395732) | @NVIDIAAI | official | 0 |
+| 3.3 | [GIFs are now available in Gemini using Gemini Omni 1.2 Flash.](https://x.com/GeminiApp/status/2123813017855103449) | @GeminiApp | official | 0 |
+| 3.3 | [NVIDIA and Microsoft Expand Accelerated Computing From Azure to Windows PCs](https://blogs.nvidia.com/blog/microsoft-ignite-accelerated-computing-azure-windows-pcs/) | NVIDIA | official | 0 |
+| 3.3 | [OpenAI built Performance Factory to coordinate agents investigating ChatGPT regressions](https://x.com/OpenAIDevs/status/2123471880292299171) | @OpenAIDevs | official | 0 |
+| 3.3 | [Season’s Streamings and Savings: Black Friday Deals Come to GeForce NOW](https://blogs.nvidia.com/blog/geforce-now-thursday-black-friday-2026/) | NVIDIA | official | 0 |
+| 3.3 | [How genome mapping can help researchers better understand disease](https://blog.google/innovation-and-ai/models-and-research/google-deepmind/alphagenome-disease-research/) | Google | official | 0 |
+| 3.3 | [NVIDIA DGX Spark Developer Kit Turns a Desk Into a Supercomputing Lab](https://blogs.nvidia.com/blog/dgx-spark-hpc-developer-kit-sc26/) | NVIDIA | official | 0 |
+| 3.3 | [How the World’s Most Advanced AI Infrastructure Supply Chain Invents the Future](https://blogs.nvidia.com/blog/ai-infrastructure-supply-chain/) | NVIDIA | official | 0 |
+| 3.3 | [Lambda Boosts AI Factory Resiliency and Efficiency With NVIDIA Photonics](https://blogs.nvidia.com/blog/lambda-photonics/) | NVIDIA | official | 0 |
 
 **超过 30 天没有新内容的源**：Mistral 新闻、Kimi 博客

@@ -1,140 +1,66 @@
 [
   {
-    "id": "170ba12c1b",
-    "title": "Cloudflare 发布 Search for Agents：后台开一个开关，AI Agent 就能直接搜你整站、取回 Markdown 原文",
-    "url": "https://blog.cloudflare.com/search-for-agents/",
-    "publisher": "blog.cloudflare.com",
+    "id": "9bb998d7b6",
+    "title": "让AI 能掌握电影大师的配色画面：迪金斯、王家卫、韦斯·安德森 15 位大师 5 种配色思路（附调色 Skill）",
+    "url": "https://x.com/TuyetloanP81840/status/2125857648683933907",
+    "publisher": "@TuyetloanP81840",
     "tier": "official",
     "published": "2026-11-27T00:00:00.000Z",
-    "score": 5.9,
+    "score": 4.6,
     "category_hint": null,
-    "via": "https://xiaohu.ai/article/cloudflare-search-for-agents/",
+    "via": "https://xiaohu.ai/article/ai-master-color-grading/",
     "discovered_by": "xiaohu",
     "related": []
   },
   {
-    "id": "6cb14ae5ab",
-    "title": "MAGI-2 提示词指南：10 套可用脚本、六段式写法与省钱大法全公开",
-    "url": "https://higgsfield.ai/zh/blog/magi-2-prompt-guide-10-prompts-and-settings-that-work",
-    "publisher": "higgsfield.ai",
+    "id": "3f1695fde4",
+    "title": "已经订阅了 Google AI服务的 免费领取一台Google Colab云电脑 上手指南：一条 SSH 连进 12 GB 内存 Ubuntu",
+    "url": "https://x.com/jandisufg/status/2123530059310850353",
+    "publisher": "@jandisufg",
     "tier": "official",
-    "published": "2026-11-27T00:00:00.000Z",
-    "score": 5.1,
+    "published": "2026-11-21T00:00:00.000Z",
+    "score": 4,
     "category_hint": null,
-    "via": "https://xiaohu.ai/article/magi-2-prompt-guide/",
+    "via": "https://xiaohu.ai/article/google-colab-cli-ssh/",
     "discovered_by": "xiaohu",
-    "related": []
+    "related": [
+      {
+        "title": "Como usar o Google Colab",
+        "url": "https://x.com/jandisufg/status/2123530059310850353",
+        "publisher": "@jandisufg",
+        "tier": "discovery"
+      }
+    ]
   },
   {
-    "id": "f8515e4236",
-    "title": "2026 年 10 款 AI 口型同步工具大比拼：内置翻译 18 到 175+ 种，单次最长 60 分钟",
-    "url": "https://higgsfield.ai/zh/blog/10-best-ai-lip-sync-tools-for-any-language-2026",
-    "publisher": "higgsfield.ai",
+    "id": "5aa3a24a55",
+    "title": "Skill lemo-animi：一句话让 Codex 做出带配乐和拟音的定格短片",
+    "url": "https://x.com/lemomo_ai/status/2123038832815907084",
+    "publisher": "@lemomo_ai",
     "tier": "official",
-    "published": "2026-11-27T00:00:00.000Z",
-    "score": 5.1,
+    "published": "2026-11-20T00:00:00.000Z",
+    "score": 4,
     "category_hint": null,
-    "via": "https://xiaohu.ai/article/higgsfield-ai-lip-sync-2026/",
+    "via": "https://xiaohu.ai/article/lemo-animi-stop-motion/",
     "discovered_by": "xiaohu",
-    "related": []
+    "related": [
+      {
+        "title": "开源 lemo-animi 定格动画Skill。一句话，让 Codex 做一支定格动画短片",
+        "url": "https://x.com/lemomo_ai/status/2123038832815907084",
+        "publisher": "@lemomo_ai",
+        "tier": "discovery"
+      }
+    ]
   },
   {
-    "id": "1c544e6e22",
-    "title": "The H3 Family: Models, Community, and What's Next",
-    "url": "https://www.minimax.io/blog/minimax-h3-family",
-    "publisher": "MiniMax",
-    "tier": "official",
-    "published": "2026-11-26",
-    "score": 4.9,
-    "category_hint": "product",
-    "related": []
-  },
-  {
-    "id": "b4c1c8bf45",
-    "title": "We’re partnering with Blue Origin on our first heavy-lift Project Suncatcher launch.",
-    "url": "https://blog.google/innovation-and-ai/models-and-research/google-research/blue-origin-project-suncatcher-partnership/",
-    "publisher": "Google",
-    "tier": "official",
-    "published": "2026-11-19T13:00:00.000Z",
-    "score": 4.1,
-    "category_hint": null,
-    "related": []
-  },
-  {
-    "id": "dec0868225",
-    "title": "Ian Buck Kicks Off NVIDIA’s Week at SC26 as Science Enters the Age of Agents",
-    "url": "https://blogs.nvidia.com/blog/ian-buck-sc26/",
-    "publisher": "NVIDIA",
-    "tier": "official",
-    "published": "2026-11-17T14:00:10.000Z",
-    "score": 4.1,
-    "category_hint": null,
-    "related": []
-  },
-  {
-    "id": "8192f10949",
-    "title": "NVIDIA CUDA-X Libraries Give Agents the Tools to Accelerate Scientific Discovery",
-    "url": "https://blogs.nvidia.com/blog/cuda-x-libraries-agents-accelerate-scientific-discovery/",
-    "publisher": "NVIDIA",
-    "tier": "official",
-    "published": "2026-11-16T16:00:16.000Z",
-    "score": 4.1,
-    "category_hint": null,
-    "related": []
-  },
-  {
-    "id": "6cab091c05",
-    "title": "NVIDIA Announces Rubin HPC — A New GPU to Accelerate Agents for Science, Engineering and Analytics",
-    "url": "https://blogs.nvidia.com/blog/rubin-hpc/",
-    "publisher": "NVIDIA",
-    "tier": "official",
-    "published": "2026-11-16T16:00:01.000Z",
-    "score": 4.1,
-    "category_hint": null,
-    "related": []
-  },
-  {
-    "id": "9acdb04257",
-    "title": "How Clay Builds GTM Agents — Jeff Barg, Head of AI",
-    "url": "https://lspace.beehiiv.com/podcast/s/latent_space_the_ai_engineer_podcast/how_clay_builds_gtm_agents_jeff_barg_head_of_ai",
-    "publisher": "Latent Space",
-    "tier": "discovery",
-    "published": "2026-11-26T22:44:44.000Z",
-    "score": 3.7,
-    "category_hint": "insight",
-    "related": []
-  },
-  {
-    "id": "d3aa48daa6",
-    "title": "Building on Nemotron 3.5 Parse: Open Data, Fine-Tuning, and Faster Inference",
-    "url": "https://huggingface.co/blog/nvidia/building-on-nemotron-35-parse-open-data-fine-tunin",
+    "id": "2d7f8b4f84",
+    "title": "Taking Trainium3 to the Track: Generating Videos with LTX-2.5",
+    "url": "https://huggingface.co/blog/video-trainium3",
     "publisher": "Hugging Face",
     "tier": "primary",
-    "published": "2026-11-26T05:05:36.000Z",
+    "published": "2026-11-27T00:00:00.000Z",
     "score": 3.6,
     "category_hint": null,
-    "related": []
-  },
-  {
-    "id": "d1e1fa1ba8",
-    "title": "Connectors and skills come together as plugins",
-    "url": "https://x.com/claudeai/status/2124970294523945328",
-    "publisher": "@claudeai",
-    "tier": "official",
-    "published": "2026-11-23T20:56:12.910Z",
-    "score": 3.6,
-    "category_hint": "product",
-    "related": []
-  },
-  {
-    "id": "372f1627fa",
-    "title": "If you’re in Europe, you get a month of Vibe Pro for free",
-    "url": "https://x.com/MistralAI/status/2124905610386780451",
-    "publisher": "@MistralAI",
-    "tier": "official",
-    "published": "2026-11-23T16:39:11.010Z",
-    "score": 3.6,
-    "category_hint": "product",
     "related": []
   },
   {
@@ -176,19 +102,6 @@
     "score": 3.6,
     "category_hint": null,
     "via": "https://xiaohu.ai/article/riemann-hypothesis-proof-claim/",
-    "discovered_by": "xiaohu",
-    "related": []
-  },
-  {
-    "id": "3f1695fde4",
-    "title": "已经订阅了 Google AI服务的 免费领取一台Google Colab云电脑 上手指南：一条 SSH 连进 12 GB 内存 Ubuntu",
-    "url": "https://x.com/jandisufg/status/2123530059310850353",
-    "publisher": "@jandisufg",
-    "tier": "official",
-    "published": "2026-11-21T00:00:00.000Z",
-    "score": 3.6,
-    "category_hint": null,
-    "via": "https://xiaohu.ai/article/google-colab-cli-ssh/",
     "discovered_by": "xiaohu",
     "related": []
   },
@@ -242,19 +155,6 @@
     "category_hint": "product",
     "text": "Sparse attention does less work, but finding the right tokens still has a cost.\n\nCheck out eight design guidelines for efficient sparse attention on NVIDIA accelerated computing, from token selection to memory reuse.\n\nRead the breakdown: https://developer.nvidia.com/blog/co-designing-sparse-attention-for-efficient-long-context-inference/",
     "via": "https://x.com/NVIDIAAI/status/2123875786323296459",
-    "related": []
-  },
-  {
-    "id": "5aa3a24a55",
-    "title": "Skill lemo-animi：一句话让 Codex 做出带配乐和拟音的定格短片",
-    "url": "https://x.com/lemomo_ai/status/2123038832815907084",
-    "publisher": "@lemomo_ai",
-    "tier": "official",
-    "published": "2026-11-20T00:00:00.000Z",
-    "score": 3.6,
-    "category_hint": null,
-    "via": "https://xiaohu.ai/article/lemo-animi-stop-motion/",
-    "discovered_by": "xiaohu",
     "related": []
   },
   {
@@ -401,17 +301,6 @@
     "related": []
   },
   {
-    "id": "6f6a6b07f1",
-    "title": "Google Will Make AI Agents Use Its MCP Servers. The Gmail One Can't Send Email",
-    "url": "https://techstackups.com/articles/google-workspace-ai-agents-mcp/",
-    "publisher": "Hacker News",
-    "tier": "discovery",
-    "published": "2026-11-26T09:44:23.000Z",
-    "score": 3.4,
-    "category_hint": null,
-    "related": []
-  },
-  {
     "id": "86a9211921",
     "title": "Anthropic 发布 58 家企业 AI 访谈报告：三分之二缩减招聘，高回报靠改分工与流程",
     "url": "https://www.anthropic.com/research/working-with-ai",
@@ -486,6 +375,135 @@
     "publisher": "NVIDIA",
     "tier": "official",
     "published": "2026-11-23T17:00:08.000Z",
+    "score": 3.3,
+    "category_hint": null,
+    "related": []
+  },
+  {
+    "id": "0aa81be73e",
+    "title": "OpenAI is sharing new research on combating distillation of its models.",
+    "url": "https://x.com/OpenAI/status/2123862344422088794",
+    "publisher": "@OpenAI",
+    "tier": "official",
+    "published": "2026-11-20T19:33:37.000Z",
+    "score": 3.3,
+    "category_hint": "product",
+    "text": "Distillation can reproduce powerful AI capabilities without the safeguards built around them.\n\nWe’re sharing new research on our work to combat distillation of our models, how these capabilities transfer, and how we detect and disrupt coordinated attempts.\n\nThese findings are helping us sharpen our defenses and support safeguards across the industry.",
+    "via": "https://x.com/OpenAI/status/2123862344422088794",
+    "related": []
+  },
+  {
+    "id": "1a3d12e007",
+    "title": "How Watch Duty is using Gemini to get wildfire alerts out faster",
+    "url": "https://blog.google/company-news/outreach-and-initiatives/google-org/watch-duty-gemini-tool/",
+    "publisher": "Google",
+    "tier": "official",
+    "published": "2026-11-20T17:00:00.000Z",
+    "score": 3.3,
+    "category_hint": null,
+    "related": []
+  },
+  {
+    "id": "099c7c3bdb",
+    "title": "NVIDIA Research introduced WorldTrace to help video world models remember scenes.",
+    "url": "https://x.com/NVIDIAAI/status/2123817447413395732",
+    "publisher": "@NVIDIAAI",
+    "tier": "official",
+    "published": "2026-11-20T16:35:12.000Z",
+    "score": 3.3,
+    "category_hint": "product",
+    "text": "Look away and return to the same scene. For interactive video world models, preserving that consistency is a challenge.\n\nWorldTrace from @NVIDIA Research helps models remember places without retraining, keeping spaces more consistent as users explore. On LoopBench, a benchmark for scene recall, it improves recall of revisited scenes by 32% over the standard sliding-window approach.\n\nRead our #NeurIPS2026 paper ➡️",
+    "via": "https://x.com/NVIDIAAI/status/2123817447413395732",
+    "related": []
+  },
+  {
+    "id": "8e19481fce",
+    "title": "GIFs are now available in Gemini using Gemini Omni 1.2 Flash.",
+    "url": "https://x.com/GeminiApp/status/2123813017855103449",
+    "publisher": "@GeminiApp",
+    "tier": "official",
+    "published": "2026-11-20T16:17:36.000Z",
+    "score": 3.3,
+    "category_hint": "product",
+    "text": "Say hello to GIFs in Gemini. Say goodbye to searching for the perfect one.\n\nFrom looping photo effects to funny memes, create any GIF you can imagine with our latest video model, Gemini Omni 1.2 Flash, for smooth motion and consistent quality across every frame.\n\nGIFs are now available to all Google AI subscribers and free of charge in the U.S., Japan, Korea, Australia, Canada, U.K., Germany, and France.\n\nGet started by prompting in the main chat or by selecting the image or video tool. Then, choose GIF in the format picker and describe what you want to make.\n\nLearn more about availability:",
+    "via": "https://x.com/GeminiApp/status/2123813017855103449",
+    "related": []
+  },
+  {
+    "id": "1a7867b3a7",
+    "title": "NVIDIA and Microsoft Expand Accelerated Computing From Azure to Windows PCs",
+    "url": "https://blogs.nvidia.com/blog/microsoft-ignite-accelerated-computing-azure-windows-pcs/",
+    "publisher": "NVIDIA",
+    "tier": "official",
+    "published": "2026-11-19T20:00:15.000Z",
+    "score": 3.3,
+    "category_hint": null,
+    "related": []
+  },
+  {
+    "id": "1a2dbe3832",
+    "title": "OpenAI built Performance Factory to coordinate agents investigating ChatGPT regressions",
+    "url": "https://x.com/OpenAIDevs/status/2123471880292299171",
+    "publisher": "@OpenAIDevs",
+    "tier": "official",
+    "published": "2026-11-19T17:42:03.000Z",
+    "score": 3.3,
+    "category_hint": "product",
+    "text": "Codex already helps us build ChatGPT faster. Now it’s helping us keep ChatGPT fast.\n\nWe built the Performance Factory to coordinate agents that investigate regressions, propose fixes for engineers to review, and check if those fixes work in production.",
+    "via": "https://x.com/OpenAIDevs/status/2123471880292299171",
+    "related": []
+  },
+  {
+    "id": "baa7542616",
+    "title": "Season’s Streamings and Savings: Black Friday Deals Come to GeForce NOW",
+    "url": "https://blogs.nvidia.com/blog/geforce-now-thursday-black-friday-2026/",
+    "publisher": "NVIDIA",
+    "tier": "official",
+    "published": "2026-11-19T14:00:12.000Z",
+    "score": 3.3,
+    "category_hint": null,
+    "related": []
+  },
+  {
+    "id": "166b0911e9",
+    "title": "How genome mapping can help researchers better understand disease",
+    "url": "https://blog.google/innovation-and-ai/models-and-research/google-deepmind/alphagenome-disease-research/",
+    "publisher": "Google",
+    "tier": "official",
+    "published": "2026-11-17T22:00:00.000Z",
+    "score": 3.3,
+    "category_hint": null,
+    "related": []
+  },
+  {
+    "id": "8617ffe05c",
+    "title": "NVIDIA DGX Spark Developer Kit Turns a Desk Into a Supercomputing Lab",
+    "url": "https://blogs.nvidia.com/blog/dgx-spark-hpc-developer-kit-sc26/",
+    "publisher": "NVIDIA",
+    "tier": "official",
+    "published": "2026-11-16T23:00:05.000Z",
+    "score": 3.3,
+    "category_hint": null,
+    "related": []
+  },
+  {
+    "id": "2453547dce",
+    "title": "How the World’s Most Advanced AI Infrastructure Supply Chain Invents the Future",
+    "url": "https://blogs.nvidia.com/blog/ai-infrastructure-supply-chain/",
+    "publisher": "NVIDIA",
+    "tier": "official",
+    "published": "2026-11-16T20:00:37.000Z",
+    "score": 3.3,
+    "category_hint": null,
+    "related": []
+  },
+  {
+    "id": "aafc20d9f2",
+    "title": "Lambda Boosts AI Factory Resiliency and Efficiency With NVIDIA Photonics",
+    "url": "https://blogs.nvidia.com/blog/lambda-photonics/",
+    "publisher": "NVIDIA",
+    "tier": "official",
+    "published": "2026-11-16T16:00:51.000Z",
     "score": 3.3,
     "category_hint": null,
     "related": []
