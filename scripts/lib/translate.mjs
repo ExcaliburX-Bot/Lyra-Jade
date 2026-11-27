@@ -36,13 +36,24 @@ function where(p) {
   return s;
 }
 
-/* 拆片段：所有含中文的字符串（跳过 SKIP 里的字段）。只读，不改文章 */
+/* 代码行里的注释：前半段（代码和注释符号）原样保留，后半段是注释正文 */
+const CODE_COMMENT = /^(.*?(?:#|\/\/)\s*)(.*)$/;
+
+/* 拆片段：所有含中文的字符串（跳过 SKIP 里的字段；代码只取其中的中文注释）。只读，不改文章 */
 export function collectSegments(a) {
   const out = [];
   const walk = (o, p) => {
-    if (typeof o === "string") { if (CJK.test(o) && !SKIP.has(p.at(-1))) out.push({ id: `s${out.length + 1}`, path: p, where: where(p), text: o }); return; }
+    if (typeof o === "string") {
+      if (!CJK.test(o)) return;
+      if (p.at(-1) === "code") {   /* 代码本身不翻，只翻代码里带中文的注释（# 或 //），一行一个片段 */
+        o.split("\n").forEach((ln, i) => { const m = ln.match(CODE_COMMENT); if (m && CJK.test(m[2])) out.push({ id: `s${out.length + 1}`, path: p, where: where(p), text: m[2], line: i, pre: m[1] }); });
+        return;
+      }
+      if (!SKIP.has(p.at(-1))) out.push({ id: `s${out.length + 1}`, path: p, where: where(p), text: o });
+      return;
+    }
     if (Array.isArray(o)) return o.forEach((x, i) => walk(x, [...p, String(i)]));
-    if (o && typeof o === "object") for (const k of Object.keys(o)) { if (k !== "pipeline" && (!SKIP.has(k) || typeof o[k] === "object")) walk(o[k], [...p, k]); }
+    if (o && typeof o === "object") for (const k of Object.keys(o)) { if (k !== "pipeline" && (!SKIP.has(k) || k === "code" || typeof o[k] === "object")) walk(o[k], [...p, k]); }
   };
   walk(a, []);
   return out;
@@ -61,7 +72,11 @@ export function applySegments(a, segs, map) {
   for (const s of segs) {
     let o = b;
     for (const k of s.path.slice(0, -1)) o = o[k];
-    o[s.path.at(-1)] = map[s.id];
+    if (s.line !== undefined) {   /* 代码注释：只换掉那一行的注释正文 */
+      const lines = String(o[s.path.at(-1)]).split("\n");
+      lines[s.line] = s.pre + String(map[s.id]).replace(/\s*\n\s*/g, " ");
+      o[s.path.at(-1)] = lines.join("\n");
+    } else o[s.path.at(-1)] = map[s.id];
   }
   for (const sec of b.sections || []) for (const bl of sec.blocks || []) if (bl.fig?.type === "quote") delete bl.fig.zh;
   b.lang = "en";

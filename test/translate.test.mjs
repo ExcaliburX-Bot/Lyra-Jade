@@ -169,3 +169,14 @@ test("翻译：「100 多亿」「50 余万」按数量级算，英文写 over 1
   const segs = [{ id: "s1", text: "模型从 7000 万到 100 多亿参数" }];
   assert.deepEqual(checkTranslation(segs, { s1: "Models ranged from 70 million to over 10 billion parameters" }), []);
 });
+
+test("翻译：代码不翻，只翻其中带中文的注释，填回时其他行原样保留", () => {
+  const code = "# 默认示例（更快）\n--updates 50 --teams 128\nrun() // 运行一次\nprint('你好')";
+  const a = { title: "标题", sections: [{ blocks: [{ type: "code", code }] }], status: "published" };
+  const segs = collectSegments(a);
+  const cs = segs.filter(s => s.line !== undefined);
+  assert.deepEqual(cs.map(s => [s.line, s.text]), [[0, "默认示例（更快）"], [2, "运行一次"]]);
+  const map = Object.fromEntries(segs.map(s => [s.id, s.line === 0 ? "Default example (faster)" : s.line === 2 ? "run once" : "Title"]));
+  const en = applySegments(a, segs, map);
+  assert.equal(en.sections[0].blocks[0].code, "# Default example (faster)\n--updates 50 --teams 128\nrun() // run once\nprint('你好')");
+});
