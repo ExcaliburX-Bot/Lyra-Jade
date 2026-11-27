@@ -1,16 +1,16 @@
 {
   "slug": "bpe-neural-machine-translation-of-rare-words-with-subword-units",
   "category": "paper",
-  "publisher": "Sennrich, Haddow, Birch, University of Edinburgh",
+  "publisher": "Sennrich, Haddow, Birch · University of Edinburgh",
   "date": "2015-08-31",
-  "title": "BPE subword tokenization: splitting words into common pieces so a fixed vocabulary can spell any word — the origin of LLM tokens",
-  "summary": "Neural translation models had vocabularies of only tens of thousands of words, so rare and new words were untranslatable. This paper turns the 1994 byte pair encoding compression algorithm into a tokenization method: start from letters and repeatedly merge the most common neighboring pair. We work through 10 merges from the paper's code, then look at its experiments, the errors that inconsistent segmentation causes, and how this became the token in today's LLMs.",
-  "ai_summary": "\"Neural Machine Translation of Rare Words with Subword Units\" (Sennrich et al., University of Edinburgh, ACL 2016) uses byte pair encoding (BPE) for word segmentation: start from characters and repeatedly merge the most frequent adjacent symbol pair in the corpus into a new symbol; the number of merges sets the vocabulary size. Rare and new words are represented as sequences of subword units, so the translation model no longer needs a back-off dictionary. On the WMT 2015 English-to-German and English-to-Russian tasks, subword models beat the dictionary baseline by up to 1.1 and 1.3 BLEU; rare-word translation clearly improves, and BPE learned jointly over both languages segments more consistently.",
+  "title": "BPE subword tokenization: how a fixed vocabulary can spell any word and where LLM tokens come from",
+  "summary": "Neural translation vocabularies have only tens of thousands of words, so rare and new words can't be translated. This paper turns byte pair encoding, a 1994 compression algorithm, into a tokenization method: start from letters and repeatedly merge the most common adjacent pair. We run the paper's code by hand for 10 merges, then look at its experiments, the errors caused by inconsistent segmentation, and how it became the token behind today's large models.",
+  "ai_summary": "Neural Machine Translation of Rare Words with Subword Units (Sennrich et al., University of Edinburgh, ACL 2016) applies byte pair encoding (BPE) to tokenization: starting from characters, it repeatedly merges the most frequent adjacent pair of symbols, and the number of merges sets the vocabulary size. Rare and new words are represented as subword sequences, so translation no longer needs a back-off dictionary. On WMT 2015 English→German and English→Russian, the subword models beat the dictionary baseline by up to 1.1 and 1.3 BLEU, with clearly better rare-word translation and more consistent segmentation when BPE is learned jointly on both languages.",
   "brief": [
-    "The problem: translation models had vocabularies of only tens of thousands of words. Rare words, names, and compounds could only be handled by dictionary lookup or copying, and the model couldn't generate new words.",
-    "The method: borrow the BPE compression algorithm, start from letters, repeatedly merge the most common adjacent pair, and use a fixed vocabulary to represent any word.",
-    "The result: no dictionary needed—English-to-German and English-to-Russian BLEU rise by up to 1.1 and 1.3 points, rare and unseen words translate better, and joint BPE segments more consistently.",
-    "The limits: vocabulary size is set by trial and error; character bigrams, not BPE, reach the highest BLEU; separate BPEs can segment inconsistently and cause transliteration errors."
+    "Problem: translation vocabularies have only tens of thousands of words, so rare words, names, and compounds must be looked up or copied verbatim, and the model cannot generate new words.",
+    "Method: borrow the BPE compression algorithm — start from letters, repeatedly merge the most common adjacent pair, and use a fixed vocabulary to represent any word.",
+    "Result: no dictionary needed; English→German and English→Russian BLEU improves by up to 1.1 and 1.3 points, rare and unseen words translate better, and joint BPE gives more consistent segmentation.",
+    "Limits: vocabulary size is chosen heuristically; the highest BLEU comes from character bigrams, not BPE; and separate BPE can produce inconsistent splits and transliteration errors."
   ],
   "paper": {
     "title": "Neural Machine Translation of Rare Words with Subword Units",
@@ -22,20 +22,20 @@
     "url": "https://arxiv.org/abs/1508.07909"
   },
   "cover": {
-    "headline": "A close read of the original BPE subword tokenization paper",
-    "highlight": "A fixed vocabulary that can spell any word",
+    "headline": "BPE subword tokenization: a close reading of the original paper",
+    "highlight": "A fixed vocabulary that can spell any word.",
     "glyph": {
       "kind": "flow",
       "nodes": [
         {
-          "label": "Single letters"
+          "label": "single letters"
         },
         {
-          "label": "Repeatedly merging the most common pair",
+          "label": "repeatedly merge the most common pair",
           "tone": "hi"
         },
         {
-          "label": "Subword vocabulary"
+          "label": "subword vocabulary"
         }
       ]
     }
@@ -45,36 +45,36 @@
       "h": "The short version: what this paper actually did",
       "blocks": [
         {
-          "p": "In August 2015, Rico Sennrich, Barry Haddow, and Alexandra Birch at the University of Edinburgh released this paper; it was published the following year at ACL 2016. It targets an old problem in neural machine translation: **the model's vocabulary is fixed, but the words it needs to translate are not**."
+          "p": "In August 2015, Rico Sennrich, Barry Haddow, and Alexandra Birch of the University of Edinburgh released this paper; it appeared at ACL 2016 a year later. It targets an old problem in neural machine translation: **the model's vocabulary is fixed, but the words it needs to translate are endless.**"
         },
         {
-          "p": "Neural translation models at the time typically had a vocabulary of only 30,000 to 50,000 words. Everything outside that became an “unknown word” symbol, patched up at translation time by a dictionary lookup or by copying the word as is. But names, compounds, loanwords, and newly coined words keep appearing—especially in a language like German, which can stack several words into one long one."
+          "p": "At the time, neural translation models typically had vocabularies of only 30,000 to 50,000 words. Anything outside the vocabulary simply became an “unknown word” symbol, patched up during translation with a dictionary lookup or by copying the source word verbatim. But names, compounds, loanwords, and newly coined words keep appearing — especially in a language like German, which can fuse several words into a single long one."
         },
         {
-          "p": "The paper's answer: **break words into smaller “subwords.”** Common words stay whole; rare words split into a few common pieces, or down to single letters if necessary. A fixed-size vocabulary can then represent any word. How? The paper borrows a 1994 data compression algorithm, **byte pair encoding** (Byte Pair Encoding, BPE): start from single letters and repeatedly merge the two symbols that most often appear next to each other in the corpus. The number of merges decides the vocabulary size."
+          "p": "The paper's answer is to **break words into smaller “subwords.”** Common words stay whole, rare words split into a few frequent pieces, and in the worst case the pieces go down to single letters. As a result, a fixed-size vocabulary can represent any word. How to split? The paper borrows a 1994 data compression algorithm, **byte pair encoding (BPE):** start from single letters and repeatedly merge the two symbols that most often appear together in the corpus into a new symbol. The number of merges determines the vocabulary size."
         },
         {
-          "p": "On the WMT 2015 English-to-German and English-to-Russian tasks, subword models no longer need dictionary lookups. They beat the dictionary baseline by up to 1.1 and 1.3 BLEU points respectively, and they translate rare words—and words never seen in training—considerably better."
+          "p": "On the WMT 2015 English→German and English→Russian tasks, the subword model no longer needs a dictionary lookup, outperforming the dictionary baseline by up to 1.1 and 1.3 BLEU points respectively, with clearly better translations for rare words and words never seen in training."
         },
         {
-          "p": "The paper's influence reaches far beyond machine translation. When today's large models like GPT and LLaMA talk about **tokens**, most of those tokens are produced by BPE or a variant. The idea behind “a model reads one token at a time” took shape here."
+          "p": "The paper's influence goes far beyond machine translation. The **tokens** that today's GPT, LLaMA, and other large models talk about are mostly produced by BPE or its variants. What a “token” means when people say “the model reads one token at a time” took shape starting with this paper."
         },
         {
           "callout": {
             "kind": "takeaway",
-            "title": "In one sentence",
-            "text": "BPE = start from letters and repeatedly glue the most common adjacent pair into one unit. Common words eventually become a single unit; rare words stay as a few pieces. That is how a fixed-size vocabulary can spell any word."
+            "title": "One-sentence version",
+            "text": "BPE = start from letters and repeatedly glue the most common adjacent two pieces into one. Common words eventually become a single piece; rare words stay as a few fragments. That way a fixed-size vocabulary can spell any word."
           }
         },
         {
           "callout": {
             "kind": "prereq",
-            "title": "Three concepts you need before reading",
-            "text": "Don't worry if you haven't seen them before; these three are enough:",
+            "title": "Three small ideas you need for this paper",
+            "text": "It's fine if you know nothing about them; these three are enough:",
             "list": [
-              "**Vocabulary**: the list of all symbols a model knows. The size of the model's input and output layers is proportional to vocabulary size, so the vocabulary cannot be infinitely large.",
-              "**Encoder-decoder translation model**: one network reads the source text, another writes the translation, and attention aligns the two. This is the model from our deep read of “Bahdanau attention.”",
-              "**BLEU**: measures how much the machine translation overlaps with reference translations. Higher is better."
+              "**Vocabulary:** the list of all symbols the model knows. The size of the model's input and output layers scales with the vocabulary size, so the vocabulary cannot be unlimited.",
+              "**Encoder–decoder translation model:** one network reads the source sentence, another writes the translation, with attention aligning the two. The model in this paper is the same one covered in our close reading of the Bahdanau attention paper.",
+              "**BLEU:** measures how much a machine translation overlaps with reference translations at the word level; higher is better."
             ]
           }
         }
@@ -84,19 +84,19 @@
       "h": "The problem: a closed vocabulary, an open language",
       "blocks": [
         {
-          "p": "Word-level translation models handle out-of-vocabulary words—OOV in the paper's terms—by “backing off to a dictionary.” The model first emits an unknown-word symbol, then uses attention to find the corresponding source word, looks it up in a bilingual dictionary, and copies it as is when the lookup fails."
+          "p": "In word-level translation models, when the model hits a word outside the vocabulary (what the paper calls OOV), the usual fix is to “back off to a dictionary”: output an unknown-word symbol, use attention to find the corresponding source word, look it up in a bilingual dictionary, and copy it verbatim if the lookup fails."
         },
         {
-          "p": "The paper points out several problems. Words in two languages don't always correspond one to one—a single German compound can correspond to several English words. Copying is reasonable for names, but many cases require morphological changes or transliteration, such as turning Latin letters into Cyrillic. And a word-level model simply **cannot generate** new words that were not in training."
+          "p": "The paper points out several problems. Words in two languages do not always line up one-to-one: a German compound may correspond to several English words. Copying is reasonable for names, but often you need to change word forms or transliterate, for example from Latin to Cyrillic letters. And a word-level model simply **cannot generate** new words it never saw in training."
         },
         {
-          "p": "But many “unknown words” are actually **transparently translatable**: a competent translator can produce them on first sight from their parts. The paper gives three types:"
+          "p": "On the other hand, many “unknown words” are actually **transparently translatable**: a competent translator, seeing one for the first time, can still work it out from its parts. The paper gives three categories:"
         },
         {
           "fig": {
             "type": "table",
-            "title": "Three types of words translatable through smaller units",
-            "subtitle": "Examples from Section 3 of the paper.",
+            "title": "Three kinds of words translatable through smaller units",
+            "subtitle": "Examples from Section 3 of the paper",
             "columns": [
               "Type",
               "Example",
@@ -106,65 +106,65 @@
               [
                 "Names and other proper nouns",
                 "English Barack Obama → Russian Барак Обама",
-                "If the alphabets match, copy; if they differ, transliterate."
+                "Same alphabet: copy; different alphabet: transliterate sound by sound."
               ],
               [
                 "Cognates and loanwords",
                 "English claustrophobia → German Klaustrophobie",
-                "Change a few letters by regular rules"
+                "Change a few letters by regular rules."
               ],
               [
                 "Morphologically complex words",
                 "English solar system → German Sonnensystem (Sonne + System)",
-                "Split into morphemes, translate each separately, then reassemble"
+                "Split into morphemes, translate each, then reassemble."
               ]
             ]
           }
         },
         {
-          "p": "The paper counts 100 rare tokens in the German training data—words not among the 50,000 most frequent types—and finds that most can be translated from English this way: 56 compounds, 21 names, 6 loanwords with a common origin, 5 words with transparent affixation, plus 1 number and 1 computer language identifier."
+          "p": "The paper examined 100 rare tokens in the German training data (outside the 50,000 most frequent types) and found that most could be translated from English this way: 56 compounds, 21 names, 6 cognates or loanwords, 5 words translatable through affixes, plus 1 number and 1 computer language identifier."
         }
       ]
     },
     {
-      "h": "BPE: turning a compression algorithm into a segmentation algorithm",
+      "h": "BPE: turning a compression algorithm into a tokenizer",
       "blocks": [
         {
-          "p": "Original BPE was a compression algorithm proposed by Gage in 1994: repeatedly find the most frequent pair of bytes in the data and replace it with an unused byte. The paper moves this to word segmentation, merging characters or character sequences instead of bytes:"
+          "p": "The original BPE was a compression algorithm proposed by Gage in 1994: repeatedly find the most frequent pair of bytes in the data and replace it with an unused byte. The paper adapts it to tokenization, merging characters and character sequences instead of bytes:"
         },
         {
           "list": [
-            "**Initialize**: start with a vocabulary containing only the individual characters. Write each word as a character sequence and append a special end-of-word symbol (written as · in the paper and `</w>` in the code) so word boundaries can be restored after translation.",
-            "**Count**: count every adjacent symbol pair. Each word is weighted by its frequency in the corpus, and pairs never cross word boundaries, so the counting only has to run over a “word → frequency” dictionary and is fast.",
-            "**Merge**: replace the most frequent pair—say A and B—with a new symbol AB everywhere it occurs, and add AB to the vocabulary.",
-            "**Repeat**: go back to the counting step until the preset number of merges is reached."
+            "**Initialize:** the vocabulary contains only all single characters. Each word is written as a character sequence with a special “end-of-word” symbol at the end (written as · in the paper and `</w>` in the code) so word boundaries can be restored after translation.",
+            "**Count:** count every adjacent pair of symbols. Each word is weighted by its frequency in the corpus, and pairs never cross word boundaries, so the whole algorithm runs on a word→count dictionary and is fast.",
+            "**Merge:** replace every occurrence of the most frequent pair (say A and B) with a new symbol AB, and add it to the vocabulary.",
+            "**Repeat:** return to the counting step until the predetermined number of merges is done."
           ]
         },
         {
-          "p": "Every merge produces a new symbol that represents a character sequence. Common character sequences—even whole common words—eventually become single symbols. The final vocabulary size equals the initial character count plus the number of merges, and **the number of merges is the algorithm's only hyperparameter**."
+          "p": "Each merge creates a new symbol representing a character n-gram. Frequent character n-grams, and even whole frequent words, eventually merge into a single symbol. Final vocabulary size = initial characters + number of merges, and **the number of merges is the algorithm's only hyperparameter.**"
         },
         {
-          "p": "At test time, split a new word into characters, then apply the learned merge rules **in the order they were learned**. This works for any word, so the vocabulary is fixed but the words it can represent are open. The paper says the only possible unknown symbols are characters never seen in training."
+          "p": "At test time, split a new word into characters, then apply the learned merge rules **in the order they were learned**. Any word can be processed this way, so the vocabulary is fixed but the words it can represent are open-ended. The paper says the only unknown symbols that might appear are characters never seen in training."
         },
         {
           "callout": {
             "kind": "intuition",
             "title": "Like finding common collocations in a text",
-            "text": "BPE is a little like abridging a book: first you notice that “t” is most often followed by “h,” so you treat “th” as a unit; then “th” is most often followed by “e,” so you create “the.” High-frequency combinations keep sticking together until a whole common word becomes one unit. Low-frequency words never stick together and remain as parts. It knows no grammar—only statistics."
+            "text": "BPE is a bit like making a book into shorthand: first you notice that “t” is most often followed by “h”, so you treat “th” as a single character; then you notice “th” is often followed by “e”, so you create “the”. High-frequency combinations keep gluing into bigger chunks until a whole common word becomes one character; low-frequency words never glue, so they stay as parts. It knows nothing about grammar — only statistics."
           }
         },
         {
-          "p": "The paper includes a Python implementation of only a dozen or so lines. Let's run its example:"
+          "p": "The paper includes a small Python implementation, just a dozen or so lines. We run it on its own example:"
         },
         {
           "fig": {
             "type": "table",
             "title": "BPE by hand: 10 merges, from letters to whole words",
-            "subtitle": "Illustrative: the corpus is the four words from Algorithm 1 in the paper, with their frequencies: low ×5, lower ×2, newest ×6, widest ×3. `</w>` marks the end of a word. Numbers are produced by running the paper's code on this site; where pairs tie, the first one encountered is chosen.",
+            "subtitle": "Illustrative: the corpus is the four words and their frequencies from Algorithm 1 of the paper: low ×5, lower ×2, newest ×6, widest ×3. `</w>` marks word ends. Numbers are from running the paper's code on this site; ties go to the pair encountered first.",
             "columns": [
               "Merge",
-              "Merged pair",
-              "Count",
+              "Pair merged",
+              "Frequency",
               "Corpus after merge"
             ],
             "rows": [
@@ -172,31 +172,31 @@
                 "1",
                 "e + s",
                 "9",
-                "n e w es t </w>, w i d es t </w>"
+                "n e w es `</w>`, w i d es `</w>`"
               ],
               [
                 "2",
                 "es + t",
                 "9",
-                "n e w est </w>, w i d est </w>"
+                "n e w est `</w>`, w i d est `</w>`"
               ],
               [
                 "3",
-                "est + </w>",
+                "est + `</w>`",
                 "9",
-                "n e w est</w>, w i d est</w>"
+                "n e w est`</w>`, w i d est`</w>`"
               ],
               [
                 "4",
                 "l + o",
                 "7",
-                "lo w </w>, lo w e r </w>"
+                "lo w `</w>`, lo w e r `</w>`"
               ],
               [
                 "5",
                 "lo + w",
                 "7",
-                "low </w>, low e r </w>"
+                "low `</w>`, low e r `</w>`"
               ],
               [
                 "6",
@@ -212,15 +212,15 @@
               ],
               [
                 "8",
-                "new + est</w>",
+                "new + est`</w>`",
                 "6",
-                "newest</w>: the whole word becomes one token"
+                "newest`</w>`: the whole word becomes one token"
               ],
               [
                 "9",
-                "low + </w>",
+                "low + `</w>`",
                 "5",
-                "low</w>: the whole word becomes one token"
+                "low`</w>`: the whole word becomes one token"
               ],
               [
                 "10",
@@ -232,50 +232,55 @@
             "highlight": {
               "row": 7
             },
-            "note": "“est</w>” appears 6 + 3 = 9 times across newest and widest, so it gets merged first. It happens to be the English superlative ending. Nobody told the algorithm what an affix is; frequency found it on its own."
+            "note": "“est`</w>`” appears 6 + 3 = 9 times in newest and widest, so it is the first pair glued together — and it happens to be the English superlative ending. No one told the algorithm what an affix is; frequency found it on its own."
+          },
+          "plain": {
+            "title": "The most frequent pair glues first",
+            "pic": "bpe-merge",
+            "text": "At the start, every letter is its own piece. Count which two adjacent pieces appear together most often, then glue them into one: first e+s, then es+t, and so on. Repeated like this, common affixes (est) and common words grow into complete pieces on their own, while rare words stay split."
           }
         },
         {
           "fig": {
             "type": "table",
-            "title": "Segmenting new words with the 10 learned rules",
-            "subtitle": "Illustrative: words that never appeared in the corpus are segmented by applying the merges in the order learned above. Numbers are produced by running the paper's code.",
+            "title": "Applying the 10 learned rules to new words",
+            "subtitle": "Illustrative: applying the learned merge order to words that did not appear in the corpus. Numbers are from running the paper's code on this site.",
             "columns": [
               "New word",
               "Segmentation",
-              "Why"
+              "Note"
             ],
             "rows": [
               [
                 "lowest",
-                "low | est</w>",
-                "Two known pieces joined together, even though the word was never seen."
+                "low | est`</w>`",
+                "Two learned pieces combined, even though this word was never seen."
               ],
               [
                 "slow",
-                "s | low</w>",
-                "One extra letter at the front, and it is still representable."
+                "s | low`</w>`",
+                "One extra letter at the front, still representable."
               ],
               [
                 "newer",
-                "new | e | r | </w>",
-                "er was not learned from this tiny corpus, so it falls back to single letters."
+                "new | e | r | `</w>`",
+                "er wasn't learned in such a small corpus, so it falls back to single letters."
               ]
             ],
-            "note": "The more merges, the bigger the pieces and the shorter the sequence—but the larger the vocabulary. In practice, this runs for tens of thousands of merges."
+            "note": "The more merges, the bigger the pieces and the shorter the sequence — but the larger the vocabulary. Real use runs tens of thousands of merges."
           }
         },
         {
           "quiz": {
-            "q": "What is the only BPE hyperparameter you set by hand?",
+            "q": "What is BPE's only manually set hyperparameter?",
             "options": [
               "Learning rate",
-              "The number of merges, which directly sets the final vocabulary size.",
+              "The number of merges, which directly determines the final vocabulary size",
               "The maximum number of pieces per word",
               "How the end-of-word symbol is written"
             ],
             "answer": 1,
-            "why": "Final vocabulary = initial characters + one new symbol per merge. More merges mean larger common pieces and shorter text, but a larger vocabulary. The paper's English-to-German experiments use 59,500 merges."
+            "why": "Final vocabulary = initial characters + one new symbol per merge. More merges mean larger common pieces and shorter text, but a larger vocabulary. The paper's English→German experiments used 59,500 merges."
           }
         }
       ]
@@ -284,13 +289,13 @@
       "h": "The trade-off between vocabulary size and text length",
       "blocks": [
         {
-          "p": "A segmentation method has to balance two forces. A larger vocabulary makes the model's input and output layers larger, slower, and more memory-hungry. A too-small vocabulary forces each word into many pieces, lengthening the sequence; encoder and decoder computation is at least linear in sequence length, and the model must pass information across longer distances."
+          "p": "A tokenizer must balance two things. A larger vocabulary makes the model's input and output layers larger, which is slower and uses more memory. But a too-small vocabulary splits a word into many pieces, lengthening the sequence; encoder and decoder computation is at least linear in sequence length, and the model must carry information over longer distances."
         },
         {
           "fig": {
             "type": "table",
             "title": "The same German training corpus, segmented different ways",
-            "subtitle": "From Table 1 of the paper. Token counts are in millions; “unknown” is the number of tokens in the development set that cannot be segmented.",
+            "subtitle": "From Table 1 of the paper. Token counts are in millions; “unknown” is the number of tokens in the development set that cannot be segmented out.",
             "columns": [
               "Segmentation",
               "Tokens (millions)",
@@ -299,7 +304,7 @@
             ],
             "rows": [
               [
-                "No segmentation (whole words)",
+                "No split (whole words)",
                 "100",
                 "1,750,000",
                 "1079"
@@ -335,7 +340,7 @@
                 "237"
               ],
               [
-                "Syllable splitting",
+                "Syllable hyphenation",
                 "186",
                 "404,000",
                 "230"
@@ -356,45 +361,49 @@
             "highlight": {
               "row": 7
             },
-            "note": "Whole words require 1.75 million entries and still don't cover everything. Single characters leave no unknown words, but the text becomes more than 5 times longer. BPE grows the text by only about 12%, shrinks the vocabulary to just over 60,000, and has no unknown words."
+            "note": "Whole words need 1.75 million entries and still don't cover everything; single characters have no unknown words but make the text more than five times longer. BPE makes the text only about 12% longer, shrinks the vocabulary to just over 60,000, and has no unknown words."
+          },
+          "plain": {
+            "title": "Bigger building blocks, fewer pieces per sentence",
+            "text": "The vocabulary is the set of building blocks; text length is how many blocks a sentence takes. Whole-word segmentation has so many block types it cannot fit them all, and rare words have no block at all. Character segmentation has very few types, but a sentence uses many blocks, so the sequence the model reads becomes long. Subwords sit in between."
           }
         },
         {
-          "p": "The paper also tries linguistic methods: frequency-based compound splitting, rule-based syllable splitting, and unsupervised morpheme segmentation with Morfessor. These only shrink the vocabulary moderately and still don't solve unknown words, so they miss the goal of an open vocabulary without a dictionary."
+          "p": "The paper also tried linguistic methods: frequency-based compound splitting, rule-based syllable hyphenation, and unsupervised morpheme segmentation with Morfessor. They only modestly shrink the vocabulary and still cannot solve out-of-vocabulary words, so they don't meet the goal of no dictionary and an open vocabulary."
         }
       ]
     },
     {
-      "h": "Two languages: learn BPE separately or jointly?",
+      "h": "Two languages: learn separately or jointly?",
       "blocks": [
         {
-          "p": "Translation involves two languages, so BPE can be learned separately on the source and target sides, or learned once on the combined data from both languages—what the paper calls **joint BPE**."
+          "p": "Translation involves two languages, so BPE can be learned separately on the source and target sides, or on the combined corpus of both sides — what the paper calls **joint BPE**."
         },
         {
           "list": [
-            "**Learned separately**: text and vocabulary are more compact, and it guarantees that every piece appeared in that language's training text.",
-            "**Learned jointly**: segmentation is more consistent across the two sides. With separate BPE, the same name can be split differently in the two languages, making it hard for the model to learn the mapping between the pieces."
+            "**Learned separately:** text and vocabulary are more compact, and each subword unit is guaranteed to have appeared in that language's training text.",
+            "**Learned jointly:** the two sides are segmented more consistently. If learned separately, the same name may be split into different pieces in the two languages, making it hard for the model to learn the mapping between them."
           ]
         },
         {
-          "p": "How do you learn joint BPE when English and Russian use different alphabets? The paper first transliterates the Russian side into Latin characters using ISO-9, learns BPE on the combined corpus, then transliterates the learned merge operations back into Cyrillic and applies them to the Russian text."
+          "p": "How can English and Russian, with different alphabets, be learned jointly? The paper first transliterates Russian into Latin characters using ISO-9, learns BPE on the combined corpus, then transliterates the learned merge rules back into Cyrillic to apply them to Russian text."
         }
       ]
     },
     {
-      "h": "Experiments: English-to-German and English-to-Russian",
+      "h": "Experiments: English→German and English→Russian",
       "blocks": [
         {
-          "p": "The experiments use WMT 2015 data: the English-to-German training set has 4.2 million sentence pairs, about 100 million tokens; English-to-Russian has 2.6 million sentence pairs, about 50 million tokens. The model follows the Bahdanau et al. encoder-decoder architecture, with a hidden layer size of 1000, an embedding layer size of 620, training with Adadelta for about 7 days, and a beam size of 12. Each setting trains 8 models; the paper reports the best single model on the development set and an ensemble of all 8."
+          "p": "The experiments use WMT 2015 data: the English→German training set has 4.2 million sentence pairs, about 100 million tokens; English→Russian has 2.6 million sentence pairs, about 50 million tokens. The model follows the encoder–decoder architecture from Bahdanau et al., with a 1000-dimensional hidden layer and 620-dimensional embeddings, trained with Adadelta for about 7 days and a beam width of 12. Each setting trains 8 models; the paper reports the best single model on the development set and the ensemble of all 8."
         },
         {
-          "p": "Systems compared: WUnk (a word-level model that emits an unknown symbol for out-of-vocabulary words), WDict (word-level model + back-off dictionary, the main baseline), C2-50k (the 50,000 most frequent words stay whole; the rest are split into character bigrams), BPE-60k (separate BPE per language), and BPE-J90k (joint BPE). None of the subword systems use a back-off dictionary."
+          "p": "Systems compared: WUnk (word-level model that outputs an unknown symbol for out-of-vocabulary words), WDict (word-level model + back-off dictionary, the main baseline), C2-50k (the 50,000 most common words unsplit, the rest segmented into character bigrams), BPE-60k (BPE learned separately for each language), and BPE-J90k (joint BPE). None of the subword systems use a back-off dictionary."
         },
         {
           "fig": {
             "type": "table",
-            "title": "English-to-German: subword models translate rare and unseen words better",
-            "subtitle": "From Table 2 of the paper, newstest2015, ensemble of 8 models. BLEU and chrF3: higher is better; the “rare words” and “unseen words” columns are unigram F1 (%).",
+            "title": "English→German: subword models translate rare and unseen words better",
+            "subtitle": "From Table 2 of the paper, newstest2015, ensemble of 8 models. BLEU and chrF3 are higher-better; the “rare words” and “unseen words” columns are unigram F1 (%).",
             "columns": [
               "System",
               "BLEU",
@@ -418,14 +427,14 @@
                 "30.9"
               ],
               [
-                "BPE-60k (separate BPE)",
+                "BPE-60k (separate)",
                 "24.5",
                 "53.9",
                 "40.9",
                 "29.3"
               ],
               [
-                "BPE-J90k (joint BPE)",
+                "BPE-J90k (joint)",
                 "24.7",
                 "54.1",
                 "41.8",
@@ -435,14 +444,14 @@
             "highlight": {
               "row": 3
             },
-            "note": "Rare words are words not among the 50,000 most frequent in the training data; unseen words are words that never appeared in training. In English-to-German, most unseen words are names, where copying is correct, so the dictionary baseline actually does best in this column."
+            "note": "Rare words are those outside the 50,000 most common training-set words; unseen words never appear in training. In English→German, most unseen words are names, where copying is enough, so the dictionary baseline is actually best in this column."
           }
         },
         {
           "fig": {
             "type": "table",
-            "title": "English-to-Russian: when alphabets differ, the subword advantage is clearer",
-            "subtitle": "From Table 3 of the paper, newstest2015, ensemble of 8 models.",
+            "title": "English→Russian: with different alphabets, the subword advantage is clearer",
+            "subtitle": "From Table 3 of the paper, newstest2015, ensemble of 8 models",
             "columns": [
               "System",
               "BLEU",
@@ -466,14 +475,14 @@
                 "17.4"
               ],
               [
-                "BPE-60k (separate BPE)",
+                "BPE-60k (separate)",
                 "23.6",
                 "52.7",
                 "29.7",
                 "15.6"
               ],
               [
-                "BPE-J90k (joint BPE)",
+                "BPE-J90k (joint)",
                 "24.1",
                 "53.0",
                 "29.7",
@@ -483,14 +492,14 @@
             "highlight": {
               "row": 3
             },
-            "note": "Russian uses Cyrillic, so names cannot be copied; they must be transliterated. The dictionary baseline has an unseen-word F1 of only 6.6, while subword models learn to transliterate piece by piece and lift it to 18.3."
+            "note": "Russian uses Cyrillic, so names cannot simply be copied; they must be transliterated. The dictionary baseline's unseen-word F1 is only 6.6, while the subword model learns piece-by-piece transliteration and raises it to 18.3."
           }
         },
         {
-          "p": "Several observations: every subword system has a higher rare-word F1 than the baseline—English-to-German goes from 36.8% to 41.8%, English-to-Russian from 26.5% to 29.7%. Ensemble BLEU beats the baseline by 0.3 to 1.3 points, and joint BPE is better than separate BPE on most metrics. The paper also cautions that rare words are only a small share of the test set, but they often carry the core information of a sentence, so overall metrics like BLEU likely understate their impact."
+          "p": "A few observations: every subword system has higher rare-word F1 than the baseline (English→German from 36.8% to 41.8%, English→Russian from 26.5% to 29.7%); ensemble BLEU is 0.3 to 1.3 points higher than the baseline; and joint BPE is better than separate BPE on most metrics. The paper also cautions that rare words, though only a small part of the test set, often carry the core information of a sentence, so overall metrics like BLEU likely understate their impact."
         },
         {
-          "p": "**Frequency analysis.** The paper groups translated words by their frequency rank in the training set. For the 50,000 most frequent words, all systems perform about the same. For words ranked between 50,000 and 500,000, whole-word representations degrade sharply as frequency falls, while subword systems stay much more stable. The reason is sparsity: the word ranked 50,000 appears only 60 times, and the word ranked 500,000 appears only 2 times, so they can never be learned well; subword pieces are far more common. So **shrinking the vocabulary and representing more words as subwords can actually be better**."
+          "p": "**Frequency analysis.** The paper groups translated words by their frequency rank in the training set. For the 50,000 most common words, all systems perform similarly. For words ranked between 50,000 and 500,000, performance degrades sharply with frequency if they are kept as whole words in the vocabulary, while subword systems stay far more stable. The reason is sparsity: in training, the 50,000th-ranked word appears only 60 times, and the 500,000th appears only twice, too little to learn well — while subword pieces are far more frequent. So **shrinking the vocabulary and representing more words as subwords can actually be better.**"
         }
       ]
     },
@@ -500,11 +509,11 @@
         {
           "fig": {
             "type": "table",
-            "title": "How subword models translate words they have never seen",
-            "subtitle": "From Tables 4 and 5 of the paper. “|” marks subword boundaries.",
+            "title": "How the subword model translates unseen words",
+            "subtitle": "From Tables 4 and 5 of the paper. “|” marks a subword boundary.",
             "columns": [
               "Source",
-              "Reference translation",
+              "Reference",
               "Word-level + dictionary",
               "Joint BPE"
             ],
@@ -512,19 +521,19 @@
               [
                 "health research institutes",
                 "Gesundheitsforschungsinstitute",
-                "Forschungsinstitute (drops health)",
+                "Forschungsinstitute (misses health)",
                 "Gesundheits|forsch|ungsin|stitute"
               ],
               [
                 "Mirzayeva (name)",
                 "Мирзаева",
-                "Copied in Latin script",
+                "Copied into Latin letters",
                 "Mir|za|yeva → Мир|за|ева"
               ],
               [
                 "rakfisk (Norwegian fermented fish)",
                 "ракфиска",
-                "Copied in Latin script",
+                "Copied into Latin letters",
                 "rak|f|isk → рак|ф|иска"
               ]
             ]
@@ -532,9 +541,9 @@
         },
         {
           "list": [
-            "**A “wrong” segmentation can still translate correctly.** BPE segmentation does not always respect morpheme boundaries. For example, BPE-60k splits the word for “research institutes” into `Forsch|ungsinstitu|ten`, although `Forschungs|instituten` is linguistically more natural—and the translation is still correct. The character-bigram system cuts the same word into more than a dozen pieces and also translates that part correctly (though its output also drops health). The paper says the model is robust to over-splitting.",
-            "**Inconsistent segmentation causes errors.** Separately learned BPE-60k transliterates `rakfisk` with an extra `п` and a missing `к`. The paper traces this to training examples where the two sides segment differently—for instance, `p|rak|ri|ti` corresponds to `пра|крит|и`—so the model wrongly learns `rak → пра`. Joint BPE keeps the segmentation consistent and avoids the problem.",
-            "**With too little data, transliteration can go wrong**: asinine (“stupid”) should have been translated as dumm, but the subword model produced something like Asinin-Situation—wrong, but a plausible guess for a loanword."
+            "**“Wrong” splits can still translate correctly:** BPE segmentation doesn't always respect morpheme boundaries. For example, BPE-60k splits “research institute” into `Forsch|ungsinstitu|ten`, while `Forschungs|instituten` would be more linguistically natural, but the translation still comes out correct. The character bigram system splits “research institute” into a dozen or more pieces and still gets this part right (though its translation also drops “health”). The paper says the model is robust to over-splitting.",
+            "**Inconsistent segmentation causes errors:** when BPE is learned separately, BPE-60k's transliteration of `rakfisk` ends up with an extra `п` and a missing `к`. The paper traces this to words whose two sides are split differently in the training data (for example `p|rak|ri|ti` versus `пра|крит|и`), so the model wrongly learns `rak → пра`. Joint BPE keeps the splits consistent on both sides, so this problem disappears.",
+            "**With too little data, transliteration can go wrong:** `asinine` (“foolish”) should be translated as `dumm`; the subword model produced something like `Asinin-Situation`. Wrong, but a plausible loanword guess."
           ]
         }
       ]
@@ -544,50 +553,50 @@
       "blocks": [
         {
           "list": [
-            "**The opening example is misspelled**: the paper opens with the German compound Abwasser|behandlungs|anlange (“sewage treatment plant”), but the correct spelling is Abwasserbehandlungsanlage—the last segment has an extra n.",
-            "**Figure 1 and the code use different examples**: Algorithm 1's code runs on low, lower, newest, widest, but Figure 1 shows merges learned from low, lowest, newer, wider. The text's claim that the unseen word “lower” is segmented into “low er·” refers to the Figure 1 example. Running the code directly will not reproduce Figure 1.",
-            "**The “9–11%” doesn't match the tables**: the text says rare words make up 9% to 11% of the test set. Based on the word counts in Tables 2 and 3, English-to-German is 2900 / 44085, about 6.6%, and English-to-Russian is 5442 / 55654, about 9.8%. The discrepancy may come from a different counting method, but the paper doesn't say.",
-            "**The best BLEU is not from BPE**: the highest English-to-German ensemble BLEU (25.3) comes from the character-bigram system; BPE-60k's single-model BLEU (21.5) is even below the dictionary baseline (22.0). The paper's main evidence is rare-word F1 and chrF3, not BLEU.",
-            "**Vocabulary size is chosen by feel**: the paper admits the number of merges was chosen “somewhat arbitrarily,” mainly for comparability with prior work; automatically finding the optimal vocabulary size is left for future research."
+            "**The opening example is misspelled:** the paper opens with the German compound `Abwasser|behandlungs|anlange` (“sewage water treatment plant”). The correct spelling is `Abwasserbehandlungsanlage`; the last segment has an extra n.",
+            "**Figure 1 and the code use different examples:** the Algorithm 1 code runs on `low`, `lower`, `newest`, `widest`, while Figure 1 shows merges learned from `low`, `lowest`, `newer`, `wider`. The body text's claim that “the unseen word lower is split into low er·” refers to the Figure 1 example. Running the code directly won't reproduce Figure 1.",
+            "**The “9–11%” figures disagree with the tables:** the text says rare words make up only 9% to 11% of the test set. According to the counts in Tables 2 and 3, English→German is 2900 / 44085, about 6.6%; English→Russian is 5442 / 55654, about 9.8%. The discrepancy may come from different counting conventions, but the paper doesn't say.",
+            "**The best BLEU was not from BPE:** for the English→German ensemble, the highest BLEU (25.3) came from the character bigram system; BPE-60k's single model BLEU (21.5) was even below the dictionary baseline (22.0). The paper's main evidence is the rare-word F1 and chrF3, not BLEU.",
+            "**The vocabulary size was picked by rule of thumb:** the paper admits the number of merges was chosen “somewhat arbitrarily,” mainly to remain comparable with earlier work. Automatically selecting the best vocabulary size is left for future research."
           ]
         }
       ]
     },
     {
-      "h": "Afterward: how today's LLM tokens came to be",
+      "h": "Afterward: where today's LLM tokens come from",
       "blocks": [
         {
-          "p": "BPE quickly became the standard first step for processing text in neural networks. Several papers in Main Thread 1 show it in action:"
+          "p": "BPE quickly became the standard first step for neural text processing. Several papers in Thread One are built on it:"
         },
         {
           "fig": {
             "type": "table",
-            "title": "How the models in Main Thread 1 split text",
-            "subtitle": "From each paper's data processing section",
+            "title": "How models in Thread One segment text",
+            "subtitle": "From the data processing sections of each paper",
             "columns": [
               "Model",
-              "Tokenization method",
+              "Segmentation method",
               "Vocabulary size"
             ],
             "rows": [
               [
-                "Transformer (2017), English-to-German translation",
-                "BPE, with one shared vocabulary for source and target",
+                "Transformer (2017) English→German translation",
+                "BPE, with a shared source/target vocabulary",
                 "about 37,000"
               ],
               [
                 "BERT (2018)",
-                "WordPiece (a subword method in the same spirit as BPE)",
+                "WordPiece (a subword method similar in spirit to BPE)",
                 "30,000"
               ],
               [
                 "GPT-2 (2019)",
-                "Byte-level BPE",
+                "byte-level BPE",
                 "50,257"
               ],
               [
                 "LLaMA (2023)",
-                "BPE (via SentencePiece), numbers split into individual digits, unknown characters fall back to bytes",
+                "BPE (via SentencePiece), numbers split into single digits, unknown characters fall back to bytes",
                 "—"
               ]
             ]
@@ -595,69 +604,69 @@
         },
         {
           "list": [
-            "**Byte-level BPE**: GPT-2 points out that doing BPE over Unicode characters would require more than 130,000 initial characters alone, while common BPE vocabularies have only 32,000 to 64,000 entries; switching to **bytes** gives an initial vocabulary of just 256 and can represent any string, including Chinese and emoji. It also forbids BPE merges across character categories, otherwise it would learn a pile of duplicate tokens like dog. dog! dog?.",
-            "**Numbers split into individual digits**: the LLaMA paper splits every number into individual digits and doesn't explain why. The common understanding is that this keeps digit tokenization more regular—you don't get irregular chunks like “1234” split into “12” and “34”—and is friendlier for arithmetic.",
-            "**Tokens determine what a model “sees”**: context length, per-token pricing, and the odd mistakes models make when counting letters or doing arithmetic all trace back to how the text is tokenized."
+            "**Byte-level BPE:** GPT-2 points out that doing BPE over Unicode characters requires an initial vocabulary of more than 130,000, while typical BPE vocabularies have only 32,000 to 64,000 entries. At the **byte** level, the initial vocabulary is only 256 symbols, and any string can be represented, including Chinese and emoji. It also forbids BPE merges across character categories; otherwise it would learn duplicate tokens such as `dog.` `dog!` `dog?`.",
+            "**Numbers split into single digits:** LLaMA splits all numbers into individual digits. The paper doesn't explain why; the common interpretation is that it makes digit segmentation more regular, avoiding irregular chunks such as “1234” being split into “12”“34”, which is friendlier for arithmetic.",
+            "**Tokens determine what the model “sees”:** context length, per-token pricing, and the strange mistakes models make when counting letters or doing arithmetic all trace back to tokenization."
           ]
         },
         {
-          "p": "The next piece in this thread returns to vision for another foundational building block: **residual connections** (ResNet), which let networks with over a hundred layers train at all."
+          "p": "The next paper in this thread returns to vision to look at another building block: **residual connections** (ResNet), which make networks with hundreds of layers trainable."
         }
       ]
     },
     {
-      "h": "Check yourself: did you really get it?",
+      "h": "Check yourself: did you get it?",
       "blocks": [
         {
           "quiz": {
             "q": "With BPE, what happens to an English word never seen during training?",
             "options": [
               "It becomes an unknown-word symbol.",
-              "It is split into learned subword pieces—at worst into single letters—so it can always be represented.",
-              "It is dropped.",
+              "It is split into learned subword pieces: in the worst case down to single letters, and it can always be represented.",
+              "It is discarded.",
               "It has to be looked up in a dictionary."
             ],
             "answer": 1,
-            "why": "At test time, split the word into characters, then apply the learned merge rules in the order they were learned. As long as the characters have been seen, it can always be represented—that is exactly what an “open vocabulary” means."
+            "why": "At test time, the word is first split into characters, then the learned merge rules are applied in order. As long as every character has been seen, the word can always be represented — that's exactly what “open vocabulary” means."
           }
         },
         {
           "quiz": {
-            "q": "Why not simply use single characters as the vocabulary and eliminate unknown words entirely?",
+            "q": "Why not just use single characters as the vocabulary and eliminate unknown words altogether?",
             "options": [
               "There are too many characters.",
-              "The text would become very long (about 5.5 times the whole-word baseline in Table 1), computation would grow, and the model would need to pass information across much longer distances.",
+              "The text becomes very long (about 5.5 times longer than whole words in Table 1), computation grows, and the model must pass information over much longer distances.",
               "Characters cannot be embedded.",
               "Characters cannot represent German."
             ],
             "answer": 1,
-            "why": "Encoder-decoder computation is at least linear in sequence length. BPE finds a compromise between vocabulary size and sequence length: a vocabulary of just over 60,000, with text only about 12% longer."
+            "why": "Encoder–decoder computation is at least linear in sequence length. BPE strikes a balance between vocabulary size and sequence length: a vocabulary of just over 60,000, with text only about 12% longer."
           }
         },
         {
           "quiz": {
-            "q": "In the English-to-Russian experiment, what is joint BPE's advantage over learning separate BPEs for the two languages?",
+            "q": "In the English→Russian experiments, why is joint BPE better than learning BPE separately for the two languages?",
             "options": [
-              "Faster training.",
-              "Segmentation is more consistent across the two sides; the same name is split into corresponding pieces in both languages, so the model can more easily learn to transliterate piece by piece.",
-              "Smaller vocabulary.",
-              "No transliteration needed."
+              "It trains faster.",
+              "The two sides are segmented more consistently, so the same name is split into corresponding pieces in the two languages and the model can learn piece-by-piece transliteration more easily.",
+              "The vocabulary is smaller.",
+              "It doesn't need transliteration."
             ],
             "answer": 1,
-            "why": "With separate BPEs, the translation of rakfisk had an extra letter and a missing letter, because the training data segmented the two sides inconsistently. Joint BPE first romanizes the Russian into Latin letters and learns on both sides together, so segmentation stays consistent."
+            "why": "When learned separately, `rakfisk` came out with an extra letter and a missing letter because the two sides were segmented inconsistently in the training data. Joint BPE first transliterates Russian into Latin letters, learns the merges on both sides together, and so keeps the segmentation consistent."
           }
         },
         {
-          "p": "After reading this, you should be able to answer these questions:"
+          "p": "After reading this, you should be able to answer the following:"
         },
         {
           "list": [
-            "What problems do word-level translation models have with rare words? Why is the back-off dictionary not enough?",
-            "What are the four steps of BPE? Why add an end-of-word symbol?",
+            "What problems do word-level translation models have with rare words? Why is a back-off dictionary not enough?",
+            "What are BPE's four steps, and why add an end-of-word symbol?",
             "Why is the number of merges the only hyperparameter? How does it affect vocabulary size and text length?",
             "How does BPE handle a new word at test time?",
-            "What are the advantages of joint BPE versus learning BPE separately?",
-            "Why can shrinking the vocabulary and using more subwords sometimes be better?",
+            "What are the benefits of joint BPE and of learning BPE separately?",
+            "Why can shrinking the vocabulary and representing more words as subwords sometimes be better?",
             "What problem does GPT-2's byte-level BPE solve?"
           ]
         }
@@ -671,18 +680,18 @@
       "date": "2016-06-10",
       "url": "https://arxiv.org/abs/1508.07909"
     },
-    "note": "This article is based on arXiv v5 of the paper (June 2016); the first version was released in August 2015 and the paper was published at ACL 2016. Tables marked “Illustrative” were produced by running the code included with the paper on this site. The tokenization details for Transformer, BERT, GPT-2, and LLaMA are taken from their respective papers. Ratios such as “about 6.6%,” “about 9.8%,” and “about 12%” were calculated by this site from the paper's tables."
+    "note": "This article is based on arXiv version 5 of the paper (June 2016), first released in August 2015 and formally published at ACL 2016. Tables marked “Illustrative” were produced by running the code included with the paper on this site. Tokenization methods for Transformer, BERT, GPT-2, and LLaMA are taken from their respective papers. Ratios such as “about 6.6%,” “about 9.8%,” and “about 12%” were calculated by this site from the paper's tables."
   },
   "claims": [
     {
-      "text": "arXiv v5, June 2016",
+      "text": "arXiv version 5, June 2016",
       "value": "1508.07909v5",
       "source_url": "https://arxiv.org/abs/1508.07909",
       "quote": "arXiv:1508.07909v5 [cs.CL] 10 Jun 2016",
-      "as_written": "v5"
+      "as_written": "version 5"
     },
     {
-      "text": "Vocabulary of 30,000 to 50,000",
+      "text": "Vocabulary size of 30,000–50,000",
       "value": "30 000–50 000",
       "source_url": "https://arxiv.org/abs/1508.07909",
       "quote": "30 000–50 000",
@@ -710,7 +719,7 @@
       "as_written": "100"
     },
     {
-      "text": "Not among the 50,000 most frequent types",
+      "text": "Outside the 50,000 most frequent types",
       "value": "50 000",
       "source_url": "https://arxiv.org/abs/1508.07909",
       "quote": "the 50 000 most frequent types",
@@ -759,28 +768,28 @@
       "as_written": "50 million"
     },
     {
-      "text": "Table 1: 1.75 million whole-word entries",
+      "text": "Table 1: whole words require 1.75 million entries",
       "value": "1 750 000",
       "source_url": "https://arxiv.org/abs/1508.07909",
       "quote": "1 750 000",
       "as_written": "1.75 million"
     },
     {
-      "text": "Character segmentation: 550 million tokens (about 5.5×)",
+      "text": "Character segmentation: 550 million tokens (about 5.5 times)",
       "value": "550 m",
       "source_url": "https://arxiv.org/abs/1508.07909",
       "quote": "550 m",
-      "as_written": "5.5×"
+      "as_written": "5.5 times"
     },
     {
-      "text": "Text more than 5× longer",
+      "text": "Text is more than 5 times longer",
       "value": "550 m",
       "source_url": "https://arxiv.org/abs/1508.07909",
       "quote": "550 m",
-      "as_written": "5×"
+      "as_written": "5 times"
     },
     {
-      "text": "BPE: 112 million tokens (about 12%)",
+      "text": "BPE: 112 million tokens (about 12% longer)",
       "value": "112 m",
       "source_url": "https://arxiv.org/abs/1508.07909",
       "quote": "112 m",
@@ -794,7 +803,7 @@
       "as_written": "60,000"
     },
     {
-      "text": "Rare-word F1: 36.8% → 41.8%",
+      "text": "Rare words 36.8% → 41.8%",
       "value": "36.8%",
       "source_url": "https://arxiv.org/abs/1508.07909",
       "quote": "36.8%→41.8%",
@@ -808,7 +817,7 @@
       "as_written": "41.8%"
     },
     {
-      "text": "English-to-Russian: 26.5% → 29.7%",
+      "text": "English→Russian 26.5% → 29.7%",
       "value": "26.5%",
       "source_url": "https://arxiv.org/abs/1508.07909",
       "quote": "26.5%→29.7%",
@@ -822,21 +831,21 @@
       "as_written": "29.7%"
     },
     {
-      "text": "Ensemble 0.3–1.3 BLEU higher",
+      "text": "Ensemble improves by 0.3–1.3 BLEU",
       "value": "0.3–1.3",
       "source_url": "https://arxiv.org/abs/1508.07909",
       "quote": "0.3–1.3 B",
       "as_written": "0.3 to 1.3"
     },
     {
-      "text": "Word ranked 50,000 appears 60 times",
+      "text": "The 50,000th-ranked word appears 60 times",
       "value": "60",
       "source_url": "https://arxiv.org/abs/1508.07909",
       "quote": "frequency of 60",
       "as_written": "60 times"
     },
     {
-      "text": "Word ranked 500,000 appears 2 times",
+      "text": "The 500,000th-ranked word appears 2 times",
       "value": "2",
       "source_url": "https://arxiv.org/abs/1508.07909",
       "quote": "frequency of 2",
@@ -871,7 +880,7 @@
       "as_written": "9.8%"
     },
     {
-      "text": "Hidden layer size 1000, embedding size 620",
+      "text": "Hidden layer 1000, embedding size 620",
       "value": "620",
       "source_url": "https://arxiv.org/abs/1508.07909",
       "quote": "embedding layer size\nof 620",
@@ -885,28 +894,28 @@
       "as_written": "7 days"
     },
     {
-      "text": "Beam size 12",
+      "text": "Beam width 12",
       "value": "12",
       "source_url": "https://arxiv.org/abs/1508.07909",
       "quote": "beam size of 12",
       "as_written": "12"
     },
     {
-      "text": "Number of merges somewhat arbitrary",
+      "text": "The number of merges was picked somewhat arbitrarily",
       "value": "somewhat arbitrary",
       "source_url": "https://arxiv.org/abs/1508.07909",
       "quote": "somewhat arbitrary",
-      "as_written": "somewhat arbitrary"
+      "as_written": "somewhat arbitrarily"
     },
     {
-      "text": "Transformer: BPE, about 37,000 vocabulary",
+      "text": "Transformer: BPE, vocabulary about 37,000",
       "value": "37000",
       "source_url": "https://arxiv.org/abs/1706.03762",
       "quote": "Sentences were encoded using byte-pair encoding [3], which has a shared sourcetarget vocabulary of about 37000 tokens.",
       "as_written": "37,000"
     },
     {
-      "text": "BERT: WordPiece, 30,000",
+      "text": "BERT: WordPiece 30,000",
       "value": "30,000",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "We use WordPiece embeddings (Wu et al., 2016) with a 30,000 token vocabulary.",
@@ -920,14 +929,14 @@
       "as_written": "50,257"
     },
     {
-      "text": "GPT-2: over 130,000 initial Unicode characters",
+      "text": "GPT-2: Unicode base vocabulary over 130,000",
       "value": "130,000",
       "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
       "quote": "This would result in a base vocabulary of over 130,000 before any multi-symbol tokens are added.",
       "as_written": "130,000"
     },
     {
-      "text": "GPT-2: common BPE vocabularies of 32,000 to 64,000",
+      "text": "GPT-2: typical BPE vocabularies 32,000 to 64,000",
       "value": "32,000 to 64,000",
       "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
       "quote": "the 32,000 to 64,000 token vocabularies often used with BPE",
@@ -941,22 +950,22 @@
       "as_written": "64,000"
     },
     {
-      "text": "GPT-2: byte-level needs only 256",
+      "text": "GPT-2: byte-level only needs 256",
       "value": "256",
       "source_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
       "quote": "a byte-level version of BPE only requires a base vocabulary of size 256",
       "as_written": "256"
     },
     {
-      "text": "LLaMA: BPE, numbers split into individual digits, byte fallback",
+      "text": "LLaMA: BPE, numbers split into single digits, byte fallback",
       "value": "BPE",
       "source_url": "https://arxiv.org/abs/2302.13971",
       "quote": "Notably, we split all numbers into individual digits, and fallback to bytes to decompose unknown UTF-8 characters.",
-      "as_written": "numbers split into individual digits"
+      "as_written": "numbers split into single digits"
     }
   ],
   "status": "published",
   "verified": false,
   "lang": "en",
-  "translated_from": "24d9b00554aa65cc"
+  "translated_from": "6148f9c2a9ff4958"
 }

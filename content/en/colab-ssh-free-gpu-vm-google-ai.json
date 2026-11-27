@@ -1,0 +1,426 @@
+{
+  "slug": "colab-ssh-free-gpu-vm-google-ai",
+  "date": "2026-11-21",
+  "category": "howto",
+  "publisher": "@jandisufg",
+  "title": "Google AI subscribers can turn Colab into a free remote machine: 2 vCPU, 12GB RAM, no GPU required",
+  "summary": "If you already pay for Google AI Plus, Pro or Ultra, there is Colab compute credit buried in your subscription. This walkthrough shows how to use the official CLI to turn Colab into a Linux box you can SSH into, with T4, L4, A100 or H100 GPUs if you want them, at no extra cost.",
+  "ai_summary": "Google AI Plus, Pro and Ultra plans include Colab compute credits. The official google-colab-cli turns Colab into a Linux machine you can SSH into and drive from a terminal or VS Code. A no-GPU session gives you 2 vCPUs, 12GB RAM and about 226GB of disk; if you want a GPU, choose T4, L4, A100 or H100. Credits burn by the hour: no GPU costs almost nothing, T4 roughly 1.8, L4 roughly 4.8, and A100 about 11–13. It suits subscribers who want to run code on a free GPU, do remote development, or leave an agent running. The main caveats: disk is temporary and wiped when the session ends, Pro sessions cap at about 24 hours, and idle machines still burn credits.",
+  "brief": [
+    "The official CLI is `google-colab-cli`. Once installed you get the `colab` command; after setting up `~/.ssh/config`, `ssh colab` drops you straight into the machine.",
+    "The no-GPU session the author shows has 2 vCPUs, 12GB RAM and about 226GB of disk, running Ubuntu 24.04; the post title says about 8 vCPUs, which doesn't match the screenshot.",
+    "T4 burns roughly 1.8 compute units per hour, L4 about 4.8, A100 about 11–13; no-GPU sessions consume almost nothing.",
+    "A running machine keeps burning credits and its disk is temporary; before your session ends, `git push` or `scp` your files off."
+  ],
+  "readMinutes": 6,
+  "sections": [
+    {
+      "h": "What this is",
+      "blocks": [
+        {
+          "p": "This is a tutorial for Google AI subscribers. You're already paying for Plus, Pro or Ultra, but you may not have noticed that the plan includes Colab compute credits. The approach from @jandisufg: use Google's official command-line tool `google-colab-cli` to treat Colab as an ordinary remote Linux machine and log in over SSH."
+        },
+        {
+          "p": "Once you're in, you can work from your local terminal, VS Code or any SSH-capable editor, much like a VPS. The most appealing part is that you can use the credits bundled with your subscription to get a GPU machine, without paying separately for the VM."
+        },
+        {
+          "callout": {
+            "kind": "note",
+            "title": "The prerequisite",
+            "text": "This only makes sense for Google AI Plus, Pro or Ultra subscribers. Without a subscription, there are no Colab credits to spend."
+          }
+        }
+      ]
+    },
+    {
+      "h": "Why it's worth the hassle",
+      "blocks": [
+        {
+          "p": "If you already pay for Google AI, this is effectively an extra remote machine you can spin up when needed. A quick GPU job, a model test, an agent left running: all of it can go to Colab instead of fighting with your local environment."
+        },
+        {
+          "p": "Two benefits stand out. First, there's a range of GPU tiers, from the cheap T4 up through A100 and H100. Second, because it's an ordinary SSH host, familiar tools like VS Code Remote-SSH, `scp` and `rsync` just work."
+        },
+        {
+          "fig": {
+            "type": "illustration",
+            "title": "After `ssh colab`, Colab is just another host in `~/.ssh/config`",
+            "subtitle": "Illustrative: your local terminal reaches the Colab VM through the Colab CLI bridge; amber marks the new remote machine",
+            "glyph": {
+              "kind": "devices",
+              "left": {
+                "kind": "laptop",
+                "label": "Local terminal",
+                "tone": "base"
+              },
+              "right": {
+                "kind": "server",
+                "label": "Colab machine",
+                "tone": "hi"
+              },
+              "arrow": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "h": "Three things you need before you start",
+      "blocks": [
+        {
+          "list": [
+            "A Google account that can access Colab (with a Google AI Plus, Pro or Ultra subscription)",
+            "A Python 3 environment with `uv` or `pip`, for installing the CLI",
+            "OpenSSH (included with Linux, macOS and Windows 10/11) and an ed25519 SSH public key"
+          ]
+        },
+        {
+          "p": "Installing the CLI is one command: `uv tool install google-colab-cli`, or `pip install google-colab-cli`. Once installed you'll have the `colab` command. If you don't have a public key yet, generate one with `ssh-keygen -t ed25519`."
+        },
+        {
+          "p": "Next, add the block below to `~/.ssh/config`. The `colab` after `Host` is the alias you'll use to log in."
+        },
+        {
+          "fig": {
+            "type": "code",
+            "lang": "bash",
+            "title": "Add these lines to `~/.ssh/config` and log in with `ssh colab`",
+            "subtitle": "The config block from the original post; replace the path after `-i` with your own public key path",
+            "code": "Host colab\n  User root\n  ProxyCommand colab ssh --proxy-mode -s colab -i ~/.ssh/id_ed25519.pub\n  StrictHostKeyChecking no\n  UserKnownHostsFile /dev/null",
+            "highlight": [
+              3
+            ]
+          }
+        },
+        {
+          "p": "In this block, `Host colab` is the alias; `User root` logs you in as root. `ProxyCommand` is the key part: instead of dialing an IP, SSH hands the connection to `colab ssh --proxy-mode`, and the CLI bridges traffic to the Colab machine. `-s colab` is the session name, which the CLI creates if it doesn't exist. The last two lines, `StrictHostKeyChecking no` and `UserKnownHostsFile /dev/null`, exist because every session is a new machine with new host keys; disabling the checks stops SSH from complaining on every connection."
+        }
+      ]
+    },
+    {
+      "h": "First login: use a real terminal",
+      "blocks": [
+        {
+          "p": "On first connect, the CLI shows a Google authorization link. Open it in your browser, approve it, then paste the code Google gives you back into the terminal. Do this in an interactive terminal with keyboard input — PowerShell, Terminal, iTerm or similar."
+        },
+        {
+          "p": "If your first `ssh colab` is launched from somewhere without a keyboard — an agent, a script or a command clicked through a chat interface — the CLI has nowhere to read the verification code and fails with \"Malformed auth code\". Once authorization is saved, you can connect from anywhere."
+        },
+        {
+          "p": "Two extra gotchas: if `~/.ssh/config` already has a `Host *` wildcard block, put the `Host colab` block before it, because SSH honors the first match. On Windows, use the absolute key path in `ProxyCommand` — `~` won't be expanded."
+        },
+        {
+          "fig": {
+            "type": "steps",
+            "title": "From zero to login in six steps",
+            "subtitle": "Illustrative: the full flow for treating Colab as an SSH host",
+            "steps": [
+              {
+                "name": "Install the CLI",
+                "tool": "uv / pip",
+                "desc": "`uv tool install google-colab-cli`; get the `colab` command"
+              },
+              {
+                "name": "Generate an SSH key",
+                "tool": "ssh-keygen",
+                "desc": "ssh-keygen -t ed25519"
+              },
+              {
+                "name": "Edit the config",
+                "tool": "~/.ssh/config",
+                "desc": "Add the `Host colab` block"
+              },
+              {
+                "name": "Authorize once",
+                "tool": "colab new",
+                "desc": "Complete Google authorization in an interactive terminal"
+              },
+              {
+                "name": "Connect",
+                "tool": "ssh colab",
+                "desc": "Land as root in `/content`"
+              },
+              {
+                "name": "Stop when done",
+                "tool": "colab stop",
+                "desc": "If you don't, it keeps burning credits"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "What kind of machine you get",
+      "blocks": [
+        {
+          "p": "After logging in with `ssh colab`, you land as root in the `/content` directory on Ubuntu 24.04. If you want a GPU, request one when creating the session: `colab new -s colab --gpu T4`. You can choose L4, A100 or H100, and `--high-mem` gets you more RAM."
+        },
+        {
+          "p": "The no-GPU session the author posted shows 2 vCPUs, 12GB RAM and about 226GB of disk. Note that the post title says about 8 vCPUs, which doesn't match the screenshot's 2 vCPUs; GPU or `--high-mem` sessions will have different specs, but the original post doesn't give per-tier details."
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "The no-GPU session the author posted, at a glance",
+            "subtitle": "From the screenshot; 24 hours is the Pro session time cap",
+            "items": [
+              {
+                "value": 2,
+                "unit": "vCPU",
+                "label": "CPU",
+                "note": "Actual numbers from the screenshot"
+              },
+              {
+                "value": 12,
+                "unit": "GB",
+                "label": "RAM"
+              },
+              {
+                "value": 226,
+                "unit": "GB",
+                "label": "Disk"
+              },
+              {
+                "value": 24,
+                "unit": "hours",
+                "label": "Pro session cap"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "How credits burn and where data lives",
+      "blocks": [
+        {
+          "p": "Different machines burn compute units at different rates: no-GPU costs almost nothing, T4 about 1.8 units per hour, L4 about 4.8, and A100 about 11–13. The original post doesn't give an H100 number. Rates change, so the author suggests running `colab usage` while the session is live to see the real-time figure."
+        },
+        {
+          "p": "Sessions have a maximum length — about 24 hours on Pro — and idle sessions can be dropped. More important, any running machine burns credits even when idle, so stop it with `colab stop` when you're done. If you're worried about forgetting, add `--rm` to the `ProxyCommand` line; the session shuts down automatically when the SSH connection closes, avoiding wasted credits."
+        },
+        {
+          "p": "Disk is temporary. When the session ends, everything on it is gone. To keep your work, either `git push`, copy files off with `scp`, `rsync` or `colab download`, or mount Google Drive with `colab drivemount`."
+        },
+        {
+          "fig": {
+            "type": "bars",
+            "title": "Stronger GPUs burn more compute units per hour",
+            "subtitle": "Amber marks GPU tiers; values are hourly compute-unit burn, and A100 is an 11–13 range",
+            "legend": [
+              {
+                "tone": "hi",
+                "label": "GPU tiers"
+              },
+              {
+                "tone": "base",
+                "label": "No GPU"
+              }
+            ],
+            "groups": [
+              {
+                "label": "Compute units per hour",
+                "items": [
+                  {
+                    "label": "No GPU",
+                    "value": 0,
+                    "display": "≈0",
+                    "tone": "base"
+                  },
+                  {
+                    "label": "T4",
+                    "value": 1.8,
+                    "display": "1.8",
+                    "tone": "hi"
+                  },
+                  {
+                    "label": "L4",
+                    "value": 4.8,
+                    "display": "4.8",
+                    "tone": "hi"
+                  },
+                  {
+                    "label": "A100",
+                    "value": 11,
+                    "display": "11–13",
+                    "tone": "hi"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "CLI commands worth memorizing",
+            "note": "Commands as written in the original post",
+            "columns": [
+              "Command",
+              "What it does"
+            ],
+            "rows": [
+              [
+                "colab sessions",
+                "List active sessions"
+              ],
+              [
+                "colab status",
+                "Check session status"
+              ],
+              [
+                "colab usage",
+                "Check balance and burn rate"
+              ],
+              [
+                "colab upload / colab download",
+                "Upload / download files"
+              ],
+              [
+                "colab drivemount",
+                "Mount Google Drive"
+              ],
+              [
+                "colab stop -s <nome>",
+                "Stop a session"
+              ]
+            ],
+            "highlight": {
+              "row": 5
+            }
+          }
+        }
+      ]
+    },
+    {
+      "h": "What Google hasn't said",
+      "blocks": [
+        {
+          "p": "The tutorial doesn't fully cover everything below, so know this before you start:"
+        },
+        {
+          "list": [
+            "How many Colab compute units each Plus, Pro or Ultra plan includes per month. The original post doesn't say.",
+            "How much extra memory `--high-mem` actually adds. The original post doesn't say.",
+            "How long you can sit idle before the system drops you. The original post only says it can happen.",
+            "How many compute units H100 burns per hour. The original post doesn't give that.",
+            "Whether Colab credits are shared with other Google AI allowances. The original post doesn't clarify.",
+            "When the post says \"free,\" it means credits already included in your subscription, not zero cost."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Who it's for",
+      "blocks": [
+        {
+          "p": "The main value is that, for no extra money, you turn a subscription you already pay for into a remote GPU machine for temporary jobs that don't need 24/7 uptime. The tradeoffs: disk isn't persistent, sessions can drop, idle time still burns credits, and you need to be comfortable with the command line and SSH."
+        },
+        {
+          "list": [
+            "If you already subscribe to Google AI and know some terminal basics: worth the half hour to set up; it's like gaining a temporary GPU machine.",
+            "If you need a long-running service with persistent data: not a good fit, because the disk gets wiped.",
+            "If you've never used SSH or the command line: learn the basics first, or you'll likely get stuck at first-time authorization and config."
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Como usar o Google Colab como VPS com GPU de graça (para assinantes do Google AI)",
+      "publisher": "@jandisufg (X)",
+      "date": "2026-11-21",
+      "url": "https://x.com/jandisufg/status/2123530059310850353"
+    },
+    "note": "The configuration and credit figures in this article come from the author's original post and are self-reported, not independently verified. The post title says about 8 vCPUs, while the in-post screenshot shows 2 vCPUs. Figures are rearranged from the original data or are illustrative."
+  },
+  "claims": [
+    {
+      "text": "The post title says Google AI subscribers can get a VM with about 12GB of RAM for free.",
+      "value": "~12GB",
+      "source_url": "https://x.com/jandisufg/status/2123530059310850353",
+      "as_written": "about 12GB",
+      "quote": "VPS com ~12GB de RAM e ~8 vCPU de graça"
+    },
+    {
+      "text": "The post title says the VM has about 8 vCPUs, but the in-post screenshot shows 2 vCPUs.",
+      "value": "~8",
+      "source_url": "https://x.com/jandisufg/status/2123530059310850353",
+      "as_written": "about 8 vCPUs",
+      "quote": "VPS com ~12GB de RAM e ~8 vCPU de graça"
+    },
+    {
+      "text": "The no-GPU session the author posted actually shows 2 vCPUs.",
+      "value": "2",
+      "source_url": "https://x.com/jandisufg/status/2123530059310850353",
+      "as_written": "2 vCPU",
+      "quote": "A sessão sem GPU do print tem 2 vCPUs, 12 GB de RAM e uns 226 GB de disco."
+    },
+    {
+      "text": "The no-GPU session has 12GB of RAM.",
+      "value": "12 GB",
+      "source_url": "https://x.com/jandisufg/status/2123530059310850353",
+      "as_written": "12GB",
+      "quote": "A sessão sem GPU do print tem 2 vCPUs, 12 GB de RAM e uns 226 GB de disco."
+    },
+    {
+      "text": "The no-GPU session has about 226GB of disk.",
+      "value": "226 GB",
+      "source_url": "https://x.com/jandisufg/status/2123530059310850353",
+      "as_written": "about 226GB",
+      "quote": "A sessão sem GPU do print tem 2 vCPUs, 12 GB de RAM e uns 226 GB de disco."
+    },
+    {
+      "text": "A T4 GPU burns about 1.8 compute units per hour.",
+      "value": "1,8",
+      "source_url": "https://x.com/jandisufg/status/2123530059310850353",
+      "as_written": "about 1.8",
+      "quote": "a T4 gira em torno de 1,8 por hora, a L4 de 4,8 e a A100 de 11 a 13"
+    },
+    {
+      "text": "An L4 GPU burns about 4.8 compute units per hour.",
+      "value": "4,8",
+      "source_url": "https://x.com/jandisufg/status/2123530059310850353",
+      "as_written": "about 4.8",
+      "quote": "a T4 gira em torno de 1,8 por hora, a L4 de 4,8 e a A100 de 11 a 13"
+    },
+    {
+      "text": "An A100 GPU burns about 11–13 compute units per hour.",
+      "value": "11 a 13",
+      "source_url": "https://x.com/jandisufg/status/2123530059310850353",
+      "as_written": "about 11–13",
+      "quote": "a T4 gira em torno de 1,8 por hora, a L4 de 4,8 e a A100 de 11 a 13"
+    },
+    {
+      "text": "Pro sessions cap at about 24 hours.",
+      "value": "24 h",
+      "source_url": "https://x.com/jandisufg/status/2123530059310850353",
+      "as_written": "about 24 hours",
+      "quote": "até cerca de 24 h no Pro"
+    }
+  ],
+  "cover": {
+    "headline": "Colab becomes an SSH host",
+    "highlight": "A GPU machine included with your subscription",
+    "glyph": {
+      "kind": "devices",
+      "left": {
+        "kind": "laptop",
+        "label": "Local",
+        "tone": "base"
+      },
+      "right": {
+        "kind": "server",
+        "label": "Colab",
+        "tone": "hi"
+      },
+      "arrow": true
+    }
+  },
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "316b86595a8726f0"
+}
