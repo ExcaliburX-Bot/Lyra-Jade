@@ -1,8 +1,8 @@
 [
   {
-    "slug": "nemotron-35-parse-open-data-fine-tuning",
-    "title": "Nemotron 3.5 Parse 开放三个数据集与微调配方，DFlash2 推理快 7.62 倍",
-    "file": "content/articles/nemotron-35-parse-open-data-fine-tuning.json",
+    "slug": "cloudflare-search-for-agents",
+    "title": "Cloudflare 上线 Search for Agents：一个开关，让 AI 智能体直接搜索你的网站",
+    "file": "content/articles/cloudflare-search-for-agents.json",
     "errors": 0,
     "warnings": 0,
     "provider": "deepseek",
