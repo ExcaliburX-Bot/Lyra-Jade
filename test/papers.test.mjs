@@ -81,3 +81,22 @@ test("回首页的链接：只有首页本身原地回顶部，论文精读页�
   assert.ok(m, "找不到 data-home 的点击处理");
   for (const k of ["!LIST", "TOPIC", "SECTION"]) assert.ok(m[1].includes(k), `跳转条件缺少 ${k}`);
 });
+
+test("小白版：块上的 plain 会渲染成带插图的旁注，插图文件必须存在", () => {
+  const a = { ...paper, sections: [{ h: "公式", blocks: [{ formula: { expr: "a ＝ b" }, plain: { title: "打个比方", text: "像**搬家**。", pic: "flash-cart" } }] }] };
+  const h = renderArticleBody(a, { assets: "../assets/" });
+  assert.match(h, /class="pl-wrap"><aside class="plain">/);
+  assert.match(h, /小白版/);
+  assert.match(h, /src="\.\.\/assets\/plain\/flash-cart\.svg"/);
+  assert.match(h, /<b>搬家<\/b>/);
+  assert.match(renderArticleBody(a, { lang: "en", assets: "../../assets/" }), /In plain terms[\s\S]*\.\.\/\.\.\/assets\/plain\//);
+  assert.doesNotMatch(renderArticleBody({ ...a, sections: [{ h: "x", blocks: [{ p: "y", plain: { text: "z", pic: "../x" } }] }] }), /<img/);
+  for (const dir of ["content/articles", "content/en"]) {
+    if (!fs.existsSync(dir)) continue;
+    for (const f of fs.readdirSync(dir).filter(f => f.endsWith(".json"))) {
+      const art = JSON.parse(fs.readFileSync(path.join(dir, f), "utf8"));
+      for (const b of (art.sections || []).flatMap(s => s.blocks || [])) if (b.plain?.pic)
+        assert.ok(fs.existsSync(`site/assets/plain/${b.plain.pic}.svg`), `${f} 用到的插图 ${b.plain.pic}.svg 不存在`);
+    }
+  }
+});

@@ -212,7 +212,7 @@ function buildLang(L) {
     <div class="tags"><span class="tag">${esc(L.cat[a.category] || a.category)}</span>${a._topics.map(k => `<a class="tag tag-tp" href="../t/${k}.html">${esc(topics.find(t => t.k === k)?.name || k)}</a>`).join("")}${a.verified ? `<span class="verified"><svg class="i"><use href="#i-check"/></svg>${T.verified}</span>` : `<a class="muted" href="../about.html#ai">${T.ai}</a>`}</div>
     <h1>${esc(a.title)}</h1>
     <div class="rmeta-row"><div class="rmeta"><span>${esc(T.pub)}</span>${T.src ? `<span>${esc(T.src)}</span>` : ""}<span>${esc(T.min)}</span><span>${esc(T.from)}</span></div>${shareHtml(L, a, abs(L, `a/${a.slug}.html`), "top")}</div>
-    ${renderArticleBody(a, { lang: L.lang })}
+    ${renderArticleBody(a, { lang: L.lang, assets: en ? "../../assets/" : "../assets/" })}
     ${pathNav(a)}
     <div class="share-end"><p>${en ? "Found this useful? Pass it on." : "觉得有用？转给需要的朋友。"}</p>${shareHtml(L, a, abs(L, `a/${a.slug}.html`), "end")}</div>
     <aside class="disclose"><svg class="i"><use href="#i-info"/></svg><p>${T.disclose}</p></aside>

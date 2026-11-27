@@ -754,3 +754,25 @@ a.chip{text-decoration:none;color:inherit}
 html.dark .logo-lockup .lk-l{display:none}
 html.dark .logo-lockup .lk-d{display:block}
 .ava-img{background:none;border-radius:0;object-fit:contain}
+
+/* 小白版：比喻 + 小插图。宽屏放进正文左侧的空白，窄屏跟在块下面 */
+.pl-wrap{display:flex;flex-direction:column}
+.pl-wrap>.plain{order:2;margin:-8px 0 22px}
+.plain{border:1px dashed var(--line-2);border-radius:14px;padding:12px 14px;background:var(--bg-2);font-size:14px;line-height:1.7;color:var(--ink-2)}
+.plain .pl-h{display:flex;align-items:baseline;gap:8px;margin-bottom:6px}
+.plain .pl-k{font-size:11.5px;font-weight:700;letter-spacing:.06em;color:var(--raise);background:var(--rose);border-radius:999px;padding:1px 8px}
+.plain .pl-h b{font-size:14px;color:var(--ink)}
+.plain img{display:block;width:100%;max-width:240px;height:auto;margin:8px 0;border-radius:12px}
+.plain p{margin:0}
+@media (min-width:600px) and (max-width:1559px){
+  .plain{display:grid;grid-template-columns:200px 1fr;column-gap:16px;align-items:start}
+  .plain .pl-h{grid-column:1/-1}
+  .plain img{grid-row:2;margin:0}
+  .plain p{grid-row:2}
+  .plain:not(:has(img)) p{grid-column:1/-1}
+}
+@media (min-width:1560px){
+  .pl-wrap{display:block}
+  .pl-wrap>.plain{float:left;clear:left;width:236px;margin:4px 0 16px -296px;font-size:13.5px}
+}
+@media (min-width:1720px){.pl-wrap>.plain{width:280px;margin-left:-340px}.plain img{max-width:280px}}

@@ -51,6 +51,7 @@ export function validateArticle(a, { sourceTexts = {} } = {}) {
     /* 论文精读用的块：提示框、公式、自测题 */
     if (b.callout) need(b.callout.text || b.callout.list?.length, `${at}的提示框没有内容`);
     if (b.formula) need(b.formula.expr, `${at}的公式缺少 expr`);
+    if (b.plain) need((b.plain.text || b.plain.pic) && (!b.plain.pic || /^[a-z0-9-]{1,60}$/.test(b.plain.pic)), `${at}的小白版要有 text 或 pic，pic 只能用小写字母、数字和连字符`);
     if (b.quiz) need(Array.isArray(b.quiz.options) && b.quiz.options.length >= 2 && Number.isInteger(b.quiz.answer) && b.quiz.answer >= 0 && b.quiz.answer < b.quiz.options.length && b.quiz.q,
       `${at}的自测题要有题目、至少 2 个选项，answer 是正确选项的序号（从 0 数）`);
     if (b.quiz && !b.quiz.why) warnings.push(`${at}的自测题没有写解释（why）`);
@@ -118,7 +119,7 @@ export function validateArticle(a, { sourceTexts = {} } = {}) {
 
   /* 正文里出现、却不在事实清单里的数字 */
   const claimed = new Set((a.claims || []).flatMap(c => [c.value, c.as_written].filter(Boolean).flatMap(v => [normNum(v), numCore(v)])));
-  const bodyText = [a.ai_summary, a.summary, ...(a.brief || []), ...(a.sections || []).flatMap(s => s.blocks.map(b => b.p || (b.list || []).join(" ") || [b.callout?.text, ...(b.callout?.list || [])].filter(Boolean).join(" ")))].filter(Boolean).join(" ");
+  const bodyText = [a.ai_summary, a.summary, ...(a.brief || []), ...(a.sections || []).flatMap(s => s.blocks.map(b => [b.p || (b.list || []).join(" ") || [b.callout?.text, ...(b.callout?.list || [])].filter(Boolean).join(" "), b.plain?.text].filter(Boolean).join(" ")))].filter(Boolean).join(" ");
   /* 论文精读：要有论文信息、至少 2 道自测题 */
   if (a.category === "paper") {
     need(a.paper?.title && a.paper?.url, "论文精读要有 paper 字段（至少 title 和 url）");
