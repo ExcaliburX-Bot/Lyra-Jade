@@ -3,14 +3,14 @@
   "category": "paper",
   "publisher": "Fedus, Zoph, Shazeer · Google",
   "date": "2021-01-11",
-  "title": "Switch Transformers, close read: one expert per token and 1.6T parameters",
-  "summary": "Switch Transformer simplifies MoE's top-k routing down to one expert per token, then adds capacity caps, a simplified load-balancing loss, and a set of training stabilizers. We work through the capacity factor and load-balancing loss by hand, then unpack the speedups over T5, the distillation and multilingual results, and the paradox that more parameters does not mean better downstream performance.",
-  "ai_summary": "Switch Transformers (Fedus, Zoph, Shazeer, Google, JMLR 2022) simplifies Mixture-of-Experts layers into a switch layer that routes each token to exactly one expert, replacing some of T5's feed-forward networks. The paper uses expert capacity and a capacity factor to handle dynamic routing, a single auxiliary loss to balance load, and proposes selective float32 precision inside the router, smaller initialization, and expert dropout. With the same per-token compute, pre-training is up to 7x faster than T5-Base, and it beats mT5-Base in all 101 languages; Switch-C, with 1.6 trillion parameters, is 4x faster than T5-XXL. Distillation preserves about 30% of the gains, but large models don't always win on reasoning-heavy downstream tasks.",
+  "title": "Google's Switch Transformer: one expert per token, scaled to 1.6 trillion parameters",
+  "summary": "Switch Transformer simplifies MoE's top-k expert routing to a single expert—just 1 instead of k—then adds capacity limits, a simplified load-balancing loss, and a set of training-stability tricks. We work through the capacity factor and balancing loss by hand, and lay out the speedups over T5, the distillation and multilingual results, and the paradox that more parameters don't always mean better downstream performance.",
+  "ai_summary": "Switch Transformers (Fedus, Zoph, Shazeer; Google; JMLR 2022) simplifies mixture-of-experts layers into Switch layers that route each token to a single expert—just 1—replacing some of T5's feed-forward networks. The paper uses expert capacity and a capacity factor to handle dynamic routing, uses a single auxiliary loss for load balancing, and proposes selective float32 precision inside the router, smaller initialization, and expert dropout. At the same per-token FLOPs, pretraining is up to 7x faster than T5-Base; it beats mT5-Base on all 101 languages; and the 1.6-trillion-parameter Switch-C is 4x faster than T5-XXL. Distillation preserves about 30% of the gains, but larger models don't necessarily win on reasoning-heavy downstream tasks.",
   "brief": [
-    "Problem: MoE is complex, communication-heavy, and unstable to train, which has kept it from going mainstream.",
-    "Method: send each token to exactly one expert; set an expert capacity; use one load-balancing loss; use selective high precision in the router, smaller initialization, and expert dropout.",
-    "Result: with equal compute, pre-training is up to 7x faster than T5-Base; all 101 languages improve; a 1.6-trillion-parameter model is 4x faster than T5-XXL.",
-    "Limits: the largest dense-compute variant is still unstable; upstream perplexity gains don't always show up on reasoning downstream tasks; distillation preserves only about 30% of the gain."
+    "Problem: MoE's complexity, communication costs, and training instability have kept it from being widely adopted.",
+    "Method: send each token to one expert; set an expert capacity; use a single load-balancing loss; and apply selective precision in the router, smaller initialization, and expert dropout.",
+    "Results: up to 7x faster pretraining than T5-Base at the same FLOPs; gains across all 101 languages; and a 1.6-trillion-parameter model that is 4x faster than T5-XXL.",
+    "Limitations: the largest dense-compute version is still unstable; upstream perplexity gains don't always transfer to reasoning-heavy downstream tasks; distillation keeps only about 30% of the gains."
   ],
   "paper": {
     "title": "Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity",
@@ -22,7 +22,7 @@
     "url": "https://arxiv.org/abs/2101.03961"
   },
   "cover": {
-    "headline": "A close read of the Switch paper",
+    "headline": "A close read of the Switch Transformers paper",
     "highlight": "One expert per token",
     "glyph": {
       "kind": "flow",
@@ -31,60 +31,60 @@
           "label": "token"
         },
         {
-          "label": "The router picks exactly one expert",
+          "label": "The router picks only one expert",
           "tone": "hi"
         },
         {
-          "label": "× router probability"
+          "label": "× routing probability"
         }
       ]
     }
   },
   "sections": [
     {
-      "h": "The short version: what this paper actually did",
+      "h": "The bottom line: what this paper actually does",
       "blocks": [
         {
-          "p": "In January 2021, Google's William Fedus, Barret Zoph, and Noam Shazeer released this paper; it was published in the Journal of Machine Learning Research (JMLR) in 2022. Shazeer was first author of the earlier Sparse Mixture-of-Experts paper and second author of T5."
+          "p": "Google's William Fedus, Barret Zoph, and Noam Shazeer posted the paper in January 2021; it was published in the Journal of Machine Learning Research (JMLR) in 2022. Shazeer was the first author of the earlier sparse mixture-of-experts (MoE) paper and the second author of T5."
         },
         {
-          "p": "The earlier MoE paper showed that parameter count and computation can be decoupled, but MoE never caught on. This paper argues there are three reasons: **complexity, communication cost, and training instability**. Switch Transformer aims to make MoE simpler and more stable."
+          "p": "The earlier MoE work showed that parameters can be decoupled from compute, but it never became widely used. The paper names three reasons: **complexity, communication costs, and training instability**. Switch Transformer's goal is to make MoE simpler and more stable."
         },
         {
-          "p": "The core change is counterintuitively simple: **send each token to exactly one expert**. Until then, people assumed routing to at least two experts was necessary for the gate network to learn to compare and route. This paper finds that k = 1 works, with no quality loss, less computation, and a simpler implementation. It replaces the feed-forward network in every other T5 layer with this \"Switch layer\" and leaves everything else unchanged."
+          "p": "The central change is counterintuitively simple: **send each token to only one expert**. Earlier thinking held that the gating network needed to compare at least two experts to learn how to route; this paper finds that k = 1 not only works, but keeps quality, costs less compute, and is easier to implement. It replaces every other feed-forward network in T5 with a Switch layer and leaves the rest of the architecture unchanged."
         },
         {
-          "p": "Around this simplification, the paper provides a recipe for training sparse models well: a simplified load-balancing loss, \"selective precision\" that uses high precision only inside the router, smaller initialization, and higher dropout inside experts during fine-tuning."
+          "p": "Around that simplification, the paper provides a recipe for making sparse models train well: a simplified load-balancing loss, selective precision that uses high precision only inside the router, smaller initialization, and extra dropout inside the experts during fine-tuning."
         },
         {
-          "p": "The result: with the same compute, pre-training is up to 7x faster than T5-Base; it beats the multilingual baseline in all 101 languages; and it trained a 1.6-trillion-parameter model that reaches the same perplexity 4x faster than T5-XXL."
+          "p": "The results: pretraining is up to 7x faster than T5-Base at the same FLOPs; it beats the multilingual baseline on all 101 languages; and a 1.6-trillion-parameter model reaches the same perplexity 4x faster than T5-XXL."
         },
         {
           "callout": {
             "kind": "takeaway",
-            "title": "The one-sentence version",
-            "text": "MoE's \"pick top-k experts\" becomes \"pick exactly one\", plus capacity caps, a load-balancing loss, and training stabilizers. Parameter count explodes with expert count, while per-token compute stays identical to a dense model."
+            "title": "In one sentence",
+            "text": "Simplify MoE's top-k expert routing to a single expert—just 1—then add capacity limits, a load-balancing loss, and training-stability tricks. Parameters explode as experts are added, while per-token compute stays the same as a dense model."
           }
         },
         {
           "callout": {
             "kind": "prereq",
-            "title": "Three concepts worth knowing before you read",
-            "text": "You don't need deep background; these three are enough:",
+            "title": "Three small concepts you'll need",
+            "text": "If you're not familiar with them, these three are enough:",
             "list": [
-              "**MoE layer**: many expert networks plus a router; each input is sent to only a few experts. See our close read of Sparse Mixture-of-Experts.",
-              "**T5**: Google's encoder-decoder model; it is the baseline for all comparisons in this paper. See our close read of T5.",
-              "**FLOPs**: floating-point operations, a measure of compute. \"Equal FLOPs\" is the premise behind all comparisons in this paper."
+              "**MoE layer**: many expert networks plus a gate (router); each input goes to only a few experts. See the close read on sparse mixture of experts (MoE).",
+              "**T5**: Google's encoder-decoder model, and the baseline for every comparison in this paper. See the T5 close read.",
+              "**FLOPs**: floating-point operations, a measure of compute. \"Same FLOPs\" is the premise behind all of this paper's comparisons."
             ]
           }
         }
       ]
     },
     {
-      "h": "The Switch layer: each token goes to exactly one expert",
+      "h": "The Switch layer: each token goes to one expert",
       "blocks": [
         {
-          "p": "First, recall MoE routing. The router computes a score for each expert for a given token, then applies softmax to produce a probability over experts:"
+          "p": "First, recall MoE routing. The router computes a set of scores for each token and runs them through a softmax to get a probability for every expert:"
         },
         {
           "formula": {
@@ -92,22 +92,27 @@
             "parts": [
               {
                 "sym": "W_{r}",
-                "desc": "The router's weight matrix"
+                "desc": "Router weight matrix"
               },
               {
                 "sym": "p_{i}(x)",
-                "desc": "Probability that token x goes to expert i"
+                "desc": "Probability token x is routed to expert i"
               },
               {
                 "sym": "T",
-                "desc": "The set of selected experts. Original MoE selects the top k (k ≥ 2); Switch selects only 1—the highest-probability expert."
+                "desc": "The set of selected experts. Original MoE picks the top k (k ≥ 2); Switch picks only 1—the single highest-probability expert."
               },
               {
                 "sym": "p_{i}(x) · E_{i}(x)",
-                "desc": "The expert's output is multiplied by its probability. Even with only one expert, this multiplication gives the router a path for gradients."
+                "desc": "Expert output multiplied by its routing probability. Even with one expert, this multiplication gives the router a gradient."
               }
             ],
-            "note": "The paper points out that this exact step—multiplying the output by the gate probability—is why a k = 1 router can still be trained, without needing to compare at least two experts as earlier work feared."
+            "note": "The paper argues that this multiply-by-gate-probability step is what makes a k = 1 router trainable, without the two-expert comparison earlier researchers thought was necessary."
+          },
+          "plain": {
+            "title": "Only one appointment",
+            "pic": "sw-one",
+            "text": "Each token arrives, the router W_r scores every expert, and it sends the token only to the highest-scoring one; the expert's output is then multiplied by that probability p. That multiplication is key: it lets the router know whether it sent the token correctly, so it can learn how to route."
           }
         },
         {
@@ -115,16 +120,16 @@
         },
         {
           "list": [
-            "**Less routing computation**: each token is sent to only one expert.",
-            "**Expert capacity can be at least halved**: each token takes one slot instead of k.",
-            "**Simpler implementation and less communication**: in distributed training, each token only needs to go to one device."
+            "**Less routing computation**: each token goes to only one expert.",
+            "**Each expert's batch size can at least be halved**: each token occupies one slot, not k slots.",
+            "**Simpler implementation, less communication**: in distributed training, each token only needs to be sent to one device."
           ]
         },
         {
           "callout": {
             "kind": "intuition",
-            "title": "Think of it as a hospital with only one appointment",
-            "text": "The earlier MoE triage desk sent each patient to two or three doctors and then combined their opinions. The Switch triage desk books one appointment with the most suitable doctor. Intuition says you lose some \"consultation\" benefit, but experiments show almost no loss—and the hospital becomes much simpler and cheaper to run."
+            "title": "Like a hospital where each patient gets only one appointment",
+            "text": "In the earlier MoE, triage sends each patient to two or three doctors and then combines their weighted opinions. Switch triage gives out only one appointment, with the best-suited doctor. Intuition says you lose some benefit of a second opinion, but experiments found almost no loss, while the hospital itself becomes much simpler and cheaper to run."
           }
         }
       ]
@@ -133,29 +138,34 @@
       "h": "Capacity: how many tokens each expert can take",
       "blocks": [
         {
-          "p": "TPUs require all tensor shapes to be fixed at compile time, but routing is dynamic: how many tokens in each batch go to each expert isn't known in advance. So every expert needs a fixed **capacity**:"
+          "p": "TPUs require every tensor shape to be fixed at compile time, but routing is dynamic: you don't know in advance how many tokens in each batch will go to which expert. So every expert needs a fixed **capacity**:"
         },
         {
           "formula": {
-            "expr": "expert capacity = (tokens per batch ÷ number of experts) × capacity factor",
+            "expr": "expert capacity = (tokens per batch / number of experts) × capacity factor",
             "parts": [
               {
-                "sym": "Tokens per batch ÷ number of experts",
-                "desc": "What each expert would receive under perfectly uniform routing."
+                "sym": "tokens per batch / number of experts",
+                "desc": "How many tokens each expert would get under perfectly even routing"
               },
               {
-                "sym": "Capacity factor",
-                "desc": "How much headroom to allow. Above 1, the system can absorb somewhat uneven routing."
+                "sym": "capacity factor",
+                "desc": "How much extra headroom. Greater than 1 so experts can absorb somewhat uneven routing."
               }
             ],
-            "note": "Tokens above capacity are \"dropped\": this layer does not process them, and they pass through unchanged via the residual connection. The paper says dropped tokens are usually less than 1%."
+            "note": "Tokens beyond capacity are \"dropped\": this layer doesn't process them, and they pass through the residual connection unchanged to the next layer. The paper says dropped tokens were usually under 1% in experiments."
+          },
+          "plain": {
+            "title": "Every car has a fixed number of seats",
+            "pic": "sw-capacity",
+            "text": "Think of each expert as a car with fixed seats (four, here). The router sends six people; four sit down, and the remaining two skip this layer and take the residual connection to the next. The capacity factor is like keeping extra empty seats: fewer people get left behind, but empty seats still take up space."
           }
         },
         {
           "fig": {
             "type": "table",
-            "title": "Worked example: a larger capacity factor drops fewer tokens, but wastes more slots",
-            "subtitle": "Illustrative: a batch of 12 tokens and 3 experts, with the router sending 6, 4, and 2 tokens to experts 1, 2, and 3. Numbers are ours, computed from Equation (3); this corresponds to Figure 3.",
+            "title": "Worked example: a larger capacity factor drops fewer tokens but wastes more slots",
+            "subtitle": "Illustrative: a batch of 12 tokens and 3 experts; the router sends 6, 4, and 2 tokens to experts 1, 2, and 3. Numbers are ours, computed from Equation (3) and matching Figure 3.",
             "columns": [
               "Capacity factor",
               "Expert capacity",
@@ -167,7 +177,7 @@
               [
                 "1.0",
                 "4",
-                "2 (expert 1 overflows)",
+                "2 (expert 1 overflow)",
                 "2 (expert 3)",
                 "10 / 12 ≈ 83%"
               ],
@@ -189,11 +199,11 @@
             "highlight": {
               "row": 0
             },
-            "note": "A larger capacity factor avoids dropping tokens, but empty slots still consume memory and communication. The paper finds Switch performs better at smaller capacity factors (1.0, 1.25), which matters for memory-constrained large models."
+            "note": "Larger capacity avoids dropping tokens, but empty slots still consume memory and take part in communication. The paper finds Switch performs better at smaller capacity factors (1.0, 1.25), which matters for memory-constrained large models."
           }
         },
         {
-          "p": "The appendix also tries a \"no token left behind\" method: overflow tokens go to the second-highest-probability expert instead. It produces no real benefit. The paper speculates that once the model has learned token-to-expert assignments, moving a token to another expert makes things worse."
+          "p": "The appendix also tries a \"no token left behind\" scheme: overflow tokens are redirected to the expert with the second-highest probability. It brings no practical benefit. The paper suspects that once the model learns token-expert assignments, sending a token to a different expert actually makes things worse."
         }
       ]
     },
@@ -201,7 +211,7 @@
       "h": "Load balancing: a simpler loss",
       "blocks": [
         {
-          "p": "The earlier MoE used two losses (importance and load). Switch merges them into one, computed for each Switch layer:"
+          "p": "The earlier MoE used two losses (importance and load). Switch combines them into one, computed for each Switch layer:"
         },
         {
           "formula": {
@@ -209,33 +219,37 @@
             "parts": [
               {
                 "sym": "f_{i}",
-                "desc": "The fraction of the T tokens in this batch actually dispatched to expert i. It is counted, so it cannot be differentiated."
+                "desc": "The fraction of the T tokens actually dispatched to expert i. It is counted, so it can't be differentiated."
               },
               {
                 "sym": "P_{i}",
-                "desc": "The average router probability assigned to expert i across this batch. This can be differentiated."
+                "desc": "The average router probability assigned to expert i across the batch. This one is differentiable."
               },
               {
                 "sym": "N",
-                "desc": "Number of experts. Multiplying by N keeps the loss at α under uniform routing, regardless of expert count."
+                "desc": "Number of experts. Multiplying by N keeps the loss constant at α under uniform routing, independent of the number of experts."
               },
               {
                 "sym": "α",
-                "desc": "Coefficient, set to 10^{−2} throughout: large enough to balance load, small enough not to overwhelm the main cross-entropy loss."
+                "desc": "Coefficient, set to 10^{-2} throughout: large enough to balance load, small enough not to overwhelm the main cross-entropy loss."
               }
             ]
+          },
+          "plain": {
+            "title": "Two sets of books: where tokens actually went, and where the router wanted to send them",
+            "text": "f is how many tokens each expert actually received in the batch (counted); P is how much probability the router on average wanted to give it (computed). Multiply them and sum: the more concentrated the assignment, the larger the loss. Because f can't be differentiated, the penalty works through P: the more tokens an expert actually receives, the harder its router probability is pushed down."
           }
         },
         {
-          "p": "**How does it help?** Gradients can only flow back through P_{i}, and the gradient with respect to P_{i} is proportional to f_{i}. So experts that actually receive more tokens get their router probability pushed down harder, diverting later tokens to other experts."
+          "p": "**How does it work?** Gradients only flow back through P_{i}, and the gradient with respect to P_{i} is proportional to f_{i}. So the more tokens an expert actually gets, the harder its router probability is pushed down, and later tokens are steered toward other experts."
         },
         {
           "fig": {
             "type": "table",
-            "title": "Worked example: the more concentrated the routing, the larger the balancing loss",
+            "title": "Worked example: more concentrated routing means a larger load-balancing loss",
             "subtitle": "Illustrative: 4 experts, α = 0.01. The f and P numbers are ours, computed from Equations (4)–(6).",
             "columns": [
-              "Scenario",
+              "Case",
               "Actual dispatch fraction f",
               "Average router probability P",
               "N · Σ f_{i} P_{i}",
@@ -250,7 +264,7 @@
                 "0.0100"
               ],
               [
-                "Expert 1 takes 70%",
+                "Expert 1 receives 70%",
                 "0.70, 0.10, 0.10, 0.10",
                 "0.60, 0.15, 0.15, 0.10",
                 "1.84",
@@ -266,16 +280,16 @@
       ]
     },
     {
-      "h": "Head-to-head with MoE and T5",
+      "h": "Head-to-head against MoE and T5",
       "blocks": [
         {
-          "p": "The paper pre-trains on C4 with T5's span-corruption objective (masking 15%). Every model is matched to T5-Base in per-token compute (MoE uses more because it selects two experts), and all models train on the same 32 third-generation TPU cores for the same number of steps. Each MoE and Switch model has 128 experts, with an expert layer in place of every other feed-forward network."
+          "p": "The paper pretrains on C4 with T5's span-masking objective (masking 15%). All models use the same per-token FLOPs as T5-Base (MoE uses more because it routes to two experts), and they train for the same number of steps on the same 32 TPUv3 cores. All MoE and Switch models have 128 experts and place an expert layer at every other feed-forward network."
         },
         {
           "fig": {
             "type": "table",
-            "title": "Switch vs. MoE and T5: same hardware, who is faster and better",
-            "subtitle": "From Table 1. Quality is negative log perplexity after 100k steps (closer to 0 is better); \"time to target\" is hours to reach −1.50.",
+            "title": "Switch vs. MoE and T5: same hardware, speed and quality",
+            "subtitle": "From Table 1. Quality is negative log perplexity after 100k steps (closer to 0 is better); \"time to target\" is the hours needed to reach -1.50.",
             "columns": [
               "Model",
               "Capacity factor",
@@ -288,7 +302,7 @@
                 "T5-Base",
                 "—",
                 "−1.731",
-                "Did not reach",
+                "Not reached",
                 "1600"
               ],
               [
@@ -327,7 +341,7 @@
                 "1000"
               ],
               [
-                "Switch-Base+ (larger version)",
+                "Switch-Base+ (scaled up)",
                 "1.0",
                 "−1.534",
                 "67.6",
@@ -337,11 +351,11 @@
             "highlight": {
               "row": 5
             },
-            "note": "Given the same compute and time, Switch reaches the target fastest. The smaller the capacity factor, the clearer Switch's edge over MoE. Switch-Base+ is scaled up to be as slow as MoE, and it beats all other models on per-step quality."
+            "note": "At fixed compute and wall-clock time, Switch reaches the target fastest. The smaller the capacity factor, the clearer Switch's advantage over MoE. Switch-Base+ is a scaled-up Switch made as slow as MoE, and its per-step quality beats every model."
           }
         },
         {
-          "p": "The paper also records a surprise: lowering MoE's capacity factor from 2.0 to 1.25 made it slower, from 840 to 790. The paper explains that speed depends on both the algorithm and how the underlying implementation is optimized."
+          "p": "The paper also reports a surprise: when MoE's capacity factor drops from 2.0 to 1.25, speed falls from 840 to 790. The authors explain that speed depends on both the algorithm and low-level implementation optimizations."
         }
       ]
     },
@@ -349,13 +363,13 @@
       "h": "Three tricks for training sparse models well",
       "blocks": [
         {
-          "p": "**1. Selective precision.** Training in low precision such as bfloat16 saves memory and communication, but the softmax and exponential operations inside the router are precision-sensitive and can make training diverge. Earlier GShard had to run entirely in float32. Switch instead converts the input to float32 only inside the router function, computes, then converts back to bfloat16. Expensive float32 tensors never travel between machines, but you still get float32 stability."
+          "p": "**1. Selective precision.** Training in low precision like bfloat16 saves memory and communication, but the router's softmax and exponential operations are precision-sensitive and can destabilize training. Earlier work, GShard, had to use float32 throughout. Switch's solution: convert the input to float32 only inside the router function, then convert back to bfloat16. The expensive float32 tensors never travel between devices, yet you get float32 stability."
         },
         {
           "fig": {
             "type": "table",
             "title": "High precision only inside the router is enough",
-            "subtitle": "From Table 2, early in training for a 32-expert model.",
+            "subtitle": "From Table 2; early in training for 32-expert models",
             "columns": [
               "Precision",
               "Quality (negative log perplexity)",
@@ -369,7 +383,7 @@
               ],
               [
                 "All bfloat16",
-                "−3.780 (diverged)",
+                "-3.780 (diverged)",
                 "1390"
               ],
               [
@@ -381,18 +395,22 @@
             "highlight": {
               "row": 2
             }
+          },
+          "plain": {
+            "title": "Use the fine ruler only for the critical step",
+            "text": "Measuring a whole house needs only a normal tape measure; only the door-lock step needs calipers. Switch works the same way: the entire network uses memory-saving low precision, and only the error-prone steps inside the router (softmax, exponentials) temporarily switch to high precision before switching back."
           }
         },
         {
-          "p": "**2. Smaller initialization.** Weights are initialized from a truncated normal distribution with standard deviation √(s / n), where n is the input dimension. The paper recommends shrinking the default Transformer scale s = 1.0 by a factor of ten. After 3,500 training steps, average quality improves from −3.60 to −2.72, and the standard deviation across three random seeds drops from 0.68 to 0.01. The same initialization works from 223 million parameters up to more than a trillion."
+          "p": "**2. Smaller initialization.** Weights are initialized from a truncated normal with standard deviation √(s / n), where n is the input dimension. The paper suggests shrinking the Transformer default scale s = 1.0 by a factor of 10. After 3,500 steps, mean quality improves from -3.60 to -2.72, and the standard deviation across three random seeds drops from 0.68 to 0.01. The same scheme is used from 223M parameters all the way up to over a trillion."
         },
         {
-          "p": "**3. Expert dropout.** Switch has far more parameters than a dense model with the same compute, so it can overfit on small downstream tasks. Raising dropout everywhere makes things worse; the paper keeps non-expert layers at 0.1 and raises dropout only inside experts to 0.4."
+          "p": "**3. Expert dropout.** Switch has far more parameters than dense models with the same compute, so it overfits small downstream tasks more easily. Simply raising dropout everywhere hurts; the paper keeps non-expert layers at 0.1 and raises dropout only inside experts to 0.4."
         },
         {
           "fig": {
             "type": "table",
-            "title": "During fine-tuning, increase dropout only inside experts",
+            "title": "During fine-tuning, raise dropout only inside experts",
             "subtitle": "From Table 4. d is ordinary dropout, ed is expert dropout.",
             "columns": [
               "Model",
@@ -437,26 +455,26 @@
           }
         },
         {
-          "p": "The appendix also compares several ways to make the router \"explore\": always choosing the highest score, sampling by probability, applying dropout to the input, and multiplying the input by a random perturbation. In the end it chooses random perturbation (jitter)."
+          "p": "The appendix also compares ways to make the router explore: always pick the top score, sample by probability, apply dropout to the input, and multiply the input by a random perturbation. It ends up choosing random perturbation (jitter)."
         }
       ]
     },
     {
-      "h": "Scaling: more experts is faster, and even larger dense models can't keep up",
+      "h": "Scaling: more experts means more speed—even big dense models can't keep up",
       "blocks": [
         {
-          "p": "**By step:** with per-token compute fixed, expert count doubles from 2 to 256 and parameters grow from 223 million to 14.7 billion, while test loss keeps falling. The 64-expert Switch-Base at step 60k matches T5-Base at step 450k—a 7.5x speedup in steps."
+          "p": "**By step count**: with per-token FLOPs fixed, experts increase from 2 to 256, parameters from 223M to 14.7B, and test loss keeps falling. The 64-expert Switch-Base reaches T5-Base's level at step 60k versus step 450k—7.5x faster by step count."
         },
         {
-          "p": "**By time:** Switch adds routing computation and inter-device communication, so step advantages don't automatically become wall-clock advantages. But in fixed time and compute, the 64-expert Switch-Base reaches T5-Base's perplexity in about one-seventh the time."
+          "p": "**By wall-clock time**: Switch adds routing computation and cross-device communication, so a step-count advantage doesn't automatically become a time advantage. But in fixed-time, fixed-compute measurements, 64-expert Switch-Base reaches T5-Base's perplexity in about one-seventh the time."
         },
         {
-          "p": "**Against a larger dense model:** what if that compute were used to train the larger dense T5-Large instead? T5-Large uses 3.5x the per-token compute of Switch-Base, yet Switch-Base is still more sample-efficient and 2.5x faster by wall-clock time."
+          "p": "**Against a larger dense model**: what if you spend that compute training a bigger dense model, T5-Large? T5-Large uses 3.5x the FLOPs per token of Switch-Base, yet Switch-Base is still more sample-efficient and 2.5x faster by wall-clock time."
         },
         {
           "fig": {
             "type": "table",
-            "title": "Same compute, dozens of times more parameters",
+            "title": "Same FLOPs, parameters can differ by tens of times",
             "subtitle": "From Table 9 (partial). FLOPs/seq is compute per sequence.",
             "columns": [
               "Model",
@@ -519,7 +537,7 @@
             "highlight": {
               "row": 6
             },
-            "note": "Switch-C uses only about one-seventh the compute per sequence of T5-XXL, yet has over a hundred times more parameters; the paper says it reaches the same perplexity 4x faster."
+            "note": "Switch-C uses only about one-seventh the FLOPs per sequence of T5-XXL, yet has more than a hundred times the parameters; the paper says it reaches the same perplexity 4x faster."
           }
         }
       ]
@@ -528,13 +546,13 @@
       "h": "Downstream tasks, distillation, and multilingual",
       "blocks": [
         {
-          "p": "The paper pre-trains both T5 and Switch on an improved C4 for 550k steps—about 576 billion tokens—then fine-tunes on a range of tasks."
+          "p": "The paper pretrains both T5 and Switch on an improved C4 for 550k steps and roughly 576B tokens, then fine-tunes them on various tasks."
         },
         {
           "fig": {
             "type": "table",
-            "title": "Fine-tuning: better on most tasks, but not always on reasoning",
-            "subtitle": "From Table 5 (partial), validation sets, higher is better.",
+            "title": "Fine-tuning results: better on most tasks, but not always on reasoning tasks",
+            "subtitle": "From Table 5 (partial), validation sets, higher is better",
             "columns": [
               "Model",
               "SuperGLUE",
@@ -577,17 +595,17 @@
                 "35.5"
               ]
             ],
-            "note": "SuperGLUE improves by 4.4 and 2 points, respectively; knowledge tasks such as closed-book QA improve especially strongly. Only ARC reasoning tasks fail to improve: on the challenge set, Switch-Base underperforms T5-Base, and on the easy set Switch-Large underperforms T5-Large (only the challenge set is shown)."
+            "note": "SuperGLUE improves by 4.4 and 2 percentage points respectively; knowledge-focused tasks like closed-book QA improve especially strongly. Only ARC reasoning questions don't improve: Switch-Base underperforms T5-Base on the Challenge set, and Switch-Large underperforms T5-Large on the Easy set (the table shows only Challenge)."
           }
         },
         {
-          "p": "**Distillation:** a trillion-parameter model is hard to deploy, so can a sparse giant be compressed back into a small dense model? The paper finds two tricks useful: initialize the student with the teacher's non-expert weights; and in the loss, mix the teacher's probabilities with the real labels at a 0.25:0.75 ratio. This preserves about 30% of the quality gain."
+          "p": "**Distillation**: Trillion-parameter models are hard to deploy, so can a large sparse model be compressed back into a small dense one? The paper finds two techniques useful: initialize the student with the non-expert weights of the teacher; and mix the teacher's probabilities with the true labels in the loss at a 0.25:0.75 ratio. This preserves about 30% of the quality gain."
         },
         {
           "fig": {
             "type": "table",
-            "title": "Distilling Switch back to T5-Base size",
-            "subtitle": "From Table 7. \"Retained fraction\" is the percentage of the teacher's quality gain over T5-Base that the student keeps.",
+            "title": "Distilling Switch back down to T5-Base size",
+            "subtitle": "From Table 7. \"Retained\" is the percentage of the teacher's quality gain over T5-Base that the student keeps.",
             "columns": [
               "Teacher parameters",
               "1.1B",
@@ -606,7 +624,7 @@
                 "−1.427"
               ],
               [
-                "Student quality after distillation",
+                "Distilled student quality",
                 "−1.587",
                 "−1.585",
                 "−1.579",
@@ -614,7 +632,7 @@
                 "−1.578"
               ],
               [
-                "Retained fraction",
+                "Retained",
                 "37%",
                 "32%",
                 "30%",
@@ -630,133 +648,138 @@
                 "99%"
               ]
             ],
-            "note": "All students are T5-Base models with 223 million parameters; T5-Base itself has quality −1.636. Even compressed to 1% of the original size, the student retains 28% of the teacher's gain."
+            "note": "All students are the 223M-parameter T5-Base, whose own quality is -1.636. Even when compressed to 1% of the original size, it retains 28% of the teacher's gain."
           }
         },
         {
-          "p": "**Multilingual:** after pre-training for 1 million steps on mC4 in 101 languages, Switch beats the compute-matched mT5-Base in **all** 101 languages, is 5x faster on average, and at least 4x faster in 91% of languages."
+          "p": "**Multilingual**: After 1M pretraining steps on mC4 across 101 languages, Switch beats the FLOP-matched mT5-Base on **all** 101 languages, with an average 5x speedup and at least 4x in 91% of languages."
         }
       ]
     },
     {
-      "h": "Trillion-parameter scale: how the three kinds of parallelism fit together",
+      "h": "Trillion-parameter models: combining three kinds of parallelism",
       "blocks": [
         {
-          "p": "Section 5 of the paper explains how to split the model across thousands of cores. Let the total number of cores be N = n × m, where n is the number of data-parallel replicas and m is the number of model-parallel shards:"
+          "p": "Section 5 of the paper explains how to distribute the model across thousands of cores. Let the total number of cores be N = n × m, where n is the number of data-parallel replicas and m the number of model-parallel partitions:"
         },
         {
           "list": [
-            "**Data parallelism**: each core holds a complete copy of the model, processes different data, and synchronizes gradients only at the end of each step.",
-            "**Model parallelism**: the large feed-forward matrices are sharded across cores, and every layer performs an all-reduce during both the forward and backward passes.",
-            "**Expert parallelism**: each core holds different experts. Routing requires two all-to-all communications: tokens are sent to the core holding their expert, then sent back after the computation."
-          ]
+            "**Data parallelism**: each core holds a full copy of the model and processes different data, synchronizing gradients only at the end of each step.",
+            "**Model parallelism**: split the feed-forward network's large matrices across cores; every layer's forward and backward pass requires an all-reduce communication.",
+            "**Expert parallelism**: each core holds different experts. Routing requires two all-to-all communications: send tokens to the core holding the expert, then send the results back."
+          ],
+          "plain": {
+            "title": "Three ways to divide the work",
+            "pic": "sw-parallel",
+            "text": "Data parallelism: each chip holds a full model copy (M) and processes different data. Model parallelism: a model is sliced into parts (¼); each chip computes one part and they sync with each other frequently. Expert parallelism: each chip holds different experts (E1, E2, ...); tokens must first be sent to the chip holding the expert, then results are sent back."
+          }
         },
         {
-          "p": "Switch-C uses only expert parallelism and data parallelism, so it is much smaller than T5-XXL in both width and depth. Switch-XXL has the same compute as T5-XXL, plus the communication overhead of model parallelism. After 250k training steps, both are more than 0.061 better in negative log perplexity than T5-XXL; by comparison, training T5-XXL for another 250k steps improves it by only 0.052."
+          "p": "Switch-C uses only expert and data parallelism, so its width and depth are far smaller than T5-XXL's; Switch-XXL has the same compute as T5-XXL but adds model-parallel communication overhead. After 250k training steps, both end up more than 0.061 higher than T5-XXL on negative log perplexity; by comparison, another 250k steps of T5-XXL improve it by only 0.052."
         },
         {
-          "p": "**But the large models also revealed problems**:"
+          "p": "**But the large models also expose problems:**"
         },
         {
           "list": [
-            "**Switch-XXL is occasionally unstable**: the earlier tricks work for Base, Large, and C, but they are not enough for it, so it did not train for the full 1 million steps.",
-            "**Better upstream does not mean better downstream**: Switch-C, with 1.6 trillion parameters, scores only 87.7 on SQuAD—lower than the smaller Switch-XXL's 89.6. On SuperGLUE, Switch-XXL, which was pre-trained on only about 503 billion tokens (roughly half of T5-XXL's), scores 87.5, below T5-XXL's 89.3; but on knowledge tasks such as closed-book QA, it surpasses the previous best result. The paper's summary: Switch's upstream gains transfer more readily to knowledge tasks, and less fully to reasoning tasks."
+            "**Switch-XXL is occasionally unstable**: the earlier tricks work for Base, Large, and C but not enough for it, so it was not trained for the full 1M steps.",
+            "**Upstream good doesn't mean downstream good**: The 1.6-trillion-parameter Switch-C scores only 87.7 on SQuAD, below the smaller Switch-XXL (89.6). On SuperGLUE, Switch-XXL, pretrained on about 503B tokens (about half of T5-XXL), scores 87.5, below T5-XXL's 89.3; but on knowledge tasks like closed-book QA, it exceeds previous best results. The paper's conclusion is that Switch's upstream gains transfer more readily to knowledge tasks, and less fully to reasoning tasks."
           ]
         },
         {
           "callout": {
             "kind": "myth",
-            "title": "“The more parameters, the smarter the model”",
-            "text": "This paper is itself a counterexample. Switch-C has roughly four times as many parameters as Switch-XXL, but Switch-XXL does far more computation per token and still performs better on downstream tasks like SQuAD. The paper's explanation is that the relationship among fine-tuning quality, per-token compute, and total parameter count is \"not yet understood.\" Roughly speaking, having more parameters is like \"knowing more,\" and doing more compute is like \"thinking more deeply\"—the two cannot substitute for each other."
+            "title": "More parameters, smarter model",
+            "text": "This paper is itself a counterexample. Switch-C has about 4x the parameters of Switch-XXL, but Switch-XXL applies far more compute per token and does better on downstream tasks like SQuAD. The paper's explanation: there is a \"not yet understood\" relationship among fine-tuning quality, per-token compute, and total parameter count. Roughly, more parameters is like \"remembering more\"; more compute is like \"thinking harder\"; the two are not interchangeable."
           }
         }
       ]
     },
     {
-      "h": "Details worth noting",
+      "h": "A few details worth noting",
       "blocks": [
         {
           "list": [
-            "**The order is reversed in one sentence**: Section 3.1 says the 64-expert model \"reached T5-Base's step-60k level at step 450k.\" Given the 7.5x speedup, it should be the other way around: Switch reaches T5-Base's step-450k level by step 60k.",
-            "**\"About 10x\" is really about 7x**: Sections 5.6 and 8 both say Switch-XXL uses about 10x the per-token compute of Switch-C. According to Table 9, 6.3 trillion ÷ 890 billion is about 7x.",
-            "**\"100x parameters\" is really about 17x**: Table 6's note says a sparse model with \"100x more parameters\" can be distilled back to a small model, but the teacher Switch-Base in the table has 3.8 billion parameters and the student has 223 million—about 17x. The main text's \"about one-twentieth of the parameters\" is closer.",
-            "**Attention head counts don't match**: Table 1 says Switch-Base+ increases attention heads \"from 14 to 16,\" but in Table 9 both T5-Base and Switch-Base have 12 heads.",
-            "**\"Lower is better\" is backward**: the note for Appendix Table 11 says negative log perplexity is \"lower is better,\" but everywhere else in the paper it is higher is better (closer to 0 is better).",
-            "**Is the perturbation added or multiplied?** The appendix says a \"multiplicative\" perturbation is applied to the input, but the appendix pseudo-code **adds** a random number near 1 to the routing scores."
+            "**One sentence gets the order backwards**: Section 3.1 says the 64-expert model \"reaches at step 450k the level T5-Base reached at step 60k.\" Given the 7.5x speedup, it should be the reverse: Switch reaches at step 60k the level T5-Base reached at step 450k.",
+            "**\"About 10x\" is really about 7x**: Sections 5.6 and 8 both say Switch-XXL uses about 10x the per-token compute of Switch-C. According to Table 9, 6.3T / 890B is about 7x.",
+            "**\"100x the parameters\" is really about 17x**: Table 6's caption says a sparse model with \"100x more parameters\" can be distilled into a small model, but the table's teacher Switch-Base has 3.8B parameters and the student 223M, about 17x. The body's \"about one-twentieth of the parameters\" is closer.",
+            "**Attention head count doesn't match**: Table 1 says Switch-Base+ increases attention heads \"from 14 to 16\", but Table 9 lists 12 heads for both T5-Base and Switch-Base.",
+            "**\"Lower is better\" is backwards**: Table 11 in the appendix says negative log perplexity is \"lower is better\", but everywhere else in the paper it is higher is better (closer to 0 is better).",
+            "**Is the perturbation additive or multiplicative?** The appendix says it applies a \"multiplicative\" perturbation to the input, but the appendix pseudocode adds a random number near 1 to the routing scores."
           ]
         }
       ]
     },
     {
-      "h": "Since then: MoE has become a mainstream choice for large models",
+      "h": "Afterward: MoE became a mainstream choice for large models",
       "blocks": [
         {
           "list": [
-            "**The Top-1 vs. Top-2 debate**: Switch proved that routing to a single expert works; many later open-source MoE models went back to two or more experts per token, plus finer-grained expert partitioning. The right number is a trade-off among quality, communication, and hardware.",
-            "**Load balancing is still the core problem**: Switch's auxiliary loss (α · N · Σ f P) became a common practice. The last article in this series, DeepSeek-V3, will look at a different approach.",
-            "**The stabilization tricks have been widely adopted**: high precision in the router, smaller initialization, and similar lessons later became common in large-model training.",
-            "**\"Better upstream does not mean better downstream\"**: this phenomenon is a reminder that pre-training perplexity alone is not enough to evaluate sparse models."
+            "**Top-1 vs. Top-2**: Switch proved routing to a single expert can work; later many open-source MoE models returned to choosing two or more experts per token, plus finer-grained experts. The right number depends on trade-offs among quality, communication, and hardware.",
+            "**Load balancing remains a core issue**: Switch's auxiliary loss (α · N · Σ f P) became common practice. The final close read in this route, DeepSeek-V3, will look at a different approach.",
+            "**Stability tricks were widely adopted**: practices like high precision in the router and smaller initialization later became common in large-model training.",
+            "**\"Upstream good, downstream not necessarily good\"**: this phenomenon reminds us that evaluating sparse models by pretraining perplexity alone is not enough."
           ]
         },
         {
-          "p": "This series now changes direction, from \"adding parameters\" back to the Transformer's own components. The next article is on **rotary position embeddings (RoPE)**, which nearly all of today's open-source large models use to tell the model where each token is in the sequence."
+          "p": "This route next changes direction, from \"adding parameters\" back to the Transformer's own parts: next up is **rotary position embedding (RoPE)**, which nearly all open-source large models use today to tell the model where each token sits."
         }
       ]
     },
     {
-      "h": "Check yourself: have you really understood it?",
+      "h": "Check yourself: did you really get it?",
       "blocks": [
         {
           "quiz": {
-            "q": "When tokens are sent to only one expert, why can the router still be trained?",
+            "q": "When each token is sent to only one expert, why can the router still be trained?",
             "options": [
-              "Because reinforcement learning is used.",
-              "Because the expert output is multiplied by the routing probability p_{i}(x), so gradients can flow back to the router through this multiplication.",
-              "Because noise is added.",
-              "Because the router is fixed and doesn't need training."
+              "Because it uses reinforcement learning",
+              "Because the expert's output is multiplied by the routing probability p_{i}(x), so gradients can flow back to the router through that multiplication",
+              "Because noise is added",
+              "Because the router is fixed and doesn't need training"
             ],
             "answer": 1,
-            "why": "Earlier work assumed that at least two experts had to be compared for routing to be learned. The paper points out that as long as the output is multiplied by the gate probability, the router receives a gradient, so k = 1 can learn too."
+            "why": "Earlier researchers thought at least two experts had to be compared for routing to be learned. The paper argues that once the output is multiplied by the gate probability, the router has a gradient, so k = 1 can learn."
           }
         },
         {
           "quiz": {
             "q": "What is the cost of setting the capacity factor too high?",
             "options": [
-              "More tokens are dropped.",
-              "More empty slots, wasting memory and compute, and increasing communication.",
-              "The router can't be trained.",
-              "There are fewer experts."
+              "More dropped tokens",
+              "More empty slots, wasting memory and compute, and increasing communication",
+              "The router cannot be trained",
+              "Fewer experts"
             ],
             "answer": 1,
-            "why": "A large capacity factor drops fewer tokens, but each expert has to allocate slots according to capacity, and unused slots are wasted. The paper finds Switch performs best at small capacity factors between 1.0 and 1.25."
+            "why": "A larger capacity factor drops fewer tokens, but each expert must allocate slots for its capacity; unused slots are waste. The paper finds Switch performs best at small capacity factors of 1.0 to 1.25."
           }
         },
         {
           "quiz": {
-            "q": "Switch-C has 1.6 trillion parameters, so why does it underperform the 395B-parameter Switch-XXL on SQuAD?",
+            "q": "Switch-C has 1.6 trillion parameters. Why does it underperform the 395-billion-parameter Switch-XXL on SQuAD?",
             "options": [
-              "Switch-C failed to train.",
-              "Switch-XXL uses far more compute per token; the paper says the relationship among fine-tuning quality, compute, and parameter count is not yet understood, and more parameters cannot fully replace more computation.",
-              "The SQuAD data has issues.",
-              "Switch-C didn't use experts."
+              "Switch-C failed to train",
+              "Switch-XXL uses far more compute per token; the paper argues there is a not-yet-understood relationship among fine-tuning quality, compute, and parameter count, and more parameters cannot fully substitute for more compute",
+              "The SQuAD data has problems",
+              "Switch-C didn't use experts"
             ],
             "answer": 1,
-            "why": "Section 8 of the paper discusses this \"anomaly\" specifically. It shows sparse models' advantages are clearer on knowledge tasks, while reasoning tasks may still need more compute."
+            "why": "Section 8 of the paper is devoted to this \"anomaly.\" It shows the advantages of sparse models are clearer on knowledge tasks, while reasoning tasks may still need more compute."
           }
         },
         {
-          "p": "After reading this article, you should be able to answer these questions:"
+          "p": "After this close read, you should be able to answer these questions:"
         },
         {
           "list": [
-            "What is the difference between a Switch layer and the original MoE layer? What are the benefits of k = 1?",
+            "How does a Switch layer differ from an original MoE layer? What are the benefits of k = 1?",
             "What are expert capacity and the capacity factor? What happens to dropped tokens?",
-            "How is Switch's load-balancing loss calculated? How does it encourage balance?",
-            "What problems do selective precision, smaller initialization, and expert dropout each solve?",
-            "Compared with T5-Base and T5-Large, where does Switch's speed advantage come from?",
-            "How much quality can distillation preserve?",
-            "Why do we say \"better upstream does not mean better downstream\"?"
+            "How is Switch's load-balancing loss computed? How does it encourage balance?",
+            "What problem does each of selective precision, smaller initialization, and expert dropout solve?",
+            "Compared with T5-Base and T5-Large, where does Switch gain its speed?",
+            "How much quality can distillation retain?",
+            "Why do we say \"upstream good, downstream not necessarily good\"?"
           ]
         }
       ]
@@ -764,12 +787,12 @@
   ],
   "sources": {
     "main": {
-      "title": "Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity (arXiv:2101.03961 v3)",
+      "title": "Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity (arXiv:2101.03961, v3)",
       "publisher": "Fedus, Zoph, Shazeer · Google",
       "date": "2022-06-16",
       "url": "https://arxiv.org/abs/2101.03961"
     },
-    "note": "This article is based on version 3 of the paper on arXiv (the content of the official JMLR 2022 version); the first version was released in January 2021. Tables marked \"Illustrative\" use numbers we chose and are computed from the paper's formulas. The \"about 7x\" and \"about 17x\" figures are our calculations based on the paper's tables. The practices of later open-source MoE models come from public sources and are not in this paper."
+    "note": "This close read is based on v3 of the arXiv paper (the content of the JMLR 2022 published version), first posted in January 2021. Tables marked \"Illustrative\" use our own numbers computed from the paper's equations. The \"about 7x\" and \"about 17x\" figures are our calculations from the paper's tables. Later open-source MoE practices come from public material and are not in the paper."
   },
   "claims": [
     {
@@ -780,7 +803,7 @@
       "as_written": "JMLR"
     },
     {
-      "text": "Up to 7x faster",
+      "text": "up to 7x faster",
       "value": "7x",
       "source_url": "https://arxiv.org/abs/2101.03961",
       "quote": "7x increases in pre-training speed",
@@ -815,7 +838,7 @@
       "as_written": "395 billion"
     },
     {
-      "text": "Dropped tokens are usually less than 1%.",
+      "text": "usually under 1% dropped tokens",
       "value": "< 1%",
       "source_url": "https://arxiv.org/abs/2101.03961",
       "quote": "typically < 1%",
@@ -829,7 +852,7 @@
       "as_written": "10^{−2}"
     },
     {
-      "text": "Mask 15%",
+      "text": "mask 15%",
       "value": "15%",
       "source_url": "https://arxiv.org/abs/2101.03961",
       "quote": "we drop out 15% of tokens",
@@ -843,25 +866,25 @@
       "as_written": "790"
     },
     {
-      "text": "Reduce to one-tenth",
+      "text": "shrink to one-tenth",
       "value": "factor of 10",
       "source_url": "https://arxiv.org/abs/2101.03961",
       "quote": "by a factor of 10",
-      "as_written": "One-tenth"
+      "as_written": "one-tenth"
     },
     {
-      "text": "223 million",
+      "text": "223M",
       "value": "223M",
       "source_url": "https://arxiv.org/abs/2101.03961",
       "quote": "223M parameter baseline",
-      "as_written": "223 million"
+      "as_written": "223M"
     },
     {
-      "text": "14.7 billion",
+      "text": "14.7B",
       "value": "14.7B",
       "source_url": "https://arxiv.org/abs/2101.03961",
       "quote": "14.7B parameters",
-      "as_written": "14.7 billion"
+      "as_written": "14.7B"
     },
     {
       "text": "7.5x faster",
@@ -871,14 +894,14 @@
       "as_written": "7.5x"
     },
     {
-      "text": "One-seventh of the time",
+      "text": "one-seventh the time",
       "value": "one-seventh",
       "source_url": "https://arxiv.org/abs/2101.03961",
       "quote": "one-seventh the time",
-      "as_written": "One-seventh"
+      "as_written": "one-seventh"
     },
     {
-      "text": "T5-Large uses 3.5x the compute",
+      "text": "T5-Large 3.5x compute",
       "value": "3.5x",
       "source_url": "https://arxiv.org/abs/2101.03961",
       "quote": "3.5x more FLOPs per token",
@@ -899,32 +922,32 @@
       "as_written": "550k steps"
     },
     {
-      "text": "576 billion tokens",
+      "text": "576B tokens",
       "value": "576B",
       "source_url": "https://arxiv.org/abs/2101.03961",
       "quote": "576B total tokens",
-      "as_written": "576 billion"
+      "as_written": "576B"
     },
     {
-      "text": "SuperGLUE improves by 4.4 and 2 points",
+      "text": "SuperGLUE improves 4.4 and 2 points",
       "value": "4.4",
       "source_url": "https://arxiv.org/abs/2101.03961",
       "quote": "4.4 and 2 percentage points",
       "as_written": "4.4"
     },
     {
-      "text": "About 30%",
+      "text": "about 30%",
       "value": "30%",
       "source_url": "https://arxiv.org/abs/2101.03961",
       "quote": "≈ 30% of the quality gains",
       "as_written": "30%"
     },
     {
-      "text": "1/20 of the parameters",
+      "text": "1/20 the parameters",
       "value": "1/20th",
       "source_url": "https://arxiv.org/abs/2101.03961",
       "quote": "≈ 1/20th of the parameters",
-      "as_written": "One-twentieth"
+      "as_written": "one-twentieth"
     },
     {
       "text": "Table 6 says 100x",
@@ -955,14 +978,14 @@
       "as_written": "82%"
     },
     {
-      "text": "Compressed by 99%",
+      "text": "compressed 99%",
       "value": "99%",
       "source_url": "https://arxiv.org/abs/2101.03961",
       "quote": "compress the model 99%",
       "as_written": "99%"
     },
     {
-      "text": "Retains 28%",
+      "text": "retains 28%",
       "value": "28%",
       "source_url": "https://arxiv.org/abs/2101.03961",
       "quote": "28% of the teacher",
@@ -1004,14 +1027,14 @@
       "as_written": "97%"
     },
     {
-      "text": "Multilingual average 5x faster",
+      "text": "multilingual average 5x faster",
       "value": "5x",
       "source_url": "https://arxiv.org/abs/2101.03961",
       "quote": "mean speed-up over mT5-Base of 5x",
       "as_written": "5x"
     },
     {
-      "text": "91% are at least 4x faster",
+      "text": "91% at least 4x faster",
       "value": "91%",
       "source_url": "https://arxiv.org/abs/2101.03961",
       "quote": "91% of languages achieve at least a 4x speedup",
@@ -1046,14 +1069,14 @@
       "as_written": "7x"
     },
     {
-      "text": "\"About 10x\"",
+      "text": "\"about 10x\"",
       "value": "10x",
       "source_url": "https://arxiv.org/abs/2101.03961",
       "quote": "nearly 10x larger FLOPs",
       "as_written": "10x"
     },
     {
-      "text": "About 4x the parameters",
+      "text": "about 4x the parameters",
       "value": "≈4x",
       "source_url": "https://arxiv.org/abs/2101.03961",
       "quote": "≈4x less unique parameters",
@@ -1113,77 +1136,77 @@
       "value": "7B",
       "source_url": "https://arxiv.org/abs/2101.03961",
       "quote": "7B",
-      "as_written": "7 billion"
+      "as_written": "7B"
     },
     {
       "text": "26B",
       "value": "26B",
       "source_url": "https://arxiv.org/abs/2101.03961",
       "quote": "26B",
-      "as_written": "26 billion"
+      "as_written": "26B"
     },
     {
       "text": "11B",
       "value": "11B",
       "source_url": "https://arxiv.org/abs/2101.03961",
       "quote": "11B",
-      "as_written": "11 billion"
+      "as_written": "11B"
     },
     {
       "text": "0.2B",
       "value": "0.2B",
       "source_url": "https://arxiv.org/abs/2101.03961",
       "quote": "0.2B",
-      "as_written": "200 million"
+      "as_written": "200M"
     },
     {
       "text": "0.7B",
       "value": "0.7B",
       "source_url": "https://arxiv.org/abs/2101.03961",
       "quote": "0.7B",
-      "as_written": "700 million"
+      "as_written": "700M"
     },
     {
       "text": "124B",
       "value": "124B",
       "source_url": "https://arxiv.org/abs/2101.03961",
       "quote": "124B",
-      "as_written": "124 billion"
+      "as_written": "124B"
     },
     {
       "text": "425B",
       "value": "425B",
       "source_url": "https://arxiv.org/abs/2101.03961",
       "quote": "425B",
-      "as_written": "425 billion"
+      "as_written": "425B"
     },
     {
-      "text": "Table 7: teachers from 1.1B to 14.7B",
+      "text": "Table 7 teachers: 1.1B to 14.7B",
       "value": "1.1B",
       "source_url": "https://arxiv.org/abs/2101.03961",
       "quote": "1.1B to 14.7B",
-      "as_written": "1.1 billion"
+      "as_written": "1.1B"
     },
     {
       "text": "2.0B",
       "value": "2.0B",
       "source_url": "https://arxiv.org/abs/2101.03961",
       "quote": "2.0B",
-      "as_written": "2 billion"
+      "as_written": "2B"
     },
     {
       "text": "3.8B",
       "value": "3.8B",
       "source_url": "https://arxiv.org/abs/2101.03961",
       "quote": "3.8B",
-      "as_written": "3.8 billion"
+      "as_written": "3.8B"
     },
     {
       "text": "7.4B",
       "value": "7.4B",
       "source_url": "https://arxiv.org/abs/2101.03961",
       "quote": "7.4B",
-      "as_written": "7.4 billion"
+      "as_written": "7.4B"
     },
     {
       "text": "Table 1",
@@ -1284,25 +1307,25 @@
       "as_written": "−1.095"
     },
     {
-      "text": "32 third-generation TPU cores",
+      "text": "32 TPUv3 cores",
       "value": "32 TPUv3 cores",
       "source_url": "https://arxiv.org/abs/2101.03961",
       "quote": "32 TPUv3 cores",
       "as_written": "32"
     },
     {
-      "text": "Step 450k",
+      "text": "step 450k",
       "value": "450k",
       "source_url": "https://arxiv.org/abs/2101.03961",
       "quote": "step 450k",
       "as_written": "450k"
     },
     {
-      "text": "1 million steps",
+      "text": "1M steps",
       "value": "1M steps",
       "source_url": "https://arxiv.org/abs/2101.03961",
       "quote": "1M steps",
-      "as_written": "1 million"
+      "as_written": "1M"
     },
     {
       "text": "250k steps",
@@ -1312,29 +1335,29 @@
       "as_written": "250k"
     },
     {
-      "text": "Attention heads 14 → 16",
+      "text": "attention heads 14 → 16",
       "value": "14 to 16",
       "source_url": "https://arxiv.org/abs/2101.03961",
       "quote": "from 14 to 16",
-      "as_written": "From 14 to 16"
+      "as_written": "increased from 14 to 16"
     },
     {
       "text": "Table 11: lower is better",
       "value": "lower is better",
       "source_url": "https://arxiv.org/abs/2101.03961",
       "quote": "(lower is better)",
-      "as_written": "Lower is better"
+      "as_written": "lower is better"
     },
     {
-      "text": "Pseudo-code: added to routing scores",
+      "text": "pseudocode: added to routing scores",
       "value": "+=",
       "source_url": "https://arxiv.org/abs/2101.03961",
       "quote": "minval=1−eps, maxval=1+eps",
-      "as_written": "Adds"
+      "as_written": "added"
     }
   ],
   "status": "published",
   "verified": false,
   "lang": "en",
-  "translated_from": "28cf7bbb1aaad7da"
+  "translated_from": "cba0a2328e7e809f"
 }

@@ -3,18 +3,18 @@
   "category": "paper",
   "publisher": "Hoffmann et al. · DeepMind",
   "date": "2022-03-29",
-  "title": "DeepMind's Chinchilla: why 70B parameters beat 280B on the same compute",
-  "summary": "Chinchilla upended the old rule that more compute mostly means bigger models: model size and data should grow together, at roughly 20 tokens per parameter. We unpack the learning-rate bias in the old experiments, the three estimation methods and the three-way loss decomposition, hand-calculate an IsoFLOP valley, then list the numbers that don't add up in the paper and the new considerations after LLaMA.",
-  "ai_summary": "Training Compute-Optimal Large Language Models (DeepMind, 2022) trained more than 400 models and used three methods to estimate the optimal allocation under fixed compute. The conclusion is consistent: model size and training data both scale roughly with the 0.5 power of compute, at about 20 tokens per parameter, rather than Kaplan et al.'s 0.73 and 0.27. The difference comes mainly from the old experiments using the same learning-rate schedule for all models. Trained accordingly, 70B-parameter Chinchilla used Gopher's compute to see 1.4 trillion tokens, reached 67.6% on MMLU, and outperformed the 280B-parameter Gopher on nearly everything. The paper has several internal inconsistencies; later, LLaMA factored in inference cost and chose to train smaller models for longer.",
+  "title": "Inside Chinchilla: why 70B parameters beat 280B on the same compute",
+  "summary": "Chinchilla upends the old rule that more compute means more parameters: model size and data should grow together, roughly 20 tokens per parameter. We unpack the learning-rate bias in the earlier experiments, the three estimation methods, the three-way loss decomposition, calculate an IsoFLOP valley by hand, and list the paper's internal inconsistencies and the new considerations raised by LLaMA.",
+  "ai_summary": "Training Compute-Optimal Large Language Models (DeepMind, 2022) trained over 400 models and used three methods to estimate the optimal allocation under a fixed compute budget. All three reached the same conclusion: model size and training data both scale roughly as the 0.5 power of compute, about 20 tokens per parameter, rather than Kaplan et al.'s 0.73 and 0.27. The difference stems mainly from the earlier experiments using a single learning-rate schedule for all models. A 70B-parameter Chinchilla trained under Gopher's compute budget on 1.4 trillion tokens reached 67.6% on MMLU, beating the 280B Gopher on almost every task. The paper contains many internal numeric inconsistencies; later, LLaMA factored in inference cost and chose smaller models trained longer.",
   "brief": [
-    "Problem: with a fixed compute budget, how big should the model be and how much data should it see? At the time, large models kept adding parameters while training data stayed around 300 billion tokens.",
-    "Method: train more than 400 models and estimate the optimal allocation three independent ways: the lower envelope of training curves, IsoFLOP valleys, and a three-term loss decomposition.",
-    "Result: model size and data should grow together, at roughly 20 tokens per parameter; 70B Chinchilla beats 280B Gopher on the same compute.",
-    "Caveats: large-scale validation rests on only one model pair, with confounds such as different optimizers; inference cost is ignored, and several numbers are internally inconsistent."
+    "The question: with a fixed compute budget, how large should the model be and how much data should it see? At the time, large models kept adding parameters while training data stayed around 300 billion tokens.",
+    "The method: train over 400 models and estimate independently with three approaches: the training-curve lower envelope, IsoFLOP valleys, and a three-term loss decomposition.",
+    "The result: model size and data should grow together, about 20 tokens per parameter; 70B Chinchilla beats 280B Gopher with the same compute.",
+    "Limits: the main large-scale validation is only one pair of models, and it mixes in optimizer differences; inference cost is not considered, and many numbers are internally inconsistent."
   ],
   "paper": {
     "title": "Training Compute-Optimal Large Language Models",
-    "authors": "Jordan Hoffmann, Sebastian Borgeaud, Arthur Mensch, Elena Buchatskaya, Trevor Cai, Eliza Rutherford and 16 other authors, 22 in total",
+    "authors": "Jordan Hoffmann, Sebastian Borgeaud, Arthur Mensch, Elena Buchatskaya, Trevor Cai, Eliza Rutherford and 16 others — 22 authors in total.",
     "org": "DeepMind",
     "venue": "NeurIPS 2022",
     "year": 2022,
@@ -22,8 +22,8 @@
     "url": "https://arxiv.org/abs/2203.15556"
   },
   "cover": {
-    "headline": "Close reading: the Chinchilla paper",
-    "highlight": "Scale model and data together",
+    "headline": "Chinchilla: a close read of the original paper",
+    "highlight": "Model and data should grow together",
     "big": {
       "value": "20",
       "unit": "tokens",
@@ -32,53 +32,53 @@
   },
   "sections": [
     {
-      "h": "The short version: what this paper actually does",
+      "h": "What this paper actually did",
       "blocks": [
         {
-          "p": "In March 2022, 22 DeepMind authors published this 36-page paper. It revisits the question from our earlier close reading of Scaling Laws: **with a fixed compute budget, how big should the model be, and how much data should it be trained on?**"
+          "p": "In March 2022, 22 authors at DeepMind released this 36-page paper. It revisits the question from our previous close reading of Scaling Laws: **with a fixed compute budget, how large should the model be and how much data should it see?**"
         },
         {
-          "p": "Two years earlier, OpenAI concluded that more compute should mostly go into larger models, with data growing only slowly. This paper reruns the experiment with more than 400 models and reaches a very different answer: **model size and training data should grow in equal proportion**—double one, double the other. By their estimate, a compute-optimal run uses about 20 training tokens per parameter."
+          "p": "Two years earlier, OpenAI concluded that more compute should mostly go into a bigger model, with data growing only slowly. This paper reruns the experiments with over 400 models and reaches a very different answer: **model size and training data should scale in equal proportions** — each time the model doubles, the data should double too. By their estimate, at the compute-optimal point each parameter needs about 20 training tokens."
         },
         {
-          "p": "By that standard, the large models of the time were all underfed: GPT-3, Gopher, MT-NLG and other 100B-plus models were mostly trained on about 300 billion tokens. To test the idea, the authors used **exactly the same compute** as Gopher (280B parameters) to train a model with only 70B parameters but 1.4 trillion tokens, named Chinchilla. It beat Gopher on nearly every benchmark, raising MMLU from 60.0% to 67.6%. It is also four times smaller, making it much cheaper to run."
+          "p": "By that standard, the big models of the time were all underfed: GPT-3, Gopher, MT-NLG, and other 100B-plus models mostly trained on only about 300 billion tokens. To test this, the authors trained a model called Chinchilla with **exactly the same compute** as Gopher (280B parameters) but only 70B parameters and 1.4 trillion tokens. It beat Gopher on almost every benchmark, improving MMLU from 60.0% to 67.6%. Four times smaller, and much cheaper to use."
         },
         {
-          "p": "This paper changed how the industry trains large models. Labs stopped just adding parameters and started pushing training data into the trillions of tokens; later, they even trained models deliberately longer than \"compute-optimal,\" because a smaller model is cheaper to deploy."
+          "p": "This paper changed how the industry trains large models. After it, teams stopped piling on parameters and instead pushed training data into the trillions of tokens; later, they even deliberately trained models longer than compute-optimal because a smaller model saves even more money at deployment."
         },
         {
           "callout": {
             "kind": "takeaway",
-            "title": "In one sentence:",
-            "text": "With a fixed compute budget, the optimal model size N and number of training tokens D both scale roughly with the 0.5 power of compute: double the model, double the data, at about 20 tokens per parameter. Three independent estimation methods reach the same conclusion, and 70B-parameter Chinchilla beats 280B-parameter Gopher on the same compute."
+            "title": "The one-sentence version",
+            "text": "With a fixed compute budget, optimal model size N and training tokens D both scale roughly as the 0.5 power of compute: double the model, double the data, with about 20 tokens per parameter. Three independent estimation methods reach the same conclusion, and 70B Chinchilla beats 280B Gopher using the same compute."
           }
         },
         {
           "callout": {
             "kind": "prereq",
-            "title": "Four small concepts to know before reading",
-            "text": "You don't need deep background; these four will do:",
+            "title": "Four concepts you need",
+            "text": "If you are not familiar with them, these four are enough:",
             "list": [
-              "**Loss and power laws**: loss measures how badly the model predicts the next token; it falls as a power law with model size and data. See our close reading of Scaling Laws for details.",
-              "**Training compute ≈ 6ND**: training an N-parameter model on D tokens takes about 6 × N × D floating-point operations. So for fixed compute, N and D trade off against each other.",
-              "**IsoFLOP**: \"same compute.\" An IsoFLOP curve holds compute fixed and varies model size (with token count varying accordingly) to see which combination gives the lowest loss.",
-              "**Cosine learning-rate schedule**: the learning rate declines from a high value along a cosine curve. Its cycle length must be chosen in advance—one of the paper's key points."
+              "**Loss and power laws**: loss measures how badly the model guesses the next token; it falls as a power law of model size and data volume. See our close reading of Scaling Laws.",
+              "**Training compute ≈ 6ND**: training a model with N parameters on D tokens costs about 6 × N × D floating-point operations. So for a fixed compute budget, N and D trade off against each other.",
+              "**IsoFLOP**: \"same compute.\" An IsoFLOP curve holds compute fixed and varies model size, with data changing accordingly, to see which combination achieves the lowest loss.",
+              "**Cosine learning-rate schedule**: the learning rate decreases gradually from a high value along a cosine curve. Its \"cycle length\" must be set in advance — the key detail in this paper."
             ]
           }
         }
       ]
     },
     {
-      "h": "The problem: everyone added parameters, but not data",
+      "h": "The problem: everyone added parameters, not data",
       "blocks": [
         {
-          "p": "In 2020, Scaling Laws advised that every 10× increase in compute should scale the model about 5.5× but the data only about 1.8× (as quoted by this paper). Big models in the following two years largely followed that recipe: parameters grew from 175 billion to 530 billion, while training data stayed around 300 billion tokens:"
+          "p": "In 2020, Scaling Laws recommended that a 10× increase in compute should grow the model about 5.5× but data only about 1.8× (the numbers as reported in this paper). Large models over the next two years largely followed this recipe: parameters rose from 175B to 530B while training data stayed almost flat at around 300 billion tokens:"
         },
         {
           "fig": {
             "type": "table",
-            "title": "The largest models of the time: parameters kept growing, data barely moved",
-            "subtitle": "From paper Table 1; \"tokens per parameter\" is this site's calculation. Amber is Chinchilla",
+            "title": "The largest models at the time: more parameters, data barely moved",
+            "subtitle": "From the paper's Table 1; \"tokens per parameter\" is computed by us. Amber is Chinchilla.",
             "columns": [
               "Model",
               "Parameters",
@@ -88,38 +88,38 @@
             "rows": [
               [
                 "LaMDA",
-                "137 billion",
-                "168 billion",
-                "about 1.2"
+                "137B",
+                "168B",
+                "≈1.2"
               ],
               [
                 "GPT-3",
-                "175 billion",
-                "300 billion",
-                "about 1.7"
+                "175B",
+                "300B",
+                "≈1.7"
               ],
               [
                 "Jurassic",
-                "178 billion",
-                "300 billion",
-                "about 1.7"
+                "178B",
+                "300B",
+                "≈1.7"
               ],
               [
                 "Gopher",
-                "280 billion",
-                "300 billion",
-                "about 1.1"
+                "280B",
+                "300B",
+                "≈1.1"
               ],
               [
                 "MT-NLG 530B",
-                "530 billion",
-                "270 billion",
-                "about 0.5"
+                "530B",
+                "270B",
+                "≈0.5"
               ],
               [
                 "Chinchilla",
-                "70 billion",
-                "1.4 trillion",
+                "70B",
+                "1.4T",
                 "20"
               ]
             ],
@@ -129,40 +129,40 @@
           }
         },
         {
-          "p": "Why does this matter? The compute budget for training a large model is usually fixed in advance: how many accelerators you have and how long you can run them. Such models can usually be trained only once, so if you get the size or duration wrong, there is no second chance."
+          "p": "Why does this matter? The compute budget for training a large model is usually fixed in advance: how many accelerators you have and how long you can use them. And such models can usually only be trained once, so if the model size or training length is chosen badly, there is no second chance."
         }
       ]
     },
     {
-      "h": "Key finding: a hidden bias in the previous paper's experiments",
+      "h": "Key finding: the earlier experiments hid a bias",
       "blocks": [
         {
-          "p": "The paper identifies a flaw in the experimental design of Scaling Laws: it gave every model **the same training length and learning-rate schedule** (a cosine decay to a fixed token count), then used mid-training losses to represent what a model would achieve if trained for only that many tokens."
+          "p": "The paper identifies a flaw in the experimental design of Scaling Laws: it used **the same training length and learning-rate schedule** for all models — a cosine decay to a fixed token count — then used mid-training loss to stand in for \"what happens if I train on only this many tokens.\""
         },
         {
-          "p": "The problem is that a cosine schedule only \"finishes\" when it completes its full cycle; the loss drops fastest at the end. If the schedule is designed for 130 billion tokens, stopping at 20 billion leaves the learning rate high and the model unfinished, so the loss is higher than for a model trained to completion on a schedule designed for 20 billion tokens. As a result, training on less data is systematically underestimated, pushing the conclusion toward more parameters and less data."
+          "p": "The problem is that a cosine schedule needs to complete a full cycle before a model \"finishes,\" and the loss drops fastest at the end of the cycle. If the schedule is designed for 130B tokens, stopping at 20B tokens leaves the learning rate still high and the model unfinished, so the loss is higher than for a model trained with a schedule designed specifically for 20B tokens. As a result, training on less data was systematically underestimated, pushing the conclusion toward \"more parameters, less data.\""
         },
         {
           "callout": {
             "kind": "intuition",
-            "title": "Like timing a 10K run at marathon pace",
-            "text": "A runner starts at marathon pace, and you clock them at the 10-kilometer mark; that time will be slower than if they raced a 10K, because they're conserving energy and not sprinting. Concluding \"this person is bad at short distances\" would be unfair. The old experiments made exactly this mistake by using mid-training losses to represent shorter training runs."
+            "title": "Like timing a 10K using marathon pace",
+            "text": "A runner sets out at marathon pace, and you stop the clock at 10K. The time will be slower than if they had raced a 10K: they are saving energy and have not kicked. If you then conclude \"this person is bad at short distances,\" you are doing them an injustice. The old experiments made exactly this mistake by using mid-training loss to represent short training runs."
           }
         },
         {
-          "p": "The paper confirms this: if the cosine cycle is more than 25% longer than the actual training steps, the model is noticeably worse. So every experiment here matches the learning-rate cycle to the training length (with the learning rate decaying 10× over the run). Two other differences: the models are larger, mostly above 500 million parameters and up to 16 billion, whereas most of the older models were small, many under 100 million. The paper also finds that the compute–optimal-size relationship bends slightly at larger scales, so extrapolating from small models is biased."
+          "p": "The paper confirms this: if the cosine cycle is more than 25% longer than the actual training steps, the model visibly worsens. So every experiment in this paper sets the learning-rate cycle length to match the training length, with the learning rate decaying 10× over the run. Two other differences: this paper uses larger models, mostly above 500M parameters and up to 16B, while the old experiments were mostly much smaller, many under 100M. The paper also finds that the relationship between compute and optimal model size curves slightly at large scale, so extrapolating from small models introduces bias."
         },
         {
           "quiz": {
-            "q": "Why does measuring mid-training loss with a learning-rate schedule designed for longer training underestimate the value of training on less data?",
+            "q": "Why would measuring mid-training loss with a schedule designed for a long training run make people underestimate the value of training on less data?",
             "options": [
               "Because mid-training measurements are noisier",
-              "Because the learning-rate cycle hasn't finished; the model hasn't \"settled,\" so mid-training loss is higher than for a model trained to that length on purpose",
+              "Because the learning-rate cycle has not completed, the model has not \"finished,\" and mid-training loss is higher than for a model trained specifically to that length",
               "Because the model has fewer parameters mid-training",
-              "Because it hasn't seen the test set yet"
+              "Because the model has not seen the test set yet"
             ],
             "answer": 1,
-            "why": "A cosine schedule lowers the learning rate near the end, and that's when loss drops most. Stopping mid-cycle leaves the learning rate high and the loss elevated. If you treat that as \"what a model can achieve with this much data,\" you overestimate the loss of training on less data and therefore underestimate its value. Parameter count doesn't change during training, and the test set has nothing to do with training progress."
+            "why": "A cosine schedule lowers the learning rate in the final phase, and that is when loss drops fastest. Stopping mid-training leaves the learning rate high and the loss elevated. Treating that as \"the level achievable with this much data\" overestimates the loss for training on less data, and so underestimates its value. The parameter count does not change during training, and the test set is irrelevant to training progress."
           }
         }
       ]
@@ -171,34 +171,34 @@
       "h": "Method 1: draw the lower envelope of all training curves",
       "blocks": [
         {
-          "p": "The first method is the most direct. Take a set of models (70 million to over 10 billion parameters), train each size four times, with learning-rate cycles matched to four different training lengths whose longest and shortest differ by 16×. Plot all training curves on a compute–loss chart; at each compute value, find the curve with the lowest loss, and record its model size and tokens seen."
+          "p": "The first method is the most direct. Take a set of models from 70M to over 10B parameters, and train each size four times, with learning-rate cycles set for four different training lengths, the longest and shortest differing by a factor of 16. Plot all training curves on a compute–loss chart, then for each compute value find which curve has the lowest loss and record its model size and the number of tokens it has seen."
         },
         {
           "callout": {
             "kind": "intuition",
-            "title": "What the lower envelope is",
-            "text": "Overlay dozens of training curves falling from upper left to lower right, then trace along their bottom edge. That line is \"the lowest loss achievable at each compute budget.\" Each point on it corresponds to a specific model size and data volume—the optimal combination for that compute."
+            "title": "What is the lower envelope?",
+            "text": "Take dozens of training curves sloping from upper left to lower right, stack them together, and trace along the bottom. That line is \"the lowest loss achievable at each compute level.\" Each point on it corresponds to a specific model size and data volume — the optimal combination for that compute budget."
           }
         },
         {
-          "p": "After sampling 1,500 logarithmically spaced compute values, they fit power laws for optimal model size and optimal token count as a function of compute: N_{opt} ∝ C^{a}, D_{opt} ∝ C^{b}. The result is **a = 0.50, b = 0.50**: the two grow exactly in step. The paper also notes that every selected point falls in the final 15% of its training run—another sign that the learning-rate cycle should match training length."
+          "p": "After sampling 1,500 logarithmically spaced compute values, they fit power laws for how optimal model size and optimal token count scale with compute: N_{opt} ∝ C^{a}, D_{opt} ∝ C^{b}. The result is **a = 0.50 and b = 0.50**: the two grow exactly in lockstep. The paper also notes that the chosen points all fall within the last 15% of their training runs — another sign that the learning-rate cycle must match training length."
         }
       ]
     },
     {
-      "h": "Method 2: fix the compute, find the loss \"valley\"",
+      "h": "Method 2: fix compute and find the loss \"valley\"",
       "blocks": [
         {
-          "p": "The second method is more intuitive. Choose nine compute budgets (from 6 × 10^{18} to 3 × 10^{21} FLOPs), and under each train a range of model sizes: the larger the model, the fewer tokens it gets, so the budget is used exactly. Then look at final loss as a function of model size."
+          "p": "The second method is more intuitive. Pick nine compute budgets from 6 × 10^{18} to 3 × 10^{21} FLOPs, and for each budget train a range of model sizes: the larger the model, the fewer tokens it sees, exactly using up the budget. Then look at how final loss depends on model size."
         },
         {
-          "p": "Under each budget, loss shows a clear valley: models too small can't absorb the data; models too large don't get enough data. The valley floor is that budget's optimal model. The paper fits a parabola to each curve to locate the bottom, then connects the bottoms with power laws, obtaining **a = 0.49, b = 0.51**."
+          "p": "For every budget, the loss forms a clear valley: too small a model cannot absorb the knowledge; too large a model gets too little data and is undertrained. The valley floor is the optimal model for that budget. The paper fits a parabola to each curve to locate the floor, then fits a power law through the floors, giving **a = 0.49 and b = 0.51**."
         },
         {
           "fig": {
             "type": "table",
-            "title": "With Gopher's compute, how to split it: the middle is best, both ends are worse",
-            "subtitle": "Schematic: this site's calculation from the Method 3 fitted formula and rounded parameters, with compute = 5.76 × 10^{23} and D = C / 6N. Not empirical data. Amber marks the area near the valley floor.",
+            "title": "Same Gopher compute, different splits: the middle wins, both extremes lag",
+            "subtitle": "Illustrative: computed by us from the paper's Method 3 fitted formula and rounded parameters, using compute of 5.76 × 10^{23} and D = C / 6N. Not measured data. Amber marks the valley floor.",
             "columns": [
               "Model size N",
               "Training tokens D",
@@ -208,43 +208,43 @@
             ],
             "rows": [
               [
-                "10 billion",
-                "9.6 trillion",
+                "10B",
+                "9.6T",
                 "1.947",
                 "0.162",
                 "0.095"
               ],
               [
-                "20 billion",
-                "4.8 trillion",
+                "20B",
+                "4.8T",
                 "1.933",
                 "0.128",
                 "0.116"
               ],
               [
-                "40 billion",
-                "2.4 trillion",
+                "40B",
+                "2.4T",
                 "1.931",
                 "0.101",
                 "0.140"
               ],
               [
-                "70 billion (Chinchilla)",
-                "1.37 trillion",
+                "70B (Chinchilla)",
+                "1.37T",
                 "1.938",
                 "0.084",
                 "0.164"
               ],
               [
-                "140 billion",
-                "0.69 trillion",
+                "140B",
+                "0.69T",
                 "1.955",
                 "0.066",
                 "0.199"
               ],
               [
-                "280 billion (Gopher's size)",
-                "0.34 trillion",
+                "280B (Gopher's size)",
+                "0.34T",
                 "1.984",
                 "0.052",
                 "0.242"
@@ -253,29 +253,34 @@
             "highlight": {
               "row": 2
             },
-            "note": "The valley floor is fairly flat: the difference between 20B and 70B is small, but 280B is clearly worse. With rounded parameters, the minimum is around 32B; the paper's unrounded parameters give about 40B. The \"predicted loss\" also includes an irreducible constant of 1.69, discussed in Method 3."
+            "note": "The valley is fairly flat: from 20B to 70B the differences are small, but 280B is clearly worse. With rounded parameters, the valley floor is around 32B; the paper uses unrounded parameters and gets about 40B. The \"predicted loss\" also includes an irreducible constant of 1.69, explained in Method 3 below."
+          },
+          "plain": {
+            "title": "Fixed budget, find the valley",
+            "pic": "chin-valley",
+            "text": "Compute is fixed: make the model bigger and it sees less data; make it smaller and it can see more. Connect the losses of all these splits and you get a valley curve that falls then rises. Models near the valley floor are much smaller than Gopher, the point on the right, yet achieve lower loss."
           }
         },
         {
           "quiz": {
-            "q": "On an IsoFLOP curve, why does an overly large model end up with higher loss?",
+            "q": "On an IsoFLOP curve, why does a model that is too large end up with higher loss?",
             "options": [
-              "Because larger models overfit the test set more easily",
-              "Because with fixed compute, a larger model gets fewer training tokens and is undertrained",
-              "Because large models have too small a learning rate",
-              "Because large models use a different architecture"
+              "Because larger models are more prone to overfit the test set",
+              "Because compute is fixed, a larger model trains on fewer tokens and is undertrained",
+              "Because the learning rate is too low for larger models",
+              "Because larger models have a different architecture"
             ],
             "answer": 1,
-            "why": "Compute ≈ 6ND is fixed, so when N goes up, D must fall in proportion. A larger model has more capacity, but with too little data the \"undertrained\" loss grows quickly and outweighs the benefit of capacity. In these experiments each example is seen only once, so there is no issue of memorizing the test set."
+            "why": "Compute ≈ 6ND is fixed, so if N increases, D must decrease in proportion. The model has more capacity but sees too little data; the \"undertraining\" loss rises quickly and outweighs the benefit of extra capacity. In these experiments every data point is seen only once, so there is no memorizing the test set."
           }
         }
       ]
     },
     {
-      "h": "Method 3: split loss into three terms and solve directly",
+      "h": "Method 3: decompose loss into three terms and solve directly",
       "blocks": [
         {
-          "p": "The third method pools all the experiments from the first two methods and fits a formula with an explicit interpretation:"
+          "p": "The third method pools all the experimental results from the first two methods and fits a formula with explicit meaning:"
         },
         {
           "formula": {
@@ -283,32 +288,37 @@
             "parts": [
               {
                 "sym": "E",
-                "desc": "The data's own \"entropy\": the loss that cannot be removed even with a perfect model and infinite data. Language itself has irreducible uncertainty"
+                "desc": "The entropy of the data itself: even with a perfect model and infinite data, this loss cannot be removed. Language itself is uncertain."
               },
               {
                 "sym": "A / N^{α}",
-                "desc": "Loss from the model being too small: even a perfectly trained Transformer with N parameters falls this far short of the ideal model"
+                "desc": "Loss caused by the model being too small: a transformer with N parameters, even trained perfectly, still falls this far short of the ideal model."
               },
               {
                 "sym": "B / D^{β}",
-                "desc": "Loss from insufficient training: seeing only D tokens, each once, leaves this much gap to a fully trained model"
+                "desc": "Loss caused by not training enough: the model has only seen D tokens, each once, and is this far from perfect training."
               },
               {
                 "sym": "α, β",
-                "desc": "The two exponents determine how quickly returns come from adding parameters and adding data"
+                "desc": "Two exponents, determining how quickly adding parameters and adding data pay off."
               }
             ],
-            "note": "The fit uses a Huber loss that is insensitive to outliers (δ = 10^{-3}) and the L-BFGS optimizer, choosing the best result from a set of initial values to avoid local minima. The paper says a larger δ makes the fit cater too much to small-compute experiments and worsens predictions for large ones."
+            "note": "The fit uses the outlier-insensitive Huber loss (δ = 10^{-3}) and the L-BFGS optimizer, choosing the best from a set of initial values to avoid local optima. The paper says that if δ were larger, the fit would over-accommodate the small-compute experiments and predict large-scale experiments worse."
+          },
+          "plain": {
+            "title": "Three reasons the model can't reach a perfect score",
+            "pic": "chin-three",
+            "text": "Break the loss into three pieces: E is the irreducible uncertainty of the task itself, which no one can remove (gray; it is actually much larger than drawn). A / N^α is \"not enough brain\" — the larger the model, the smaller it gets. B / D^β is \"not enough reading\" — the more data, the smaller it gets. The optimal allocation makes the last two pieces together as small as possible."
           }
         },
         {
-          "p": "These three terms come from a classic decomposition: total loss = ideal floor + gap from \"limited model capacity\" + gap from \"imperfect training.\" With this formula, you can hand-calculate the predicted losses of two models:"
+          "p": "These three terms come from a classic decomposition: total loss = ideal lower bound + gap from \"limited model capacity\" + gap from \"imperfect training.\" With this formula, you can compute the predicted loss for the two models by hand:"
         },
         {
           "fig": {
             "type": "table",
-            "title": "Hand-calculated from the formula: with the same compute, Chinchilla's predicted loss is lower",
-            "subtitle": "Schematic: this site's calculation from the fitted formula in Appendix D.2; not measured data. The blue column is total predicted loss.",
+            "title": "By the formula: with the same compute, Chinchilla's predicted loss is lower",
+            "subtitle": "Illustrative: computed by us from the fitted formula in Appendix D.2, not measured data. Blue column is total predicted loss.",
             "columns": [
               "Model",
               "Parameters N",
@@ -321,8 +331,8 @@
             "rows": [
               [
                 "Gopher",
-                "280 billion",
-                "300 billion",
+                "280B",
+                "300B",
                 "1.69",
                 "0.052",
                 "0.251",
@@ -330,8 +340,8 @@
               ],
               [
                 "Chinchilla",
-                "70 billion",
-                "1.4 trillion",
+                "70B",
+                "1.4T",
                 "1.69",
                 "0.084",
                 "0.163",
@@ -341,11 +351,11 @@
             "highlight": {
               "col": 6
             },
-            "note": "Gopher's \"model capacity\" term is already small (0.052), so adding parameters barely helps; its \"not trained enough\" term is 0.251. Chinchilla shifts some budget from parameters to data: the first term rises by only 0.03, while the second falls by nearly 0.09."
+            "note": "For Gopher, the \"model capacity\" term is already small at 0.052, so adding more parameters yields little. But the \"undertraining\" term is as high as 0.251. Chinchilla shifts part of the budget from parameters to data: the first term rises by only 0.03, while the second shrinks by almost 0.09."
           }
         },
         {
-          "p": "**The condition for optimal allocation.** Minimizing loss under fixed compute 6ND gives an elegant result: at the optimum, the ratio of the two reducible loss terms equals β : α, or A/N^{α} : B/D^{β} = 0.28 : 0.34. In plain terms: **the next unit of compute must buy the same loss reduction whether it goes to parameters or to data**; otherwise you should shift budget toward the higher-return side. The optimal exponents follow directly:"
+          "p": "**The optimality condition**. Minimizing the loss with compute fixed at 6ND yields a neat result: at the optimum, the ratio of the two reducible losses equals β : α, i.e. A/N^{α} : B/D^{β} = 0.28 : 0.34. In plain terms: **the next unit of compute spent on more parameters must reduce loss by exactly as much as the same compute spent on more data**; otherwise, shift it to whichever has the higher return. From this the optimal exponents follow directly:"
         },
         {
           "formula": {
@@ -353,59 +363,63 @@
             "parts": [
               {
                 "sym": "a",
-                "desc": "The exponent for how fast the optimal model size grows with compute"
+                "desc": "Exponent for how optimal model size grows with compute"
               },
               {
                 "sym": "b",
-                "desc": "The exponent for how fast the optimal data volume grows with compute. a + b = 1, because N × D is proportional to compute"
+                "desc": "Exponent for how optimal data volume grows with compute. a + b = 1 because N × D is proportional to compute."
               },
               {
                 "sym": "α ≈ β",
-                "desc": "The two exponents are similar, so a and b are both close to 0.5: model and data grow in lockstep."
+                "desc": "The two exponents are similar, so a and b are both close to 0.5: model and data grow together."
               }
             ],
-            "note": "The paper reports Method 3 gives a = 0.46, b = 0.54, and predicts an optimal model of about 40 billion parameters at Gopher's compute. Using the paper's rounded parameters, a = 0.28 / 0.62 ≈ 0.45 (see \"Where the paper doesn't add up\" below)."
+            "note": "The paper reports Method 3 gives a = 0.46 and b = 0.54, and predicts the optimal model under Gopher's compute is about 40B parameters. Using the paper's rounded parameters gives a = 0.28 / 0.62 ≈ 0.45 (see \"the parts that don't add up\" below)."
+          },
+          "plain": {
+            "title": "Split the extra compute down the middle",
+            "text": "The two terms \"model too small\" and \"data too little\" shrink at similar rates with scale, as α and β are close. So extra compute should also be split roughly evenly: however much the model grows, data grows by the same factor. That is what exponents a and b near 0.5 mean."
           }
         },
         {
-          "p": "As an aside, E = 1.69 is very close to the roughly 1.7 nats that the earlier paper guessed for the entropy of language. But the two papers use different datasets and tokenization, so the values aren't directly comparable—just an interesting coincidence."
+          "p": "As an aside, E = 1.69 is very close to the language entropy of about 1.7 nats guessed in the previous paper. But the two papers use different datasets and tokenization, so the values cannot be compared directly — it is only an interesting coincidence."
         },
         {
           "quiz": {
-            "q": "In L(N, D) = E + A/N^{α} + B/D^{β}, which term cannot be eliminated no matter how much model capacity and data you add?",
+            "q": "In L(N, D) = E + A/N^{α} + B/D^{β}, which term cannot be removed no matter how much model and data are added?",
             "options": [
               "A/N^{α}",
               "B/D^{β}",
               "E",
-              "All three can be eliminated"
+              "All three terms can be removed"
             ],
             "answer": 2,
-            "why": "E represents the irreducible uncertainty of text itself (the same context can be followed by many plausible words); it remains even with infinite model and data. A/N^{α} tends to 0 as the model grows, and B/D^{β} tends to 0 as data increases."
+            "why": "E represents the uncertainty of the text itself: the same context can be followed by many reasonable words, and no amount of model scaling or data can remove it. A/N^{α} tends to 0 as the model grows; B/D^{β} tends to 0 as the data grows."
           }
         },
         {
           "quiz": {
-            "q": "At optimal allocation, why must the marginal loss reduction from adding parameters equal that from adding data?",
+            "q": "At the optimal allocation, why must the marginal loss reduction from adding parameters equal that from adding data?",
             "options": [
               "Because the formula requires α = β",
-              "If one side had higher returns, shifting a bit of compute from the lower-return side would lower total loss—so the original allocation wasn't optimal",
-              "Because parameters and data cost the same per unit",
-              "Because 6ND is constant"
+              "If one side offers a higher return, moving a little compute from the lower-return side to the other will lower total loss, so the original allocation was not optimal",
+              "Because parameters and data have the same unit cost",
+              "Because 6ND is a constant"
             ],
             "answer": 1,
-            "why": "This is a general principle for any budget-allocation problem: if two ways of spending have different marginal returns, there is room to improve until they are equal. α and β are not equal (0.34 vs. 0.28), so at the optimum the two loss terms are in the ratio β : α, not 1 : 1."
+            "why": "This is the general principle of all budget-allocation problems: as long as two ways of spending have different marginal returns, there is room to improve until the two are equal. α and β are not equal (0.34 and 0.28), so at the optimum the ratio of the two loss terms is β : α, not 1 : 1."
           }
         }
       ]
     },
     {
-      "h": "Three methods, one conclusion: model and data grow together",
+      "h": "Three methods, one conclusion: model size and data grow together",
       "blocks": [
         {
           "fig": {
             "type": "table",
             "title": "All three methods find a ≈ b ≈ 0.5, far from the old conclusion",
-            "subtitle": "From paper Table 2; parentheses are 10th and 90th percentiles estimated by bootstrap. The blue column is the data exponent b",
+            "subtitle": "From the paper's Table 2; values in parentheses are bootstrap-estimated 10% and 90% percentiles. Blue column is the data exponent b.",
             "columns": [
               "Method",
               "Model exponent a (N_{opt} ∝ C^{a})",
@@ -418,7 +432,7 @@
                 "0.50 (0.501, 0.512)"
               ],
               [
-                "Method 2: IsoFLOP valley",
+                "Method 2: IsoFLOP valleys",
                 "0.49 (0.462, 0.534)",
                 "0.51 (0.483, 0.529)"
               ],
@@ -436,20 +450,20 @@
             "highlight": {
               "col": 2
             },
-            "note": "The paper also re-runs Method 2 on the C4 and GitHub code datasets, getting 0.50 / 0.50 and 0.53 / 0.47 respectively; the conclusion is the same."
+            "note": "The paper also re-ran Method 2 on two other datasets, C4 and GitHub code, getting 0.50 / 0.50 and 0.53 / 0.47, respectively — same conclusion."
           }
         },
         {
-          "p": "The three methods use different fitting procedures and different models, yet their conclusions are nearly identical. Method 3 predicts a somewhat smaller optimal model; the paper explains that its Huber loss automatically treats low-compute experiments as outliers and gives more weight to high-compute points, and that the compute–optimal-size relationship bends slightly downward at large scales."
+          "p": "The three methods used different fitting procedures and different models, yet reached nearly the same conclusion. Method 3 predicts a somewhat smaller optimal model; the paper explains that its Huber loss automatically treats small-compute experiments as outliers and gives more weight to large-compute points, and that the compute-to-optimal-model-size relationship curves slightly downward at large scale."
         },
         {
-          "p": "**About 20 tokens per parameter.** Table 3 lists, using Method 1, how much data each model size needs to be compute-optimal: 1B parameters needs about 20.2B tokens, 10B needs about 205.1B tokens, and 67B needs about 1.5 trillion. Work out the ratios and they all land around 20 (this rule of thumb is calculated by this site from the table; the paper's main text does not state it this way)."
+          "p": "**About 20 tokens per parameter**. The paper's Table 3 lists, from Method 1, how much data models of different sizes need to be compute-optimal: 1B parameters needs about 20.2B tokens, 10B needs about 205.1B, and 67B needs about 1.5T. The ratios all come out around 20 (this rule of thumb is computed by us from the table; the paper's main text does not state it this way)."
         },
         {
           "fig": {
             "type": "table",
             "title": "How much data and compute a model needs to be compute-optimal",
-            "subtitle": "From paper Table 3 (Method 1). \"Tokens per parameter\" is this site's calculation; \"Gopher units\" means how many times the compute used to train Gopher. Amber is the optimal point at Gopher's compute.",
+            "subtitle": "From the paper's Table 3 (Method 1). \"Tokens per parameter\" is computed by us; \"Gopher units\" means the multiple of compute used to train Gopher. Amber marks the optimum at Gopher's compute budget.",
             "columns": [
               "Parameters",
               "Training compute (FLOPs)",
@@ -459,46 +473,46 @@
             ],
             "rows": [
               [
-                "1 billion",
+                "1B",
                 "1.21 × 10^{20}",
                 "1/4761",
-                "20.2 billion",
-                "about 20"
+                "20.2B",
+                "≈20"
               ],
               [
-                "10 billion",
+                "10B",
                 "1.23 × 10^{22}",
                 "1/46",
-                "205.1 billion",
-                "about 21"
+                "205.1B",
+                "≈21"
               ],
               [
-                "67 billion",
+                "67B",
                 "5.76 × 10^{23}",
                 "1",
-                "1.5 trillion",
-                "about 22"
+                "1.5T",
+                "≈22"
               ],
               [
-                "175 billion",
+                "175B",
                 "3.85 × 10^{24}",
                 "6.7",
-                "3.7 trillion",
-                "about 21"
+                "3.7T",
+                "≈21"
               ],
               [
-                "280 billion",
+                "280B",
                 "9.90 × 10^{24}",
                 "17.2",
-                "5.9 trillion",
-                "about 21"
+                "5.9T",
+                "≈21"
               ],
               [
-                "1 trillion",
+                "1T",
                 "1.27 × 10^{26}",
                 "221.3",
-                "21.2 trillion",
-                "about 21"
+                "21.2T",
+                "≈21"
               ]
             ],
             "highlight": {
@@ -507,34 +521,34 @@
           }
         },
         {
-          "p": "The implication is stark: a 175B-parameter model needs several trillion tokens to be trained well, while GPT-3 used only 300B. A compute-optimal 1-trillion-parameter model is not worthwhile unless you have more than 250× Gopher's compute. The paper therefore stresses that **larger, higher-quality datasets** will be the key to further scaling language models."
+          "p": "The table's implication is sharp: a 175B-parameter model needs several trillion tokens to be worth the compute, and GPT-3 used only 300B. Training a compute-optimal 1T-parameter model is not worthwhile unless you have more than 250× the compute used for Gopher. The paper emphasizes that **larger, higher-quality datasets** will be key to further scaling language models."
         },
         {
           "quiz": {
-            "q": "Using the rule of thumb of about 20 tokens per parameter, about how many tokens should a 7B-parameter model be trained on to be compute-optimal?",
+            "q": "According to the \"about 20 tokens per parameter\" rule of thumb, about how many tokens should a 7B-parameter model train on to be compute-optimal?",
             "options": [
-              "about 7 billion",
-              "about 140 billion",
-              "about 1.4 trillion",
-              "about 300 billion"
+              "About 7B",
+              "About 140B",
+              "About 1.4T",
+              "About 300B"
             ],
             "answer": 1,
-            "why": "7B × 20 = 140 billion tokens. 1.4 trillion is Chinchilla's data volume (70B parameters); 300 billion was the \"standard\" training volume for large models at the time. Later, many 7B-class models were actually trained on far more than 140B tokens; see the end of the article."
+            "why": "7B × 20 = 140B tokens. About 1.4T is the data volume of Chinchilla (a 70B-parameter model); about 300B was the \"standard\" training volume for large models at the time. Later, many 7B-class models were actually trained on far more than 140B tokens; see the end of the article for why."
           }
         }
       ]
     },
     {
-      "h": "Validation: training Chinchilla on Gopher's compute",
+      "h": "Validation: training Chinchilla with Gopher's compute budget",
       "blocks": [
         {
-          "p": "All three methods put the optimal model for Gopher's compute between 40B and 70B parameters. For dataset and computational-efficiency reasons, the authors chose the upper end: **70B parameters, 1.4 trillion tokens**, using the same compute as Gopher."
+          "p": "According to the three methods, the optimal model under Gopher's compute budget is between 40B and 70B parameters. For dataset and computational-efficiency reasons, the authors chose the upper end: **70B parameters and 1.4T tokens**, using the same compute as Gopher."
         },
         {
           "fig": {
             "type": "table",
-            "title": "Chinchilla and Gopher: same layers, half the width",
-            "subtitle": "From paper Table 4; batch size doubles midway through training. Amber is Chinchilla.",
+            "title": "Chinchilla and Gopher: same depth, half the width",
+            "subtitle": "From the paper's Table 4; batch size doubles partway through training. Amber is Chinchilla.",
             "columns": [
               "Model",
               "Layers",
@@ -567,39 +581,44 @@
             "highlight": {
               "row": 1
             }
+          },
+          "plain": {
+            "title": "Same compute, split differently",
+            "pic": "chin-ratio",
+            "text": "Gopher was 280B parameters and read only 300B tokens; Chinchilla shrank the model to 70B and increased the reading to 1.4T tokens. The compute is similar, yet the latter is better on almost all tasks and cheaper to run."
           }
         },
         {
-          "p": "Beyond size and data volume, the two differ in several ways, all listed in the paper:"
+          "p": "Beyond size and data volume, the two models differ in several other ways, all listed in the paper:"
         },
         {
           "list": [
-            "**Data mixture**: both use the MassiveText dataset, but because Chinchilla trains on more tokens, the sampling proportions of the subsets were slightly adjusted, and parts of the web and Wikipedia subsets are seen more than once.",
-            "**Optimizer**: Chinchilla uses AdamW, Gopher uses Adam. The paper finds that AdamW improves language-modeling loss and downstream task performance.",
-            "**Tokenizer**: it removes a text-normalization step (NFKC); the vocabulary is 94.15% identical to Gopher's, which helps represent mathematical and chemical symbols.",
+            "**Data mix**: both use the MassiveText dataset, but because more tokens are needed, the sampling proportions of subsets were adjusted slightly; the web and Wikipedia portions are seen more than once.",
+            "**Optimizer**: Chinchilla uses AdamW; Gopher used Adam. The paper finds that AdamW improves language-modeling loss and downstream performance.",
+            "**Tokenizer**: it removes a text-normalization step (NFKC); the vocabulary is 94.15% identical to Gopher's, which helps with representing math and chemistry symbols.",
             "**Numerical precision**: forward and backward passes use bfloat16, but a float32 copy of the weights is kept in the optimizer state."
           ]
         },
         {
           "callout": {
             "kind": "note",
-            "title": "This is not a \"change one variable\" controlled experiment",
-            "text": "Differences in optimizer, tokenizer, and numerical precision could all make Chinchilla stronger. The appendix separately compares Adam and AdamW and confirms that AdamW is better on its own. So strictly speaking, part of Chinchilla's margin over Gopher cannot be credited to better compute allocation. The paper also runs a cleaner controlled comparison at small scale: at 10^{21} FLOPs, the old method recommends 4.68B parameters and the new method recommends 2.86B; trained with identical settings, the model predicted by the new method is better."
+            "title": "This is not a controlled experiment that changes only one variable.",
+            "text": "The optimizer, tokenizer, and precision differences could all make Chinchilla stronger. In the appendix, the paper compares Adam and AdamW separately and confirms AdamW is better on its own. Strictly speaking, then, part of Chinchilla's margin over Gopher cannot be attributed to better compute allocation. The paper also ran a cleaner small-scale comparison: at 10^{21} FLOPs, the old method recommended 4.68B parameters and the new method 2.86B; trained with identical settings, the new method's model performed better."
           }
         }
       ]
     },
     {
-      "h": "Results: nearly across-the-board wins over Gopher",
+      "h": "Results: beats Gopher on almost all benchmarks",
       "blocks": [
         {
-          "p": "The paper compares Chinchilla with Gopher—and with GPT-3, MT-NLG 530B and others—on language modeling, reading comprehension, question answering, common sense, MMLU, BIG-bench and many other tasks. Most attention went to MMLU, an exam-style benchmark covering 57 subjects:"
+          "p": "The paper compares Chinchilla with Gopher, GPT-3, MT-NLG 530B, and other models on a wide range of tasks: language modeling, reading comprehension, question answering, commonsense reasoning, MMLU, BIG-bench, and more. The most closely watched is MMLU, an exam-style benchmark covering 57 subjects:"
         },
         {
           "fig": {
             "type": "columns",
-            "title": "MMLU 5-shot average accuracy: 70B-parameter Chinchilla clears 60% for the first time",
-            "subtitle": "Units: %; from paper Table 6. Amber is Chinchilla; \"2023 forecast\" is the average prediction made in 2021 by a group of professional forecasters for the best score by June 2023.",
+            "title": "MMLU 5-shot average accuracy: 70B-parameter Chinchilla passes 60% for the first time",
+            "subtitle": "Units: %. From the paper's Table 6. Amber is Chinchilla; \"2023 forecast\" is the average forecast made in 2021 by professional forecasters for the best result by June 2023.",
             "items": [
               {
                 "label": "Random guess",
@@ -636,13 +655,13 @@
           }
         },
         {
-          "p": "Chinchilla is 7.6 points above Gopher, and even beats the forecasters' average expectation for June 2023. Across the 57 subjects, it is better on 51, tied on 2, and worse on only 4 (college mathematics, econometrics, moral scenarios, formal logic)."
+          "p": "Chinchilla scores 7.6 points higher than Gopher, even exceeding forecasters' average expectation for June 2023. Across the 57 subjects, it is better on 51, tied on 2, and worse on only 4 (college mathematics, econometrics, moral scenarios, formal logic)."
         },
         {
           "fig": {
             "type": "table",
             "title": "Other representative tasks: mostly clear wins",
-            "subtitle": "From paper Tables 7–9 and the main text; units: accuracy %. The blue column is Chinchilla.",
+            "subtitle": "From the paper's Tables 7–9 and main text; units: accuracy %. Blue column is Chinchilla.",
             "columns": [
               "Task",
               "Chinchilla",
@@ -681,7 +700,7 @@
                 "60.5"
               ],
               [
-                "Natural Questions (closed-book, 64 examples)",
+                "Natural Questions (closed-book, 64-shot)",
                 "35.5",
                 "28.2",
                 "29.9"
@@ -696,14 +715,14 @@
             "highlight": {
               "col": 1
             },
-            "note": "On the common-sense task PIQA, both score 81.8%. On RACE, GPT-3 and MT-NLG used different prompt formats, so the paper explicitly notes they cannot be directly compared."
+            "note": "On the commonsense benchmark PIQA, both models score 81.8%. On RACE, GPT-3 and MT-NLG used different prompt formats, so the paper notes these numbers cannot be compared directly."
           }
         },
         {
-          "p": "Two details worth noting. First, Chinchilla also leads on language-modeling tests such as The Pile, but the paper cautions that it saw 4× more data, raising the risk that test-set content leaked into training data; it therefore gives more weight to tasks like MMLU and BIG-bench that are less leakage-prone. Second, zero-shot TruthfulQA improves by 14.1 points. Earlier research had suggested that larger models were less truthful; the paper argues this shows that **simply learning the pretraining data better** can clearly improve truthfulness."
+          "p": "Two details worth noting. First, Chinchilla also leads comprehensively on language-modeling tests such as The Pile, but the paper cautions that it saw 4× more data, so the risk of test-set content leaking into training is greater; it therefore weights MMLU, BIG-bench, and similarly leak-resistant tasks more. Second, zero-shot TruthfulQA improved by 14.1 points. Earlier work had suggested larger models become less truthful; the paper argues that **merely learning the pretraining data better** can clearly improve truthfulness."
         },
         {
-          "p": "**Bias and toxicity.** On Winogender, which measures whether pronoun resolution is influenced by gender stereotypes, Chinchilla is more accurate than Gopher on every group, but male pronouns improve by only 3.2 points, while female and neutral pronouns improve by 8.3 and 9.2 points—an uneven gain. On toxicity, the average score of 25,000 unprompted generations is 0.087, versus 0.081 for Gopher, a negligible difference: a better language model is not necessarily more toxic, nor necessarily less toxic."
+          "p": "**Bias and toxicity.** On Winogender (which tests whether pronoun resolution is affected by gender stereotypes), Chinchilla is more accurate than Gopher in every group, but male pronouns improve by only 3.2 points, while female and neutral pronouns improve by 8.3 and 9.2 points respectively — so the gains are uneven. On toxicity, the average toxicity score over 25,000 unprompted generations is 0.087, versus 0.081 for Gopher; the difference is negligible. A better language model is not necessarily more toxic, nor necessarily less toxic."
         }
       ]
     },
@@ -711,24 +730,24 @@
       "h": "Where the paper doesn't add up",
       "blocks": [
         {
-          "p": "The paper's conclusions are solid, but many details are internally inconsistent. We list them one by one; worth keeping in mind when reading the original:"
+          "p": "The paper's conclusions are solid, but many details contain numbers that contradict each other. Here they are one by one, worth watching for when reading the original:"
         },
         {
           "list": [
-            "**MMLU score**: the abstract says 67.5% and \"over 7 percentage points\"; the main text and Table 6 say 67.6% and 7.6 percentage points higher.",
-            "**How much compute and data a 175B-parameter model needs**: the main text says 4.41 × 10^{24} operations and more than 4.2 trillion tokens, while Table 3—which it cites—says 3.85 × 10^{24} and 3.7 trillion. For the 280B-parameter model, the main text says about 10^{25} operations and 6.8 trillion tokens, while Table 3 says 9.90 × 10^{24} and 5.9 trillion. The main text also disagrees with the Method 2 and Method 3 tables in the appendix.",
-            "**Appendix Table A3 appears to be off by one order of magnitude**: in the Method 3 column, the compute for the 175B-parameter model is written as 1.26 × 10^{24}, smaller than the 1.71 × 10^{24} for the 67B model in the row above. Checking with 6ND: 175B parameters × 12 trillion tokens × 6 ≈ 1.26 × 10^{25}, so this is likely a typo.",
-            "**Method 3 exponents**: Table 2 gives a = 0.46, but the 10th–90th percentile interval in parentheses is (0.454, 0.455); the point estimate is outside its own interval. From the paper's α = 0.34 and β = 0.28, a = 0.28 / 0.62 ≈ 0.45, which matches the interval.",
+            "**MMLU score**: the abstract says 67.5% and \"more than 7 percentage points\"; the main text and Table 6 say 67.6% and 7.6 points higher.",
+            "**Compute and data for a 175B-parameter model**: the main text says 4.41 × 10^{24} FLOPs and over 4.2T tokens, but Table 3, which the text cites, says 3.85 × 10^{24} and 3.7T. For a 280B-parameter model, the main text says about 10^{25} FLOPs and 6.8T tokens, while Table 3 says 9.90 × 10^{24} and 5.9T. The main-text numbers also disagree with the Method 2 and Method 3 tables in the appendix.",
+            "**Appendix Table A3 appears to be off by an order of magnitude**: in the Method 3 column, the compute for the 175B-parameter model is written as 1.26 × 10^{24}, smaller than the 1.71 × 10^{24} for the previous row, 67B parameters. Checking with 6ND: 175B parameters × 12T tokens × 6 ≈ 1.26 × 10^{25}, so this is likely a typo.",
+            "**Method 3 exponents**: Table 2 gives a = 0.46, but the 10%–90% interval in parentheses is (0.454, 0.455), so the point estimate lies outside its own interval. Using the paper's α = 0.34 and β = 0.28 gives a = 0.28 / 0.62 ≈ 0.45, which matches the interval.",
             "**Training data range**: the abstract says models were trained on 5B to 500B tokens; the introduction says 5B to over 400B.",
-            "**GPT-3 size**: the discussion section writes GPT-3 as 170B parameters; everywhere else the paper says 175B.",
-            "**Gopher's compute**: the main text uses the older figure 5.76 × 10^{23}, while the appendix uses a more precise method and gets 6.3 × 10^{23}."
+            "**GPT-3 size**: the discussion section writes GPT-3 as 170B parameters; everywhere else in the paper it is 175B.",
+            "**Gopher compute**: the main text uses the old figure of 5.76 × 10^{23}; the appendix uses a more precise calculation and gets 6.3 × 10^{23}."
           ]
         },
         {
           "callout": {
             "kind": "note",
             "title": "Later, researchers went back and checked the paper",
-            "text": "In 2024, researchers at Epoch AI tried to reproduce Method 3 and argued that the reported parameters were inconsistent with the first two methods and that the confidence intervals were implausibly narrow. This is the same kind of problem as the mismatch between the a value and the interval above. But the core conclusions of Methods 1 and 2—that model and data grow in roughly equal proportion—remain widely accepted."
+            "text": "In 2024, Epoch AI researchers tried to reproduce Method 3 and pointed out that the parameters reported in the original paper were inconsistent with the first two methods, and that the confidence intervals were implausibly narrow. This is the same kind of problem as the a-value and interval mismatch above. But the core conclusions of Methods 1 and 2 — that model and data grow in roughly equal proportions — remain widely accepted."
           }
         }
       ]
@@ -737,66 +756,66 @@
       "h": "Limitations, and what happened next",
       "blocks": [
         {
-          "p": "Limitations listed in the paper itself:"
+          "p": "Limitations the paper itself lists:"
         },
         {
           "list": [
-            "**Only one large-scale validation pair**: because of cost, only Chinchilla and Gopher could be compared at large scale; there is no further validation at intermediate sizes.",
-            "**Power-law assumption**: the observed optimal model size bends slightly downward at large compute, meaning the paper may **still overestimate** the optimal model size at high compute.",
-            "**Single pass over the data**: all experiments train for less than one epoch with no repeated data; multiple-epoch training was not studied.",
-            "**Data quality**: the paper speculates that scaling datasets only helps if quality is high; trillion-token web data contains more toxicity, bias and private information, and test-set leakage is harder to audit."
+            "**Large-scale validation is only one pair**: because of cost, only Chinchilla versus Gopher can be compared at large scale; there is no further validation at intermediate sizes.",
+            "**Power-law assumption**: the observed optimal model size curves slightly downward at large compute, which means the paper may still overestimate the optimal model size at large compute.",
+            "**Data seen only once**: all experiments train for less than one epoch (data is not repeated); multi-epoch training was not studied.",
+            "**Data quality**: the paper speculates that scaling data helps only if the data is high quality; trillions of web tokens contain more toxic content, bias, and private information, and test-set leakage is harder to audit."
           ]
         },
         {
-          "p": "**What happened next.** Chinchilla's conclusion was quickly adopted by the industry, but then a new consideration appeared: **inference cost**. In February 2023, Meta released LLaMA. The paper opens by noting that Chinchilla's objective considered only the training budget and ignored the inference budget; if a model is to be deployed at scale, a smaller model trained longer is ultimately cheaper. By Chinchilla's advice, a 10B-parameter model should be fine with 200B tokens, but LLaMA found that a 7B-parameter model kept improving after 1 trillion tokens. Since then, training small models far beyond the compute-optimal point has become the norm in open-source models."
+          "p": "**What happened next.** Chinchilla's conclusions were quickly adopted by the industry, but a new consideration followed: **inference cost**. In February 2023, Meta released LLaMA; the paper starts by noting that Chinchilla's objective considered only the training budget and ignored the inference budget — if a model is to be deployed at scale, a smaller model trained longer is ultimately cheaper. Under Chinchilla's advice, a 10B-parameter model would need only 200B tokens, but LLaMA found that a 7B-parameter model was still improving after 1T tokens. From then on, training small models far beyond the compute-optimal point became the norm for open models."
         },
         {
-          "p": "So Chinchilla answers \"what is optimal when the training budget is fixed,\" while the real world also has to count the cost of running the model many times. Understanding that distinction is key to understanding today's crop of small but strong models."
+          "p": "So Chinchilla answers \"what is optimal when the training budget is fixed,\" while the real world also includes the cost of running the model countless times. Understanding that distinction is key to understanding today's \"small but strong\" models."
         }
       ]
     },
     {
-      "h": "Test yourself: did you get it?",
+      "h": "Quiz: did you really get it?",
       "blocks": [
         {
           "quiz": {
-            "q": "Kaplan concludes N ∝ C^{0.73}; Chinchilla says N ∝ C^{0.5}. If compute increases 100×, how much should the optimal model scale under each conclusion?",
+            "q": "Kaplan concluded N ∝ C^{0.73}; Chinchilla concluded N ∝ C^{0.5}. If compute increases 100×, how many times larger does the optimal model become under each conclusion?",
             "options": [
-              "about 29× and 10×",
-              "about 73× and 50×",
-              "about 100× and 100×",
-              "about 5× and 3×"
+              "About 29× and 10×",
+              "About 73× and 50×",
+              "About 100× and 100×",
+              "About 5× and 3×"
             ],
             "answer": 0,
-            "why": "100^{0.73} ≈ 29 and 100^{0.5} = 10. Under Chinchilla, the remaining 10× goes to data; under Kaplan, data grows only 100^{0.27} ≈ 3.5×. Exponents are not multipliers—you raise the base to the exponent."
+            "why": "100^{0.73} ≈ 29, and 100^{0.5} = 10. Under Chinchilla, the remaining 10× goes to more data; under Kaplan, data increases only about 100^{0.27} ≈ 3.5×. The exponent isn't a multiplier — you have to raise the increase to that power."
           }
         },
         {
           "quiz": {
-            "q": "Why do Chinchilla's authors believe MMLU and BIG-bench are more informative than language-modeling scores on The Pile?",
+            "q": "Why did the Chinchilla authors think MMLU and BIG-bench were more informative than language-modeling results on The Pile?",
             "options": [
               "Because The Pile is too easy",
-              "Because Chinchilla saw 4× more data, raising the risk that test content leaked into training data, so language-modeling scores may be inflated",
+              "Because Chinchilla saw 4× more data, so test content is more likely to have leaked into the training data, and language-modeling scores may be inflated",
               "Because Gopher was not evaluated on The Pile",
               "Because MMLU has more questions"
             ],
             "answer": 1,
-            "why": "With more data, the training set is more likely to contain the same texts as the test set, inflating language-modeling scores through memorization. Exam-style tasks are relatively less affected by this kind of leakage, so the paper places more weight on them. This is a caveat the paper itself raises in the main text."
+            "why": "The more data, the more likely the training set contains the same text as the test set, inflating language-modeling scores through memorization. Exam-style tasks are less affected by this kind of leakage, so the paper weights them more heavily. This is a warning the paper itself gives in the main text."
           }
         },
         {
-          "p": "After reading this, you should be able to answer these questions:"
+          "p": "After reading this, you should be able to answer:"
         },
         {
           "list": [
-            "What is the difference between Chinchilla's and Kaplan's conclusions? What is the main source of the difference?",
-            "Why does measuring mid-training loss with a learning-rate schedule designed for longer training underestimate training on less data?",
+            "How do Chinchilla and Kaplan differ, and what is the main source of the difference?",
+            "Why does measuring mid-training loss with a schedule designed for a long training run underestimate training on less data?",
             "How do the three methods estimate the optimal allocation? Why is the IsoFLOP curve a valley?",
-            "What do the three terms in L(N, D) = E + A/N^{α} + B/D^{β} represent?",
-            "At optimal allocation, why is the ratio of the two reducible loss terms β : α?",
-            "Where does \"about 20 tokens per parameter\" come from? Under what assumptions does it hold?",
-            "Which factors in Chinchilla's win over Gopher cannot be credited to compute allocation?",
-            "Why did LLaMA later deliberately train longer than compute-optimal?"
+            "In L(N, D) = E + A/N^{α} + B/D^{β}, what do the three terms represent?",
+            "At the optimal allocation, why is the ratio of the two reducible losses β : α?",
+            "Where does \"about 20 tokens per parameter\" come from, and under what conditions does it hold?",
+            "In Chinchilla beating Gopher, which factors cannot be attributed to compute allocation?",
+            "Why did later LLaMA deliberately train longer than \"compute-optimal\"?"
           ]
         }
       ]
@@ -804,37 +823,37 @@
   ],
   "sources": {
     "main": {
-      "title": "Training Compute-Optimal Large Language Models (arXiv:2203.15556, v1)",
+      "title": "Training Compute-Optimal Large Language Models (arXiv:2203.15556, version 1)",
       "publisher": "Hoffmann et al. · DeepMind",
       "date": "2022-03-29",
       "url": "https://arxiv.org/abs/2203.15556"
     },
-    "note": "This article is based on version 1 of the arXiv paper (March 2022). Tables marked \"schematic\" are calculated by this site from the fitted formula in Appendix D.2, using the paper's rounded parameters, not measured data; \"about 20 tokens per parameter\" is calculated by this site from Table 3. The LLaMA material comes from its 2023 paper; the 2024 Epoch AI recheck comes from their published replication study, not from this paper."
+    "note": "This article is based on version 1 of the arXiv paper (March 2022). Tables marked \"Illustrative\" are computed by us from the fitted formula in Appendix D.2, using the paper's rounded parameter values, and are not measured data; \"about 20 tokens per parameter\" is computed by us from Table 3. The LLaMA content comes from its 2023 paper; the 2024 Epoch AI re-examination comes from their publicly published replication study, not from this paper."
   },
   "claims": [
     {
-      "text": "arXiv ID and date",
+      "text": "arXiv number and date",
       "value": "2203.15556",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "arXiv:2203.15556v1 [cs.CL] 29 Mar 2022",
       "as_written": "March 2022"
     },
     {
-      "text": "trained more than 400 models",
+      "text": "Trained over 400 models",
       "value": "over 400",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "By training over 400 language models",
-      "as_written": "more than 400"
+      "as_written": "over 400"
     },
     {
-      "text": "70 million to over 16 billion parameters",
+      "text": "70M to over 16B parameters",
       "value": "16 billion",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "ranging from 70 million to over 16 billion parameters",
       "as_written": "16 billion"
     },
     {
-      "text": "models start at 70 million parameters",
+      "text": "Models start at 70M",
       "value": "70 million",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "ranging from 70 million to over 16 billion parameters",
@@ -848,14 +867,14 @@
       "as_written": "500 billion"
     },
     {
-      "text": "Introduction: 5B to over 400B",
+      "text": "Introduction: 5B to over 400B tokens",
       "value": "5B to over 400B tokens",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "trained on 5B to over 400B tokens",
       "as_written": "over 400 billion"
     },
     {
-      "text": "double the model, double the data",
+      "text": "Double the model, double the data",
       "value": "doubling",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "for every doubling of model size the number of training tokens should also be doubled",
@@ -883,7 +902,7 @@
       "as_written": "1.4 trillion"
     },
     {
-      "text": "Abstract MMLU 67.5%, over 7%",
+      "text": "Abstract: MMLU 67.5%, over 7% improvement",
       "value": "67.5%",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "reaches a state-of-the-art average accuracy of 67.5% on the MMLU benchmark, greater than a 7% improvement over Gopher",
@@ -897,7 +916,7 @@
       "as_written": "7 percentage points"
     },
     {
-      "text": "Main text MMLU 67.6%, 7.6% higher",
+      "text": "Main text: MMLU 67.6%, 7.6 points higher",
       "value": "67.6%",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "with an average accuracy of 67.6% (improving upon Gopher by 7.6%)",
@@ -925,35 +944,35 @@
       "as_written": "43.9"
     },
     {
-      "text": "Random: 25.0%",
+      "text": "Random guess 25.0%",
       "value": "25.0%",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "25.0%",
       "as_written": "25.0"
     },
     {
-      "text": "Experts: 89.8%",
+      "text": "Human expert average 89.8%",
       "value": "89.8%",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "89.8%",
       "as_written": "89.8"
     },
     {
-      "text": "2023 forecast: 63.4%",
+      "text": "2023 forecast 63.4%",
       "value": "63.4%",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "the expert forecast for June 2023 of 63.4% accuracy",
       "as_written": "63.4"
     },
     {
-      "text": "better on 51 of 57, worse on 4 of 57",
+      "text": "51/57 better, 4/57 worse",
       "value": "51/57",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "performing better on 51/57 individual tasks, the same on 2/57, and worse on only 4/57 tasks",
-      "as_written": "51"
+      "as_written": "51 subjects"
     },
     {
-      "text": "Kaplan: 10× compute scales model 5.5× and data 1.8×",
+      "text": "Kaplan: 10× compute, 5.5× model, 1.8× data",
       "value": "5.5×",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "they suggests that the size of the model should increase 5.5× while the number of training tokens should only increase 1.8×",
@@ -967,14 +986,14 @@
       "as_written": "1.8×"
     },
     {
-      "text": "models at the time used about 300B tokens",
+      "text": "Models at the time: about 300B tokens",
       "value": "300 billion tokens",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "trained for approximately 300 billion tokens",
       "as_written": "300 billion"
     },
     {
-      "text": "largest dense models over 500 billion parameters",
+      "text": "Largest dense model: over 500B parameters",
       "value": "500 billion",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "the largest dense language models now having over 500 billion parameters",
@@ -1030,49 +1049,49 @@
       "as_written": "70 billion"
     },
     {
-      "text": "cosine cycle of 130 billion tokens",
+      "text": "Cosine cycle: 130B tokens",
       "value": "130B",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "For a fixed learning rate cosine schedule to 130B tokens",
       "as_written": "130 billion"
     },
     {
-      "text": "noticeably worse when more than 25% longer",
+      "text": "More than 25% longer: visibly worse",
       "value": "25%",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "when the cosine cycle overshoots the number of training steps by more than 25%, performance is noticeably degraded",
       "as_written": "25%"
     },
     {
-      "text": "the learning rate is reduced 10× over the run",
+      "text": "Learning rate decays 10×",
       "value": "10×",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "the learning rate drops by a factor of 10× during training",
       "as_written": "10×"
     },
     {
-      "text": "most models are above 500 million parameters",
+      "text": "Most models above 500M parameters",
       "value": "500 million",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "the majority of the models used in our analysis have more than 500 million parameters",
       "as_written": "500 million"
     },
     {
-      "text": "many of the older models are under 100 million parameters",
+      "text": "Old experiments: many under 100M",
       "value": "100M",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "many being less than 100M parameters",
       "as_written": "100 million"
     },
     {
-      "text": "Method 1: four runs per model size, spanning 16×",
+      "text": "Method 1: 4 runs per size, 16× range",
       "value": "16×",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "over a horizon (measured in number of training tokens) that ranges by a factor of 16×",
       "as_written": "16×"
     },
     {
-      "text": "Method 1 models go up to over 10 billion parameters",
+      "text": "Method 1 models up to over 10B",
       "value": "10B",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "ranging from 70M to over 10B parameters",
@@ -1086,42 +1105,42 @@
       "as_written": "1,500"
     },
     {
-      "text": "Method 1: a = b = 0.50",
+      "text": "Method 1: a=b=0.50",
       "value": "0.50",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "We find that 𝑎 = 0.50 and 𝑏 = 0.50",
       "as_written": "0.50"
     },
     {
-      "text": "all selected points fall in the final 15% of training",
+      "text": "Selected points all in final 15%",
       "value": "15%",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "all selected points are within the last 15% of training",
       "as_written": "15%"
     },
     {
-      "text": "Method 2: nine compute budgets",
+      "text": "Method 2: 9 budgets",
       "value": "9",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "for a fixed set of 9 different training FLOP counts",
       "as_written": "9"
     },
     {
-      "text": "Method 2: 6 × 10^{18} to 3 × 10^{21} FLOPs",
+      "text": "Method 2: 6e18-3e21 FLOPs",
       "value": "6 × 1018",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "ranging from 6 × 1018 to 3 × 1021 FLOPs",
       "as_written": "6 × 10^{18}"
     },
     {
-      "text": "Method 2: a = 0.49, b = 0.51",
+      "text": "Method 2: a=0.49, b=0.51",
       "value": "0.49",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "𝑎 = 0.49 and 𝑏 = 0.51",
       "as_written": "0.49"
     },
     {
-      "text": "Method 3: a = 0.46, b = 0.54",
+      "text": "Method 3: a=0.46, b=0.54",
       "value": "0.46",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "we find that 𝑎 = 0.46 and 𝑏 = 0.54",
@@ -1170,35 +1189,35 @@
       "as_written": "10^{−3}"
     },
     {
-      "text": "Method 3 optimal model at Gopher's compute: 40B parameters",
+      "text": "Method 3: Gopher-compute optimum ~40B",
       "value": "40B",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "We project the optimal model size given the Gopher FLOP budget to be 40B parameters",
       "as_written": "40 billion"
     },
     {
-      "text": "Gopher's compute: 5.76 × 10^{23} FLOPs",
+      "text": "Gopher compute: 5.76e23 FLOPs",
       "value": "5.76 × 1023",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "the number of FLOPs used to train Gopher (5.76 × 1023 )",
       "as_written": "5.76 × 10^{23}"
     },
     {
-      "text": "more precise compute: 6.3 × 10^{23} FLOPs",
+      "text": "Precise compute: 6.3e23 FLOPs",
       "value": "6.3 × 1023",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "(6.3 × 1023 compared to 5.76 × 1023 )",
       "as_written": "6.3 × 10^{23}"
     },
     {
-      "text": "C4: 0.50 / 0.50; GitHub: 0.53 / 0.47",
+      "text": "C4 0.50/0.50, GitHub 0.53/0.47",
       "value": "0.53",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "0.53",
       "as_written": "0.53"
     },
     {
-      "text": "Table 3: 1B - 1.21 × 10^{20} FLOPs, 20.2B tokens (about 20 tokens per parameter)",
+      "text": "Table 3: 1B, 1.21e20 FLOPs, 20.2B tokens (~20 tokens/param)",
       "value": "20.2 Billion",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "20.2 Billion",
@@ -1212,35 +1231,35 @@
       "as_written": "1 billion"
     },
     {
-      "text": "Table 3: 67B - 1.5 trillion tokens",
+      "text": "Table 3: 67B, 1.5T tokens",
       "value": "1.5 Trillion",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "1.5 Trillion",
       "as_written": "1.5 trillion"
     },
     {
-      "text": "10th and 90th percentiles",
+      "text": "10% and 90% percentiles",
       "value": "10th and 90th percentiles",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "The 10th and 90th percentiles are estimated via bootstrapping data",
       "as_written": "10%"
     },
     {
-      "text": "Table 3: 10B - 205.1B tokens",
+      "text": "Table 3: 10B, 205.1B tokens",
       "value": "205.1 Billion",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "205.1 Billion",
       "as_written": "205.1 billion"
     },
     {
-      "text": "Table 3: 67B - 1.5T tokens",
+      "text": "Table 3: 67B, 1.5T tokens",
       "value": "67 Billion",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "67 Billion",
       "as_written": "67 billion"
     },
     {
-      "text": "Table 3: 175B - 3.85 × 10^{24} FLOPs, 3.7T tokens",
+      "text": "Table 3: 175B, 3.85e24 FLOPs, 3.7T tokens",
       "value": "3.85e+24",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "3.85e+24",
@@ -1254,7 +1273,7 @@
       "as_written": "3.7 trillion"
     },
     {
-      "text": "Table 3: 280B - 9.90 × 10^{24} FLOPs, 5.9T tokens",
+      "text": "Table 3: 280B, 9.90e24 FLOPs, 5.9T tokens",
       "value": "9.90e+24",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "9.90e+24",
@@ -1268,7 +1287,7 @@
       "as_written": "5.9 trillion"
     },
     {
-      "text": "Table 3: 1T - 1.27 × 10^{26} FLOPs, 21.2T tokens",
+      "text": "Table 3: 1T, 1.27e26 FLOPs, 21.2T tokens",
       "value": "1.27e+26",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "1.27e+26",
@@ -1289,7 +1308,7 @@
       "as_written": "1 trillion"
     },
     {
-      "text": "Main text: 175B - 4.41 × 10^{24} FLOPs, 4.2T tokens",
+      "text": "Main text: 175B, 4.41e24 FLOPs, 4.2T tokens",
       "value": "4.41 × 1024",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "should be trained with a compute budget of 4.41 × 1024 FLOPs and on over 4.2 trillion tokens",
@@ -1303,98 +1322,98 @@
       "as_written": "4.2 trillion"
     },
     {
-      "text": "Main text: 280B – about 1e25 FLOPs, 6.8T tokens",
+      "text": "Main text: 280B, ~1e25 FLOPs, 6.8T tokens",
       "value": "6.8 trillion",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "should be trained on 6.8 trillion tokens",
       "as_written": "6.8 trillion"
     },
     {
-      "text": "more than 250× Gopher's compute",
+      "text": "Over 250× Gopher compute",
       "value": "250×",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "over 250× the compute used to train Gopher",
       "as_written": "250×"
     },
     {
-      "text": "Table A3, Method 3: 175B - 1.26 × 10^{24} FLOPs",
+      "text": "Table A3, Method 3: 175B, 1.26e+24 FLOPs",
       "value": "1.26e+24",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "1.26e+24",
       "as_written": "1.26 × 10^{24}"
     },
     {
-      "text": "Table A3, Method 3: 67B - 1.71 × 10^{24} FLOPs",
+      "text": "Table A3, Method 3: 67B, 1.71e+24 FLOPs",
       "value": "1.71e+24",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "1.71e+24",
       "as_written": "1.71 × 10^{24}"
     },
     {
-      "text": "Table A3, Method 3: 175B - 12.0T tokens",
+      "text": "Table A3, Method 3: 175B, 12.0T tokens",
       "value": "12.0 Trillion",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "12.0 Trillion",
       "as_written": "12 trillion"
     },
     {
-      "text": "GPT-3 written as 170B parameters",
+      "text": "GPT-3 written as 170B",
       "value": "170 billion",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "over 3× larger than GPT-3’s 170 billion parameters",
       "as_written": "170 billion"
     },
     {
-      "text": "optimal model is between 40 billion and 70 billion parameters",
+      "text": "Optimum between 40B and 70B",
       "value": "40 and 70 billion",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "somewhere between 40 and 70 billion parameters",
-      "as_written": "40 billion to 70 billion"
+      "as_written": "40B to 70B"
     },
     {
-      "text": "small-scale controlled comparison: 4.68B vs 2.86B parameters",
+      "text": "Small-scale comparison: 4.68B vs 2.86B",
       "value": "4.68",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "the optimal model size should be 4.68 billion parameters",
       "as_written": "4.68 billion"
     },
     {
-      "text": "new method: 2.86B parameters",
+      "text": "New method: 2.86B",
       "value": "2.86",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "we estimate a 2.86 billion parameter model should be optimal",
       "as_written": "2.86 billion"
     },
     {
-      "text": "vocabulary is 94.15% identical",
+      "text": "Vocabulary 94.15% identical",
       "value": "94.15%",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "94.15% of tokens are the same as those used for training Gopher",
       "as_written": "94.15%"
     },
     {
-      "text": "Table 4: Gopher - 80 layers, 128 heads, head dim 16384, max learning rate 4e-5",
+      "text": "Table 4: Gopher - 80 layers, 128 heads, width 16,384, max LR 4e-5",
       "value": "16,384",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "16,384",
       "as_written": "16,384"
     },
     {
-      "text": "Table 4: Chinchilla - 64 heads, head dim 8192, max learning rate 1e-4",
+      "text": "Table 4: Chinchilla - 64 heads, width 8,192, max LR 1e-4",
       "value": "8,192",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "8,192",
       "as_written": "8,192"
     },
     {
-      "text": "batch size 3M to 6M",
+      "text": "Batch size 3M -> 6M",
       "value": "3M → 6M",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "3M → 6M",
       "as_written": "3 million"
     },
     {
-      "text": "batch size 1.5M to 3M",
+      "text": "Batch size 1.5M -> 3M",
       "value": "1.5M → 3M",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "1.5M → 3M",
@@ -1499,14 +1518,14 @@
       "as_written": "60.5"
     },
     {
-      "text": "PIQA: both score 81.8%",
+      "text": "PIQA: both 81.8%",
       "value": "81.8%",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "81.8%",
       "as_written": "81.8%"
     },
     {
-      "text": "NQ, 64 examples: 35.5 / 28.2 / 29.9",
+      "text": "NQ, 64-shot: 35.5 / 28.2 / 29.9",
       "value": "35.5%",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "35.5%",
@@ -1541,28 +1560,28 @@
       "as_written": "29.5"
     },
     {
-      "text": "TruthfulQA improves by 14.1",
+      "text": "TruthfulQA: +14.1 points",
       "value": "14.1%",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "(14.1% in 0-shot accuracy)",
       "as_written": "14.1 percentage points"
     },
     {
-      "text": "Winogender: male 3.2, female 8.3, neutral 9.2",
+      "text": "Winogender: male +3.2, female +8.3, neutral +9.2 points",
       "value": "3.2%",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "(increase of 3.2%) than for female or neutral pronouns (increases of 8.3% and 9.2% respectively)",
       "as_written": "3.2 percentage points"
     },
     {
-      "text": "female: 8.3",
+      "text": "Female +8.3",
       "value": "8.3%",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "increases of 8.3% and 9.2% respectively",
       "as_written": "8.3"
     },
     {
-      "text": "neutral: 9.2",
+      "text": "Neutral +9.2",
       "value": "9.2%",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "increases of 8.3% and 9.2% respectively",
@@ -1576,7 +1595,7 @@
       "as_written": "25,000"
     },
     {
-      "text": "toxicity: 0.087 vs 0.081",
+      "text": "Toxicity: 0.087 vs 0.081",
       "value": "0.087",
       "source_url": "https://arxiv.org/abs/2203.15556",
       "quote": "the mean (median) toxicity score for Gopher is 0.081 (0.064), compared to 0.087 (0.066) for Chinchilla",
@@ -1597,21 +1616,21 @@
       "as_written": "4×"
     },
     {
-      "text": "LLaMA: Chinchilla ignored the inference budget",
+      "text": "LLaMA: Chinchilla ignores inference budget",
       "value": "inference budget",
       "source_url": "https://arxiv.org/abs/2302.13971",
       "quote": "this objective disregards the inference budget",
       "as_written": "inference budget"
     },
     {
-      "text": "LLaMA: 10B model trained on 200B tokens",
+      "text": "LLaMA: 10B model, 200B tokens",
       "value": "200B tokens",
       "source_url": "https://arxiv.org/abs/2302.13971",
       "quote": "recommends training a 10B model on 200B tokens",
       "as_written": "200 billion"
     },
     {
-      "text": "LLaMA: 10 billion parameters",
+      "text": "LLaMA: 10B parameters",
       "value": "10B",
       "source_url": "https://arxiv.org/abs/2302.13971",
       "quote": "training a 10B model on 200B tokens",
@@ -1625,7 +1644,7 @@
       "as_written": "1 trillion"
     },
     {
-      "text": "LLaMA: 7 billion parameters",
+      "text": "LLaMA: 7B parameters",
       "value": "7B",
       "source_url": "https://arxiv.org/abs/2302.13971",
       "quote": "a 7B model continues to improve",
@@ -1642,5 +1661,5 @@
   "status": "published",
   "verified": false,
   "lang": "en",
-  "translated_from": "ba726dd58315e755"
+  "translated_from": "5c566874e4aa4ec8"
 }

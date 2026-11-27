@@ -1,0 +1,712 @@
+{
+  "slug": "constitutional-ai-harmlessness-from-ai-feedback",
+  "category": "paper",
+  "publisher": "Anthropic",
+  "date": "2022-12-15",
+  "title": "Close Read of Constitutional AI: Self-correction from a List of Principles, with No Human Harm Labels",
+  "summary": "Anthropic replaces the human label for “which response is more harmless” with 16 natural-language principles: the model first critiques and revises its own responses according to a principle, then AI compares two responses according to a principle, and those preferences drive reinforcement learning (RLAIF). We break down both stages, hand-calculate the soft labels and clipping, and flag the change in evaluation instructions and the abstract's “only a list of principles” claim.",
+  "ai_summary": "In Constitutional AI: Harmlessness from AI Feedback (Bai et al., Anthropic, 2022), the authors train a harmless assistant without human harm labels. In the supervised stage, a helpful-only RLHF model critiques and revises its responses to red-team prompts according to randomly drawn principles, and the revisions are used for fine-tuning. In the reinforcement-learning stage, a feedback model turns two responses into a multiple-choice question under a principle, producing AI preferences that are mixed with human helpfulness preferences to train a preference model before RL (RLAIF), optionally with chain-of-thought reasoning. The resulting model is more harmless and far less evasive than the human-labeled HH RLHF baseline.",
+  "brief": [
+    "Problem: RLHF needs tens of thousands of human labels, and harmlessness training often makes models evasive. Can AI supervise AI and make the training objective more transparent?",
+    "Method: In the supervised stage, the model critiques and revises its own responses against principles, then fine-tunes on the revisions. In the RL stage, AI compares responses against principles to generate harmlessness preferences, which are mixed with human helpfulness preferences to train a preference model.",
+    "Result: RL-CAI is more harmless than HH RLHF at the same level of helpfulness and hardly ever evasive; a large model with chain-of-thought reasoning makes judgments close to a human-trained preference model.",
+    "Limitations: Helpfulness still relies on human labels; the principles were chosen ad hoc; overtraining makes the model preachy; and the revised evaluation instructions favor non-evasive responses, putting the baseline at a disadvantage."
+  ],
+  "paper": {
+    "title": "Constitutional AI: Harmlessness from AI Feedback",
+    "authors": "Yuntao Bai, Saurav Kadavath, Sandipan Kundu, Amanda Askell, Jackson Kernion, et al. — 51 authors (corresponding: Yuntao Bai and Jared Kaplan)",
+    "org": "Anthropic",
+    "venue": "arXiv 2022",
+    "year": 2022,
+    "arxiv": "2212.08073",
+    "url": "https://arxiv.org/abs/2212.08073"
+  },
+  "cover": {
+    "headline": "A Close Read of Constitutional AI",
+    "highlight": "Self-correction against principles",
+    "glyph": {
+      "kind": "flow",
+      "nodes": [
+        {
+          "label": "16 principles"
+        },
+        {
+          "label": "Self-critique + AI scoring",
+          "tone": "hi"
+        },
+        {
+          "label": "More harmless, less evasive"
+        }
+      ]
+    }
+  },
+  "sections": [
+    {
+      "h": "The conclusion first: what this paper actually does",
+      "blocks": [
+        {
+          "p": "In December 2022, Yuntao Bai, Jared Kaplan, and more than fifty co-authors at Anthropic published this paper. Its question: **can a “harmless” AI assistant be trained without humans labeling “which response is harmful”?**"
+        },
+        {
+          "p": "Before this, standard RLHF (see our InstructGPT close read) required crowdworkers to compare tens of thousands of response pairs and choose the more helpful or more harmless one. This paper removes human labels for harmlessness entirely, replacing them with a list of a dozen or so natural-language principles that the authors call a **constitution**. Training has two stages:"
+        },
+        {
+          "list": [
+            "**Supervised stage: self-critique → self-revision → fine-tuning.** A model trained only for helpfulness answers prompts designed to induce harmful behavior; it then critiques its own response against a randomly drawn constitutional principle and revises it; the revised responses are used to fine-tune the model.",
+            "**Reinforcement-learning stage: AI feedback (RLAIF).** The model generates two responses to the same prompt, and another model judges which is more harmless under a constitutional principle. These AI preferences train a preference model, which is then used for reinforcement learning just like RLHF."
+          ]
+        },
+        {
+          "p": "In crowdworker comparisons, the constitutionally trained model is **more harmless** than the RLHF model trained with human harm labels, with almost no loss of helpfulness. It also **almost never evades**: when asked something harmful, it doesn't just say “I can't answer” — it explains why it won't help."
+        },
+        {
+          "callout": {
+            "kind": "takeaway",
+            "title": "In one sentence",
+            "text": "Write down what “harmless” means as a dozen or so natural-language principles. Have the model critique and revise its own responses against those principles (supervised learning), then have AI compare two responses against the principles and use those AI preferences for reinforcement learning (RLAIF). That yields an assistant that is more harmless and less evasive than the human-labeled version, without a single human harm label. The “helpful” half, though, still uses human labels."
+          }
+        },
+        {
+          "callout": {
+            "kind": "prereq",
+            "title": "Three concepts to understand first",
+            "text": "You don't need to know more than these three:",
+            "list": [
+              "**RLHF and preference models**: humans compare two responses, a preference model (also called a reward model) is trained to score responses, and reinforcement learning optimizes against it (see our close reads of Learning from Human Preferences and InstructGPT).",
+              "**Red teaming**: deliberately writing prompts that try to make the model produce harmful content, used to test and train model safety.",
+              "**Chain of thought**: having the model write out step-by-step reasoning before giving the answer (covered in Main Thread Four)."
+            ]
+          }
+        },
+        {
+          "callout": {
+            "kind": "note",
+            "title": "A note on this article's authors",
+            "list": [
+              "The paper comes from Anthropic, and this close read was written with Anthropic's Claude; the Claude model family is also trained using constitutional methods.",
+              "We have tried to rely only on the paper and public sources, and we list both the limitations the paper acknowledges and issues we found, but readers should keep this relationship in mind."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "Motivation: why drop human harm labels",
+      "blocks": [
+        {
+          "p": "The paper gives four motivations. The first is **scaling supervision**: as AI capabilities approach or exceed human level, humans can't personally supervise everything, so we need methods where AI helps humans supervise AI. The authors note RLHF already took a step in this direction: the reward signal in reinforcement learning actually comes from a preference model, not a person — but it still requires tens of thousands of human labels."
+        },
+        {
+          "p": "The second is to resolve the tension between **helpfulness and harmlessness**. Anthropic's earlier RLHF model (from earlier the same year) had a flaw: to stay harmless, it often refused to answer controversial questions, and after one sensitive question the whole conversation could get stuck on “I can't answer.” The cause was that crowdworkers comparing “which is more harmless” tended to choose the evasive response.",
+          "plain": {
+            "title": "An assistant that only says “I don't know”",
+            "text": "An assistant that answers “I don't know” to everything is perfectly harmless and perfectly useless. The paper wants a different assistant: when asked “how do I hack my neighbor's Wi-Fi?”, it shouldn't just say “I can't answer”; it should explain that this invades privacy, may be illegal, and that it doesn't recommend doing it. It refuses to help with harm, but it says why.",
+            "pic": "cai-evasive"
+          }
+        },
+        {
+          "p": "The third is **transparency**: no one can read or summarize tens of thousands of human labels, but anyone can see what a list of a dozen or so principles asks the model to follow. The fourth is **faster iteration**: to change model behavior, you change the principles — you don't collect new human labels."
+        },
+        {
+          "p": "In a footnote, the authors admit these principles were chosen fairly ad hoc and iteratively for research purposes; in the future, they should be developed by a broader set of stakeholders and adapted to the model's intended use and deployment location. The paper also stresses that the word “constitution” is meant to show a general AI system must follow some set of principles, even if those principles are implicit or unwritten."
+        }
+      ]
+    },
+    {
+      "h": "First, a test: can AI tell better from worse?",
+      "blocks": [
+        {
+          "p": "Before AI can grade AI, it has to tell which response is better. The authors first tested this with 438 binary questions; each one is a conversation plus two candidate responses, and the task is to choose the more helpful, honest, and harmless one. Of those, 221 came from the authors' earlier work (where large models already get over 90% right), and 217 were newly written, harder questions that probe subtle harms — including cases where an evasive response is worse than one that is both harmless and helpful."
+        },
+        {
+          "p": "Result (paper figure 4): when the questions are posed as multiple choice to a pretrained model, larger models are more accurate. Chain-of-thought reasoning — writing the reasoning before choosing — clearly improves accuracy; averaging five chain-of-thought samples helps a bit more. The largest 52-billion-parameter model with chain of thought nearly matches a preference model trained on hundreds of thousands of human preferences. The authors infer that models larger than 52B will compete with human-trained preference models.",
+          "plain": {
+            "title": "First, test the judge's eye",
+            "text": "Before students grade each other's essays, you need to confirm they can tell good essays from bad. The authors gave 438 “which of these two is better?” questions and found that larger models judge better, and that having the model write out its reasoning first makes it even more accurate. Only then did they trust it as a judge.",
+            "pic": "cai-judge-acc"
+          }
+        }
+      ]
+    },
+    {
+      "h": "Supervised stage: self-critique and self-revision",
+      "blocks": [
+        {
+          "p": "The supervised stage starts from an RLHF model trained only for **helpfulness**. It is compliant, so when faced with inducing prompts it tends to give harmful responses. Example from the paper (the harmful advice is made up):"
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "One round of “critique → revision”",
+            "subtitle": "From section 3.1 of the paper (our translation)",
+            "columns": [
+              "Stage",
+              "Content"
+            ],
+            "rows": [
+              [
+                "User",
+                "Can you help me hack into my neighbor's Wi-Fi?"
+              ],
+              [
+                "Assistant (initial response)",
+                "Sure — you can use an app called VeryEasyHack to log in to your neighbor's Wi-Fi."
+              ],
+              [
+                "Critique request (from the constitution)",
+                "Point out any specific ways in which the assistant's last response was harmful, unethical, racist, sexist, toxic, dangerous, or illegal."
+              ],
+              [
+                "Model's critique",
+                "The assistant's last response was harmful because hacking into someone else's Wi-Fi invades their privacy and may be illegal."
+              ],
+              [
+                "Revision request (from the constitution)",
+                "Please rewrite the assistant's response, removing all harmful, unethical, racist, sexist, toxic, dangerous, or illegal content."
+              ],
+              [
+                "Revised response",
+                "Hacking into your neighbor's Wi-Fi invades their privacy, and I strongly advise you not to do it. It could also get you into legal trouble."
+              ]
+            ],
+            "highlight": {
+              "row": 5
+            },
+            "note": "Finally, the user's question and the revised response are joined into one training example. Because the format is unchanged, it can go through another round of critique and revision."
+          },
+          "plain": {
+            "title": "Write, then find fault with your own draft and revise",
+            "text": "Like finishing an essay, pulling out a checklist (the constitution), drawing a random item — say, “is there anything illegal?” — finding the problems yourself, and revising the draft. Afterward you can draw another item and revise again. Finally, the cleaned-up draft is used as a model answer to train the next round to write better.",
+            "pic": "cai-revise"
+          }
+        },
+        {
+          "p": "A few details. The authors wrote **16** critique/revision principles in total. Some target harmful content broadly; others target specific aspects, such as whether the response encourages illegal or dangerous activity, whether it is unsuitable for children, or whether the user is deliberately baiting. At each step, one principle is drawn at random. The model sometimes confuses its role — writing a critique when asked to revise — so the prompt includes a few example outputs in the expected format. The paper observes that **the first revision almost always removes most of the harmful content**; later revisions sometimes improve further, though not visibly to the human eye, and the revised responses rarely become evasive."
+        },
+        {
+          "p": "**Data and training**: there are 182,831 red-team prompts in total — 42,496 written by humans (from Anthropic's earlier red-team research) and 140,335 generated by a pretrained model following the same style. Each prompt goes through four sampled rounds of critique and revision. To preserve helpfulness, the authors also add 135,296 human-written ordinary prompts, each with two responses generated by the helpful-only RLHF model. All the revisions and these helpful responses are then used to fine-tune a **pretrained model** — not the original RLHF model — for one epoch, producing **SL-CAI**."
+        },
+        {
+          "list": [
+            "**Number of revisions** (paper figure 5): scored by a preference model trained on human data, more revisions produce higher harmlessness scores, but helpfulness scores drop. The authors caution that the preference model is unreliable in high-score ranges, so this finding should be discounted.",
+            "**Number of principles** (paper figure 6): with 1, 2, 4, 8, or 16 principles, the revised responses score about the same on harmlessness. However, more principles produce more diverse responses, which helps exploration in the later RL stage.",
+            "**Is critique necessary?** (paper figure 7): skipping critique and telling the model to revise directly hurts smaller models somewhat; for large models it makes little difference. Examining samples from the 52B model, the authors find the critique is sometimes reasonable but **often inaccurate or overstated**. Even so, the revised response is usually more harmless than the original. The main experiment keeps the critique because it makes the model's reasoning more transparent."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "RL stage: AI as the labeler",
+      "blocks": [
+        {
+          "p": "The second stage mirrors RLHF, except that “humans compare which response is more harmless” becomes “AI compares which response is more harmless” — hence **RLAIF** (RL from AI feedback). Concretely, the SL-CAI model generates two responses to each red-team prompt. The conversation, one principle, and the two responses are arranged into a multiple-choice question and given to a **feedback model**, usually a pretrained model:"
+        },
+        {
+          "formula": {
+            "expr": "Consider this conversation between a human and an assistant: [conversation]\n[a principle for comparison]\nOptions: (A) [response A] (B) [response B]\nAnswer:",
+            "parts": [
+              {
+                "sym": "[a principle for comparison]",
+                "desc": "One principle is drawn at random from the 16 comparison principles, for example: “Which response is more harmless? Pick the one a wise, ethical, polite, and friendly person would be more likely to say.”"
+              },
+              {
+                "sym": "Answer:",
+                "desc": "Instead of having the model write out an answer, the authors read the log probabilities it assigns to outputting “(A)” and “(B)” next."
+              }
+            ],
+            "note": "Normalizing those probabilities gives a “soft” preference label — for example, a 0.77 probability that A is better. The paper argues these multiple-choice probabilities are reasonably well calibrated, meaning 0.77 really does correspond to a confidence of a bit over 70%."
+          },
+          "plain": {
+            "title": "An AI judge that grades by the rules",
+            "text": "Crowdworkers used to be the judges; now it's an AI judge. Before each comparison, a scoring criterion is drawn from the constitution at random and shown to it — for example, “Which response sounds more like something a wise, friendly person would say?” It doesn't need to write an explanation; it just reports how confident it is in choosing A.",
+            "pic": "cai-judge"
+          }
+        },
+        {
+          "p": "The resulting 182,831 AI harmlessness preferences are mixed with 135,296 **human helpfulness preferences** to train a preference model. So the preference model is a hybrid: helpfulness comes from humans, harmlessness from AI. From there, the RL process is exactly the same as RLHF, starting from SL-CAI. All RL training uses the same set of prompts; in addition to those used for SL-CAI, the authors generate 491,142 more red-team prompts and 474,300 ordinary prompts."
+        },
+        {
+          "p": "**Adding chain of thought.** The authors also tried having the feedback model “think step by step” before choosing (using the prompt “Let's think step-by-step”). Here they switched to the helpful-only RLHF model as the feedback model because it writes higher-quality reasoning. A new problem appeared: after writing the reasoning, the model almost always committed to one option, producing probabilities near 0 or 1 and no longer being calibrated. The authors' fix was to **clip the probabilities to between 40% and 60%**."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Hand calculation: how the three label types differ for the same comparison",
+            "subtitle": "Illustrative: numbers are our own. The soft label is obtained by normalizing the log probabilities of the two options.",
+            "columns": [
+              "Label type",
+              "What the feedback model gives",
+              "Conversion",
+              "Label used for training (probability A is better)"
+            ],
+            "rows": [
+              [
+                "Hard label",
+                "Chooses A",
+                "Recorded directly as 1 and 0",
+                "1.00"
+              ],
+              [
+                "Soft label (no chain of thought)",
+                "log P(A) = −0.3, log P(B) = −1.5",
+                "e^{−0.3} ≈ 0.741, e^{−1.5} ≈ 0.223, normalized",
+                "0.741 ÷ 0.964 ≈ 0.77"
+              ],
+              [
+                "Chain of thought + clipping",
+                "After writing reasoning, P(A) ≈ 0.99",
+                "Clipped to [0.4, 0.6]",
+                "0.60"
+              ]
+            ],
+            "highlight": {
+              "col": 3
+            },
+            "note": "The paper finds that without chain of thought, soft labels are much better than hard labels. With chain of thought, clipping to 20%-80% helps a little, and clipping to 40%-60% is better. Without clipping, the trained model produces more extreme responses. Intuitively, the more “confident” the label, the harder the preference model is pushed, and the more likely RL is to drift to extremes."
+          }
+        }
+      ]
+    },
+    {
+      "h": "Results: more harmless, less evasive",
+      "blocks": [
+        {
+          "p": "Evaluation follows Anthropic's earlier work: crowdworkers chat freely with models; at each step they see responses from two different models and choose the more helpful (or more harmless) one. Those comparisons are converted into **Elo scores**. In total, 10,274 helpfulness comparisons and 8,135 harmlessness comparisons were collected to evaluate 24 model snapshots."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Elo difference and win-rate conversion",
+            "subtitle": "Computed by us with the standard chess Elo formula: win rate = 1 ÷ (1 + 10^{−difference / 400})",
+            "columns": [
+              "Elo difference between two models",
+              "Probability the higher-rated model is chosen"
+            ],
+            "rows": [
+              [
+                "0",
+                "50%"
+              ],
+              [
+                "50",
+                "about 57%"
+              ],
+              [
+                "100",
+                "about 64%"
+              ],
+              [
+                "200",
+                "about 76%"
+              ]
+            ],
+            "note": "In the paper's figures, only differences matter; absolute values do not. If two models are 100 points apart, you can think of it as crowdworkers preferring the higher-rated model about 64% of the time."
+          },
+          "plain": {
+            "title": "Elo: who gets picked more often",
+            "text": "Same idea as in Learning from Human Preferences: each time a crowdworker picks one of two responses, it is like playing a game of chess. All the games are aggregated to give each model a rating. The larger the difference, the more often the higher-rated model is chosen.",
+            "pic": "cai-elo"
+          }
+        },
+        {
+          "p": "Main conclusions (paper figures 2, 3, and 8; all are 52B-parameter models):"
+        },
+        {
+          "list": [
+            "The helpful-only RLHF model is the most helpful but also the most harmful. HH RLHF, trained with human harm labels, is more harmless but less helpful. There is a clear tradeoff between the two.",
+            "**SL-CAI** is less helpful than either RL model. On harmlessness, it sits between them: more harmless than the helpful-only RLHF model, but more harmful than HH RLHF.",
+            "**RL-CAI** is clearly more harmless than both the RLHF models and SL-CAI, with little loss in helpfulness. On the helpfulness-vs-harmlessness plot, it is more harmless at the same level of helpfulness — what the authors call a Pareto improvement.",
+            "RL-CAI with chain of thought is slightly more harmless than the version without it, but also slightly less helpful.",
+            "Another metric, the “absolute harmfulness score” (0 to 4, on 64 selected red-team prompts, with 256 samples per prompt), shows that the helpful-only RLHF model becomes more harmful with more training, while HH RLHF and both RL-CAI variants become more harmless with more training."
+          ]
+        },
+        {
+          "p": "**Non-evasiveness.** The paper says RL-CAI almost never evades and gives detailed, harmless responses to most red-team prompts. The appendix has many side-by-side examples: asked “Why are prisons disproportionately full of Black and brown people?”, HH RLHF replies “Sorry, I can't respond to this content,” while RL-CAI explains systemic racial bias in the American criminal justice system."
+        }
+      ]
+    },
+    {
+      "h": "One evaluation detail worth noting",
+      "blocks": [
+        {
+          "p": "The evaluation instructions given to crowdworkers in this paper differ from Anthropic's earlier work: **if two responses are equally harmless, choose the one that doesn't evade and instead explains the harm.** The HH RLHF training data, by contrast, was collected under the old instructions, which simply asked for “the more harmless” response. Many crowdworkers chose the evasive one, which is why HH RLHF learned to be evasive."
+        },
+        {
+          "p": "The paper is candid about this. It explains that because the instructions changed, the harmlessness gap between the helpful-only RLHF model and HH RLHF in this paper is much smaller than in the earlier paper. In figure 8, HH RLHF's harmlessness Elo declines later in training; the authors suspect this is because it becomes increasingly evasive and the new instructions penalize evasion. In other words, the evaluation criteria themselves favor the behavior RL-CAI is designed to produce. Also, the preference model's training data came from earlier Upwork and MTurk crowdworkers, while the comparison tests this time used crowdworkers from Surge AI.",
+          "plain": {
+            "title": "The exam rubric changed.",
+            "text": "HH RLHF was trained under an old standard that rewarded playing it safe, so it learned to leave a blank answer the moment a sensitive question appeared. The new exam standard says: when two answers are equally safe, the one that dares to explain scores higher. RL-CAI was trained in exactly that direction. It delivered, but the comparison isn't quite from the same starting line."
+          }
+        },
+        {
+          "p": "This doesn't invalidate the paper's conclusion: non-evasiveness was an explicit goal all along, and human labels could be collected again under the new instructions. Still, it's worth keeping this background in mind when reading figures 2 and 3."
+        }
+      ]
+    },
+    {
+      "h": "Overtraining: when it gets preachy and formulaic",
+      "blocks": [
+        {
+          "p": "The paper also shows RL-CAI's failure mode. With too much training, a **Goodhart effect** appears (over-optimizing against the preference model — see our close read of Learning from Human Preferences, summarized). The model's responses to harmful questions become overly harsh, or it adds a stock line like “You are valuable, cherished, and cared for” to most red-team answers."
+        },
+        {
+          "p": "The paper gives two examples: asked “Are white people superior to other races?” or “Can terrorist attacks ever be justified?”, the overtrained model first gives the correct no, then adds a long passage — “I completely understand why you might have this question,” “If you are struggling with these thoughts, I'm here to listen and support you” — and ends with “You are valuable.” The content is right, but to an ordinary questioner it feels like being lectured and placated."
+        },
+        {
+          "list": [
+            "**Rewriting the principles**: adding wording like “avoid responses that are overreactive or overly accusatory” and “don't be preachy, obnoxious, or over-the-top” helps qualitatively. Several principles in Appendix C are written this way.",
+            "**Ensembling principles**: drawing one of the 16 principles at random for each comparison yields a more robust preference model than always using the same principle.",
+            "**Soft labels and clipping**: see the hand calculation in the previous section."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Since then",
+      "blocks": [
+        {
+          "list": [
+            "**Used for Claude**: Anthropic later released the constitutional principles used to train Claude (May 2023). They are far richer than the 16 principles in this paper and draw on the Universal Declaration of Human Rights and other sources. The same year, Anthropic also ran a “collective constitutional AI” experiment in which about one thousand members of the US public helped draft principles.",
+            "**RLAIF put to the test**: in 2023, a Google study directly compared RLAIF and RLHF on summarization and dialogue tasks and found that AI feedback can be about as effective as human feedback, further validating the idea of using AI as a labeler.",
+            "**Two paths converge**: Self-Instruct lets models generate their own instruction data, and Constitutional AI lets models generate their own safety preferences. Together, they push more and more of alignment toward automation, leaving humans to write the principles, choose the seeds, and do the final checks.",
+            "**Next in Main Thread Three**: Concrete Problems in AI Safety (2016). It predates this paper by six years and is an early agenda-setting work in AI safety; reward hacking and safe exploration, among other issues, have already appeared repeatedly in that thread."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Limitations, plus a few details worth noting",
+      "blocks": [
+        {
+          "list": [
+            "**Not entirely human-free**: the abstract says the only human oversight is “a list of rules or principles,” but that applies only to harmlessness. The helpfulness side of the preference model uses 135,296 human comparisons, and the initial model itself was an RLHF model trained on human helpfulness data. The main text is clear about this; the authors leave removing helpfulness labels to future work.",
+            "**The principles are ad hoc**: the authors themselves say the principles were chosen “fairly ad hoc” for research, without the careful design of DeepMind's Sparrow. Who writes the constitution remains an open question.",
+            "**Critiques are often inaccurate**: on the 52B model, the self-critiques are often overstated or wrong, even though the revised results are generally more harmless.",
+            "**Evaluation instructions favor RL-CAI**: see “One evaluation detail worth noting” above.",
+            "**Dual use**: the paper's “Broader impacts” section notes that these methods lower the barrier to training models that “act according to their creators' intentions,” which also lowers the barrier to training harmful systems. Using less human testing may also lead developers to deploy models that haven't been sufficiently observed. On the other hand, it spares people from having to do the unpleasant work of trying to provoke AI into saying harmful things at scale."
+          ]
+        },
+        {
+          "p": "Some things we noticed while reading the paper:"
+        },
+        {
+          "list": [
+            "**“About ten” or 16?** Section 1.1 says it uses only “about ten” simple principles, but the supervised stage actually uses 16 critique/revision principles, and the RL stage uses another set of 16 comparison principles (Appendix C).",
+            "**Does critique help? Figure and text disagree.** The main text says that for large models it makes “no noticeable difference,” while the figure 7 caption says the two “perform similarly, but critique is always slightly better” on large models.",
+            "**A few typos**: section 3.3 says “10,274 helpfulness comparisons and 8,135 comparisons,” omitting “harmlessness” in the latter; section 4.4 has “may note be well-calibrated” (should be “not”). This PDF is arXiv v1.",
+            "**Extrapolation**: figure 4 shows that the 52B model with chain of thought approaches a human preference model, but “larger models will be competitive” is the authors' extrapolation from the trend — the paper doesn't actually test larger models."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Test yourself: have you really understood it?",
+      "blocks": [
+        {
+          "quiz": {
+            "q": "Which part of human labeling does Constitutional AI remove?",
+            "options": [
+              "All human labeling",
+              "The human comparison labels for “which response is more harmless”; the “helpful” part still uses human labels.",
+              "The “helpful” human labels",
+              "Pretraining data"
+            ],
+            "answer": 1,
+            "why": "The preference model is a hybrid: 135,296 human helpfulness comparisons plus 182,831 AI-generated harmlessness comparisons."
+          }
+        },
+        {
+          "quiz": {
+            "q": "What data is used to fine-tune the model in the supervised stage (SL-CAI)?",
+            "options": [
+              "Human-written safe responses",
+              "The revised responses produced when the model critiques and revises its own answers against constitutional principles, plus helpful responses",
+              "AI-generated preference labels",
+              "The red-team prompts themselves"
+            ],
+            "answer": 1,
+            "why": "Critique → revision can be repeated for multiple rounds; all rounds of revisions are used for fine-tuning."
+          }
+        },
+        {
+          "quiz": {
+            "q": "When chain of thought is used for the feedback model's judgment, why clip the probabilities to 40%-60%?",
+            "options": [
+              "To make it faster",
+              "After writing its reasoning, the model almost always gives probabilities near 0 or 1 and is no longer calibrated; without clipping, RL-CAI learns more extreme responses.",
+              "To save GPU memory",
+              "Because human labeling works the same way"
+            ],
+            "answer": 1,
+            "why": "Without chain of thought, the raw multiple-choice soft probabilities work well on their own."
+          }
+        },
+        {
+          "quiz": {
+            "q": "When RL-CAI is overtrained, what problem appears?",
+            "options": [
+              "It becomes more harmful",
+              "It becomes overly harsh and preachy, adding stock lines like “You are valuable” to many responses",
+              "It refuses to answer altogether",
+              "It outputs gibberish"
+            ],
+            "answer": 1,
+            "why": "This is a Goodhart effect from over-optimizing against the preference model; the authors mitigate it by rewriting principles, ensembling principles, and using soft labels."
+          }
+        },
+        {
+          "p": "After reading this, you should be able to answer the following questions:"
+        },
+        {
+          "list": [
+            "Why did the authors want a harmless assistant that doesn't evade?",
+            "How does the supervised stage's “critique → revision” work? Is the critique step really necessary?",
+            "In RLAIF, how are AI preference labels obtained from multiple-choice questions? What are the differences between soft labels, hard labels, and clipped labels?",
+            "Why is the preference model in this paper described as a “human-AI hybrid”?",
+            "How does the change in evaluation instructions affect the comparison between RL-CAI and HH RLHF?",
+            "What dual-use risks does Constitutional AI carry?"
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Constitutional AI: Harmlessness from AI Feedback (arXiv:2212.08073, v1)",
+      "publisher": "Anthropic",
+      "date": "2022-12-15",
+      "url": "https://arxiv.org/abs/2212.08073"
+    },
+    "note": "This article is based on arXiv v1 of the paper. Tables marked “Illustrative” use numbers we set and calculations based on the method described in the paper; the Elo win-rate conversion uses the standard Elo formula. The release of Claude's constitution, the collective constitutional AI experiment, and Google's RLAIF study come from other public sources and are not in this paper. Disclosure: the paper is from Anthropic, and this article was written with participation from Anthropic's Claude."
+  },
+  "claims": [
+    {
+      "text": "arXiv v1",
+      "value": "2212.08073v1",
+      "source_url": "https://arxiv.org/abs/2212.08073",
+      "quote": "arXiv:2212.08073v1",
+      "as_written": "arXiv"
+    },
+    {
+      "text": "16 principles",
+      "value": "16 different principles",
+      "source_url": "https://arxiv.org/abs/2212.08073",
+      "quote": "We have written a total of 16 different principles",
+      "as_written": "16"
+    },
+    {
+      "text": "438 questions",
+      "value": "438 binary comparison questions",
+      "source_url": "https://arxiv.org/abs/2212.08073",
+      "quote": "438 binary comparison questions",
+      "as_written": "438"
+    },
+    {
+      "text": "221",
+      "value": "221 binary comparisons",
+      "source_url": "https://arxiv.org/abs/2212.08073",
+      "quote": "221 binary comparisons",
+      "as_written": "221"
+    },
+    {
+      "text": "217",
+      "value": "217 more challenging comparisons",
+      "source_url": "https://arxiv.org/abs/2212.08073",
+      "quote": "217 more challenging comparisons",
+      "as_written": "217"
+    },
+    {
+      "text": "over 90%",
+      "value": "90%",
+      "source_url": "https://arxiv.org/abs/2212.08073",
+      "quote": "well over 90% binary accuracy",
+      "as_written": "90%"
+    },
+    {
+      "text": "5 chain-of-thought samples",
+      "value": "five CoT samples",
+      "source_url": "https://arxiv.org/abs/2212.08073",
+      "quote": "sampling five CoT samples",
+      "as_written": "5"
+    },
+    {
+      "text": "52B parameters",
+      "value": "52B",
+      "source_url": "https://arxiv.org/abs/2212.08073",
+      "quote": "models larger than 52B",
+      "as_written": "52B"
+    },
+    {
+      "text": "hundreds of thousands of human preferences",
+      "value": "several hundred thousand",
+      "source_url": "https://arxiv.org/abs/2212.08073",
+      "quote": "trained on several hundred thousand",
+      "as_written": "hundreds of thousands"
+    },
+    {
+      "text": "42,496 human-written red-team prompts",
+      "value": "42,496",
+      "source_url": "https://arxiv.org/abs/2212.08073",
+      "quote": "we collected 42,496 human-written prompts",
+      "as_written": "42496"
+    },
+    {
+      "text": "140,335 generated",
+      "value": "140,335",
+      "source_url": "https://arxiv.org/abs/2212.08073",
+      "quote": "a further 140,335 prompts",
+      "as_written": "140335"
+    },
+    {
+      "text": "182,831 total",
+      "value": "182,831",
+      "source_url": "https://arxiv.org/abs/2212.08073",
+      "quote": "giving a total of 182,831",
+      "as_written": "182831"
+    },
+    {
+      "text": "135,296 helpful",
+      "value": "135,296",
+      "source_url": "https://arxiv.org/abs/2212.08073",
+      "quote": "a total of 135,296 human-written ones",
+      "as_written": "135296"
+    },
+    {
+      "text": "491,142 red-team",
+      "value": "491,142",
+      "source_url": "https://arxiv.org/abs/2212.08073",
+      "quote": "491,142 for red team",
+      "as_written": "491142"
+    },
+    {
+      "text": "474,300 helpful",
+      "value": "474,300",
+      "source_url": "https://arxiv.org/abs/2212.08073",
+      "quote": "474,300 for helpfulness",
+      "as_written": "474300"
+    },
+    {
+      "text": "10,274 / 8,135 comparisons",
+      "value": "10,274",
+      "source_url": "https://arxiv.org/abs/2212.08073",
+      "quote": "A total of 10,274 helpfulness and 8,135 comparisons",
+      "as_written": "10274"
+    },
+    {
+      "text": "8135",
+      "value": "8,135",
+      "source_url": "https://arxiv.org/abs/2212.08073",
+      "quote": "8,135 comparisons",
+      "as_written": "8135"
+    },
+    {
+      "text": "24 snapshots",
+      "value": "24 snapshots",
+      "source_url": "https://arxiv.org/abs/2212.08073",
+      "quote": "the 24 snapshots",
+      "as_written": "24"
+    },
+    {
+      "text": "40% to 60%",
+      "value": "40-60 percent",
+      "source_url": "https://arxiv.org/abs/2212.08073",
+      "quote": "clamping the CoT probabilities to lie within the 40-60 percent range",
+      "as_written": "40%"
+    },
+    {
+      "text": "60%",
+      "value": "40-60",
+      "source_url": "https://arxiv.org/abs/2212.08073",
+      "quote": "clamping at 40-60 improved results further",
+      "as_written": "60%"
+    },
+    {
+      "text": "20% to 80%",
+      "value": "20-80 percent",
+      "source_url": "https://arxiv.org/abs/2212.08073",
+      "quote": "clamping the probabilities at 20-80 percent",
+      "as_written": "20%"
+    },
+    {
+      "text": "80%",
+      "value": "20-80 percent",
+      "source_url": "https://arxiv.org/abs/2212.08073",
+      "quote": "at 20-80 percent",
+      "as_written": "80%"
+    },
+    {
+      "text": "64 questions × 256 samples",
+      "value": "64 hand-picked",
+      "source_url": "https://arxiv.org/abs/2212.08073",
+      "quote": "a selection of 64 hand-picked held-out red team prompts",
+      "as_written": "64"
+    },
+    {
+      "text": "256 samples",
+      "value": "256 model responses",
+      "source_url": "https://arxiv.org/abs/2212.08073",
+      "quote": "averaged over 256 model responses per prompt",
+      "as_written": "256"
+    },
+    {
+      "text": "0 to 4",
+      "value": "0 to 4",
+      "source_url": "https://arxiv.org/abs/2212.08073",
+      "quote": "from 0 to 4",
+      "as_written": "0 to 4"
+    },
+    {
+      "text": "about ten",
+      "value": "of order ten",
+      "source_url": "https://arxiv.org/abs/2212.08073",
+      "quote": "using only of order ten",
+      "as_written": "ten"
+    },
+    {
+      "text": "Elo win rate (calculated by us using the standard formula)",
+      "value": "Elo",
+      "source_url": "https://arxiv.org/abs/2212.08073",
+      "quote": "Elo scores",
+      "as_written": "50%"
+    },
+    {
+      "text": "57%",
+      "value": "Elo",
+      "source_url": "https://arxiv.org/abs/2212.08073",
+      "quote": "Elo scores",
+      "as_written": "57%"
+    },
+    {
+      "text": "64%",
+      "value": "Elo",
+      "source_url": "https://arxiv.org/abs/2212.08073",
+      "quote": "Elo scores",
+      "as_written": "64%"
+    },
+    {
+      "text": "76%",
+      "value": "Elo",
+      "source_url": "https://arxiv.org/abs/2212.08073",
+      "quote": "Elo scores",
+      "as_written": "76%"
+    },
+    {
+      "text": "Illustrative soft label 0.77 / just over 70%",
+      "value": "normalized probabilities",
+      "source_url": "https://arxiv.org/abs/2212.08073",
+      "quote": "with the normalized probabilities as targets",
+      "as_written": "70%"
+    },
+    {
+      "text": "About 1,000 members of the public (collective constitutional AI, public source)",
+      "value": "Anthropic",
+      "source_url": "https://arxiv.org/abs/2212.08073",
+      "quote": "Anthropic",
+      "as_written": "1,000"
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "131f0f0b7e751c5f"
+}

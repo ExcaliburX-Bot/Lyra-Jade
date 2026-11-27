@@ -1,0 +1,571 @@
+{
+  "slug": "gqa-grouped-query-attention-multi-head-checkpoints",
+  "category": "paper",
+  "publisher": "Ainslie et al. · Google Research",
+  "date": "2023-05-22",
+  "title": "GQA explained: sharing one key-value set per head group makes inference 5x faster with almost no quality loss",
+  "summary": "GQA has each group of query heads share one set of keys and values, shrinking the KV cache that inference re-reads over and over; existing multi-head models are then converted via mean-pooling plus 5% uptraining. We calculate KV cache sizes by hand, explain why GQA is more stable and better than multi-query attention, and flag a few numbers in the paper's tables that don't add up.",
+  "ai_summary": "In GQA: Training Generalized Multi-Query Transformer Models from Multi-Head Checkpoints (Ainslie et al., Google Research, 2023), the authors target the memory-bandwidth bottleneck of loading the key-value cache during autoregressive inference and make two proposals: uptrain multi-head attention checkpoints into multi-query attention with about 5% of the original pretraining compute, mean-pooling the key and value projection matrices during conversion; and grouped-query attention, which gives each group of query heads one shared key-value head, sitting between multi-head and multi-query attention. On T5-XXL, GQA-8's average quality approaches multi-head attention, while inference speed approaches multi-query attention.",
+  "brief": [
+    "Problem: When generating token by token, every step reads the entire KV cache, making memory bandwidth the bottleneck; MQA speeds this up but costs quality and stability.",
+    "Method: Group the query heads and have each group share one set of K and V (GQA); convert an existing multi-head model by mean-pooling, then uptrain for about 5%.",
+    "Result: On T5-XXL, GQA-8 averages 47.1, close to MHA's 47.2; at 0.28 seconds per sample it is close to MQA's 0.24 seconds and more than five times faster than MHA.",
+    "Limitations: Only encoder-decoder models were tested; no comparison to training from scratch; ROUGE is a poor measure of long-form quality."
+  ],
+  "paper": {
+    "title": "GQA: Training Generalized Multi-Query Transformer Models from Multi-Head Checkpoints",
+    "authors": "Joshua Ainslie, James Lee-Thorp, Michiel de Jong, Yury Zemlyanskiy, Federico Lebrón, Sumit Sanghai",
+    "org": "Google Research",
+    "venue": "arXiv 2023",
+    "year": 2023,
+    "arxiv": "2305.13245",
+    "url": "https://arxiv.org/abs/2305.13245"
+  },
+  "cover": {
+    "headline": "A close read of the GQA paper",
+    "highlight": "Multiple heads share one set of keys and values",
+    "glyph": {
+      "kind": "flow",
+      "nodes": [
+        {
+          "label": "8 query heads"
+        },
+        {
+          "label": "Split into groups",
+          "tone": "hi"
+        },
+        {
+          "label": "One set of K,V per group"
+        }
+      ]
+    }
+  },
+  "sections": [
+    {
+      "h": "The short version: what this paper actually does",
+      "blocks": [
+        {
+          "p": "In May 2023, six authors at Google Research—Joshua Ainslie, James Lee-Thorp, Michiel de Jong, and colleagues—released this short paper. It is not about training; it is about inference: why a large model is slow when it writes one token at a time, and how to make it faster."
+        },
+        {
+          "p": "The bottleneck is something called the KV cache. Each time the model writes a new token, attention has to read the keys (K) and values (V) of every previous token back out of GPU memory. In multi-head attention (MHA), every head has its own set of K and V, so the read is huge. In 2019, Noam Shazeer proposed multi-query attention (MQA): all heads share the same set of K and V, which shrinks the read dramatically, but quality can drop and training can become unstable."
+        },
+        {
+          "p": "The paper does two things. First, it provides an uptraining recipe: instead of training from scratch, mean-pool the K and V projection matrices of an existing multi-head model, then continue training with about 5% of the original pretraining compute and it becomes an MQA model. Second, it proposes a middle ground called grouped-query attention (GQA): divide the query heads into several groups, and each group shares one set of K and V."
+        },
+        {
+          "p": "On T5-XXL, 8-group GQA almost matches the original multi-head attention in quality (average 47.1 vs. 47.2), while its speed is close to MQA (0.28 seconds per sample vs. 0.24 seconds) and more than five times faster than the original. Later, many open models such as LLaMA 2 and Mistral adopted GQA."
+        },
+        {
+          "callout": {
+            "kind": "takeaway",
+            "title": "The one-sentence version",
+            "text": "The most expensive part of inference is reading the KV cache over and over. Let a few query heads share one set of keys and values and the KV cache shrinks proportionally. Sharing by group (GQA) is higher quality than sharing everything (MQA) and much faster than sharing nothing (MHA); convert an existing model by mean-pooling, then train for another 5%."
+          }
+        },
+        {
+          "callout": {
+            "kind": "prereq",
+            "title": "Three small concepts to know first",
+            "text": "Don't worry if these are new; these three are enough:",
+            "list": [
+              "**Multi-head attention:** Attention is split into many heads, and each head has its own query (Q), key (K), and value (V) projections, looking at different things. See our Transformer close read.",
+              "**Autoregressive generation:** The model writes one token at a time, appends it, then writes the next. When writing the 100th token, it has to look back at the previous 99.",
+              "**Memory bandwidth:** How much data the GPU can read from its memory per second. The previous FlashAttention close read made the point: GPUs are often slow not because they can't compute fast enough, but because the data can't be moved fast enough."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "The problem: why writing one token at a time is slow",
+      "blocks": [
+        {
+          "p": "During training, all positions in a sentence can be computed at once. During inference, they can't: token t+1 cannot start until token t is written. To avoid recomputing, the model stores the K and V computed for every previous token in every layer. That is the KV cache. For each new token, it only computes that token's Q, K, and V, then uses the new Q to attend to all the cached K and V."
+        },
+        {
+          "p": "The catch is that each step does relatively few multiplications but still has to read the entire KV cache out of GPU memory. The paper states up front that the severe bottleneck in autoregressive decoding is the memory-bandwidth cost of loading decoder weights and all attention keys and values at every step. The longer the sequence and the larger the batch, the larger the KV cache and the heavier that cost.",
+          "plain": {
+            "title": "Every new token means flipping through the whole notebook",
+            "text": "Every time the model writes a new token, it has to move the K (gold) and V (blue) for all previous tokens from GPU memory to the compute units—again and again. The actual computation is fast; most of the time is spent moving data. The smaller the KV cache, the less data moves each step and the faster generation becomes.",
+            "pic": "gqa-kvcache"
+          }
+        },
+        {
+          "formula": {
+            "expr": "KV cache size = 2 × layers × KV heads × head dimension × sequence length × bytes per value",
+            "parts": [
+              {
+                "sym": "2",
+                "desc": "One copy each for K and V"
+              },
+              {
+                "sym": "KV heads",
+                "desc": "In MHA, this equals the number of heads H; in MQA, it is 1; in GQA, it is the number of groups G."
+              },
+              {
+                "sym": "Sequence length",
+                "desc": "How many tokens have been generated so far (including the input); it grows as generation continues."
+              }
+            ],
+            "note": "This equation is our own, derived from the definition of the KV cache. The paper never writes it out, but its statement that moving from multi-head to multi-query reduces the amount of data loaded by a factor of H is exactly this point."
+          }
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "Fewer KV heads means less data to cache and re-read per sample",
+            "subtitle": "Illustrative: the numbers are our own setup—24 layers, 64 attention heads, 64 dimensions per head, sequence length 2048 tokens, and 2 bytes per value—computed with the formula above.",
+            "columns": [
+              "Attention type",
+              "KV heads",
+              "KV cache per sample",
+              "Relative to MHA"
+            ],
+            "rows": [
+              [
+                "Multi-head attention (MHA)",
+                "64",
+                "~805 MB",
+                "1"
+              ],
+              [
+                "Grouped-query attention (GQA-8)",
+                "8",
+                "~101 MB",
+                "1/8"
+              ],
+              [
+                "Multi-query attention (MQA)",
+                "1",
+                "~12.6 MB",
+                "1/64"
+              ]
+            ],
+            "highlight": {
+              "row": 1
+            },
+            "note": "In a batch of 32 samples, MHA's KV cache would exceed 20 GB, and every new token would have to read all of it."
+          }
+        }
+      ]
+    },
+    {
+      "h": "MQA: all heads share one set of keys and values",
+      "blocks": [
+        {
+          "p": "Shazeer's 2019 paper—titled 'One Write-Head is All You Need'—proposed multi-query attention: there are still H query heads, but only one key head and one value head, so every query head attends with the same K and V. The KV cache immediately shrinks by a factor of H."
+        },
+        {
+          "p": "There are three costs, and the paper mentions all of them:"
+        },
+        {
+          "list": [
+            "**Quality degradation:** All heads are forced to look at the same K and V, so the model is less expressive.",
+            "**Training instability:** The paper's appendix says a from-scratch T5-Large MQA model frequently saw loss spikes during pretraining and diverged as soon as it was fine-tuned on long-input tasks.",
+            "**You need a separate model:** Many public models (T5, LLaMA) use multi-head attention; training a separate MQA model from scratch just for faster inference is too expensive."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "GQA: not one notebook per person, not one for the whole class—one per group",
+      "blocks": [
+        {
+          "p": "GQA divides H query heads into G groups, and each group shares one set of K and V. It is written GQA-G. The two extremes are the existing methods: GQA-1 has a single group, so it is MQA; GQA-H puts each head in its own group, so it is MHA. Intermediate group counts trade off quality and speed.",
+          "plain": {
+            "title": "Reference books: one per person, one per group, one per class",
+            "text": "Eight students (query heads, the circles) need to consult reference books (K and V). MHA gives each student their own book—the most books and the most complete, but the most carrying. MQA has the whole class share one book—the least carrying, but everyone must read the same one. GQA gives each group one book: far fewer books, while each group still has its own.",
+            "pic": "gqa-groups"
+          }
+        },
+        {
+          "p": "The paper gives three reasons why GQA is a particularly good deal for large models:"
+        },
+        {
+          "list": [
+            "**MQA cuts too hard:** Large models usually have more heads, so going from H KV heads to 1 cuts both bandwidth and capacity more aggressively. GQA lets the number of KV heads grow with the model while keeping the same reduction ratio.",
+            "**Large models already suffer less from the KV cache:** The KV cache grows linearly with model width, while compute and parameters grow with the square of width. So the larger the model, the smaller the share of total cost spent reading K and V; there is no need for MQA's aggressive cut.",
+            "**No waste in distributed deployment:** Large models are often sharded across many chips. With MQA, the single K and V must be replicated on every chip; GQA has multiple sets that can be assigned to different chips, avoiding that waste."
+          ]
+        },
+        {
+          "p": "One more detail: GQA and MQA are applied only to the decoder's self-attention and cross-attention, not to the encoder's self-attention. The encoder processes the whole input in parallel, so memory bandwidth is usually not the main bottleneck there."
+        }
+      ]
+    },
+    {
+      "h": "Don't train from scratch: mean-pool, then uptrain 5%",
+      "blocks": [
+        {
+          "p": "The paper's second contribution is a method for converting existing models. It has two steps: first convert the checkpoint, then continue training with the original pretraining recipe for a small fraction α of the original steps so the model adapts to its new structure."
+        },
+        {
+          "p": "During conversion, the K projection matrices and V projection matrices of the original heads in each group are mean-pooled into the group's shared matrix. The paper compares three initializations—mean-pooling, keeping only the first head, and random initialization—and mean-pooling works best, keeping the first head is second, and random initialization is worst. The paper's explanation is intuitive: the more pretrained information you preserve, the better.",
+          "plain": {
+            "title": "Several notebooks into one: averaging works best",
+            "text": "A group originally contains several heads, each with its own K matrix. When merging them into one, the best method is to average them (dark gray), not to keep only the first notebook or replace it with a blank one. The averaged version keeps a bit of what each head learned, so there is less to relearn during uptraining.",
+            "pic": "gqa-meanpool"
+          }
+        },
+        {
+          "p": "How much uptraining? The paper tried α from 0 to 0.1 on T5-XXL: both MQA and GQA benefit clearly from 5% uptraining, and returns are diminishing by 10%. Interestingly, GQA already performs decently right after conversion, before any uptraining, while MQA must be uptrained to be useful. The α = 0.05 uptraining took about 600 TPUv3 chip-days."
+        },
+        {
+          "callout": {
+            "kind": "intuition",
+            "title": "Like a break-in period after remodeling",
+            "text": "Changing from one reference book per person to one per group takes some getting used to, and the model needs a short adjustment period. The paper found that this period only needs about one twentieth of the original training time—far cheaper than going through the whole course again."
+          }
+        }
+      ]
+    },
+    {
+      "h": "Experiments: nearly matches multi-head attention, speed close to multi-query",
+      "blocks": [
+        {
+          "p": "All models are based on T5.1.1. The multi-head versions of T5-Large and T5-XXL serve as baselines, and the public T5-XXL checkpoint is uptrained for 5% into MQA and GQA-8 versions. Evaluation tasks include five summarization datasets (CNN/Daily Mail, arXiv, PubMed, MediaSum, Multi-News), WMT 2014 English-to-German translation, and the TriviaQA question-answering dataset. The paper deliberately skips classification benchmarks such as GLUE because they have little to do with token-by-token generation."
+        },
+        {
+          "fig": {
+            "type": "table",
+            "title": "GQA-8: scores nearly match MHA-XXL, speed close to MQA",
+            "subtitle": "From Table 1 in the paper, development set. Inference time is seconds per sample per TPUv4 chip; summarization is ROUGE-1, translation is BLEU, QA is F1, and higher is better.",
+            "columns": [
+              "Model",
+              "Inference time",
+              "Average",
+              "CNN",
+              "arXiv",
+              "PubMed",
+              "MediaSum",
+              "MultiNews",
+              "WMT",
+              "TriviaQA"
+            ],
+            "rows": [
+              [
+                "MHA-Large",
+                "0.37",
+                "46.0",
+                "42.9",
+                "44.6",
+                "46.2",
+                "35.5",
+                "46.6",
+                "27.7",
+                "78.2"
+              ],
+              [
+                "MHA-XXL",
+                "1.51",
+                "47.2",
+                "43.8",
+                "45.6",
+                "47.5",
+                "36.4",
+                "46.9",
+                "28.4",
+                "81.9"
+              ],
+              [
+                "MQA-XXL",
+                "0.24",
+                "46.6",
+                "43.0",
+                "45.0",
+                "46.9",
+                "36.1",
+                "46.5",
+                "28.5",
+                "81.3"
+              ],
+              [
+                "GQA-8-XXL",
+                "0.28",
+                "47.1",
+                "43.5",
+                "45.4",
+                "47.7",
+                "36.3",
+                "47.2",
+                "28.4",
+                "81.6"
+              ]
+            ],
+            "highlight": {
+              "row": 3
+            },
+            "note": "GQA-8-XXL is about 5.4x faster than MHA-XXL while its average score is only 0.1 lower. It is even faster than the much smaller MHA-Large and scores 1.1 higher. MQA is fastest, but its average is 0.6 points lower."
+          }
+        },
+        {
+          "p": "Two results stand out. First, the uptrained MQA-XXL is already a good choice: it is both faster and better than MHA-Large, showing that 'large model + MQA' beats 'small model + MHA'. Second, GQA pulls quality back up to nearly MHA-XXL while remaining only slightly slower than MQA."
+        },
+        {
+          "p": "**Choosing the number of groups.** The paper plots inference time for GQA-XXL as the number of groups changes (input length 2048, output length 512): going from 1 group (MQA) to 8 groups slows it down only slightly; beyond that, as it approaches 64-group MHA, the cost increases faster. The paper picks 8 groups as the compromise.",
+          "plain": {
+            "title": "The number of groups is a dial",
+            "text": "Turn the number of groups from 1 to 8, and the KV cache goes from 1 copy to 8 copies—still far fewer than MHA's 64—so speed is barely affected while quality improves a lot. Turn it further, and the KV cache gets closer and closer to MHA, making the speed cost obvious. Eight groups is the point where most of the quality comes back with very little speed loss."
+          }
+        },
+        {
+          "p": "The appendix adds a note on stability: the uptrained MQA model is more stable than the from-scratch MQA, but fine-tuning it on long-input tasks can still be highly variable, so the paper reports the average of three fine-tuning runs. GQA, by contrast, is stable."
+        }
+      ]
+    },
+    {
+      "h": "Limitations, and a few details worth a close look",
+      "blocks": [
+        {
+          "p": "The limitations the paper itself lists:"
+        },
+        {
+          "list": [
+            "**Flawed evaluation metrics:** The KV cache matters most when generating long outputs, and long-output quality is inherently difficult to evaluate. ROUGE for summarization doesn't tell the whole story, so it's hard to be sure these trade-offs are correct.",
+            "**No comparison with training from scratch:** With limited compute, the paper did not train a GQA-XXL from scratch as a control, so we don't know whether uptraining or training from scratch is better.",
+            "**Only encoder-decoder models were tested:** At the time, decoder-only models were already popular. The paper expects GQA to have an even larger advantage over MQA there, because such models don't have separate self-attention and cross-attention."
+          ]
+        },
+        {
+          "p": "Things we noticed while reading the original:"
+        },
+        {
+          "list": [
+            "**Inconsistent inference-time units:** Table 1 says inference time is in seconds (0.24 to 1.51), but Figure 3 plots the same data with the x-axis labeled 'time per sample in milliseconds'.",
+            "**MQA's average doesn't match:** Averaging MQA-XXL's seven scores in Table 1 gives 46.8, but the table says 46.6. The other three rows match when calculated the same way (GQA-8's seven scores average to 47.16, and the table says 47.1, which is just rounding). The paper doesn't explain how the average was computed; it may have used unrounded scores or results from multiple runs.",
+            "**GQA beats MHA on two summarization tasks:** On PubMed (47.7 vs. 47.5) and Multi-News (47.2 vs. 46.9), GQA-8 scores higher than the original MHA-XXL. The gaps are tiny and the paper doesn't discuss them; they are more likely ordinary variation than evidence that GQA is inherently better.",
+            "**GQA wasn't first proposed here:** The paper acknowledges in related work that Rabe (2023) independently developed the same approach and released code."
+          ]
+        }
+      ]
+    },
+    {
+      "h": "Afterward: standard equipment in open-source LLMs",
+      "blocks": [
+        {
+          "list": [
+            "**Widespread adoption:** GQA was quickly adopted by the larger LLaMA 2 models, Mistral, and others, and it later became a common configuration for LLM inference optimization.",
+            "**Stacks with other inference optimizations:** FlashAttention (the previous piece), quantization, distillation, and speculative sampling can all be combined with GQA. PagedAttention, covered later in this site's reading list, manages the KV cache from another angle by keeping it from wasting space in GPU memory.",
+            "**Compressing the KV cache further:** The last piece on this route, DeepSeek-V3, takes another approach: it compresses K and V into a smaller latent vector before storing them, further shrinking the KV cache.",
+            "**The uptraining idea:** The paper's uptraining method is inspired by work that uptrained dense T5 models into sparsely activated mixture-of-experts models. 'Don't train from scratch—change the architecture on an existing model and keep training' has since been used in many places."
+          ]
+        },
+        {
+          "p": "The next piece takes a completely different path: Mamba. It doesn't tinker with attention; instead it replaces attention with a selective state-space model, so inference doesn't need an ever-growing KV cache at all."
+        }
+      ]
+    },
+    {
+      "h": "Check yourself: did you really get it?",
+      "blocks": [
+        {
+          "quiz": {
+            "q": "Why is token-by-token generation during inference often limited by memory bandwidth rather than compute?",
+            "options": [
+              "Because each step performs a lot of matrix multiplication",
+              "Because each new token requires reading the weights and the entire KV cache from GPU memory, while the actual computation is small",
+              "Because softmax is slow",
+              "Because the model needs to be retrained"
+            ],
+            "answer": 1,
+            "why": "Each step computes only for one new token, but still reads K and V from every previous token. The larger the KV cache, the heavier the data movement."
+          }
+        },
+        {
+          "quiz": {
+            "q": "What are GQA-1 and GQA-H (where H is the number of query heads) equivalent to, respectively?",
+            "options": [
+              "Both are equivalent to MHA",
+              "GQA-1 is MQA, and GQA-H is MHA",
+              "GQA-1 is MHA, and GQA-H is MQA",
+              "Both are equivalent to MQA"
+            ],
+            "answer": 1,
+            "why": "With one group, all query heads share a single set of K and V—that's MQA. With one group per head, each head has its own K and V—that's MHA."
+          }
+        },
+        {
+          "quiz": {
+            "q": "When converting a multi-head checkpoint to GQA, which initialization did the paper find performed best?",
+            "options": [
+              "Randomly initialize the new K and V heads",
+              "Keep only the first head in each group",
+              "Mean-pool the K and V projection matrices of the original heads in each group",
+              "Delete K and V outright"
+            ],
+            "answer": 2,
+            "why": "Mean-pooling works best, keeping the first head is second, and random initialization is worst: the more pretrained information you preserve, the better the result."
+          }
+        },
+        {
+          "p": "After reading this piece, you should be able to answer these questions:"
+        },
+        {
+          "list": [
+            "What is the KV cache, and why does it become an inference bottleneck?",
+            "What are the differences between MHA, MQA, and GQA, and how large is the KV cache for each?",
+            "Why is GQA a particularly good deal for large models?",
+            "What are the two steps of uptraining, and why is mean-pooling better than random initialization?",
+            "In what ways are the paper's experiments not fully convincing?"
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "GQA: Training Generalized Multi-Query Transformer Models from Multi-Head Checkpoints (arXiv:2305.13245, v3)",
+      "publisher": "Ainslie, Lee-Thorp, de Jong, Zemlyanskiy, Lebrón, Sanghai · Google Research",
+      "date": "2023-12-23",
+      "url": "https://arxiv.org/abs/2305.13245"
+    },
+    "note": "This piece is based on v3 of the arXiv paper, first released in May 2023. Tables marked “Illustrative” use numbers set and calculated by this site; the KV cache size formula is derived by this site from the definition. “About 5.4x” and “average 46.8” are calculated by this site from the paper's Table 1. The later adoption of GQA by LLaMA 2, Mistral, and others comes from public sources and is not in the paper."
+  },
+  "claims": [
+    {
+      "text": "arXiv v3",
+      "value": "2305.13245v3",
+      "source_url": "https://arxiv.org/abs/2305.13245",
+      "quote": "arXiv:2305.13245v3",
+      "as_written": "arXiv"
+    },
+    {
+      "text": "5% compute",
+      "value": "5%",
+      "source_url": "https://arxiv.org/abs/2305.13245",
+      "quote": "using 5%",
+      "as_written": "5%"
+    },
+    {
+      "text": "Average 47.1 / 47.2",
+      "value": "47.1",
+      "source_url": "https://arxiv.org/abs/2305.13245",
+      "quote": "47.1",
+      "as_written": "47.1"
+    },
+    {
+      "text": "47.2",
+      "value": "47.2",
+      "source_url": "https://arxiv.org/abs/2305.13245",
+      "quote": "47.2",
+      "as_written": "47.2"
+    },
+    {
+      "text": "0.28 / 0.24 seconds",
+      "value": "0.28",
+      "source_url": "https://arxiv.org/abs/2305.13245",
+      "quote": "0.28",
+      "as_written": "0.28"
+    },
+    {
+      "text": "0.24",
+      "value": "0.24",
+      "source_url": "https://arxiv.org/abs/2305.13245",
+      "quote": "0.24",
+      "as_written": "0.24"
+    },
+    {
+      "text": "MHA-XXL 1.51",
+      "value": "1.51",
+      "source_url": "https://arxiv.org/abs/2305.13245",
+      "quote": "1.51",
+      "as_written": "1.51"
+    },
+    {
+      "text": "MHA-Large 0.37",
+      "value": "0.37",
+      "source_url": "https://arxiv.org/abs/2305.13245",
+      "quote": "0.37",
+      "as_written": "0.37"
+    },
+    {
+      "text": "Shrinks by Hx",
+      "value": "by a factor of H",
+      "source_url": "https://arxiv.org/abs/2305.13245",
+      "quote": "by a factor of H",
+      "as_written": "Hx"
+    },
+    {
+      "text": "About 600 TPUv3 chip-days",
+      "value": "600 TPUv3 chip-days",
+      "source_url": "https://arxiv.org/abs/2305.13245",
+      "quote": "approximately 600 TPUv3 chip-days",
+      "as_written": "600"
+    },
+    {
+      "text": "Diminishing returns by 10%",
+      "value": "10%",
+      "source_url": "https://arxiv.org/abs/2305.13245",
+      "quote": "diminishing returns from 10%",
+      "as_written": "10%"
+    },
+    {
+      "text": "MQA average 46.6",
+      "value": "46.6",
+      "source_url": "https://arxiv.org/abs/2305.13245",
+      "quote": "46.6",
+      "as_written": "46.6"
+    },
+    {
+      "text": "Our calculation: 1.51 / 0.28 ≈ 5.4",
+      "value": "1.51",
+      "source_url": "https://arxiv.org/abs/2305.13245",
+      "quote": "1.51",
+      "as_written": "5.4x"
+    },
+    {
+      "text": "PubMed 47.7 / 47.5",
+      "value": "47.7",
+      "source_url": "https://arxiv.org/abs/2305.13245",
+      "quote": "47.7",
+      "as_written": "47.7"
+    },
+    {
+      "text": "47.5",
+      "value": "47.5",
+      "source_url": "https://arxiv.org/abs/2305.13245",
+      "quote": "47.5",
+      "as_written": "47.5"
+    },
+    {
+      "text": "MultiNews 47.2 / 46.9",
+      "value": "46.9",
+      "source_url": "https://arxiv.org/abs/2305.13245",
+      "quote": "46.9",
+      "as_written": "46.9"
+    },
+    {
+      "text": "MQA's seven scores",
+      "value": "81.3",
+      "source_url": "https://arxiv.org/abs/2305.13245",
+      "quote": "81.3",
+      "as_written": "46.8"
+    },
+    {
+      "text": "Figure 3 units: ms",
+      "value": "Time per sample (ms)",
+      "source_url": "https://arxiv.org/abs/2305.13245",
+      "quote": "Time per sample (ms)",
+      "as_written": "milliseconds"
+    },
+    {
+      "text": "Rabe 2023",
+      "value": "Rabe (2023)",
+      "source_url": "https://arxiv.org/abs/2305.13245",
+      "quote": "Rabe (2023) independently developed GQA",
+      "as_written": "Rabe"
+    },
+    {
+      "text": "Average of three fine-tuning runs",
+      "value": "three fine-tuning runs",
+      "source_url": "https://arxiv.org/abs/2305.13245",
+      "quote": "three fine-tuning runs",
+      "as_written": "three"
+    }
+  ],
+  "status": "published",
+  "verified": false,
+  "lang": "en",
+  "translated_from": "5b33bbc945370315"
+}

@@ -1,16 +1,16 @@
 {
   "slug": "rope-roformer-rotary-position-embedding",
   "category": "paper",
-  "publisher": "Jianlin Su et al. · Zhuiyi Technology",
+  "publisher": "Su et al. · Zhuiyi Technology",
   "date": "2021-04-20",
-  "title": "How RoPE turns position into a rotation angle so attention sees only relative distance",
-  "summary": "The RoFormer paper proposes Rotary Position Embedding (RoPE): instead of adding position vectors to tokens, it rotates queries and keys by a position-dependent angle, so only the position difference remains in the dot product. We work through the 2D rotation by hand, the speed table, and long-range decay, then separate the experimental claims that hold up from those that need a discount.",
-  "ai_summary": "The RoFormer paper (Jianlin Su et al., Zhuiyi Technology, 2021) introduces RoPE: it treats each pair of dimensions in the query and key as a plane and rotates them by an angle determined by token position, so the dot product depends only on the relative position of two tokens. The paper derives this solution in the 2D case, gives multiple rotation frequencies from fast to slow with base 10000 and an elementwise implementation, proves that an upper bound on the dot product decays with distance, and shows RoPE can be combined with linear attention. Experiments include WMT14 English-German translation, BERT-style pretraining, GLUE, Performer, and Chinese long-text matching; the GLUE BERT baseline is taken from the original BERT paper's test set and is not fully comparable with this paper's validation-set results.",
+  "title": "RoPE, explained: turn position into an angle, and attention only sees relative distance",
+  "summary": "The RoFormer paper introduces RoPE: instead of adding a position vector to each token, it rotates the query and key by an angle based on position, so the dot product depends only on position difference. We work through the 2D rotation math, the speed table, and long-range decay, then look at which experimental claims in the paper hold up and which need caveats.",
+  "ai_summary": "RoFormer: Enhanced Transformer with Rotary Position Embedding (Jianlin Su et al., Zhuiyi Technology, 2021) introduced RoPE: it treats each pair of dimensions of the query and key as a plane and rotates them by an angle determined by the token's position, so the dot product depends only on the relative distance between the two tokens. The paper derives this solution in the 2D case, gives a family of rotation frequencies from fast to slow with base 10000 and an element-wise implementation, proves that an upper bound on the dot product decays with distance, and shows that RoPE is compatible with linear attention. Experiments include WMT14 English-German translation, BERT-style pretraining, GLUE, Performer, and Chinese long-text matching; in the GLUE section, the BERT baseline is taken from the original paper's test set and is not fully comparable with this paper's validation-set results.",
   "brief": [
-    "Problem: Attention has no sense of word order; existing position encodings are all additive, and relative position encodings also require changing the expanded attention-score formula.",
-    "Method: Rotate queries and keys by position, with different speeds for each dimension pair; the dot product then contains only relative position.",
-    "Results: Pretraining converges faster, Chinese long-text models can read 1024 positions and do so more accurately; RoPE works directly with linear attention.",
-    "Limits: Small-scale experiments; GLUE ends three wins and three losses, and the baseline is not measured with the same ruler; the authors themselves cannot explain the faster convergence."
+    "Problem: attention doesn't know word order; existing position encodings are all additive, and relative position encodings also require changing the expanded attention score.",
+    "Method: rotate queries and keys by position, with a different speed for each dimension pair; only relative position remains in the dot product.",
+    "Results: pretraining converges faster; Chinese long-text models can read 1024 positions and do better; it works directly with linear attention.",
+    "Limitations: experiments are small; GLUE is three wins and three losses and the baselines aren't measured on the same yardstick; the authors themselves can't explain why convergence is faster."
   ],
   "paper": {
     "title": "RoFormer: Enhanced Transformer with Rotary Position Embedding",
@@ -22,19 +22,19 @@
     "url": "https://arxiv.org/abs/2104.09864"
   },
   "cover": {
-    "headline": "Close reading: the original RoPE paper",
-    "highlight": "Position is a rotation angle",
+    "headline": "A close read of the RoPE paper",
+    "highlight": "Position is the angle of rotation",
     "glyph": {
       "kind": "flow",
       "nodes": [
         {
-          "label": "q rotated by mθ"
+          "label": "q rotates by mθ"
         },
         {
-          "label": "k rotated by nθ"
+          "label": "k rotates by nθ"
         },
         {
-          "label": "Only n − m remains in the dot product",
+          "label": "The dot product keeps only n − m",
           "tone": "hi"
         }
       ]
@@ -45,33 +45,33 @@
       "h": "The short version: what this paper actually does",
       "blocks": [
         {
-          "p": "In April 2021, Jianlin Su and five coauthors at Zhuiyi Technology in Shenzhen posted this paper on arXiv. The rotary position embedding (RoPE) it introduced later became one of the most common ways for open-source LLMs to tell a model where each token sits in a sequence; LLaMA, covered in another close reading on this site, uses it."
+          "p": "In April 2021, six authors led by Jianlin Su at Shenzhen-based Zhuiyi Technology posted this paper on arXiv. It introduced rotary position embedding (RoPE), which later became one of the most common ways for open-source large language models to tell the model which position each token occupies; LLaMA, which we've covered before, uses it."
         },
         {
-          "p": "The problem comes from the Transformer itself: attention only sees \"what is similar to what\" and has no built-in sense of token order, so position information must be supplied separately. Earlier approaches were almost all additive: give each position a vector and add it to the token embedding, or add a distance-related term to the attention scores."
+          "p": "The problem comes from the Transformer itself: attention only sees which tokens resemble which, so it has no built-in sense of word order, and position information must be supplied separately. Previous approaches were almost all additive: give each position a vector and add it to the token vector (absolute position), or add a distance-dependent term to the attention score (relative position)."
         },
         {
-          "p": "RoPE changes that to multiplication, and a special kind of multiplication: rotation. Treat each pair of dimensions in the query and key vectors as an arrow on a plane, and rotate the token at position m by m times a fixed angle. Since rotation does not change lengths, the dot product of two arrows depends only on the angle between them, so the attention score between position m and position n naturally depends only on the distance n − m: you encode absolute positions, but what you get is relative position."
+          "p": "RoPE changes this to multiplication, and a special kind of multiplication: rotation. Treat each pair of dimensions in the query and key as an arrow on a plane, and rotate the arrow for the m-th token by m times a fixed angle. The dot product of two arrows depends only on the angle between them, so the attention score between the m-th and n-th tokens naturally depends only on the distance n − m: absolute positions are encoded, but the result is relative."
         },
         {
-          "p": "The paper also proves two useful properties: the upper bound on the dot product shrinks as distance grows, and RoPE can be used directly with linear attention, which earlier relative position encodings could not do. The experiments are small in scale: translation, BERT-style pretraining, GLUE fine-tuning, Performer, and Chinese long-text matching."
+          "p": "The paper also proves RoPE has two good properties: the farther apart two tokens are, the smaller an upper bound on the dot product becomes (long-range decay); and it can be used directly with linear attention, which earlier relative position encodings could not. The experiments are modest: translation, BERT-style pretraining, GLUE fine-tuning, Performer, and Chinese long-text matching."
         },
         {
           "callout": {
             "kind": "takeaway",
-            "title": "In one sentence",
-            "text": "Instead of adding a position vector to each token, rotate the query and key by an angle determined by position. The dot product of the two rotated vectors keeps only their position difference, so attention naturally looks only at relative distance."
+            "title": "One-sentence version",
+            "text": "Instead of adding a position vector to token vectors, rotate the query and key by an angle based on their position. Once the two rotated vectors are dotted, only their position difference remains, so attention naturally sees only relative distance."
           }
         },
         {
           "callout": {
             "kind": "prereq",
-            "title": "Three small concepts to get started",
-            "text": "Don't worry if they are new; these three are enough:",
+            "title": "Three small concepts you need for this read",
+            "text": "If you don't know them, these three are enough:",
             "list": [
-              "**Dot product**: multiply corresponding entries of two vectors and add them up. In 2D, that equals the product of the two arrows' lengths times the cosine of the angle between them: the more aligned they are, the larger it is.",
-              "**Query (q) and key (k) in attention**: each token produces a q and a k; the dot product of token m's q and token n's k determines how much m attends to n. See our Transformer close read for details.",
-              "**Rotation**: turn an arrow around the origin by an angle; its length stays the same, only the direction changes."
+              "**Dot product**: multiply the corresponding entries of two vectors and add them up. In a 2D plane, that equals the product of the two arrow lengths times the cosine of the angle between them: the more aligned their directions, the larger the value.",
+              "**Query (q) and key (k) in attention**: each token computes a q and a k; the dot product of token m's q and token n's k determines how much m attends to n. See the Transformer close read for details.",
+              "**Rotation**: turn an arrow in a plane around the origin by some angle; its length stays the same, and only its direction changes."
             ]
           }
         }
@@ -81,16 +81,16 @@
       "h": "Problem: how does a Transformer know word order?",
       "blocks": [
         {
-          "p": "Feed \"dog bites man\" and \"man bites dog\" to an attention layer with no position information, and it sees the same bag of words and computes the same result. Every Transformer therefore needs position encoded separately. The paper splits existing methods into two groups:"
+          "p": "Give an attention layer with no position information the phrases \"dog bites man\" and \"man bites dog,\" and it sees the same bag of words and produces the same result. That is why every Transformer needs extra position encoding. The paper divides existing approaches into two kinds:"
         },
         {
           "list": [
-            "**Absolute position encoding**: give position i a vector p_{i} and add it to the token embedding before computing q, k, and v. The original Transformer generates p_{i} from sines and cosines; BERT and GPT treat it as trainable parameters. The downside is that the model learns \"position 37\", while what matters more in language is often \"the word three positions back\"; the trainable version also only learns up to a maximum length L.",
-            "**Relative position encoding**: split the attention score q_{m}^{⊺} k_{n} into four terms, then replace the position-dependent terms with something that depends only on distance m − n. Transformer-XL, DeBERTa, and T5 take this route, and T5 simply adds a learnable bias for each distance. The downside is that this modifies the expanded attention score and is tied tightly to the attention computation."
+            "**Absolute position encoding**: give the i-th position a vector p_{i} and add it to the token vector before computing q, k, and v. The original Transformer generates p_{i} with sine and cosine functions; BERT and GPT treat it as trainable parameters. The drawback is that the model learns \"position 37,\" while language usually cares more about \"the third word before this one\"; trainable versions also only learn up to a maximum length L.",
+            "**Relative position encoding**: split the attention score q_{m}^{⊺} k_{n} into four terms and replace the position-dependent terms with something that looks only at the distance m − n. Transformer-XL, DeBERTa, and T5 belong to this family: T5 simply adds a learnable bias for each distance. The drawback is that it modifies the expanded attention score, so it is tied to the attention computation formula."
           ]
         },
         {
-          "p": "The paper points out that these methods all build on the idea of adding position into the representation. It asks the reverse question: can we find functions that encode position into q and k directly so their dot product automatically depends only on relative position? Written as a formula:"
+          "p": "The paper points out that these methods all rest on the idea of adding position into the representation. It asks the reverse question: can we directly find functions that encode position into q and k so that their dot product automatically depends only on relative position? In a formula:"
         },
         {
           "formula": {
@@ -98,27 +98,32 @@
             "parts": [
               {
                 "sym": "f_{q}, f_{k}",
-                "desc": "Functions that turn token x_{m} and its position m into query and key; these are what we need to solve for."
+                "desc": "Functions that combine the m-th token's vector x_{m} and its position m into the query and key; those are what we need to solve for."
               },
               {
                 "sym": "⟨ · , · ⟩",
-                "desc": "Dot product, the core of the attention score."
+                "desc": "The dot product, i.e., the core of the attention score."
               },
               {
                 "sym": "g",
-                "desc": "A function that sees only the tokens themselves and the position difference m − n: absolute positions m and n must not appear on their own."
+                "desc": "A function that depends only on the token vectors and the position difference m − n; the absolute positions m and n may not appear separately."
               }
             ],
-            "note": "Section 3.4.1 solves this equation in the 2D case: the length must not change with position, and the angle must grow uniformly with position. The answer is rotation."
+            "note": "Section 3.4.1 of the paper solves this equation in the 2D case: length must not change with position, and angle must grow uniformly with position. The answer is rotation."
+          },
+          "plain": {
+            "title": "Only the difference in steps matters",
+            "pic": "rope-steps",
+            "text": "Two people stand on a staircase: one pair is on steps 2 and 5, another pair on steps 9 and 12. They stand at different heights, but both are 3 steps apart. That is the attention score the paper wants: it sees only how far apart two tokens are, not where in the sentence they sit."
           }
         }
       ]
     },
     {
-      "h": "Core idea: position is a rotation angle",
+      "h": "Core idea: position is the angle you rotate by",
       "blocks": [
         {
-          "p": "Start with the simplest 2D case. q and k are both arrows on a plane. Rotate the query at position m by mθ and the key at position n by nθ, where θ is an angle chosen in advance:"
+          "p": "Start with the simplest 2D case. q and k are arrows on a plane. Let the query at position m rotate by mθ and the key at position n rotate by nθ, where θ is a fixed angle chosen in advance:"
         },
         {
           "formula": {
@@ -130,21 +135,26 @@
               },
               {
                 "sym": "R(α)",
-                "desc": "A 2D rotation matrix: rotates the arrow counterclockwise by α without changing its length."
+                "desc": "The 2D rotation matrix: rotates an arrow counterclockwise by α while keeping its length unchanged."
               },
               {
                 "sym": "Third line",
-                "desc": "Rotating both vectors once is equivalent to rotating only k by the difference between their angles. The absolute positions m and n disappear; only n − m remains."
+                "desc": "Rotating both sides once is equivalent to rotating only k by the difference between their angles. The absolute positions m and n disappear, leaving only n − m."
               }
             ],
-            "note": "In complex numbers this is cleaner: q_{m} = q · e^{imθ}, k_{n} = k · e^{inθ}, and the dot product is the real part of q · k^{*} · e^{i(m−n)θ}. That is equation (12) in the paper."
+            "note": "Complex form is cleaner: q_{m} = q · e^{imθ}, k_{n} = k · e^{inθ}, and the dot product is the real part of q · k^{*} · e^{i(m−n)θ}. That is equation (12) in the paper."
+          },
+          "plain": {
+            "title": "Each side rotates; the angle only depends on how many ticks apart",
+            "pic": "rope-turn",
+            "text": "Think of the query and key as two hands on a clock face: the query at position m rotates m ticks, and the key at position n rotates n ticks. On the left, m = 2 and n = 3; on the right, m = 10 and n = 11. The two hands point in different directions, but the angle between them is one tick (30°) in both cases. Dot product depends only on that angle, so it only knows n − m."
           }
         },
         {
           "fig": {
             "type": "table",
-            "title": "Hand-worked check: same distance, same attention score",
-            "subtitle": "Illustrative 2D case: q = k = (1, 0), with each position rotated by θ = 30°. Dot product = cos((n − m) × 30°); computed here from equation (12) in the paper.",
+            "title": "Hand calculation: same distance, same attention score",
+            "subtitle": "Illustrative: 2D case with q = k = (1, 0) and each position rotating by θ = 30°. Dot product = cos((n − m) × 30°), computed here from equation (12) of the paper.",
             "columns": [
               "Query position m",
               "Key position n",
@@ -206,23 +216,23 @@
             "highlight": {
               "row": 5
             },
-            "note": "Rows 2 and 3 have completely different positions but the same distance, so their dot products are the same. But the last row exposes the problem: with only one angle, distance 12 rotates all the way back around and becomes indistinguishable from distance 0. That is why real RoPE uses many different angles."
+            "note": "The second and third rows have completely different positions but the same distance, so their dot products are equal. But the last row exposes the problem: with a single angle, distance 12 rotates all the way back to the origin and cannot be distinguished from distance 0. That's why real RoPE needs many different angles."
           }
         },
         {
           "callout": {
             "kind": "intuition",
             "title": "Like a wall clock",
-            "text": "A clock with only a second hand comes back to the same place every minute, so it cannot tell 1 second from 61 seconds. Add the minute and hour hands, and the three together can distinguish long stretches of time. RoPE splits the vector into many pairs, each with a different rotation speed: fast ones distinguish nearby positions, slow ones distinguish distant ones."
+            "text": "A clock with only a second hand returns to the same spot after one minute, so it can't tell 1 second from 61 seconds. Add the minute hand and the hour hand, and the three hands together can distinguish a long span of time. RoPE splits the vector into many pairs and gives each pair a different speed: fast pairs resolve nearby distances, slow pairs resolve faraway distances."
           }
         }
       ]
     },
     {
-      "h": "Scaling to higher dimensions: many dimension pairs, many speeds",
+      "h": "Generalizing to high dimensions: many dimension pairs, many speeds",
       "blocks": [
         {
-          "p": "If the vector is d-dimensional, with d even, split it into d/2 pairs of adjacent dimensions; each pair rotates in its own plane, and the i-th pair has speed θ_{i}:"
+          "p": "For a d-dimensional vector (d even), split it into d/2 adjacent pairs of dimensions. Each pair rotates in its own plane, and the i-th pair's speed is θ_{i}:"
         },
         {
           "formula": {
@@ -230,30 +240,35 @@
             "parts": [
               {
                 "sym": "R_{Θ,m}^{d}",
-                "desc": "A block-diagonal matrix: d/2 2×2 rotation blocks along the diagonal, where the i-th block rotates by mθ_{i}."
+                "desc": "A block-diagonal matrix: place d/2 2×2 rotation blocks along the diagonal; the i-th block rotates by mθ_{i}."
               },
               {
                 "sym": "θ_{i}",
-                "desc": "The angle, in radians, by which the i-th dimension pair rotates per position step. The first pair rotates 1 radian; later pairs are slower, with the slowest close to 1/10000."
+                "desc": "The angle, in radians, that the i-th dimension pair rotates by per position. The first pair rotates 1 radian; later pairs are slower, and the slowest approaches 1/10000."
               },
               {
                 "sym": "10000",
-                "desc": "The same base used by the original Transformer's sinusoidal position encoding."
+                "desc": "The base is borrowed from the original Transformer's sinusoidal position encoding."
               }
             ],
-            "note": "These rotation matrices are orthogonal, so they do not change vector length, which the paper says keeps position encoding stable. Note that RoPE rotates only q and k, not v; and it applies in the attention operation of every layer, not just added once at the input."
+            "note": "These rotation matrices are orthogonal, so they do not change vector length, which the paper says keeps position encoding stable. Note: RoPE rotates only q and k, not v; and it is applied in the attention of every layer, not just added once at the input."
+          },
+          "plain": {
+            "title": "At the same moment, fast hands and slow hands each point somewhere",
+            "pic": "rope-clocks",
+            "text": "Each dimension pair is a clock with a different speed: θ₁ is the fastest, θ₄ is the slowest. For the same position (the 7th token), the four clocks point in different directions. Fast clocks resolve nearby distances, slow clocks resolve faraway distances, and together they can tell a long range of positions apart."
           }
         },
         {
           "fig": {
             "type": "table",
-            "title": "Rotation speed, from fast to slow: positions per full turn for each dimension pair",
-            "subtitle": "Illustrative: d = 128, computed from θ_{i} in equation (15) of the paper; a full turn = 2π / θ_{i}, computed here.",
+            "title": "From fast to slow: how many positions each pair takes to make one full turn",
+            "subtitle": "Illustrative: d = 128, using θ_{i} from equation (15) of the paper; \"one full turn\" = 2π / θ_{i}, computed here.",
             "columns": [
               "Dimension pair i",
               "Radians per position",
               "Positions per full turn",
-              "Roughly covers"
+              "Roughly handles"
             ],
             "rows": [
               [
@@ -287,11 +302,11 @@
                 "very long distances"
               ]
             ],
-            "note": "Like a clock: the fast dimension pairs are sensitive to nearby position differences, while the slow pairs change gradually and can distinguish very long distances. The last column is a rough heuristic, not a conclusion from the paper."
+            "note": "As with a clock: the fast dimension pairs are sensitive to nearby position differences, and the slow pairs change gradually, which lets them resolve very long distances. The last column is a rough explanatory shorthand, not a conclusion from the paper."
           }
         },
         {
-          "p": "In practice, you do not need to actually multiply by a large matrix that is mostly 0s. Section 3.4.2 gives an elementwise version: two elementwise multiplications plus one addition are enough."
+          "p": "In practice, you do not need to multiply by a large matrix that is mostly 0. Section 3.4.2 gives an element-wise form: two element-wise multiplications plus one addition are enough."
         },
         {
           "formula": {
@@ -299,35 +314,39 @@
             "parts": [
               {
                 "sym": "⊗",
-                "desc": "Elementwise multiplication"
+                "desc": "Element-wise multiplication"
               },
               {
                 "sym": "(−x_{2}, x_{1}, …)",
-                "desc": "Swap each pair and negate the first number: that is exactly what a 90° rotation of a coordinate pair does."
+                "desc": "Swap the two numbers in each pair and negate the first: that is exactly a 90° rotation of that pair."
               },
               {
                 "sym": "The cos and sin vectors",
-                "desc": "Depends only on position m, so it can be precomputed and reused."
+                "desc": "Depend only on position m, so they can be precomputed and reused."
               }
             ]
+          },
+          "plain": {
+            "title": "A 90° rotation is \"swap and negate\"",
+            "text": "Rotating a coordinate pair (x, y) by 90° gives (−y, x). So rotating by any angle = original coordinates × cos + the 90°-rotated coordinates × sin. Do this element-wise over the whole vector — multiply twice and add once — and you never need an actual large matrix multiplication."
           }
         }
       ]
     },
     {
-      "h": "Three properties: relative position, long-range decay, and linear-attention compatibility",
+      "h": "Three properties: relative position, long-range decay, and linear attention",
       "blocks": [
         {
-          "p": "**1. Built-in relative position.** We saw in the previous section that q and k each rotate by their own absolute position, leaving only the position difference in the dot product. Unlike earlier relative position encodings, RoPE does not modify the attention-score formula; it simply rotates q and k before taking the dot product."
+          "p": "**1. Relative position built in.** The previous section showed it: q and k each rotate by their own absolute position, and only the position difference remains in the dot product. Unlike earlier relative position encodings, there is no need to change the attention score formula — just rotate q and k before computing the dot product."
         },
         {
-          "p": "**2. Long-range decay.** Section 3.4.3 proves that an upper bound on the q–k dot product shrinks as distance grows. The intuition: at position difference r, the i-th dimension pair's contribution is multiplied by a unit arrow rotated by rθ_{i}. At r = 0 all arrows point the same way; as r grows, arrows at different speeds point in scattered directions, so they cancel more when summed. The paper plots this decay with a single quantity (Figure 2), and we recomputed it from the paper's definition:"
+          "p": "**2. Long-range decay.** Section 3.4.3 proves that as distance grows, an upper bound on the q-k dot product shrinks. The intuition: for position difference r, the i-th dimension pair's contribution is multiplied by a unit arrow rotated by rθ_{i}. When r = 0, all arrows point the same way; as r grows, arrows at different speeds point in increasingly scattered directions and cancel out more when summed. The paper plots this decay with one quantity (Figure 2); we recomputed it from the paper's definition:"
         },
         {
           "fig": {
             "type": "table",
-            "title": "The upper bound shrinks with distance",
-            "subtitle": "Illustrative: d = 128, computed from the quantity (1 / (d/2)) · Σ|S_{j}| in Section 3.4.3, where S_{j} is the sum of the first j unit arrows; numbers computed here.",
+            "title": "Greater distance, smaller upper bound",
+            "subtitle": "Illustrative: d = 128, using the quantity (1 / (d/2)) · Σ|S_{j}| from Section 3.4.3, where S_{j} is the sum of the first j unit arrows; numbers computed here.",
             "columns": [
               "Relative distance r",
               "0",
@@ -348,45 +367,50 @@
                 "6.6"
               ]
             ],
-            "note": "This is an upper bound, not the attention score itself: distant tokens can still get high scores, but the ceiling is lower. The paper sees this as matching the intuition that tokens far apart are usually less related."
+            "note": "This is an upper bound, not the attention score itself: distant tokens can still receive a high score, but the ceiling is lower. The paper says this matches the intuition that tokens far apart usually have weaker relationships."
+          },
+          "plain": {
+            "title": "A crowd of arrows: aligned is long, scattered is short",
+            "pic": "rope-decay",
+            "text": "At position difference 0, each dimension pair contributes an arrow in the same direction; placed end to end, they form one long line. Once the distance grows, each pair rotates by a different angle, so the arrows point every which way; laid end to end, they do not travel far from the start. That is how the upper bound on the dot product shrinks with distance."
           }
         },
         {
-          "p": "**3. Works with linear attention.** Ordinary attention computes a score for every pair of tokens, so the cost grows quadratically with sequence length. Linear attention methods such as Performer first transform q and k separately with a non-negative function, then use the associativity of matrix multiplication to reduce the cost to linear in sequence length. Earlier relative position encodings modify each pair's score, which blocks that path. RoPE only rotates the transformed q and k individually, without pairing them up, so it can be used directly."
+          "p": "**3. Works with linear attention.** Standard attention computes a score for every token pair, so cost grows quadratically with sequence length. Linear attention (such as Performer) first transforms q and k using a non-negative function, then uses the associativity of matrix multiplication to reduce cost to linear in length. Earlier relative position encodings modify each pairwise score, so this shortcut is not available to them. RoPE only rotates the transformed q and k individually — no pairwise matching is needed — so it applies directly."
         },
         {
-          "p": "The trade-off is that, to avoid dividing by zero, the denominator is left in its unrotated form, while the numerator can contain negative terms, so the weights on the values are no longer strictly normalized probabilities that sum to 1. The paper concedes this and says the computation \"can still model the importance of values.\""
+          "p": "The tradeoff is that, to avoid dividing by zero, the paper keeps the denominator unrotated, while the numerator may contain negative terms, so the weight for each value is no longer strictly a probability that sums to 1. The paper acknowledges this and says it \"can still model the importance of values.\""
         },
         {
           "callout": {
             "kind": "myth",
-            "title": "\"RoPE is just a better position vector to add to the token embedding.\"",
-            "text": "No. RoPE has no position vector to add: it applies a position-dependent rotation to q and k inside every attention layer, while the token embeddings themselves and v carry no position. This is the fundamental difference from the original Transformer, BERT, and GPT: addition becomes multiplication."
+            "title": "\"RoPE is just a better position vector added to token vectors\"",
+            "text": "No. RoPE has no position vector to add: it applies a position-dependent rotation to q and k in every attention layer, while the token vectors themselves and v carry no position. That is its fundamental difference from the original Transformer, BERT, and GPT position encodings: addition becomes multiplication."
           }
         }
       ]
     },
     {
-      "h": "Experiments: small scale, so treat each conclusion separately",
+      "h": "Experiments: small in scale, so separate the conclusions",
       "blocks": [
         {
-          "p": "All the paper's experiments were run on two cloud servers, each with four V100 GPUs, far smaller than later LLM-scale work. The main results:"
+          "p": "All of the paper's experiments ran on two cloud servers, each with 4 V100 GPUs — far smaller than later large-model work. The main results:"
         },
         {
           "list": [
-            "**Machine translation**: on WMT 2014 English-to-German, about 4.5 million sentence pairs, replacing the original Transformer-base position encoding with RoPE raised BLEU from 27.3 to 27.5. The paper reports only this one number, with no run-to-run variance.",
-            "**BERT-style pretraining**: replacing BERT's position encoding with RoPE, using batch size 64, maximum length 512, and 100k training steps, made the masked language modeling loss drop faster (Figure 3, left).",
-            "**Performer**: on Enwik8, adding RoPE to a 12-layer linear attention model made the loss fall faster and reach a lower value at the same number of steps (Figure 3, right)."
+            "**Machine translation**: on WMT 2014 English-to-German (about 4.5M sentence pairs), replacing the original Transformer-base position encoding with RoPE raises BLEU from 27.3 to 27.5. The paper reports only this one number and no run-to-run variance.",
+            "**BERT-style pretraining**: with BERT's position encoding replaced by RoPE, batch size 64, max length 512, and 100k training steps, the masked language model loss drops faster (Figure 3 left).",
+            "**Performer**: on Enwik8, adding RoPE to a 12-layer linear attention model lowers the loss faster and further under the same step count (Figure 3 right)."
           ]
         },
         {
-          "p": "**GLUE fine-tuning** is the part to read carefully. The paper says RoFormer \"significantly outperforms\" BERT on three of the six tasks:"
+          "p": "**GLUE fine-tuning** is the section to read carefully. The paper says RoFormer \"significantly surpasses\" BERT on three of six tasks:"
         },
         {
           "fig": {
             "type": "table",
-            "title": "RoFormer vs. BERT: three wins, three losses, and mismatched metrics",
-            "subtitle": "From Table 2 of the paper. The BERT row matches the GLUE test-set scores in Table 1 of the original BERT paper exactly; the RoFormer row is, according to the paper, the best average on the validation set.",
+            "title": "RoFormer vs. BERT: three wins, three losses, and not the same yardstick",
+            "subtitle": "From Table 2 of the paper. The BERT row exactly matches the GLUE test-set scores in Table 1 of the original BERT paper; the RoFormer row, according to the paper, is the best average validation-set score.",
             "columns": [
               "Model",
               "MRPC",
@@ -416,17 +440,17 @@
                 "80.2/79.8"
               ]
             ],
-            "note": "RoFormer is higher on MRPC, STS-B, and QQP, and lower on SST-2, QNLI, and MNLI. The 15-point gap on QQP is the most striking, but since one side is a test set and the other a validation set, that gap cannot be credited to RoPE."
+            "note": "RoFormer is higher on MRPC, STS-B, and QQP, and lower on SST-2, QNLI, and MNLI. The 15-point gap on QQP is the most eye-catching, but with one side from a test set and the other from a validation set, that gap cannot be credited to RoPE."
           }
         },
         {
-          "p": "**Chinese long text** is the part the paper most wants to prove. The authors took their own WoBERT, replaced its absolute position encoding with RoPE, and trained on about 34GB of Chinese text in six stages, with different maximum lengths from 128 to 1536. They then tested on CAIL2019-SCM, a legal case matching dataset with 8,964 triples and documents mostly longer than 512 characters:"
+          "p": "**Chinese long text** is the result the paper most wants to establish. The authors replaced WoBERT's absolute position encoding with RoPE, trained on about 34GB of Chinese text in six stages with different maximum lengths (128 to 1536), then evaluated on CAIL2019-SCM, a legal case matching dataset of 8,964 triples, with most documents exceeding 512 characters:"
         },
         {
           "fig": {
             "type": "table",
-            "title": "Long text: RoFormer can read up to 1024 positions",
-            "subtitle": "From Table 5 of the paper; accuracy (%), higher is better. The number after each model name is the maximum input length.",
+            "title": "Long text: RoFormer can read 1024 positions",
+            "subtitle": "From Table 5 of the paper. Accuracy (%), higher is better. The number after each model name is the maximum input length.",
             "columns": [
               "Model",
               "Validation set",
@@ -457,98 +481,98 @@
             "highlight": {
               "row": 3
             },
-            "note": "When all are truncated to 512, the three are nearly tied; RoFormer's advantage comes from reading longer inputs. Note that BERT and WoBERT use absolute position encodings learned only up to 512, so they cannot be directly compared with the 1024 version."
+            "note": "When all three are cut to 512, they nearly tie; RoFormer's advantage comes from reading longer inputs. Note that BERT and WoBERT use absolute position encodings learned only up to 512, so they can't be directly compared with the 1024-length version."
           }
         },
         {
-          "p": "The paper ends by admitting two limitations: it cannot explain why RoPE converges faster than other position encodings, and it cannot explain why it performs better on long text, because long-range decay is also a property of other position encodings."
+          "p": "The paper ends by admitting two limitations: it can't explain why RoPE converges faster than other position encodings, and it can't explain why it does better on long text, since the long-range decay property is shared by other position encodings."
         }
       ]
     },
     {
-      "h": "A few details worth noting",
+      "h": "A few details worth a closer look",
       "blocks": [
         {
           "list": [
-            "**Inconsistent subscript for θ**: Equation (15) writes θ_{i} = 10000^{−2(i−1)/d}, with i starting at 1; Sections 3.3 and 3.4.3 write θ_{i} = 10000^{−2i/d}. The two differ by an index shift, which does not affect the idea, but choose one when implementing.",
-            "**The GLUE comparison is not apples to apples**: The six BERT numbers in Table 2 match the GLUE test-set scores in the original BERT paper exactly, while this paper says it reports validation-set results. The paper does not say where its BERT row comes from, nor does it mention that RoFormer is lower on the other three tasks.",
-            "**The “1.5% improvement” does not match the table**: Section 4.5.4 says RoFormer-1024 improves over WoBERT by an absolute 1.5%, but in Table 5 the test-set gap is 1.69 (69.79 vs. 68.10) and the validation-set gap is 2.00 (66.07 vs. 64.07). The only exactly 1.5-point difference in the table is RoFormer-1024 versus its own 512-token version (69.79 vs. 68.29). Moreover, comparing 1024 with 512 already mixes in the benefit of being able to read longer inputs.",
-            "**Sign of the position difference**: Equation (11) writes g(x_{m}, x_{n}, m − n), while Equation (21) in the derivation writes n − m. The two are just different conventions, but a paper should keep them consistent.",
-            "**A subscript typo**: Equation (32) writes q = f_{q}(x_{m}, 0) = W_{q} x_{n}; the right-hand side should be x_{m}.",
-            "**A typo in the Table 2 title**: it says “GLEU” instead of GLUE."
+            "**Inconsistent θ subscript.** Equation (15) writes θ_{i} = 10000^{−2(i−1)/d} with i starting at 1; Sections 3.3 and 3.4.3 write θ_{i} = 10000^{−2i/d}. The two differ by one index. It doesn't change the idea, but pick one convention before implementing.",
+            "**The GLUE comparison isn't the same yardstick.** The six BERT numbers in Table 2 are exactly the same as the GLUE test-set scores in the original BERT paper, while this paper says it reports validation-set results. It doesn't say where the BERT row comes from, and it doesn't mention that RoFormer scores lower on the other three tasks.",
+            "**The “1.5% improvement” doesn't match the table.** Section 4.5.4 says RoFormer-1024 is an absolute 1.5% improvement over WoBERT, but in Table 5 the test-set gap is 1.69 (69.79 vs. 68.10) and the validation-set gap is 2.00 (66.07 vs. 64.07). The only place with exactly a 1.5-point gap is RoFormer-1024 against its own 512 version (69.79 vs. 68.29). And a 1024-vs-512 comparison already includes the advantage of reading longer input.",
+            "**Sign of the position difference.** Equation (11) writes g(x_{m}, x_{n}, m − n), while equation (21) in the derivation writes n − m. They're just different conventions, but a single paper should stay consistent.",
+            "**A subscript typo.** Equation (32) writes q = f_{q}(x_{m}, 0) = W_{q} x_{n}; the right-hand side should be x_{m}.",
+            "**Typo in the Table 2 caption.** GLUE is written as “GLEU.”"
           ]
         }
       ]
     },
     {
-      "h": "Afterward: the most common position encoding in open-source LLMs",
+      "h": "Afterward: the most widely used position encoding in open-source LLMs",
       "blocks": [
         {
           "list": [
-            "**LLaMA and later open-source models**: The LLaMA paper states that it removes absolute position encoding and adds RoPE in every layer of the network. Many later open-source models have followed suit.",
-            "**Extending context length**: RoPE's rotation speeds are determined by the base 10000. Later work found that by “compressing” positions into the range the model was trained on, or by adjusting the rotation speeds of different dimensions, the length a model can read can be extended several times over. This has become a common technique for long-context models.",
-            "**Small implementation differences**: The paper pairs adjacent dimensions; many popular implementations instead pair each dimension in the first half with the corresponding dimension in the second half. This only reorders the dimensions and is mathematically equivalent, but when using someone else's weights you must match the pairing.",
-            "**Connection to this line of work**: T5 uses relative position in the form of one learnable bias per distance; RoPE gets the same relative-position behavior from rotation without changing the attention-score formula."
+            "**LLaMA and later open-source models.** The LLaMA paper states that it removes absolute position encoding and adds RoPE in every layer of the network. Many open-source models since have followed.",
+            "**Stretching context.** RoPE's rotation speeds are determined by the base 10000. Later work found that by “squeezing” positions into the trained range, or by adjusting the speed of different dimensions, the model's readable length could be expanded several times over. This became a common technique for long-context models.",
+            "**A small implementation difference.** The paper pairs adjacent dimensions; many popular implementations instead pair each dimension in the first half with the corresponding dimension in the second half. This merely reorders the dimensions and is mathematically equivalent, but you have to match it when reusing someone else's weights.",
+            "**Connection to this line of work.** T5 uses relative position in the form of one learnable bias per distance. RoPE gets the same relativity through rotation, without changing the attention score formula."
           ]
         },
         {
-          "p": "Next, we return to the attention computation itself: **FlashAttention**. It does not change the result of attention; instead, it reorders the GPU memory reads and writes so that attention on long sequences is faster and uses much less memory."
+          "p": "Next, we return to the attention computation itself: **FlashAttention**. It doesn't change the result attention computes; it rearranges the order in which attention reads and writes memory so that long-sequence attention is both faster and more memory-efficient."
         }
       ]
     },
     {
-      "h": "Test yourself: did you get it?",
+      "h": "Test yourself: did you really get it?",
       "blocks": [
         {
           "quiz": {
             "q": "How does RoPE make attention scores depend only on relative position?",
             "options": [
-              "Learn a separate bias for each distance and add it to the score.",
-              "Rotate q at position m by mθ and k at position n by nθ; in the dot product the two rotations cancel into a single rotation that depends only on n − m.",
-              "Add a position vector to each token vector.",
-              "Mask out tokens that are too far apart."
+              "Learn a bias for each distance and add it to the score",
+              "Rotate q by mθ at position m and k by nθ at position n; the two rotations cancel in the dot product into a single rotation that depends only on n − m",
+              "Add a position vector to the token vector",
+              "Mask out tokens that are too far apart"
             ],
             "answer": 1,
-            "why": "Rotation does not change length, and the dot product of two rotated vectors depends only on the difference between their angles. So the absolute positions m and n cancel out, leaving only n − m."
+            "why": "Rotation doesn't change length, and the dot product of two rotated vectors depends only on the difference between their angles. So the absolute positions m and n cancel out, leaving only n − m."
           }
         },
         {
           "quiz": {
             "q": "Why does RoPE use different rotation speeds for different dimension pairs?",
             "options": [
-              "To make computation faster.",
-              "With a single speed, after one full turn the vector is back where it started, so near and far become indistinguishable; fast and slow speeds together are what let the model tell near and far apart at once.",
-              "To make the vector length smaller.",
-              "To stay compatible with BERT's weights."
+              "To make computation faster",
+              "With only one speed, after a full turn the vector returns to the start, so near and far become indistinguishable. Mixing fast and slow speeds is what lets it resolve both nearby and distant positions.",
+              "To make the vector length smaller",
+              "To be compatible with BERT's weights"
             ],
             "answer": 1,
-            "why": "Just as a clock with only a second hand cannot tell 1 second from 61 seconds, the fast dimension pairs distinguish nearby position differences and the slow pairs distinguish distant ones."
+            "why": "Like a clock with only a second hand can't tell 1 second from 61 seconds: fast dimension pairs resolve nearby position differences, and slow pairs resolve distant ones."
           }
         },
         {
           "quiz": {
-            "q": "In Table 2, RoFormer beats BERT 86.4 to 71.2 on QQP. Why can't we treat that as a big win for RoPE?",
+            "q": "In Table 2, RoFormer scores 86.4 to BERT's 71.2 on QQP. Why can't this be treated as a big win for RoPE?",
             "options": [
-              "Because QQP is not a GLUE task.",
-              "Because the BERT row comes from the original paper's test set, while the RoFormer row comes from the validation set; the two are not measured with the same ruler.",
-              "Because RoFormer used more data.",
-              "Because QQP is only about long text."
+              "Because QQP is not a GLUE task",
+              "Because the BERT row is from the original paper's test set and RoFormer is from the validation set, so they aren't measured on the same yardstick",
+              "Because RoFormer used more data",
+              "Because QQP is only for long text"
             ],
             "answer": 1,
-            "why": "The BERT row matches the original BERT paper's GLUE test-set scores exactly, while this paper reports validation-set results. Scores for the same task can differ a lot between the two sets."
+            "why": "The BERT row matches the GLUE test-set results in the original BERT paper exactly, while this paper reports validation-set results. Scores on the same task can differ a lot between the two sets."
           }
         },
         {
-          "p": "After reading this, you should be able to answer the following questions:"
+          "p": "After this close read, you should be able to answer these questions:"
         },
         {
           "list": [
-            "Why does a Transformer need position encoding? What are the shortcomings of absolute and relative position encodings?",
-            "What exactly does RoPE's “rotation” rotate? Why does only relative position remain in the dot product?",
-            "What does θ_{i} = 10000^{−2(i−1)/d} mean? Why are both fast and slow speeds needed?",
-            "What is long-range decay, and why is it only an upper bound?",
-            "Why can RoPE be combined with linear attention while earlier relative position encodings cannot?",
-            "Among the paper's experiments, which conclusions are reliable and which should be discounted?"
+            "Why does the Transformer need position encoding, and what are the drawbacks of absolute and relative position encodings?",
+            "What exactly is being rotated in RoPE, and why does the dot product end up with only relative position?",
+            "What does θ_{i} = 10000^{−2(i−1)/d} mean, and why do there need to be fast and slow speeds?",
+            "What does long-range decay mean, and why is it only an upper bound?",
+            "Why can RoPE be combined with linear attention while previous relative position encodings cannot?",
+            "Among the paper's experiments, which conclusions are reliable and which need to be discounted?"
           ]
         }
       ]
@@ -561,7 +585,7 @@
       "date": "2023-11-08",
       "url": "https://arxiv.org/abs/2104.09864"
     },
-    "note": "This article is based on arXiv v5 of the paper, first posted in April 2021. Tables marked “Illustrative” use numbers set by this site and are computed from the paper's formulas. The comparison of the BERT baseline source is based on Table 1 of the original BERT paper; the statement that LLaMA uses RoPE is based on the LLaMA paper. The notes on context extension and dimension pairing come from public sources, not from this paper."
+    "note": "This article is based on v5 of the arXiv paper, first posted in April 2021. Tables labeled “Illustrative” use numbers chosen here and calculated from the paper's equations. The comparison of the BERT baseline is based on Table 1 of the original BERT paper; LLaMA's use of RoPE is based on the LLaMA paper. The notes on context extension and dimension pairing come from public sources, not this paper."
   },
   "claims": [
     {
@@ -572,7 +596,7 @@
       "as_written": "arXiv"
     },
     {
-      "text": "about 4.5 million sentence pairs",
+      "text": "about 4.5M sentence pairs",
       "value": "4.5",
       "source_url": "https://arxiv.org/abs/2104.09864",
       "quote": "approximately 4.5",
@@ -621,18 +645,18 @@
       "as_written": "68.29"
     },
     {
-      "text": "paper says a 1.5% improvement",
+      "text": "paper says 1.5% improvement",
       "value": "1.5%",
       "source_url": "https://arxiv.org/abs/2104.09864",
       "quote": "absolute improvement of 1.5%",
       "as_written": "1.5%"
     },
     {
-      "text": "two 4×V100 servers",
+      "text": "two 4×V100 machines",
       "value": "4 x V100",
       "source_url": "https://arxiv.org/abs/2104.09864",
       "quote": "two cloud severs with 4 x V100 GPUs",
-      "as_written": "4 V100 GPUs"
+      "as_written": "4 V100s"
     },
     {
       "text": "three wins",
@@ -663,7 +687,7 @@
       "as_written": "90.7"
     },
     {
-      "text": "Table 2 BERT matches the original BERT paper's test set",
+      "text": "Table 2 BERT row matches the original BERT paper's test set",
       "value": "71.2",
       "source_url": "https://arxiv.org/abs/1810.04805",
       "quote": "GLUE Test results",
@@ -705,21 +729,21 @@
       "as_written": "64.07"
     },
     {
-      "text": "θ notation 1",
+      "text": "θ form 1",
       "value": "10000−2(i−1)/d",
       "source_url": "https://arxiv.org/abs/2104.09864",
       "quote": "10000−2(i−1)/d",
       "as_written": "10000^{−2(i−1)/d}"
     },
     {
-      "text": "θ notation 2",
+      "text": "θ form 2",
       "value": "10000−2i/d",
       "source_url": "https://arxiv.org/abs/2104.09864",
       "quote": "θi = 10000−2i/d",
       "as_written": "10000^{−2i/d}"
     },
     {
-      "text": "Equation (32) typo",
+      "text": "equation (32) typo",
       "value": "W q xn",
       "source_url": "https://arxiv.org/abs/2104.09864",
       "quote": "W q xn",
@@ -733,7 +757,7 @@
       "as_written": "GLEU"
     },
     {
-      "text": "maximum length 1536",
+      "text": "max length 1536",
       "value": "1536",
       "source_url": "https://arxiv.org/abs/2104.09864",
       "quote": "1536",
@@ -764,5 +788,5 @@
   "status": "published",
   "verified": false,
   "lang": "en",
-  "translated_from": "c3cd69ae23dacd31"
+  "translated_from": "fca91937ae574192"
 }
