@@ -430,5 +430,71 @@
     "reason": "主材料是 X 帖子，读取失败：xAI X 搜索 返回 403：{\"code\":\"permission-denied\",\"error\":\"Your team 615e02b5-01ff-42e0-867c-40565fbe0765 has either used all available credits or reached its monthly spending limit. To continue making API requests, please purchase more credits or raise your spending limit.\"}，自动跳过",
     "title": "让AI 能掌握电影大师的配色画面：迪金斯、王家卫、韦斯·安德森 15 位大师 5 种配色思路（附调色 Skill）",
     "at": "2026-11-27T19:29:30.839Z"
+  },
+  {
+    "id": "48a4e5b02b",
+    "reason": "官方页面日期是 November 23, 2026，已超过 72 小时。",
+    "title": "Returning to the Neuron Basis for Interpretability, Part 1: Answering Three Objections",
+    "at": "2026-11-28T02:00:45.075Z"
+  },
+  {
+    "id": "7f47a49321",
+    "reason": "Anthropic 产品更新页日期是 November 23, 2026，已超过 72 小时。",
+    "title": "Zero data retention with Enterprise Frontier Safeguards is now in beta",
+    "at": "2026-11-28T02:00:45.120Z"
+  },
+  {
+    "id": "bbe099f294",
+    "reason": "重大消息：候选标题仍写「尚无外部核对」，但 MIT Andrew Sutherland 核对页（2026-11-27 17:27 UTC）已记录独立内核核对通过；原文发布于 2026-11-20，已超过 72 小时。已开 Issue #105 请人决定如何写，避免流水线按过时标题起草。",
+    "title": "Anthropic 数学家称和 Claude 证明了黎曼猜想：1700 万行 Lean 证明已公开，尚无外部核对",
+    "at": "2026-11-28T02:00:45.169Z"
+  },
+  {
+    "id": "ca73c64f19",
+    "reason": "这是 Notion 的工作方法指南，不是新产品发布或带方法与数据的一手研究。",
+    "title": "Notion 团队 AI 工作指南：100 人各写一份技能，不如 2 人搭一座全队共用的工厂",
+    "at": "2026-11-28T02:00:45.206Z"
+  },
+  {
+    "id": "e032fea5d7",
+    "reason": "这是 a16z 每周图表评论，主要转述 Electric Twin、Pew 等第三方调查，不是厂商官方发布或带方法与数据的一手研究；页面日期是 Nov 20, 2026，已超过 72 小时。",
+    "title": "a16z 每周图表：Z 世代观点全重合不到一成，过半基金经理预计巨头半年内砍 AI 开支",
+    "at": "2026-11-28T02:00:45.240Z"
+  },
+  {
+    "id": "aaec692e1d",
+    "reason": "打开的主链接只是 Chrome 扩展介绍页，材料过薄；发布于 2026-11-20，已超过 72 小时。",
+    "title": "Perplexity Computer now works directly in Chromium browsers via the extension.",
+    "at": "2026-11-28T02:00:45.277Z"
+  },
+  {
+    "id": "41dc972095",
+    "reason": "官方页面日期是 Nov 17, 2026，已超过 72 小时。",
+    "title": "NVIDIA published eight design guidelines for efficient sparse attention.",
+    "at": "2026-11-28T02:00:45.324Z"
+  },
+  {
+    "id": "cc6a3893c5",
+    "reason": "官方页面日期是 Nov 19, 2026，已超过 72 小时。",
+    "title": "NVIDIA published a technical blog on cutting RL rollout bottlenecks with Dynamo",
+    "at": "2026-11-28T02:00:45.367Z"
+  },
+  {
+    "id": "35c35401b0",
+    "reason": "相关 X 帖发布于 2026-11-19T16:12:42Z，已超过 72 小时；官方博客页这次打开超时，未作为主材料核对。",
+    "title": "Perplexity Computer Brain now auto-creates self-improving agent skills",
+    "at": "2026-11-28T02:00:45.407Z"
+  },
+  {
+    "id": "488961fb7f",
+    "reason": "主链接只是产品首页，没有可核对的发布说明正文；相关帖子发布于 2026-11-19T15:00:05Z，已超过 72 小时。",
+    "title": "Kling 4.0 now supports native 4K and 10-bit HDR output.",
+    "at": "2026-11-28T02:00:45.460Z"
+  },
+  {
+    "id": "da24d2c714",
+    "reason": "这是 Gemini 4 Carbon 的社区作品展示，不是新产品发布；官方页面日期是 Nov 17, 2026，已超过 72 小时。",
+    "title": "Google 公开 5 个 Gemini 4 Carbon 作品：52,000 根随风摆的草、超百万个粒子、会碎的玻璃叠叠乐",
+    "at": "2026-11-28T02:00:45.508Z"
   }
 ]
