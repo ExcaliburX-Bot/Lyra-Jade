@@ -1,0 +1,761 @@
+{
+  "slug": "trainium3-ltx25-video-generation",
+  "date": "2026-11-27",
+  "category": "deep",
+  "publisher": "Hugging Face",
+  "topics": [
+    "amazon"
+  ],
+  "title": "Trainium3 上跑 LTX-2.5：10 秒带声视频从 5 分 20 秒压到 22–23 秒",
+  "summary": "想在新一代 AI 芯片上自己跑视频生成？Hugging Face 团队借来 AWS 的 Trainium3 机器，用五天把 LTX-2.5 从「跑不起来」优化到 10 秒带声视频 22–23 秒出片，还顺手用它续写了真实机器人录像。",
+  "ai_summary": "Hugging Face 团队借来一台 AWS Trainium3（64 个 NeuronCore），用五天把 LTX-2.5 视频生成模型跑了起来。模型开箱跑不动，首次跑通 960×544 要 5 分 20 秒，核心实际只算 45 秒。经张量并行、序列并行和主机优化，最终在 32 个核心上，10 秒带声 2048×1024 视频，模型加载后 22–23 秒出片，比 LTX 官方 API 的 23.7 秒快约 1 秒，整体比首次快 14 倍。作者还把它当世界模型续写机器人录像。限制：单镜头最长 20 秒、细节常出错需重拍、声音不跨镜头延续。",
+  "brief": [
+    "开箱跑不动：transformer 一个核心装不下，首次跑通 10 秒视频要 5 分 20 秒，核心只算了约 45 秒。",
+    "五天优化后：权重切 4 份、视频 token 切 8 段，32 个核心合力，10 秒带声 2048×1024 视频 22–23 秒出片。",
+    "对照 LTX 官方 API 的 23.7 秒（10 秒 1080p），打成平手且快约 1 秒；CUDA 那 6.8 秒没有测量细节，作者没拿来比。",
+    "模型上限：单镜头最长 20 秒；要常驻进程，加载约 3 分钟、首个视频 80 秒。"
+  ],
+  "readMinutes": 8,
+  "sections": [
+    {
+      "h": "这是什么：借来一台 Trainium3，用五天把视频生成从「跑不动」做到「22 秒出片」",
+      "blocks": [
+        {
+          "p": "这是 Hugging Face 三位工程师的一篇实测记录。他们通过和 AWS 的合作，借到一台 Trainium3 机器（trn3.48xlarge，64 个 NeuronCore，也就是这颗芯片上的计算核心）用了一个月，大部分时间在测各种模型，最后五天干了一件「好玩的事」：拿 Lightricks 的 LTX-2.5 生成视频。"
+        },
+        {
+          "p": "LTX-2.5 的特点是一次把视频和声音一起生成。作者想要的不只是官方示例里的简单短片，而是从脚本出发、像给电影打草稿那样做出短片，同时看看性能能不能接近 CUDA 或 LTX 自家的 API。结果是：模型加载完成后，一条 10 秒、带声音、2048×1024 的视频，用半台机器（32 个核心）22 到 23 秒就能出片。"
+        }
+      ]
+    },
+    {
+      "h": "为什么值得看：从「跑不起来」到 14 倍提速",
+      "blocks": [
+        {
+          "p": "这条路开头并不顺。模型开箱即用是跑不动的：transformer 一个 NeuronCore 装不下，diffusers（Hugging Face 的扩散模型库）也没有把它切开、分到多个核心的方案。第一次真正跑通，用的是模型卡里的管线加几个补丁、把 transformer 分到 4 个核心上，一条 10 秒视频要 5 分 20 秒，而且核心真正在算的时间只有约 45 秒——其余时间都花在等别的东西。"
+        },
+        {
+          "p": "五天后，同样的 10 秒带声视频只要 22 到 23 秒；分辨率还从 960×544 升到 2048×1024，像素约是原来的 4 倍，核心实际计算时间降到 15 秒，整体比首次跑通快 14 倍。最有用的不是这个「快」，而是作者把每一步卡在哪、怎么修，都列成了表。"
+        },
+        {
+          "fig": {
+            "type": "kpi",
+            "title": "一条 10 秒带声视频：从 5 分 20 秒到 22–23 秒",
+            "subtitle": "模型已加载、半台机器、2048×1024 的前提",
+            "items": [
+              {
+                "value": "22–23",
+                "unit": "秒",
+                "label": "10 秒带声视频出片",
+                "note": "模型加载后，32 个核心"
+              },
+              {
+                "value": "14",
+                "unit": "倍",
+                "label": "比首次跑通快",
+                "note": "首次跑通 5 分 20 秒"
+              },
+              {
+                "value": "32",
+                "unit": "个",
+                "label": "NeuronCore 合力",
+                "note": "整机 64 个的一半"
+              },
+              {
+                "value": "20",
+                "unit": "秒",
+                "label": "单镜头最长",
+                "note": "模型本身的上限"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "h": "从脚本到短片：靠 from 和 to 把镜头串起来",
+      "blocks": [
+        {
+          "p": "输入是一份 JSON 格式的镜头列表，每个镜头有名字（name）和提示词（prompt），很像分镜表。LTX-2.5 对长提示词效果更好，所以每个提示词都是一段话，讲清风格、主体、运动、镜头、光线和声音。"
+        },
+        {
+          "p": "但光有提示词不够：它保不住一个角色从上一个镜头到下一个镜头还是同一个人。作者的解法是让镜头之间互相「传帧」，用两个键：from（这个镜头从上一条镜头的最后几帧开始，取最后 1 帧能保持长相跨剪辑一致，取最后 25 帧约 1 秒还能把动作延续下去）和 to（这个镜头结束在下一镜头的前几帧，把动作引向下一镜头）。"
+        },
+        {
+          "fig": {
+            "type": "compare",
+            "title": "只靠提示词保不住主体，from/to 补上了镜头衔接",
+            "subtitle": "琥珀色是 from/to 新补的能力；蓝灰是提示词本就有的；灰色是做不到",
+            "left": {
+              "label": "只有提示词",
+              "sub": "每个镜头独立生成",
+              "items": [
+                {
+                  "label": "风格、光线、声音",
+                  "tag": "提示词控制",
+                  "state": "base"
+                },
+                {
+                  "label": "主体跨镜头一致",
+                  "tag": "做不到",
+                  "state": "dim"
+                },
+                {
+                  "label": "动作延续到下一镜头",
+                  "tag": "做不到",
+                  "state": "dim"
+                },
+                {
+                  "label": "镜头间衔接",
+                  "tag": "做不到",
+                  "state": "dim"
+                }
+              ]
+            },
+            "right": {
+              "label": "提示词 + from/to",
+              "sub": "镜头之间传帧",
+              "items": [
+                {
+                  "label": "风格、光线、声音",
+                  "tag": "提示词控制",
+                  "state": "base"
+                },
+                {
+                  "label": "主体跨镜头一致",
+                  "tag": "from/to 传帧",
+                  "state": "hi"
+                },
+                {
+                  "label": "动作延续到下一镜头",
+                  "tag": "from 后 25 帧",
+                  "state": "hi"
+                },
+                {
+                  "label": "镜头间衔接",
+                  "tag": "to 前 9 帧",
+                  "state": "hi"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "p": "这和动画的两种做法对得上：straight ahead（直进式）一镜接一镜往下做；pose to pose（摆姿势式）先做最关键的那个镜头、调到自己满意，再让前面的镜头「结束在它的开头几帧」（to），后面的镜头「从它的结尾几帧开始」（from）。海豹短片用的就是 pose to pose，关键镜头是 iceberg（冰山翻转，浪把海豹打湿）。nap（睡觉的海豹）结束在 iceberg 的前 9 帧，这样海豹、浮冰和冰山到关键镜头时保持一致；shake（甩水）从 iceberg 的后 25 帧开始，让滴着水的海豹接着抖水、趴到浮冰上；dream（做梦）独立生成，再用剪辑接进来。"
+        },
+        {
+          "fig": {
+            "type": "illustration",
+            "title": "海豹短片的镜头链：关键镜头 iceberg 居中",
+            "subtitle": "示意：琥珀色是关键镜头 iceberg；nap 结束在它前 9 帧，shake 从它后 25 帧开始，dream 独立",
+            "glyph": {
+              "kind": "hub",
+              "center": {
+                "label": "iceberg 关键镜头",
+                "tone": "hi"
+              },
+              "nodes": [
+                {
+                  "label": "nap → 前 9 帧",
+                  "tone": "base"
+                },
+                {
+                  "label": "shake ← 后 25 帧",
+                  "tone": "base"
+                },
+                {
+                  "label": "dream 独立",
+                  "tone": "base"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "p": "在 diffusers 这边，三个管线共用 LTX-2.5 的模型：LTX2Pipeline 纯靠提示词生成镜头，LTX2ConditionPipeline 生成「开始或结束在别的镜头帧上」的镜头。两者都走模型卡里的两阶段蒸馏配方：先 8 步，然后 LTX2LatentUpsamplePipeline 把潜空间放大 2 倍，最后 3 步。镜头链这套逻辑只有大约 160 行 Python，放在作者开源的 dacorvo/video-generation 里。"
+        }
+      ]
+    },
+    {
+      "h": "在 Trainium3 上跑起来：权重切 4 份、视频切 8 段",
+      "blocks": [
+        {
+          "p": "要让模型跑在 NeuronCore 上，主要做三件事：让模型能跑在核心上（张量并行）、把它分到更多核心上（序列并行）、以及让主机别拖后腿。"
+        },
+        {
+          "p": "张量并行（TP-4）是被内存逼出来的：transformer 一个核心放不下，就把每一层的权重切成 4 份，分到 4 个核心，上限是 32 个注意力头。序列并行（SP-8）是让一台机器为一个视频合力的关键：把视频 token 切成 8 段，每段给一块芯片——正是这一步让 2048×1024 成为可能，因为它把每个核心要加载的图缩小到能加载为止。两者相乘，就是 4×8=32 个核心一起做一条视频，也就是半台机器。"
+        },
+        {
+          "fig": {
+            "type": "schematic",
+            "title": "TP-4 × SP-8：权重切 4 份、视频切 8 段",
+            "subtitle": "示意：蓝灰是普通分片；两者相乘 4×8=32 个核心合力做一条视频",
+            "items": [
+              {
+                "glyph": {
+                  "kind": "frames",
+                  "count": 8,
+                  "select": [
+                    1,
+                    8
+                  ]
+                },
+                "title": "序列并行 SP-8",
+                "sub": "视频 token 切成 8 段",
+                "rows": [
+                  {
+                    "k": "每段",
+                    "v": "给一块芯片"
+                  },
+                  {
+                    "k": "作用",
+                    "v": "把图缩小到能加载"
+                  }
+                ]
+              },
+              {
+                "glyph": {
+                  "kind": "stack",
+                  "layers": [
+                    {
+                      "label": "权重 1/4",
+                      "tone": "base"
+                    },
+                    {
+                      "label": "权重 2/4",
+                      "tone": "base"
+                    },
+                    {
+                      "label": "权重 3/4",
+                      "tone": "base"
+                    },
+                    {
+                      "label": "权重 4/4",
+                      "tone": "base"
+                    }
+                  ]
+                },
+                "title": "张量并行 TP-4",
+                "sub": "每一层权重切成 4 份",
+                "rows": [
+                  {
+                    "k": "每份",
+                    "v": "给一个核心"
+                  },
+                  {
+                    "k": "上限",
+                    "v": "32 个注意力头"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "p": "主机侧的浪费最明显，也最好捡。作者列了两张表，一张「让它能跑」、一张「让它变快」，挑几个最影响数字的讲：编译缓存（把 transformer 整成一个图时某个尺寸会返回 NaN，且每个新进程都重新跟踪；改成 compile_repeated_blocks 只编译一个块后，跟踪时间从 388 秒掉到 18 秒）；精度（torch-neuronx 的 bf16 半精度 GELU 连常量都按 bf16 算，改成 fp32 单精度算 GELU 后，对 fp32 的误差从 0.297 降到 0.158，和 CPU 上 bf16 的 0.160 相当）；提示词编码（从约 205 秒一路降到 1.4 秒，分三步：先只在 rank 0 跑管线、把参数发给其他 rank 降到 7.5 秒，再把 rank 0 的线程固定到没人用的 CPU 降到 3.3 秒，最后只编码提示词本身、跳过补到 1024 个 token 的填充降到 1.4 秒）；视频解码（改成在 NeuronCore 上按帧拆开解码，2048×1024 解码从 357 秒降到 1.6 秒）；显存（把参数打包进最大 1 GiB 的缓冲区，每核心内存占用从 22.96 GiB 降到 10.2 GiB）。"
+        }
+      ]
+    },
+    {
+      "h": "数字怎么读：22–23 秒是「模型已加载」前提下的成绩",
+      "blocks": [
+        {
+          "p": "22 到 23 秒这个数有几个前提：模型已经加载、用半台机器（32 个核心）、分辨率 2048×1024、声音和视频一起生成。作者拿它和 LTX 官方在线 API 比——LTX 说自己的 API 生成 10 秒 1080p 视频要 23.7 秒；作者的配置打成平手，还快了约 1 秒。CUDA 这边作者没找到可比的实测数字：唯一的是 LTX 声称 4 张 B200 上 10 秒 720p 只要 6.8 秒，但没有测量细节，所以作者没有拿它比。"
+        },
+        {
+          "p": "再看和「首次跑通」的对比：墙钟时间从 5 分 20 秒降到 22–23 秒，核心实际计算从 45 秒降到 15 秒。注意前后分辨率不同，后者像素约是前者的 4 倍，不能直接横比；14 倍是文章给出的整体对比。"
+        },
+        {
+          "fig": {
+            "type": "bars",
+            "title": "墙钟时间和核心实际计算都大幅下降",
+            "subtitle": "单位秒，示意；琥珀色是优化后，蓝灰是首次跑通，前后分辨率不同不能横比",
+            "legend": [
+              {
+                "tone": "hi",
+                "label": "优化后 2048×1024"
+              },
+              {
+                "tone": "base",
+                "label": "首次跑通 960×544"
+              }
+            ],
+            "groups": [
+              {
+                "label": "墙钟时间",
+                "items": [
+                  {
+                    "label": "首次跑通",
+                    "sub": "960×544",
+                    "value": 320,
+                    "display": "5 分 20 秒",
+                    "tone": "base",
+                    "calc": "5 × 60 + 20"
+                  },
+                  {
+                    "label": "优化后",
+                    "sub": "2048×1024",
+                    "value": 22,
+                    "display": "22–23 秒",
+                    "tone": "hi"
+                  }
+                ]
+              },
+              {
+                "label": "核心实际计算",
+                "items": [
+                  {
+                    "label": "首次跑通",
+                    "sub": "960×544",
+                    "value": 45,
+                    "display": "45 秒",
+                    "tone": "base"
+                  },
+                  {
+                    "label": "优化后",
+                    "sub": "2048×1024",
+                    "value": 15,
+                    "display": "15 秒",
+                    "tone": "hi"
+                  }
+                ]
+              }
+            ],
+            "note": "22–23 秒为区间，柱长取下限 22 秒示意；14 倍是文章给的、基于两次墙钟时间的整体对比。"
+          }
+        },
+        {
+          "p": "如果要把这个能力做成服务，进程常驻是必要的：加载模型大约 3 分钟，第一个视频要 80 秒，之后才进入 22–23 秒的节奏。单个镜头最长 20 秒，是模型本身的上限。"
+        },
+        {
+          "fig": {
+            "type": "quote",
+            "title": "作者对这次性能测试的总结",
+            "text": "The Ferrari made it around the track, on half of its cylinders.",
+            "zh": "这台法拉利跑完了赛道，只用了半数的气缸。",
+            "who": "David Corvoysier",
+            "role": "Hugging Face 工程师、本文作者之一",
+            "source_url": "https://huggingface.co/blog/video-trainium3"
+          }
+        }
+      ]
+    },
+    {
+      "h": "把 LTX-2.5 当世界模型：续写真实机器人录像",
+      "blocks": [
+        {
+          "p": "LTX 管 LTX-2.5 叫 world model（世界模型，能「想象」物理世界接下来发生什么的模型），机器人是它正在冒头的新用法。逻辑是：机器人、汽车、无人机从摄像头视频里学习，一个世界模型能造出更多这样的视频，包括太少发生或太危险、没法实拍的事件。"
+        },
+        {
+          "p": "作者用同一套代码试了真实素材：一个镜头可以从真实摄像头视频的第一秒开始，接着编造后面发生的事。只给 1 帧不够，因为模型看不出物体移动得多快。例子是 Fourier GR1-T2 人形机器人的头部摄像头（来自 NVIDIA 的 GR1-100 数据集的一段）：真实 6 秒录像里，机器人左手从盘子里拿起一个橙子、放进托盘。模型只看了这段录像的第一秒（手还举着、还没动），自己发明了后面抓橙子的动作，还保持住桌子、手和水果与真实素材一致。"
+        },
+        {
+          "p": "更有意思的是「没发生的事」：还是同一秒，只改提示词，模型让一个人俯身也来拿橙子，人手机械手一起把橙子搬进托盘，连做 5 次重拍，每次人的手势和时机都不同，机器人手臂也会跟着适应。对训练来说价值正在这：不是一段续写，而是一堆续写的分布，每个都能靠 film 文件和 seed 复现。但要提醒：这些视频跟随的是提示词，不是机器人或汽车的指令；真要做训练，需要团队用自己机器人的帧和动作数据，对 LTX-2.5 的预训练权重做微调。"
+        }
+      ]
+    },
+    {
+      "h": "官方还没说的",
+      "blocks": [
+        {
+          "list": [
+            "LTX 那句 6.8 秒（4 张 B200、10 秒 720p）没有给出测量细节，无法和本次 22–23 秒直接对比。",
+            "trn3.48xlarge 这台机器的价格、LTX API 的价格，原文都没写。",
+            "三个「没解释清楚」的问题：transformer 整图编译在某个尺寸返回 NaN；每个新进程里第一条结束在关键帧的镜头都慢；潜空间放大器无法和 transformer 一起加载、只能留在 CPU。",
+            "声音不跨镜头延续：每个镜头各自生成声音，短片只统一了背景音量。",
+            "微调之后、真正按机器人动作条件生成的效果，原文没有给出量化结果。",
+            "LTX 6.8 秒那个 CUDA 数字的测量方式（峰值还是常态、什么精度）没有说明。"
+          ]
+        }
+      ]
+    },
+    {
+      "h": "适合谁",
+      "blocks": [
+        {
+          "p": "这套东西最有价值的是把「在 Trainium3 上跑视频生成」的路走通了，而且每一步卡点都写成表。如果你在云上要跑 LTX-2.5 或类似视频模型、手里有 Trainium3 资源，这篇的张量并行、序列并行拆分和主机优化可以直接抄作业。"
+        },
+        {
+          "p": "代价也不小：得自己处理张量并行、序列并行和一堆设备侧修补；要常驻进程才划算（加载约 3 分钟、首个视频 80 秒）；生成质量还在草稿级——同一个提示词 4 次里 3 次可能画错细节，所以每个新镜头要做 4 次重拍挑一个。"
+        },
+        {
+          "p": "如果你只是想要现成的视频生成服务，LTX 官方 API 已经能到 23.7 秒，这篇更像是在证明自托管能做到同档甚至略快；如果你想做机器人数据增强、想看世界模型怎么续写真实录像，后一半的尝试值得照着试，但记住目前生成跟随提示词而非机器人命令，真正落地要自己微调。"
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "main": {
+      "title": "Taking Trainium3 to the Track: Generating Videos with LTX-2.5",
+      "publisher": "Hugging Face",
+      "date": "2026-11-27",
+      "url": "https://huggingface.co/blog/video-trainium3"
+    },
+    "note": "所有数据来自 Hugging Face 博客原文；时间对比图为示意（5 分 20 秒换算 320 秒，22–23 秒柱长取区间下限 22 秒），镜头链与并行拆分图为示意。"
+  },
+  "claims": [
+    {
+      "text": "借到的 Trainium3 机器（trn3.48xlarge）有 64 个 NeuronCore",
+      "value": "64 NeuronCores",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "64 个 NeuronCore",
+      "quote": "we were lucky enough to get access to a Trainium3 machine ( trn3.48xlarge , 64 NeuronCores) for a month"
+    },
+    {
+      "text": "团队借到这台机器用了一个月",
+      "value": "a month",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "一个月",
+      "quote": "we were lucky enough to get access to a Trainium3 machine ( trn3.48xlarge , 64 NeuronCores) for a month"
+    },
+    {
+      "text": "作者用最后五天做视频生成实验",
+      "value": "five days",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "五天",
+      "quote": "With five days left, I allowed myself a little fun."
+    },
+    {
+      "text": "最终一条 10 秒带声视频，模型加载后 22 到 23 秒生成",
+      "value": "22 to 23 s",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "22–23 秒",
+      "quote": "a 10-second clip with sound took 22 to 23 s to generate, on half of the machine"
+    },
+    {
+      "text": "生成的视频时长 10 秒",
+      "value": "10-second",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "10 秒",
+      "quote": "a 10-second clip with sound took 22 to 23 s to generate"
+    },
+    {
+      "text": "最终分辨率 2048×1024",
+      "value": "2048×1024",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "2048×1024",
+      "quote": "a 10-second clip at 2048×1024, once the models are loaded, on half of the machine"
+    },
+    {
+      "text": "LTX 声称 4 张 B200 上生成 10 秒 720p 视频只要 6.8 秒",
+      "value": "6.8 s",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "6.8 秒",
+      "quote": "LTX's claim of 6.8 s for a 10-second 720p clip on four B200 GPUs"
+    },
+    {
+      "text": "该 CUDA 数字用的是 4 张 B200 GPU",
+      "value": "four B200 GPUs",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "4 张 B200",
+      "quote": "LTX's claim of 6.8 s for a 10-second 720p clip on four B200 GPUs"
+    },
+    {
+      "text": "LTX 的 CUDA 数字对应 720p 分辨率",
+      "value": "720p",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "720p",
+      "quote": "a 10-second 720p clip on four B200 GPUs"
+    },
+    {
+      "text": "LTX 官方 API 生成 10 秒 1080p 视频要 23.7 秒",
+      "value": "23.7 s",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "23.7 秒",
+      "quote": "LTX says makes a 10-second 1080p clip in 23.7 s"
+    },
+    {
+      "text": "LTX 官方 API 对应 1080p 分辨率",
+      "value": "1080p",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "1080p",
+      "quote": "a 10-second 1080p clip in 23.7 s"
+    },
+    {
+      "text": "首次跑通 10 秒视频要 5 分 20 秒",
+      "value": "5 min 20 s",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "5 分 20 秒",
+      "quote": "took about 5 min 20 s for a 10-second clip"
+    },
+    {
+      "text": "首次跑通时核心实际只计算约 45 秒",
+      "value": "45 s",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "约 45 秒",
+      "quote": "the NeuronCores were actually computing for only about 45 s of it"
+    },
+    {
+      "text": "首次跑通分辨率 960×544",
+      "value": "960×544",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "960×544",
+      "quote": "First attempt, 960×544"
+    },
+    {
+      "text": "首次跑通把 transformer 分到 4 个核心上",
+      "value": "4",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "4 个",
+      "quote": "with the transformer split over 4 cores and a few patches"
+    },
+    {
+      "text": "优化后像素约为首次的 4 倍",
+      "value": "~4× more pixels",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "约 4 倍像素",
+      "quote": "2048×1024 (~4× more pixels)"
+    },
+    {
+      "text": "优化后用 32 个 NeuronCore",
+      "value": "32",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "32 个",
+      "quote": "what puts 32 of the 64 NeuronCores on a single clip"
+    },
+    {
+      "text": "优化后核心实际计算 15 秒",
+      "value": "15 s",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "15 秒",
+      "quote": "its time on the NeuronCores from 45 s to 15 s"
+    },
+    {
+      "text": "优化后比首次尝试快 14 倍",
+      "value": "14×",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "14 倍",
+      "quote": "14×"
+    },
+    {
+      "text": "两阶段蒸馏配方先走 8 步",
+      "value": "8 steps",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "8 步",
+      "quote": "the two-stage distilled recipe of the model card: 8 steps"
+    },
+    {
+      "text": "潜空间放大 2 倍后再走最后 3 步",
+      "value": "×2",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "2 倍",
+      "quote": "upscales the latents ×2 before 3 final steps"
+    },
+    {
+      "text": "放大后走最后 3 步",
+      "value": "3 final steps",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "3 步",
+      "quote": "upscales the latents ×2 before 3 final steps"
+    },
+    {
+      "text": "镜头链部分约 160 行 Python",
+      "value": "160 lines",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "约 160 行",
+      "quote": "The film part is about 160 lines of Python"
+    },
+    {
+      "text": "nap 镜头结束在 iceberg 的前 9 帧",
+      "value": "9 frames",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "9 帧",
+      "quote": "ends on the first 9 frames of iceberg"
+    },
+    {
+      "text": "shake 镜头从 iceberg 的后 25 帧开始（约 1 秒）",
+      "value": "25 frames",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "25 帧",
+      "quote": "starting from its last 25 frames (1 s) also continues the motion"
+    },
+    {
+      "text": "张量并行把权重切 4 份",
+      "value": "4 ways",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "4 份",
+      "quote": "The weights split 4 ways"
+    },
+    {
+      "text": "序列并行把视频 token 切 8 段",
+      "value": "8 ways",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "8 段",
+      "quote": "the video tokens split 8 ways"
+    },
+    {
+      "text": "张量并行上限是 32 个注意力头",
+      "value": "32 attention heads",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "32 个注意力头",
+      "quote": "capped by the 32 attention heads"
+    },
+    {
+      "text": "编译跟踪时间从 388 秒降到 18 秒",
+      "value": "388 s",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "从 388 秒到 18 秒",
+      "quote": "tracing falls from 388 s to 18 s"
+    },
+    {
+      "text": "GELU 改 fp32 后对 fp32 的误差从 0.297 降到 0.158",
+      "value": "0.297",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "从 0.297 到 0.158",
+      "quote": "Transformer error against fp32: 0.297 → 0.158 (CPU bf16: 0.160)"
+    },
+    {
+      "text": "提示词编码一开始约 205 秒",
+      "value": "205 s",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "约 205 秒",
+      "quote": "Prompt encoding: about 205 s → 7.5 s"
+    },
+    {
+      "text": "提示词编码第一轮优化后降到 7.5 秒",
+      "value": "7.5 s",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "7.5 秒",
+      "quote": "Prompt encoding: about 205 s → 7.5 s"
+    },
+    {
+      "text": "提示词编码进一步降到 3.3 秒",
+      "value": "3.3 s",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "3.3 秒",
+      "quote": "Prompt encoding: 7.4 s → 3.3 s"
+    },
+    {
+      "text": "提示词编码最终降到 1.4 秒",
+      "value": "1.4 s",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "1.4 秒",
+      "quote": "Prompt encoding: 3.4 s → 1.4 s"
+    },
+    {
+      "text": "pipeline 把提示词补到 1024 个 token",
+      "value": "1024 tokens",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "1024 个 token",
+      "quote": "The pipeline pads the prompt to 1024 tokens"
+    },
+    {
+      "text": "2048×1024 视频解码从 357 秒降到 1.6 秒",
+      "value": "357 s",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "从 357 秒到 1.6 秒",
+      "quote": "Decode at 2048×1024: 357 s → 1.6 s"
+    },
+    {
+      "text": "参数打包进最大 1 GiB 的缓冲区",
+      "value": "1 GiB",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "1 GiB",
+      "quote": "Pack the parameters into buffers of at most 1 GiB"
+    },
+    {
+      "text": "每核心内存占用从 22.96 GiB 降到 10.2 GiB",
+      "value": "22.96 GiB",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "从 22.96 GiB 到 10.2 GiB",
+      "quote": "Memory per core: 22.96 GiB → 10.2 GiB"
+    },
+    {
+      "text": "主机侧时间从约 280 秒降到约 8 秒（约 35 倍）",
+      "value": "280 s",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "从约 280 秒到约 8 秒",
+      "quote": "a clip's host time fell from about 280 s to about 8 s (~35×)"
+    },
+    {
+      "text": "改一行代码可能触发每张图最多 30 分钟重编译",
+      "value": "30 minutes",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "最多 30 分钟",
+      "quote": "an edit could trigger a recompile of up to 30 minutes per graph"
+    },
+    {
+      "text": "加载模型约 3 分钟，第一个视频要 80 秒",
+      "value": "3 minutes",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "约 3 分钟",
+      "quote": "they take about 3 minutes to load the models, and 80 s for their first clip"
+    },
+    {
+      "text": "第一个视频要 80 秒",
+      "value": "80 s",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "80 秒",
+      "quote": "they take about 3 minutes to load the models, and 80 s for their first clip"
+    },
+    {
+      "text": "单个镜头最长 20 秒",
+      "value": "20 s",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "20 秒",
+      "quote": "A shot lasts at most 20 s, the model's limit"
+    },
+    {
+      "text": "同一提示词 4 次里有 3 次把山羊角画错",
+      "value": "3 out of 4",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "4 次里 3 次",
+      "quote": "the same prompt gave the goat funny horns in 3 takes out of 4"
+    },
+    {
+      "text": "作者每个新镜头做 4 次重拍挑一个",
+      "value": "4 takes",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "4 次",
+      "quote": "I made 4 takes of each new shot and picked one"
+    },
+    {
+      "text": "真实机器人录像时长 6 秒",
+      "value": "6-second",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "6 秒",
+      "quote": "In the real 6-second clip, the robot's left hand picks an orange from a plate and drops it in a tray"
+    },
+    {
+      "text": "模型只看录像的第一秒来续写",
+      "value": "first second",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "第一秒",
+      "quote": "The model only sees the first second of that clip"
+    },
+    {
+      "text": "人物帮机器人拿橙子的续写做了 5 次重拍",
+      "value": "Five takes",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "5 次",
+      "quote": "Five takes, with the real footage first"
+    },
+    {
+      "text": "作者比喻这台机器只用了一半的气缸（半台机器）",
+      "value": "half",
+      "source_url": "https://huggingface.co/blog/video-trainium3",
+      "as_written": "半数",
+      "quote": "on half of its cylinders"
+    }
+  ],
+  "cover": {
+    "headline": "Trainium3 跑视频生成",
+    "highlight": "10 秒带声视频 22–23 秒出片",
+    "big": {
+      "value": "22–23",
+      "unit": "秒",
+      "label": "10 秒带声视频出片"
+    }
+  },
+  "status": "published",
+  "verified": false,
+  "pipeline": {
+    "origin": "auto",
+    "candidate": "2d7f8b4f84",
+    "tier": "primary",
+    "via": null,
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "generated_at": "2026-11-28T07:59:06.664Z"
+  }
+}
