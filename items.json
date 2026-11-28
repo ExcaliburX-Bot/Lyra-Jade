@@ -3592,5 +3592,33 @@
     "fetched_at": "2026-11-28T04:27:09.073Z",
     "via": "https://xiaohu.ai/article/ampixa-talkinghead/",
     "discovered_by": "xiaohu"
+  },
+  "65b0411ff8fe": {
+    "id": "65b0411ff8fe",
+    "key": "https://huggingface.co/ampixa/talkinghead",
+    "title": "talkinghead: One photo + a speech clip → a lip-synced talking-head video",
+    "url": "https://huggingface.co/ampixa/talkinghead",
+    "published": "2026-11-27",
+    "summary": "",
+    "source": "bot:browser",
+    "publisher": "Ampixa Labs",
+    "tier": "official",
+    "weight": 1,
+    "category_hint": "product",
+    "fetched_at": "2026-11-28T13:25:43.990Z"
+  },
+  "842db8804cd8": {
+    "id": "842db8804cd8",
+    "key": "https://x.com/__ampixa__/status/2126183579764007316",
+    "title": "Ampixa Labs 开源 talkinghead：一张照片加一段语音，MacBook Pro 上实时生成对口型视频，模型只有 169 MB",
+    "url": "https://x.com/__ampixa__/status/2126183579764007316",
+    "published": "2026-11-27T05:17:22.653Z",
+    "summary": "One photo + any voice → a lip-synced talking video.\n\ntalkinghead runs in real time on a laptop (36.5 ms a frame on a MacBook Pro M4 Pro), and the whole model is 169 MB. Open weights. https://t.co/khv1egHrkd",
+    "source": "bot:x",
+    "publisher": "@__ampixa__",
+    "tier": "official",
+    "weight": 1,
+    "category_hint": "product",
+    "fetched_at": "2026-11-28T13:25:43.990Z"
   }
 }
