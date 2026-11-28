@@ -1,0 +1,7 @@
+URL: https://x.com/__ampixa__/status/2126183579764007316
+FETCHED: 2026-11-28T07:52:26.892Z
+NOTE: X 帖子原文（含作者自己的整串），由 Grok Bot 在 X 上读取
+
+One photo + any voice → a lip-synced talking video.
+
+talkinghead runs in real time on a laptop (36.5 ms a frame on a MacBook Pro M4 Pro), and the whole model is 169 MB. Open weights. https://t.co/khv1egHrkd

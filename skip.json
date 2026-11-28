@@ -496,5 +496,71 @@
     "reason": "这是 Gemini 4 Carbon 的社区作品展示，不是新产品发布；官方页面日期是 Nov 17, 2026，已超过 72 小时。",
     "title": "Google 公开 5 个 Gemini 4 Carbon 作品：52,000 根随风摆的草、超百万个粒子、会碎的玻璃叠叠乐",
     "at": "2026-11-28T02:00:45.508Z"
+  },
+  {
+    "id": "836276d41b",
+    "reason": "这是 SpaceXSI 会计部使用 Grok Bot 的客户案例，即使带数字也不写。打开的官方页未见发布日期；候选记录为 2026-11-18，已超过 72 小时。",
+    "title": "SpaceXSI 会计部给 Grok Bot 办入职：写操作手册、分级放权、带三周，开票从约 24 小时缩到几分钟",
+    "at": "2026-11-28T07:52:26.986Z"
+  },
+  {
+    "id": "cb1d8f8bc8",
+    "reason": "官方页面日期是 Nov 17, 2026，已超过 72 小时。",
+    "title": "Google 免费开放 Gemini 任务模式：后台替你办事，美国用户还能让它打电话、限额下单",
+    "at": "2026-11-28T07:52:27.031Z"
+  },
+  {
+    "id": "23791fed6f",
+    "reason": "官方页面日期是 Nov 17, 2026，已超过 72 小时；同一次 Ignite 发布已有稿 microsoft-ignite-seven-models-price-performance。",
+    "title": "MAI Code 2 and Code 2 Flash: Everyday coding at scalable prices",
+    "at": "2026-11-28T07:52:27.073Z"
+  },
+  {
+    "id": "dd2743550d",
+    "reason": "官方页面日期是 Nov 17, 2026，已超过 72 小时；同一次 Ignite 发布已有稿 microsoft-ignite-seven-models-price-performance。",
+    "title": "MAI Cyber 2 Flash: Leading security. Lower cost",
+    "at": "2026-11-28T07:52:27.115Z"
+  },
+  {
+    "id": "3d61d8c8a6",
+    "reason": "官方页面日期是 Nov 17, 2026，已超过 72 小时；同一次 Ignite 发布已有稿 microsoft-ignite-seven-models-price-performance。",
+    "title": "MAI Licensed Weights: Frontier performance you control",
+    "at": "2026-11-28T07:52:27.155Z"
+  },
+  {
+    "id": "085a1139d0",
+    "reason": "这是同一场 Ignite 主题演讲的逐字稿，不是新发布；官方页面日期是 Nov 17, 2026，已超过 72 小时；站上已有同场 7 款模型稿。",
+    "title": "Microsoft Ignite 2026: MAI keynote transcript",
+    "at": "2026-11-28T07:52:27.199Z"
+  },
+  {
+    "id": "87ac98f9ec",
+    "reason": "打开的主链接需要登录 Google AI Studio，没有可核对的公开发布说明正文；候选发布时间是 2026-11-19T17:24:26Z，已超过 72 小时；站上已有 11 月 18 日的 Genie 4 消费端发布稿。",
+    "title": "Introducing Genie 4 in the Gemini API and Google AI Studio, the first world model for developers.",
+    "at": "2026-11-28T07:52:27.241Z"
+  },
+  {
+    "id": "6fd4c32fe3",
+    "reason": "官方页面日期是 November 23, 2026，已超过 72 小时。",
+    "title": "How to build and maintain an agentic evaluation",
+    "at": "2026-11-28T07:52:27.286Z"
+  },
+  {
+    "id": "211fbe8009",
+    "reason": "官方页面日期是 November 20, 2026，已超过 72 小时。",
+    "title": "Introducing harness adapters: adapt your favorite model to your harness to improve performance and cost",
+    "at": "2026-11-28T07:52:27.328Z"
+  },
+  {
+    "id": "bf1424b145",
+    "reason": "官方页面日期是 November 18, 2026，已超过 72 小时。",
+    "title": "Time-Series Models in the Streamhouse: A New Frontier and Use Cases",
+    "at": "2026-11-28T07:52:27.372Z"
+  },
+  {
+    "id": "679cee5ea1",
+    "reason": "官方页面日期是 November 18, 2026，已超过 72 小时。",
+    "title": "Rumble-2-Flash: an open 0.5B speech model for 40+ languages",
+    "at": "2026-11-28T07:52:27.412Z"
   }
 ]

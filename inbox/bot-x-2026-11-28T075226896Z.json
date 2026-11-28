@@ -1,0 +1,12 @@
+[
+  {
+    "title": "Ampixa Labs 开源 talkinghead：一张照片加一段语音，MacBook Pro 上实时生成对口型视频，模型只有 169 MB",
+    "url": "https://x.com/__ampixa__/status/2126183579764007316",
+    "publisher": "@__ampixa__",
+    "tier": "official",
+    "source": "bot:x",
+    "published": "2026-11-27T05:17:22.653Z",
+    "summary": "One photo + any voice → a lip-synced talking video.\n\ntalkinghead runs in real time on a laptop (36.5 ms a frame on a MacBook Pro M4 Pro), and the whole model is 169 MB. Open weights. https://t.co/khv1egHrkd",
+    "category": "product"
+  }
+]
