@@ -1049,34 +1049,6 @@
     "category_hint": null,
     "fetched_at": "2026-11-20T07:04:20.911Z"
   },
-  "b26717d449a4": {
-    "id": "b26717d449a4",
-    "key": "https://techpowerup.com/354814/nvidia-allegedly-engineered-scarcity-by-funding-ai-startups-to-buy-its-gpus",
-    "title": "Nvidia allegedly engineered scarcity by funding AI startups to buy its GPUs",
-    "url": "https://www.techpowerup.com/354814/nvidia-allegedly-engineered-scarcity-by-funding-ai-startups-to-buy-its-gpus",
-    "published": "2026-11-14T02:52:59.000Z",
-    "summary": "Article URL: https://www.techpowerup.com/354814/nvidia-allegedly-engineered-scarcity-by-funding-ai-startups-to-buy-its-gpus \n\n Comments URL: https://news.ycombinator.com/item?id=50493251 \n\n Points: 1114\n\n # Comments: 651",
-    "source": "hn-ai",
-    "publisher": "Hacker News",
-    "tier": "discovery",
-    "weight": 1,
-    "category_hint": null,
-    "fetched_at": "2026-11-20T07:04:20.911Z"
-  },
-  "a9dc79e6aa5b": {
-    "id": "a9dc79e6aa5b",
-    "key": "https://claude.com/resources/articles/projects-redesigned",
-    "title": "Anthropic upgrades Claude Code Projects to run parallel AI workers",
-    "url": "https://claude.com/resources/articles/projects-redesigned",
-    "published": "2026-11-14T00:28:11.000Z",
-    "summary": "Article URL: https://claude.com/resources/articles/projects-redesigned \n\n Comments URL: https://news.ycombinator.com/item?id=50492141 \n\n Points: 101\n\n # Comments: 97",
-    "source": "hn-ai",
-    "publisher": "Hacker News",
-    "tier": "discovery",
-    "weight": 1,
-    "category_hint": null,
-    "fetched_at": "2026-11-20T07:04:20.911Z"
-  },
   "0a4214e232ca": {
     "id": "0a4214e232ca",
     "key": "https://lspace.beehiiv.com/podcast/s/latent_space_the_ai_engineer_podcast/scaling_linear_s_gtm_to_100m_arr_cristina_cordova_coo",
@@ -3576,5 +3548,49 @@
     "weight": 1,
     "category_hint": null,
     "fetched_at": "2026-11-27T22:49:37.972Z"
+  },
+  "4e825df2be8b": {
+    "id": "4e825df2be8b",
+    "key": "https://drmahfouz.substack.com/p/woman-evicted-after-landlords-ai",
+    "title": "Woman evicted after landlord's AI assistant told her she could delay rent",
+    "url": "https://drmahfouz.substack.com/p/woman-evicted-after-landlords-ai",
+    "published": "2026-11-28T01:32:56.000Z",
+    "summary": "Article URL: https://drmahfouz.substack.com/p/woman-evicted-after-landlords-ai \n\n Comments URL: https://news.ycombinator.com/item?id=50673521 \n\n Points: 104\n\n # Comments: 81",
+    "source": "hn-ai",
+    "publisher": "Hacker News",
+    "tier": "discovery",
+    "weight": 1,
+    "category_hint": null,
+    "fetched_at": "2026-11-28T04:27:09.073Z"
+  },
+  "06aa5b081465": {
+    "id": "06aa5b081465",
+    "key": "https://lspace.beehiiv.com/podcast/s/latent_space_the_ai_engineer_podcast/inside_the_ai_training_data_market_gabe_greenberg_g2i",
+    "title": "Inside the AI Training Data Market — Gabe Greenberg, G2i",
+    "url": "https://lspace.beehiiv.com/podcast/s/latent_space_the_ai_engineer_podcast/inside_the_ai_training_data_market_gabe_greenberg_g2i",
+    "published": "2026-11-27T22:19:18.000Z",
+    "summary": "A frontier lab can pay more for training data it gets to keep exclusive, or take a discount on data another lab can buy too. At AI Engineer CODE, G2i founder Gabe Greenberg tells swyx how labs make that decision, how small pilot orders turn into bigger...",
+    "source": "latent-space-podcast",
+    "publisher": "Latent Space",
+    "tier": "discovery",
+    "weight": 0.8,
+    "category_hint": "insight",
+    "fetched_at": "2026-11-28T04:27:09.073Z"
+  },
+  "dacd1f00a1a4": {
+    "id": "dacd1f00a1a4",
+    "key": "https://x.com/__ampixa__/status/2126183579764007316",
+    "title": "Ampixa Labs 开源 talkinghead：一张照片加一段语音，MacBook Pro 上实时生成对口型视频，模型只有 169 MB",
+    "url": "https://x.com/__ampixa__/status/2126183579764007316",
+    "published": "2026-11-28T00:00:00.000Z",
+    "summary": "",
+    "source": "xiaohu",
+    "publisher": "@__ampixa__",
+    "tier": "official",
+    "weight": 1,
+    "category_hint": null,
+    "fetched_at": "2026-11-28T04:27:09.073Z",
+    "via": "https://xiaohu.ai/article/ampixa-talkinghead/",
+    "discovered_by": "xiaohu"
   }
 }
