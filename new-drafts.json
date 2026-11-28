@@ -1,18 +1,9 @@
 [
   {
-    "slug": "colab-ssh-free-gpu-vm-google-ai",
-    "title": "Google AI 订阅用户可用 Colab 开免费远程机器：无 GPU 版 2 vCPU、12GB 内存",
-    "file": "content/articles/colab-ssh-free-gpu-vm-google-ai.json",
-    "errors": 0,
-    "warnings": 1,
-    "provider": "deepseek",
-    "model": "deepseek-v4-pro"
-  },
-  {
-    "slug": "lemo-animi-stop-motion-skill",
-    "title": "lemo-animi 开源定格动画插件：一句话生成 40 秒短片",
-    "file": "content/articles/lemo-animi-stop-motion-skill.json",
-    "errors": 0,
+    "slug": "trainium3-ltx25-video-generation",
+    "title": "Trainium3 上跑 LTX-2.5：10 秒带声视频从 5 分 20 秒压到 22–23 秒",
+    "file": "content/articles/trainium3-ltx25-video-generation.json",
+    "errors": 1,
     "warnings": 0,
     "provider": "deepseek",
     "model": "deepseek-v4-pro"
